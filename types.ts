@@ -19,6 +19,7 @@ export enum VisualizationType {
     REPULSOR_FIELD = '排斥力場',
     AUDIO_LANDSCAPE = '音訊地貌',
     PIANO_VIRTUOSO = '鋼琴演奏家',
+    RECORD_PLAYER = '唱片機',
 }
 
 export enum FontType {
