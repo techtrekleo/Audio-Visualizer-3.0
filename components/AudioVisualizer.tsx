@@ -1469,6 +1469,50 @@ type DrawFunction = (
     particles?: Particle[]
 ) => void;
 
+const drawRecordPlayer = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
+    ctx.save();
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Record player body
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(centerX - 200, centerY - 150, 400, 300);
+
+    // Tonearm
+    ctx.beginPath();
+    ctx.moveTo(centerX + 150, centerY - 100);
+    ctx.lineTo(centerX + 50, centerY - 50);
+    ctx.stroke();
+
+    // Platter
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 100, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Inner circle 1 (pulsing)
+    const bass = dataArray.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
+    const normalizedBass = bass / 255;
+    const radius1 = 20 + normalizedBass * 20 * sensitivity;
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius1, 0, Math.PI * 2);
+    ctx.fillStyle = colors.primary;
+    ctx.fill();
+
+    // Inner circle 2 (pulsing)
+    const mid = dataArray.slice(32, 64).reduce((a, b) => a + b, 0) / 32;
+    const normalizedMid = mid / 255;
+    const radius2 = 10 + normalizedMid * 10 * sensitivity;
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius2, 0, Math.PI * 2);
+    ctx.fillStyle = colors.secondary;
+    ctx.fill();
+
+    ctx.restore();
+};
+
 const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.MONSTERCAT]: drawMonstercat,
     [VisualizationType.MONSTERCAT_GLITCH]: drawMonstercatGlitch,
@@ -1488,6 +1532,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.REPULSOR_FIELD]: drawRepulsorField,
     [VisualizationType.AUDIO_LANDSCAPE]: drawAudioLandscape,
     [VisualizationType.PIANO_VIRTUOSO]: drawPianoVirtuoso,
+    [VisualizationType.RECORD_PLAYER]: drawRecordPlayer,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
