@@ -1,0 +1,15 @@
+/*
+  Set the foundational layout and styles using standard CSS for maximum reliability.
+  This ensures that the root elements have full height, which is critical for
+  the flexbox-based application layout to work correctly. This approach
+  bypasses potential issues with Tailwind's @apply directive in the base layer.
+*/
+html, body, #root {
+  height: 100%;
+  background-color: #111827; /* Corresponds to Tailwind's bg-gray-900 */
+  color: #f3f4f6; /* Corresponds to Tailwind's text-gray-100 */
+  /* Using a standard sans-serif font stack as a fallback. */
+  font-family: "Poppins", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
