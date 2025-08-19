@@ -83,7 +83,7 @@ const drawMonstercat = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array, wi
     }
 
     for (let i = 0; i < numBarsOnHalf; i++) {
-        const dataIndex = Math.floor((i / numBarsOnHalf) * dataSliceEnd);
+        const dataIndex = Math.floor(((numBarsOnHalf - 1 - i) / numBarsOnHalf) * dataSliceEnd);
         const amplitude = dataArray[dataIndex] / 255.0;
         const barHeight = Math.pow(amplitude, 2.5) * maxHeight * sensitivity;
 
@@ -697,9 +697,9 @@ const drawGlitchWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array, wi
 const drawCrtGlitch = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
     ctx.save();
     
-    // Original effect: Screen shake
+    // Original effect: Screen shake (reduced intensity)
     if (isBeat) {
-        ctx.translate((Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
+        ctx.translate((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
     }
     
     const centerY = height / 2;
@@ -1469,106 +1469,6 @@ type DrawFunction = (
     particles?: Particle[]
 ) => void;
 
-const drawRecordPlayer = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
-    ctx.save();
-    const centerX = width / 2;
-    const centerY = height / 2;
-
-    const lowFreq = dataArray.slice(0, 10).reduce((a, b) => a + b, 0) / 10 / 255;
-    const midFreq = dataArray.slice(30, 60).reduce((a, b) => a + b, 0) / 30 / 255;
-    const highFreq = dataArray.slice(100, 200).reduce((a, b) => a + b, 0) / 100 / 255;
-
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = colors.primary;
-    ctx.shadowBlur = 10;
-
-    // Body with Bezier curves influenced by low frequencies
-    const bodyWidth = 400;
-    const bodyHeight = 300;
-    const bodyWobble = lowFreq * 15 * sensitivity;
-
-    const p1 = { x: centerX - bodyWidth / 2 - bodyWobble, y: centerY - bodyHeight / 2 + bodyWobble };
-    const p2 = { x: centerX + bodyWidth / 2 + bodyWobble, y: centerY - bodyHeight / 2 - bodyWobble };
-    const p3 = { x: centerX + bodyWidth / 2 - bodyWobble, y: centerY + bodyHeight / 2 + bodyWobble };
-    const p4 = { x: centerX - bodyWidth / 2 + bodyWobble, y: centerY + bodyHeight / 2 - bodyWobble };
-
-    ctx.beginPath();
-    ctx.moveTo(p1.x, p1.y);
-    ctx.quadraticCurveTo(centerX, centerY - bodyHeight/2 - bodyWobble * 2, p2.x, p2.y);
-    ctx.quadraticCurveTo(centerX + bodyWidth/2 + bodyWobble * 2, centerY, p3.x, p3.y);
-    ctx.quadraticCurveTo(centerX, centerY + bodyHeight/2 + bodyWobble * 2, p4.x, p4.y);
-    ctx.quadraticCurveTo(centerX - bodyWidth/2 - bodyWobble * 2, centerY, p1.x, p1.y);
-    ctx.stroke();
-
-    // Tonearm with curve
-    const tonearmStartX = centerX + 180;
-    const tonearmStartY = centerY - 130;
-    const tonearmEndX = centerX + 80 + (midFreq * 20);
-    const tonearmEndY = centerY - 20 + (midFreq * -20);
-    const controlX = tonearmStartX - 20;
-    const controlY = tonearmEndY + 50 + (midFreq * 30 * sensitivity);
-    ctx.beginPath();
-    ctx.moveTo(tonearmStartX, tonearmStartY);
-    ctx.quadraticCurveTo(controlX, controlY, tonearmEndX, tonearmEndY);
-    ctx.stroke();
-
-    // Platter
-    const platterRadius = 120;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, platterRadius, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Outer circumference effect
-    const spikes = 64;
-    for (let i = 0; i < spikes; i++) {
-        const angle = (i / spikes) * (Math.PI * 2);
-        const dataIndex = Math.floor((i / spikes) * (dataArray.length * 0.4));
-        const spikeHeight = Math.pow(dataArray[dataIndex] / 255, 2) * 25 * sensitivity;
-
-        if (spikeHeight < 1) continue;
-
-        const x1 = centerX + Math.cos(angle) * platterRadius;
-        const y1 = centerY + Math.sin(angle) * platterRadius;
-        const x2 = centerX + Math.cos(angle) * (platterRadius + spikeHeight);
-        const y2 = centerY + Math.sin(angle) * (platterRadius + spikeHeight);
-
-        ctx.strokeStyle = applyAlphaToColor(colors.accent, spikeHeight / 25);
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-    }
-
-
-    // Inner circles (pulsing)
-    const bass = dataArray.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
-    const normalizedBass = bass / 255;
-    const radius1 = 30 + normalizedBass * 30 * sensitivity;
-
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius1, 0, Math.PI * 2);
-    ctx.fillStyle = colors.primary;
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = colors.primary;
-    ctx.fill();
-
-    const mid = dataArray.slice(32, 64).reduce((a, b) => a + b, 0) / 32;
-    const normalizedMid = mid / 255;
-    const radius2 = 15 + normalizedMid * 15 * sensitivity;
-
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius2, 0, Math.PI * 2);
-    ctx.fillStyle = colors.secondary;
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = colors.secondary;
-    ctx.fill();
-
-
-    ctx.restore();
-};
-
 const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.MONSTERCAT]: drawMonstercat,
     [VisualizationType.MONSTERCAT_GLITCH]: drawMonstercatGlitch,
@@ -1588,7 +1488,6 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.REPULSOR_FIELD]: drawRepulsorField,
     [VisualizationType.AUDIO_LANDSCAPE]: drawAudioLandscape,
     [VisualizationType.PIANO_VIRTUOSO]: drawPianoVirtuoso,
-    [VisualizationType.RECORD_PLAYER]: drawRecordPlayer,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([

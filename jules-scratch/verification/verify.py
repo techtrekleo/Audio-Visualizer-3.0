@@ -1,4 +1,4 @@
-from playwright.sync_api import sync_playwright, expect
+from playwright.sync_api import sync_playwright, expect, Dialog
 
 def run_verification():
     with sync_playwright() as p:
@@ -7,32 +7,54 @@ def run_verification():
 
         try:
             # Go to the local dev server
-            # The default port for Vite is 5173
-            page.goto("http://localhost:5173", timeout=20000)
+            page.goto("http://localhost:5173", timeout=30000)
 
-            # Wait for the controls to be visible
+            # --- Test 1: Reversed Monstercat ---
             vis_select = page.locator("#vis-select")
-            expect(vis_select).to_be_visible(timeout=15000)
-
-            # Select the "唱片機" visualization
-            # Using the value which is the enum's text content
-            page.select_option("#vis-select", value="唱片機")
-
-            # Wait a moment for the animation to be visible
-            page.wait_for_timeout(2000)
-
-            # Take a screenshot of the visualizer area
+            expect(vis_select).to_be_visible(timeout=20000)
+            page.select_option("#vis-select", value="Monstercat")
+            page.wait_for_timeout(1000)
             visualizer_element = page.locator(".relative.shadow-2xl")
-            expect(visualizer_element).to_be_visible(timeout=10000)
-            visualizer_element.screenshot(path="jules-scratch/verification/screenshot.png")
+            visualizer_element.screenshot(path="jules-scratch/verification/monstercat_reversed.png")
+            print("Screenshot saved for reversed Monstercat.")
 
-            print("Screenshot saved to jules-scratch/verification/screenshot.png")
+            # --- Test 2: Reduced CRT Glitch ---
+            page.select_option("#vis-select", value="CRT Glitch")
+            page.wait_for_timeout(1000)
+            visualizer_element.screenshot(path="jules-scratch/verification/crt_glitch_reduced.png")
+            print("Screenshot saved for reduced CRT Glitch.")
+
+            # --- Test 3: Subtitle Validation ---
+            alert_triggered = False
+
+            def handle_dialog(dialog: Dialog):
+                nonlocal alert_triggered
+                alert_triggered = True
+                print(f"Alert dialog opened: {dialog.message}")
+                expect(dialog.message).to_contain("字幕格式不正確")
+                dialog.dismiss()
+
+            page.on("dialog", handle_dialog)
+
+            subtitle_textarea = page.locator("#subtitle-text")
+            expect(subtitle_textarea).to_be_visible(timeout=10000)
+
+            # Use fill to trigger the change event
+            subtitle_textarea.fill("this is not a valid format")
+
+            # Wait a moment for the alert to trigger
+            page.wait_for_timeout(1000)
+
+            if alert_triggered:
+                print("SUCCESS: Subtitle validation alert was triggered correctly.")
+            else:
+                print("FAILURE: Subtitle validation alert was NOT triggered.")
+                # Take a screenshot for debugging if the alert fails
+                page.screenshot(path="jules-scratch/verification/subtitle_alert_fail.png")
 
         except Exception as e:
             print(f"An error occurred: {e}")
-            # Try to get a screenshot even if something failed
             page.screenshot(path="jules-scratch/verification/error_screenshot.png")
-            # Print page content for debugging
             content = page.content()
             print("\nPage Content:\n", content)
 
