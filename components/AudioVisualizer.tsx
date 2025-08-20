@@ -613,22 +613,89 @@ const drawParticleGalaxy = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array
     ctx.restore();
 };
 
-const drawLiquidMetal = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean) => {
-    ctx.save();
-    // This effect is fully driven by the particle system ("blobs")
-    // in the main component's render loop.
-    // We can add a background glow here.
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const bass = dataArray.slice(0, 16).reduce((a, b) => a + b, 0) / 16;
-    const normalizedBass = bass / 255;
-    const glowRadius = width * 0.2 + normalizedBass * width * 0.2;
+// --- New Metaball/Liquid Metal implementation ---
+// Off-screen canvas for the metaball effect
+const metaballCanvas = document.createElement('canvas');
+const metaballCtx = metaballCanvas.getContext('2d', { willReadFrequently: true });
 
-    const bgGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, glowRadius);
-    bgGradient.addColorStop(0, applyAlphaToColor(colors.secondary, 0x33 / 255));
-    bgGradient.addColorStop(1, 'transparent');
-    ctx.fillStyle = bgGradient;
-    ctx.fillRect(0, 0, width, height);
+const drawLiquidMetal = (
+    ctx: CanvasRenderingContext2D,
+    dataArray: Uint8Array,
+    width: number,
+    height: number,
+    frame: number,
+    sensitivity: number,
+    colors: Palette,
+    graphicEffect: GraphicEffectType,
+    isBeat?: boolean,
+    waveformStroke?: boolean,
+    particles?: Particle[]
+) => {
+    if (!metaballCtx) return;
+
+    // Ensure off-screen canvas has the same size
+    if (metaballCanvas.width !== width || metaballCanvas.height !== height) {
+        metaballCanvas.width = width;
+        metaballCanvas.height = height;
+    }
+
+    ctx.save();
+
+    // 1. Draw blurred circles ("blobs") on the off-screen canvas
+    metaballCtx.clearRect(0, 0, width, height);
+    metaballCtx.filter = 'blur(20px)';
+    metaballCtx.fillStyle = colors.primary;
+
+    if (particles) {
+        particles.forEach(p => {
+            metaballCtx.beginPath();
+            metaballCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            metaballCtx.fill();
+        });
+    }
+
+    // 2. Apply a "threshold" filter to create the merged, liquid effect
+    // This is done by checking the alpha channel of the blurred image.
+    const imageData = metaballCtx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+    const threshold = 200; // This value determines the "sharpness" of the metaballs
+
+    for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] < threshold) {
+            data[i + 3] = 0; // Make it fully transparent
+        } else {
+            data[i + 3] = 255; // Make it fully opaque
+            data[i] = parseInt(colors.primary.slice(1, 3), 16);
+            data[i+1] = parseInt(colors.primary.slice(3, 5), 16);
+            data[i+2] = parseInt(colors.primary.slice(5, 7), 16);
+        }
+    }
+
+    // 3. Draw the thresholded image data to the main canvas
+    ctx.putImageData(imageData, 0, 0);
+
+    // 4. Add a secondary, smaller, faster-moving blob set for texture
+    metaballCtx.clearRect(0, 0, width, height);
+    metaballCtx.filter = 'blur(15px)';
+    metaballCtx.fillStyle = colors.secondary;
+    if (particles) {
+        particles.forEach(p => {
+             if(p.radius < 20) { // Only draw smaller blobs for the secondary color
+                metaballCtx.beginPath();
+                metaballCtx.arc(p.x, p.y, p.radius * 0.5, 0, Math.PI * 2);
+                metaballCtx.fill();
+             }
+        });
+    }
+    const secondaryImageData = metaballCtx.getImageData(0, 0, width, height);
+    const secondaryData = secondaryImageData.data;
+    for (let i = 0; i < secondaryData.length; i += 4) {
+        if (secondaryData[i + 3] > threshold) {
+            ctx.fillStyle = colors.secondary;
+            ctx.fillRect(i/4 % width, Math.floor(i/4 / width), 1, 1);
+        }
+    }
+
 
     ctx.restore();
 };
@@ -1577,6 +1644,11 @@ const drawRecordPlayer = (
 
 
     // --- Draw Platter ---
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(frame * 0.005); // Rotation
+    ctx.translate(-centerX, -centerY);
+
     ctx.shadowBlur = 15;
     ctx.shadowColor = '#000';
     ctx.fillStyle = colors.platterColor;
@@ -1592,9 +1664,10 @@ const drawRecordPlayer = (
         ctx.arc(centerX, centerY, i, 0, Math.PI * 2);
         ctx.stroke();
     }
+    ctx.restore(); // Restore from rotation
 
     // --- Draw Pulsing Center Label ---
-    const labelRadius = baseRadius * 0.25 + normalizedBass * 15 * sensitivity;
+    const labelRadius = baseRadius * 0.25 + normalizedBass * 25 * sensitivity; // Increased pulse
     const labelGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, labelRadius);
     labelGradient.addColorStop(0, colors.secondary);
     labelGradient.addColorStop(1, colors.primary);
@@ -1648,6 +1721,24 @@ const drawRecordPlayer = (
     ctx.beginPath();
     ctx.arc(armEndX, armEndY, 10, 0, Math.PI * 2);
     ctx.fill();
+
+    // --- Add Lens Flare on Beat ---
+    if (isBeat) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const flareRadius = baseRadius * 1.5;
+        const flareGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, flareRadius);
+        flareGradient.addColorStop(0, applyAlphaToColor(colors.accent, 0.4));
+        flareGradient.addColorStop(0.1, applyAlphaToColor(colors.accent, 0.2));
+        flareGradient.addColorStop(0.4, applyAlphaToColor(colors.primary, 0.05));
+        flareGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        ctx.fillStyle = flareGradient;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, flareRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
 
     ctx.restore();
 };
@@ -1837,46 +1928,150 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             }
         }
         
-        if (visualizationType === VisualizationType.PIANO_VIRTUOSO) {
-            const keyboardHeight = height * 0.25;
-            const numWhiteKeys = 28;
-            const whiteKeyWidth = width / numWhiteKeys;
-            const keyDataPoints = Math.floor(smoothedData.length * 0.7 / numWhiteKeys);
-            const whiteKeyPresses = new Array(numWhiteKeys).fill(0);
-            for (let i = 0; i < numWhiteKeys; i++) {
-                let pressAmount = 0;
-                const dataStart = i * keyDataPoints;
-                const dataEnd = dataStart + keyDataPoints;
-                for (let j = dataStart; j < dataEnd; j++) {
-                    pressAmount += smoothedData[j] || 0;
-                }
-                whiteKeyPresses[i] = pressAmount / (keyDataPoints * 255);
-            }
-            whiteKeyPresses.forEach((pressAmount, i) => {
-                const isPressed = (Math.pow(pressAmount, 2) * sensitivity) > 0.1;
-                if (isPressed && Math.random() > 0.8) {
-                    particlesRef.current.push({ x: i * whiteKeyWidth + whiteKeyWidth / 2, y: height - keyboardHeight, vy: -3 - (pressAmount * 6), vx: (Math.random() - 0.5) * 1.5, opacity: 1, radius: 25 + (pressAmount * 40), color: finalColors.accent, angle: Math.random(), orbitRadius: 0, baseOrbitRadius: 0, angleVelocity: 0 });
-                }
-            });
-            const blackKeyPattern = [1, 1, 0, 1, 1, 1, 0];
-            for (let i = 0; i < numWhiteKeys - 1; i++) {
-                const patternIndex = i % 7;
-                if (blackKeyPattern[patternIndex] === 1) {
-                    const pressAmount = (whiteKeyPresses[i] + whiteKeyPresses[i+1]) / 2;
-                    const isPressed = (Math.pow(pressAmount, 2) * sensitivity) > 0.15;
-                    if (isPressed && Math.random() > 0.8) {
-                        particlesRef.current.push({ x: (i + 1) * whiteKeyWidth, y: height - keyboardHeight, vy: -3 - (pressAmount * 6), vx: (Math.random() - 0.5) * 1.5, opacity: 1, radius: 25 + (pressAmount * 30), color: finalColors.secondary, angle: Math.random(), orbitRadius: 0, baseOrbitRadius: 0, angleVelocity: 0 });
+        // --- Particle Generation & Update ---
+        const bass = smoothedData.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
+        const normalizedBass = bass / 255;
+        const mid = smoothedData.slice(32, 128).reduce((a, b) => a + b, 0) / 96;
+        const normalizedMid = mid / 255;
+
+        // Particle Generation
+        switch (visualizationType) {
+            case VisualizationType.LIQUID_METAL:
+                if (particlesRef.current.length < 50 && isBeat) {
+                    for (let i = 0; i < 5; i++) {
+                        particlesRef.current.push({
+                            x: Math.random() * width, y: Math.random() * height,
+                            vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4,
+                            radius: Math.random() * 20 + 20,
+                            opacity: 1, color: '', angle: 0, orbitRadius: 0, baseOrbitRadius: 0, angleVelocity: 0,
+                        });
                     }
                 }
+                break;
+            case VisualizationType.PARTICLE_GALAXY:
+                 if (particlesRef.current.length < 400) {
+                    const spawnRate = isBeat ? 5 : 1;
+                    for (let i = 0; i < spawnRate; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const baseOrbit = Math.random() * width * 0.3 + width * 0.1;
+                        particlesRef.current.push({
+                            x: centerX, y: centerY,
+                            vx: 0, vy: 0,
+                            radius: Math.random() * 2 + 0.5,
+                            opacity: 0,
+                            color: Math.random() > 0.5 ? finalColors.primary : finalColors.secondary,
+                            angle,
+                            baseOrbitRadius: baseOrbit,
+                            orbitRadius: baseOrbit + Math.random() * 40 - 20,
+                            angleVelocity: (Math.random() * 0.01 + 0.005) * (Math.random() > 0.5 ? 1 : -1),
+                        });
+                    }
+                }
+                break;
+            case VisualizationType.REPULSOR_FIELD:
+                if (particlesRef.current.length < 300) {
+                     for (let i = 0; i < 3; i++) {
+                        particlesRef.current.push({
+                            x: Math.random() * width, y: Math.random() * height,
+                            vx: 0, vy: 0,
+                            radius: Math.random() * 1.5 + 1,
+                            opacity: 1, color: finalColors.primary, angle: 0, orbitRadius: 0, baseOrbitRadius: 0, angleVelocity: 0,
+                        });
+                     }
+                }
+                break;
+             case VisualizationType.PIANO_VIRTUOSO: {
+                const keyboardHeight = height * 0.25;
+                const numWhiteKeys = 28;
+                const whiteKeyWidth = width / numWhiteKeys;
+                const keyDataPoints = Math.floor(smoothedData.length * 0.7 / numWhiteKeys);
+                const whiteKeyPresses = new Array(numWhiteKeys).fill(0);
+                for (let i = 0; i < numWhiteKeys; i++) {
+                    let pressAmount = 0;
+                    const dataStart = i * keyDataPoints;
+                    const dataEnd = dataStart + keyDataPoints;
+                    for (let j = dataStart; j < dataEnd; j++) {
+                        pressAmount += smoothedData[j] || 0;
+                    }
+                    whiteKeyPresses[i] = pressAmount / (keyDataPoints * 255);
+                }
+                whiteKeyPresses.forEach((pressAmount, i) => {
+                    const isPressed = (Math.pow(pressAmount, 2) * sensitivity) > 0.1;
+                    if (isPressed && Math.random() > 0.8) {
+                        particlesRef.current.push({ x: i * whiteKeyWidth + whiteKeyWidth / 2, y: height - keyboardHeight, vy: -3 - (pressAmount * 6), vx: (Math.random() - 0.5) * 1.5, opacity: 1, radius: 25 + (pressAmount * 40), color: finalColors.accent, angle: Math.random(), orbitRadius: 0, baseOrbitRadius: 0, angleVelocity: 0 });
+                    }
+                });
+                const blackKeyPattern = [1, 1, 0, 1, 1, 1, 0];
+                for (let i = 0; i < numWhiteKeys - 1; i++) {
+                    const patternIndex = i % 7;
+                    if (blackKeyPattern[patternIndex] === 1) {
+                        const pressAmount = (whiteKeyPresses[i] + whiteKeyPresses[i+1]) / 2;
+                        const isPressed = (Math.pow(pressAmount, 2) * sensitivity) > 0.15;
+                        if (isPressed && Math.random() > 0.8) {
+                            particlesRef.current.push({ x: (i + 1) * whiteKeyWidth, y: height - keyboardHeight, vy: -3 - (pressAmount * 6), vx: (Math.random() - 0.5) * 1.5, opacity: 1, radius: 25 + (pressAmount * 30), color: finalColors.secondary, angle: Math.random(), orbitRadius: 0, baseOrbitRadius: 0, angleVelocity: 0 });
+                        }
+                    }
+                }
+                break;
             }
         }
-        particlesRef.current.forEach(p => {
-            p.y += p.vy;
-            p.x += p.vx;
-            p.vy += 0.08;
-            p.opacity -= 0.015;
-        });
-        particlesRef.current = particlesRef.current.filter(p => p.opacity > 0 && p.y < height + 100);
+
+        // Particle Update Physics
+        for (let i = particlesRef.current.length - 1; i >= 0; i--) {
+            const p = particlesRef.current[i];
+
+            switch (visualizationType) {
+                 case VisualizationType.LIQUID_METAL:
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < p.radius || p.x > width - p.radius) p.vx *= -1;
+                    if (p.y < p.radius || p.y > height - p.radius) p.vy *= -1;
+                    p.radius -= 0.1; // Shrink over time
+                    break;
+                case VisualizationType.PARTICLE_GALAXY:
+                    p.angle += p.angleVelocity;
+                    p.orbitRadius += (p.baseOrbitRadius - p.orbitRadius) * 0.05 + (normalizedMid - 0.5) * 2;
+                    p.x = centerX + Math.cos(p.angle) * p.orbitRadius;
+                    p.y = centerY + Math.sin(p.angle) * p.orbitRadius * 0.5; // Make it elliptical
+                    if(p.opacity < 1) p.opacity += 0.02;
+                    break;
+                case VisualizationType.REPULSOR_FIELD:
+                    const dx = p.x - centerX;
+                    const dy = p.y - centerY;
+                    const distSq = dx * dx + dy * dy;
+                    if (distSq < 1) continue;
+                    const dist = Math.sqrt(distSq);
+
+                    // Repulsion force from center, stronger on beat
+                    const force = (isBeat ? normalizedBass * 20000 : 1000) / distSq;
+                    p.vx += (dx / dist) * force;
+                    p.vy += (dy / dist) * force;
+
+                    // Friction/Damping
+                    p.vx *= 0.94;
+                    p.vy *= 0.94;
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Fade and remove if it goes off-screen
+                    if (p.x < 0 || p.x > width || p.y < 0 || p.y > height) {
+                        p.opacity = 0;
+                    }
+                    break;
+                case VisualizationType.PIANO_VIRTUOSO:
+                    p.y += p.vy;
+                    p.x += p.vx;
+                    p.vy += 0.08; // gravity
+                    p.opacity -= 0.015;
+                    break;
+            }
+
+            // Generic removal condition
+            if (p.opacity <= 0 || p.radius <= 0) {
+                particlesRef.current.splice(i, 1);
+            }
+        }
 
         const currentTime = audioRef.current?.currentTime ?? 0;
         let currentSubtitle: Subtitle | undefined = undefined;
