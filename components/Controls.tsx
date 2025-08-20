@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle } from '../types';
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
@@ -151,6 +151,22 @@ const Controls: React.FC<ControlsProps> = ({
     effectOffsetY,
     onEffectOffsetYChange,
 }) => {
+    const [isInvalidLrc, setIsInvalidLrc] = useState(false);
+
+    useEffect(() => {
+        if (!subtitlesRawText) {
+            setIsInvalidLrc(false);
+            return;
+        }
+        // A line is valid if it contains a timestamp. We check if ANY line is valid.
+        // If no lines are valid, but the text is not empty, then the format is invalid.
+        const hasAtLeastOneValidLine = subtitlesRawText
+            .split('\n')
+            .some(line => /\[\d{2}:\d{2}\.\d{2,3}\]/.test(line));
+
+        setIsInvalidLrc(!hasAtLeastOneValidLine);
+    }, [subtitlesRawText]);
+
     const PRESET_COLORS = ['#FFFFFF', '#67E8F9', '#F472B6', '#FFD700', '#FF4500', '#A78BFA'];
 
     const FONT_MAP: Record<FontType, string> = {
@@ -533,6 +549,11 @@ const Controls: React.FC<ControlsProps> = ({
                             className="bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:outline-none w-full font-mono text-sm"
                             placeholder="點擊「AI 產生字幕」按鈕自動產生歌詞..."
                         />
+                        {isInvalidLrc && (
+                            <p className="text-red-400 text-xs mt-1">
+                                格式錯誤。請使用標準 LRC 格式，例如：[mm:ss.xx] 歌詞文字
+                            </p>
+                        )}
                     </div>
                     
                     <div className="flex flex-col justify-end">
