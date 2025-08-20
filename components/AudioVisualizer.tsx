@@ -821,32 +821,8 @@ const drawCrtGlitch = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array, wid
         ctx.fillRect(0, i, width, 2);
     }
     
-    // NEW effect: Vertical Roll
-    if (isBeat && Math.random() > 0.7) {
-        const rollAmount = Math.floor((Math.random() - 0.5) * height * 0.1);
-        try {
-            const imageData = ctx.getImageData(0, 0, width, height);
-            ctx.clearRect(0, 0, width, height);
-            ctx.putImageData(imageData, 0, rollAmount);
-        } catch(e) { /* ignore */ }
-    }
-
-    // Modified effect: Block Corruption (replaces simple horizontal slip)
-    if (isBeat) {
-        const numBlocks = Math.floor(Math.random() * 4) + 1; // 1 to 4 blocks
-        for (let i = 0; i < numBlocks; i++) {
-            const sx = Math.random() * width * 0.9;
-            const sy = Math.random() * height * 0.9;
-            const sw = Math.random() * width * 0.3 + 10;
-            const sh = Math.random() * height * 0.1 + 5;
-            const dx = sx + (Math.random() - 0.5) * 60;
-            const dy = sy + (Math.random() - 0.5) * 30;
-            try {
-                // We draw from the canvas onto itself to create the glitch
-                ctx.drawImage(ctx.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
-            } catch(e) { /* ignore */ }
-        }
-    }
+    // The "Vertical Roll" and "Block Corruption" effects that caused
+    // the whole-screen shake have been removed based on user feedback.
     
     ctx.restore();
 };
