@@ -1488,7 +1488,170 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.REPULSOR_FIELD]: drawRepulsorField,
     [VisualizationType.AUDIO_LANDSCAPE]: drawAudioLandscape,
     [VisualizationType.PIANO_VIRTUOSO]: drawPianoVirtuoso,
+    [VisualizationType.RECORD_PLAYER]: (ctx, data, w, h, f, s, c, e, beat, stroke) => drawRecordPlayer(ctx, data, w, h, f, s, { bodyColor: '#1a1a1a', platterColor: '#333333', spindleColor: '#dddddd', ...c }, e, beat, stroke),
 };
+
+const drawRecordPlayer = (
+    ctx: CanvasRenderingContext2D,
+    dataArray: Uint8Array,
+    width: number,
+    height: number,
+    frame: number,
+    sensitivity: number,
+    colors: Palette & { bodyColor: string, platterColor: string, spindleColor: string },
+    graphicEffect: GraphicEffectType,
+    isBeat?: boolean,
+    waveformStroke?: boolean
+) => {
+    ctx.save();
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const baseRadius = Math.min(width, height) * 0.25;
+
+    const bass = dataArray.slice(0, 8).reduce((a, b) => a + b, 0) / 8;
+    const normalizedBass = bass / 255;
+    const treble = dataArray.slice(300, 500).reduce((a, b) => a + b, 0) / 200;
+    const normalizedTreble = treble / 255;
+
+    // --- Draw Spikes for High Frequencies ---
+    const spikes = 128;
+    const spikeRadius = baseRadius + 10;
+    const maxSpikeHeight = 60 * sensitivity;
+
+    ctx.strokeStyle = colors.primary;
+    ctx.shadowColor = colors.primary;
+    ctx.shadowBlur = 10;
+
+    for (let i = 0; i < spikes; i++) {
+        const dataIndex = Math.floor(300 + (i / spikes) * (dataArray.length * 0.5 - 300));
+        const amp = dataArray[dataIndex] / 255;
+        const spikeHeight = Math.pow(amp, 2) * maxSpikeHeight;
+        if (spikeHeight < 1) continue;
+
+        const angle = (i / spikes) * Math.PI * 2;
+        const x1 = centerX + Math.cos(angle) * spikeRadius;
+        const y1 = centerY + Math.sin(angle) * spikeRadius;
+        const x2 = centerX + Math.cos(angle) * (spikeRadius + spikeHeight);
+        const y2 = centerY + Math.sin(angle) * (spikeRadius + spikeHeight);
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.lineWidth = 1 + amp * 2;
+        ctx.stroke();
+    }
+
+
+    // --- Draw Record Player Body ---
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowOffsetX = 10;
+    ctx.shadowOffsetY = 10;
+
+    ctx.fillStyle = colors.bodyColor;
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 4;
+
+    const bodyWidth = baseRadius * 2.4;
+    const bodyHeight = baseRadius * 2.4;
+    const bodyX = centerX - bodyWidth / 2;
+    const bodyY = centerY - bodyHeight / 2;
+    const cornerRadius = 20;
+
+    // Dynamic corner based on bass
+    const dynamicCorner = cornerRadius + normalizedBass * 30;
+
+    ctx.beginPath();
+    ctx.moveTo(bodyX + dynamicCorner, bodyY);
+    ctx.lineTo(bodyX + bodyWidth - cornerRadius, bodyY);
+    ctx.quadraticCurveTo(bodyX + bodyWidth, bodyY, bodyX + bodyWidth, bodyY + cornerRadius);
+    ctx.lineTo(bodyX + bodyWidth, bodyY + bodyHeight - cornerRadius);
+    ctx.quadraticCurveTo(bodyX + bodyWidth, bodyY + bodyHeight, bodyX + bodyWidth - cornerRadius, bodyY + bodyHeight);
+    ctx.lineTo(bodyX + cornerRadius, bodyY + bodyHeight);
+    ctx.quadraticCurveTo(bodyX, bodyY + bodyHeight, bodyX, bodyY + bodyHeight - cornerRadius);
+    ctx.lineTo(bodyX, bodyY + dynamicCorner);
+    ctx.quadraticCurveTo(bodyX, bodyY, bodyX + dynamicCorner, bodyY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+
+    // --- Draw Platter ---
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = '#000';
+    ctx.fillStyle = colors.platterColor;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, baseRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // --- Draw Record Grooves ---
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 1;
+    for (let i = baseRadius; i > baseRadius * 0.3; i -= 4) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, i, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    // --- Draw Pulsing Center Label ---
+    const labelRadius = baseRadius * 0.25 + normalizedBass * 15 * sensitivity;
+    const labelGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, labelRadius);
+    labelGradient.addColorStop(0, colors.secondary);
+    labelGradient.addColorStop(1, colors.primary);
+
+    ctx.fillStyle = labelGradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, labelRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // --- Draw Spindle ---
+    const spindleRadius = baseRadius * 0.05 + (isBeat ? 2 : 0);
+    ctx.fillStyle = colors.spindleColor;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = colors.spindleColor;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, spindleRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // --- Draw Tonearm ---
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = 'rgba(0,0,0,0.4)';
+    ctx.strokeStyle = '#cccccc';
+    ctx.fillStyle = '#f0f0f0';
+    ctx.lineWidth = 8;
+    ctx.lineCap = 'round';
+
+    const armBaseX = centerX + baseRadius * 1.05;
+    const armBaseY = centerY - baseRadius * 0.9;
+    const armPivotX = armBaseX + 20;
+    const armPivotY = armBaseY + 20;
+
+    // The arm "swings" based on the treble
+    const armAngle = -0.8 + (normalizedTreble * 0.2);
+    const armLength = baseRadius * 1.1;
+
+    const armEndX = armPivotX + Math.cos(armAngle) * armLength;
+    const armEndY = armPivotY + Math.sin(armAngle) * armLength;
+
+    // Draw arm
+    ctx.beginPath();
+    ctx.moveTo(armPivotX, armPivotY);
+    ctx.lineTo(armEndX, armEndY);
+    ctx.stroke();
+
+    // Draw pivot base
+    ctx.beginPath();
+    ctx.arc(armPivotX, armPivotY, 15, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Draw headshell
+    ctx.beginPath();
+    ctx.arc(armEndX, armEndY, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+};
+
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
     VisualizationType.PIANO_VIRTUOSO,
@@ -1581,18 +1744,15 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         if (!ctx) return;
 
         frame.current++;
-        let dataArray = new Uint8Array(analyser ? analyser.frequencyBinCount : 1024);
-        if (analyser) {
-            analyser.getByteFrequencyData(dataArray);
-        } else {
-            // Create a fake data array for screenshot verification
-            dataArray = new Uint8Array(1024).map((_, i) => {
-                const progress = i / 1024;
-                // Create a pattern that is high at the start and low at the end
-                // This will show high bars in the center due to the reversed logic
-                return Math.max(0, 220 * (1 - progress) * (Math.sin(frame.current * 0.1 + i * 0.05) * 0.5 + 0.5));
-            });
+        if (!analyser) {
+            // If the analyser isn't ready, don't attempt to draw.
+            // This prevents errors and ensures a clean canvas until audio is initialized.
+            animationFrameId.current = requestAnimationFrame(renderFrame);
+            return;
         }
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(dataArray);
 
         const bassAvg = dataArray.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
         let isBeat = false;

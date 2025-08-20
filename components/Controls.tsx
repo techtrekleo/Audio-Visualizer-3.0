@@ -194,6 +194,66 @@ const Controls: React.FC<ControlsProps> = ({
         e.target.value = '';
     };
 
+    const handleDownloadSrt = () => {
+        if (!subtitlesRawText || isInvalidLrc) {
+            alert('沒有有效的 LRC 字幕可供轉換。');
+            return;
+        }
+
+        const lines = subtitlesRawText.trim().split('\n');
+        const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+        const srtEntries: { startTime: number, text: string }[] = [];
+
+        lines.forEach(line => {
+            const match = line.match(timeRegex);
+            if (match) {
+                const minutes = parseInt(match[1], 10);
+                const seconds = parseInt(match[2], 10);
+                const centiseconds = parseInt(match[3], 10);
+                const totalSeconds = minutes * 60 + seconds + centiseconds / 100;
+                const text = line.replace(timeRegex, '').trim();
+                if (text) {
+                    srtEntries.push({ startTime: totalSeconds, text });
+                }
+            }
+        });
+
+        if (srtEntries.length === 0) {
+            alert('LRC 內容無法解析，請檢查格式。');
+            return;
+        }
+
+        const toSrtTime = (time: number) => {
+            const hours = Math.floor(time / 3600);
+            const minutes = Math.floor((time % 3600) / 60);
+            const seconds = Math.floor(time % 60);
+            const milliseconds = Math.round((time % 1) * 1000);
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')},${String(milliseconds).padStart(3, '0')}`;
+        };
+
+        let srtContent = '';
+        srtEntries.forEach((entry, i) => {
+            const nextEntry = srtEntries[i + 1];
+            // Use a default 4-second duration for the last line, or if the next line is far away.
+            const endTime = nextEntry ? Math.min(entry.startTime + 5, nextEntry.startTime) : entry.startTime + 4;
+
+            srtContent += `${i + 1}\n`;
+            srtContent += `${toSrtTime(entry.startTime)} --> ${toSrtTime(endTime)}\n`;
+            srtContent += `${entry.text}\n\n`;
+        });
+
+        const blob = new Blob([srtContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const fileName = audioFile?.name.replace(/\.[^/.]+$/, "") || 'subtitles';
+        a.download = `${fileName}.srt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <div className="w-full max-w-7xl p-4 bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg shadow-lg flex flex-col gap-4">
             {/* --- Main Player Controls --- */}
@@ -578,6 +638,17 @@ const Controls: React.FC<ControlsProps> = ({
                                 直接分析音訊檔並使用 AI 產生字幕。過程可能需要一些時間，請耐心等候。結果的準確度取決於音訊的清晰度。
                             </div>
                         </div>
+                    </div>
+
+                    <div className="flex flex-col justify-end">
+                        <Button
+                            onClick={handleDownloadSrt}
+                            disabled={!subtitlesRawText || isInvalidLrc}
+                            className="bg-blue-600 hover:bg-blue-500 text-white w-full"
+                        >
+                            <Icon path={ICON_PATHS.DOWNLOAD} className="w-5 h-5" />
+                            <span>下載 SRT</span>
+                        </Button>
                     </div>
                     
                     <div className="flex flex-col">
