@@ -424,7 +424,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         priority="high"
                         defaultExpanded={false}
                     >
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div className="space-y-2">
                                 <SelectControl
                                     label="解析度"
@@ -478,7 +478,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         priority="medium"
                         defaultExpanded={false}
                     >
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-300">自訂文字</label>
                                 <input
@@ -548,7 +548,30 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             </div>
                             
                             <div className="flex items-center justify-between">
-                                <div className="relative group">
+                                </div>
+                                
+                                {/* 下載字幕按鈕 */}
+                                {props.subtitlesRawText.trim() && (
+                                    <Button
+                                        onClick={() => {
+                                            const blob = new Blob([props.subtitlesRawText], { type: 'text/plain;charset=utf-8' });
+                                            const url = URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = url;
+                                            a.download = `${props.audioFile?.name.replace(/\.[^/.]+$/, "") || 'subtitles'}.lrc`;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            document.body.removeChild(a);
+                                            URL.revokeObjectURL(url);
+                                        }}
+                                        variant="secondary"
+                                        className="bg-green-600 hover:bg-green-500"
+                                    >
+                                        <Icon path={ICON_PATHS.DOWNLOAD} className="w-5 h-5" />
+                                        <span>下載字幕</span>
+                                    </Button>
+                                )}
+                            </div>                                <div className="relative group">
                                     <Button 
                                         onClick={props.onGenerateSubtitles}
                                         disabled={props.isGeneratingSubtitles || !props.audioFile}
@@ -616,7 +639,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 </div>
                             </div>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <SliderControl
                                     label="字幕字體大小"
                                     value={props.subtitleFontSize}

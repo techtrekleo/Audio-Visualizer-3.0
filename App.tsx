@@ -7,7 +7,6 @@ import { GoogleGenAI } from "@google/genai";
 import AudioUploader from './components/AudioUploader';
 import AudioVisualizer from './components/AudioVisualizer';
 import Controls from './components/Controls';
-import OptimizedControls from './components/OptimizedControls';
 import Icon from './components/Icon';
 import AdSenseAd from './components/AdSenseAd';
 import LyricsDisplay from './components/LyricsDisplay';
@@ -97,7 +96,7 @@ function App() {
         setSubtitles(newSubtitles.sort((a, b) => a.time - b.time));
     }, [subtitlesRawText]);
 
-    const handleGenerateSubtitles = async () => {
+    const handleGenerateSubtitles = async (retryCount = 0) => {
         if (!audioFile) {
             alert('請先載入音訊檔案。');
             return;
@@ -112,9 +111,24 @@ function App() {
         }
 
         setIsGeneratingSubtitles(true);
-        setSubtitlesRawText('正在分析音訊檔案並請求 AI 產生字幕，這可能需要一些時間...');
+        const retryText = retryCount > 0 ? ` (重試 ${retryCount}/3)` : '';
+        setSubtitlesRawText(`正在分析音訊檔案並請求 AI 產生字幕，這可能需要一些時間...${retryText}`);
 
         try {
+            // 檢查音頻文件大小和格式
+            console.log("音頻文件信息:", {
+                name: audioFile.name,
+                size: audioFile.size,
+                type: audioFile.type,
+                duration: audioDuration
+            });
+            
+            // 檢查文件大小限制 (Gemini API 通常限制在 20MB)
+            if (audioFile.size > 20 * 1024 * 1024) {
+                alert("音頻文件過大（超過 20MB）。請使用較小的音頻文件。");
+                return;
+            }
+            
             const audioAsBase64 = await new Promise<string>((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => {
@@ -126,6 +140,8 @@ function App() {
                 reader.onerror = error => reject(error);
                 reader.readAsDataURL(audioFile);
             });
+            
+            console.log("音頻轉換為 Base64 完成，長度:", audioAsBase64.length);
 
             const ai = new GoogleGenAI({ apiKey });
             
@@ -161,12 +177,43 @@ function App() {
                 model: 'gemini-2.5-flash',
                 contents: { parts: [textPart, audioPart] },
             });
-
+            
+            console.log("API 請求成功，回應:", response);
             setSubtitlesRawText(response.text.trim());
 
         } catch (error) {
             console.error("Error generating subtitles with AI:", error);
-            alert("AI 字幕生成失敗。請檢查您的 API Key、網路連線或稍後再試。");
+            
+            // 更詳細的錯誤處理
+            let errorMessage = "AI 字幕生成失敗。";
+            
+            if (error instanceof Error) {
+                if (error.message.includes("400")) {
+                    errorMessage += "\n\n錯誤 400：請求格式有問題。可能是音頻文件格式不支援或文件過大。";
+                } else if (error.message.includes("403")) {
+                    errorMessage += "\n\n錯誤 403：API Key 無效或已過期。請檢查您的 API Key 設定。";
+                } else if (error.message.includes("429")) {
+                    errorMessage += "\n\n錯誤 429：API 使用配額已達上限。請稍後再試或檢查您的配額設定。";
+                } else if (error.message.includes("過載")) {
+                    errorMessage += "\n\nAI 服務暫時過載，請稍後再試。";
+                    
+                    // 自動重試機制（最多3次）
+                    if (retryCount < 3) {
+                        const retryDelay = Math.pow(2, retryCount) * 1000; // 指數退避：1s, 2s, 4s
+                        errorMessage += `\n\n將在 ${retryDelay/1000} 秒後自動重試...`;
+                        alert(errorMessage);
+                        
+                        setTimeout(() => {
+                            handleGenerateSubtitles(retryCount + 1);
+                        }, retryDelay);
+                        return;
+                    }
+                } else {
+                    errorMessage += `\n\n錯誤詳情：${error.message}`;
+                }
+            }
+            
+            alert(errorMessage);
             setSubtitlesRawText(''); // Clear text on failure
         } finally {
             setIsGeneratingSubtitles(false);
@@ -353,7 +400,12 @@ function App() {
             </header>
 
             <main className="flex-1 flex flex-col p-4 overflow-y-auto">
-                <div className="w-full max-w-7xl mx-auto flex flex-col items-center gap-4">
+                {!audioFile ? (
+                    <div className="flex-1 flex items-center justify-center">
+                      <AudioUploader onFileSelect={handleFileSelect} />
+                    </div>
+                ) : (
+                    <div className="w-full max-w-7xl mx-auto flex flex-col items-center gap-4">
                          <div style={wrapperStyle} className="flex items-center justify-center bg-black rounded-lg border border-gray-700 overflow-hidden">
                             <div 
                                 style={{
@@ -416,7 +468,7 @@ function App() {
                             </div>
                         )}
 
-                        <OptimizedControls
+                        <Controls
                             isPlaying={isPlaying}
                             onPlayPause={handlePlayPause}
                             isRecording={isRecording}
@@ -440,7 +492,6 @@ function App() {
                             onEqualizationChange={setEqualization}
                             audioFile={audioFile}
                             onClearAudio={handleClearAudio}
-                            onFileSelect={handleFileSelect}
                             videoUrl={videoUrl}
                             videoExtension={videoExtension}
                             backgroundColor={backgroundColor}
@@ -490,6 +541,7 @@ function App() {
                             onSubtitleDisplayModeChange={setSubtitleDisplayMode}
                         />
                     </div>
+                )}
             </main>
             {/* 頁腳廣告 */}
             <div className="w-full max-w-7xl mx-auto px-4 mb-4">

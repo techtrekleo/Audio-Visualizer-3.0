@@ -180,7 +180,7 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50% !important;
 }
 
-/* 增強版滑桿樣式 */
+/* 增強版滑桿樣式 - 修復軌道顯示問題 */
 input[type="range"].slider-enhanced,
 .slider-enhanced {
   -webkit-appearance: none !important;
@@ -195,15 +195,16 @@ input[type="range"].slider-enhanced,
   z-index: 10 !important;
 }
 
-/* 增強版滑桿軌道 */
+/* 增強版滑桿軌道 - 強制顯示軌道 */
 input[type="range"].slider-enhanced::-webkit-slider-track,
 .slider-enhanced::-webkit-slider-track {
   -webkit-appearance: none !important;
   appearance: none !important;
-  background: transparent !important;
+  background: #374151 !important;
   height: 8px !important;
   border-radius: 4px !important;
   border: none !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* 增強版滑桿拇指 */
@@ -232,13 +233,14 @@ input[type="range"].slider-enhanced::-webkit-slider-thumb:hover,
   border-color: #0891b2 !important;
 }
 
-/* Mozilla 增強版滑桿 */
+/* Mozilla 增強版滑桿 - 修復軌道顯示 */
 input[type="range"].slider-enhanced::-moz-range-track,
 .slider-enhanced::-moz-range-track {
-  background: transparent !important;
+  background: #374151 !important;
   height: 8px !important;
   border-radius: 4px !important;
   border: none !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
 }
 
 input[type="range"].slider-enhanced::-moz-range-thumb,
