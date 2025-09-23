@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服務器測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .test-link {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background: #4ecdc4;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .test-link:hover {
+            background: #45b7d1;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 服務器測試頁面</h1>
+        <p>這個頁面用於測試服務器是否正常工作。</p>
+        
+        <h2>測試連結：</h2>
+        <a href="/audio-visualizer-source/index.html" class="test-link">音頻可視化器</a>
+        <a href="/youtube-seo-source/index.html" class="test-link">YouTube SEO 工具</a>
+        <a href="/font-effects-source/index.html" class="test-link">字體效果生成器</a>
+        
+        <h2>直接連結：</h2>
+        <a href="/audio-visualizer-source/dist/index.html" class="test-link">音頻可視化器 (dist)</a>
+        <a href="/youtube-seo-source/dist/index.html" class="test-link">YouTube SEO (dist)</a>
+        <a href="/font-effects-source/dist/index.html" class="test-link">字體效果 (dist)</a>
+        
+        <h2>文件檢查：</h2>
+        <p>檢查構建文件是否存在：</p>
+        <ul>
+            <li><a href="/audio-visualizer-source/dist/" class="test-link">音頻可視化器 dist 目錄</a></li>
+            <li><a href="/youtube-seo-source/dist/" class="test-link">YouTube SEO dist 目錄</a></li>
+            <li><a href="/font-effects-source/dist/" class="test-link">字體效果 dist 目錄</a></li>
+        </ul>
+    </div>
+</body>
+</html>
