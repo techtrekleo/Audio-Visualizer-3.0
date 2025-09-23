@@ -56,7 +56,22 @@
     
     <script>
         // 直接重定向到 YouTube SEO 工具
-        window.location.href = '/youtube-title-seo-github/index.html';
+        console.log('Redirecting to YouTube SEO tool...');
+        
+        // 添加延遲確保頁面載入完成
+        setTimeout(() => {
+            try {
+                // 開啟新視窗到 YouTube SEO 工具
+                window.open('/youtube-title-seo-github/index.html', '_blank');
+                // 關閉當前視窗
+                window.close();
+            } catch (error) {
+                console.error('Redirect failed:', error);
+                // 如果重定向失敗，顯示錯誤訊息
+                document.querySelector('.loading-text').textContent = '重定向失敗，請手動訪問工具';
+                document.querySelector('.back-link').style.display = 'block';
+            }
+        }, 1000);
     </script>
 </body>
 </html>

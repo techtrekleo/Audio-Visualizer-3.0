@@ -61,7 +61,10 @@
         // 添加延遲確保頁面載入完成
         setTimeout(() => {
             try {
-                window.location.href = '/可視化github-source/index.html';
+                // 開啟新視窗到音頻可視化器
+                window.open('/可視化github-source/index.html', '_blank');
+                // 關閉當前視窗
+                window.close();
             } catch (error) {
                 console.error('Redirect failed:', error);
                 // 如果重定向失敗，顯示錯誤訊息
