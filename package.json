@@ -1,0 +1,30 @@
+{
+  "name": "music-pulse-unified-platform",
+  "version": "1.0.0",
+  "description": "音樂脈動-Sonic Pulse 三合一完整版 - 統一音樂創作工具平台",
+  "main": "unified-website/index.html",
+  "scripts": {
+    "start": "cd unified-website && python3 -m http.server 8000",
+    "dev": "cd unified-website && python3 -m http.server 3000",
+    "build": "echo 'Static site - no build required'",
+    "deploy": "echo 'Deploy to Railway'"
+  },
+  "keywords": [
+    "music",
+    "visualizer",
+    "youtube-seo",
+    "font-effects",
+    "audio",
+    "creative-tools"
+  ],
+  "author": "音樂脈動-Sonic Pulse (🐱 口袋裡的貓)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/techtrekleo/Audio-Visualizer-3.0.git"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
+  }
+}
