@@ -4,7 +4,8 @@
   "description": "音樂脈動-Sonic Pulse 三合一完整版 - 統一音樂創作工具平台",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "python3 server.py",
+    "start:node": "node server.js",
     "start:python": "./start.sh",
     "dev": "cd unified-website && python3 -m http.server 3000",
     "build": "echo 'Static site - no build required'",
