@@ -12,21 +12,6 @@ const server = http.createServer((req, res) => {
   
   let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
   
-  // 處理 assets 路徑
-  if (req.url.startsWith('/assets/')) {
-    // 檢查各個工具目錄中的 assets
-    const toolDirs = ['audio-visualizer', 'youtube-seo', 'font-effects'];
-    for (const toolDir of toolDirs) {
-      const assetPath = path.join(__dirname, toolDir, 'dist', req.url);
-      console.log(`Checking asset path: ${assetPath}`);
-      if (fs.existsSync(assetPath)) {
-        filePath = assetPath;
-        console.log(`Found asset: ${filePath}`);
-        break;
-      }
-    }
-  }
-  
   // 如果是目錄，添加 index.html
   if (filePath.endsWith('/')) {
     filePath = path.join(filePath, 'index.html');
