@@ -56,16 +56,9 @@ const server = http.createServer((req, res) => {
   // 檢查文件是否存在且是文件（不是目錄）
   fs.stat(filePath, (err, stats) => {
     if (err) {
-      // 文件不存在，嘗試返回主頁面
-      fs.readFile(path.join(__dirname, 'index.html'), (err, content) => {
-        if (err) {
-          res.writeHead(404);
-          res.end('File not found');
-        } else {
-          res.writeHead(200, { 'Content-Type': 'text/html' });
-          res.end(content, 'utf-8');
-        }
-      });
+      // 文件不存在，返回 404
+      res.writeHead(404);
+      res.end('File not found');
       return;
     }
 
@@ -87,9 +80,11 @@ const server = http.createServer((req, res) => {
     // 讀取文件
     fs.readFile(filePath, (error, content) => {
       if (error) {
+        console.error(`Error reading file ${filePath}:`, error);
         res.writeHead(500);
         res.end(`Server Error: ${error.code}`);
       } else {
+        console.log(`Serving file: ${filePath}, MIME type: ${mimeType}, Size: ${content.length} bytes`);
         res.writeHead(200, { 'Content-Type': mimeType });
         res.end(content, 'utf-8');
       }
