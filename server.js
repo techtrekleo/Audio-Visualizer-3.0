@@ -18,8 +18,10 @@ const server = http.createServer((req, res) => {
     const toolDirs = ['audio-visualizer', 'youtube-seo', 'font-effects'];
     for (const toolDir of toolDirs) {
       const assetPath = path.join(__dirname, toolDir, 'dist', req.url);
+      console.log(`Checking asset path: ${assetPath}`);
       if (fs.existsSync(assetPath)) {
         filePath = assetPath;
+        console.log(`Found asset: ${filePath}`);
         break;
       }
     }
