@@ -8,6 +8,9 @@ const PORT = process.env.PORT || 8000;
 const mimeTypes = {
   '.html': 'text/html',
   '.js': 'text/javascript',
+  '.ts': 'text/typescript',
+  '.tsx': 'text/typescript',
+  '.jsx': 'text/javascript',
   '.css': 'text/css',
   '.json': 'application/json',
   '.png': 'image/png',
@@ -35,6 +38,18 @@ const server = http.createServer((req, res) => {
   // 處理根路徑
   if (req.url === '/') {
     req.url = '/index.html';
+  }
+
+  // 處理工具路徑 - 重定向到構建好的文件
+  if (req.url.startsWith('/audio-visualizer-source/')) {
+    const relativePath = req.url.replace('/audio-visualizer-source', '');
+    req.url = '/audio-visualizer-source/dist' + relativePath;
+  } else if (req.url.startsWith('/youtube-seo-source/')) {
+    const relativePath = req.url.replace('/youtube-seo-source', '');
+    req.url = '/youtube-seo-source/dist' + relativePath;
+  } else if (req.url.startsWith('/font-effects-source/')) {
+    const relativePath = req.url.replace('/font-effects-source', '');
+    req.url = '/font-effects-source/dist' + relativePath;
   }
 
   let filePath = path.join(__dirname, req.url);
