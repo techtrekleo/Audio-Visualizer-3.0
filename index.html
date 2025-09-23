@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音樂脈動-Sonic Pulse | 音樂創作工具集合</title>
+    <meta name="description" content="音樂脈動-Sonic Pulse 官方網站 - 提供專業的音樂創作工具，包括音頻可視化器、YouTube SEO 優化工具等，幫助音樂創作者提升作品品質">
+    <meta name="keywords" content="音樂脈動,Sonic Pulse,音樂工具,音頻可視化,YouTube SEO,音樂創作">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="音樂脈動-Sonic Pulse | 音樂創作工具集合">
+    <meta property="og:description" content="專業的音樂創作工具平台，提供音頻可視化、YouTube SEO 優化等服務">
+    <meta property="og:image" content="https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg">
+    <meta property="og:url" content="https://your-domain.com">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="音樂脈動-Sonic Pulse | 音樂創作工具集合">
+    <meta name="twitter:description" content="專業的音樂創作工具平台，提供音頻可視化、YouTube SEO 優化等服務">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Configuration -->
+    <script src="config.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* 動態背景 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
+        }
+        
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* 導航欄 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-family: 'Orbitron', monospace;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo-cat {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(78, 205, 196, 0.5);
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .logo-cat:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.5);
+        }
+        
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        
+        .logo-main {
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient 3s ease infinite;
+        }
+        
+        .logo-sub {
+            font-size: 0.7rem;
+            font-weight: 400;
+            color: #96ceb4;
+            margin-top: -2px;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            color: #4ecdc4;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        /* 主要內容 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            padding-top: 80px;
+        }
+        
+        .hero-content h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient 3s ease infinite;
+        }
+        
+        .hero-content .subtitle {
+            font-size: 1.5rem;
+            color: #b8b8b8;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+        
+        .hero-content .description {
+            font-size: 1.1rem;
+            color: #d1d5db;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        /* 自定義 Buy Me a Coffee 按鈕樣式 */
+        .btn-coffee {
+            background: linear-gradient(135deg, #ff6b9d 0%, #4ecdc4 100%);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-coffee::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-coffee:hover::before {
+            left: 100%;
+        }
+        
+        .btn-coffee:hover {
+            background: linear-gradient(135deg, #ff8fb3 0%, #5dd5d5 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            color: white;
+        }
+        
+        .btn-coffee:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .coffee-icon {
+            font-size: 1.8rem;
+            animation: coffeeSteam 2s ease-in-out infinite;
+        }
+        
+        .coffee-cat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            animation: coffeeSteam 2s ease-in-out infinite;
+        }
+        
+        @keyframes coffeeSteam {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-3px) scale(1.05); }
+        }
+        
+        .coffee-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1.2;
+        }
+        
+        .coffee-main {
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .coffee-sub {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* 大型咖啡按鈕（頁腳用） */
+        .btn-coffee-large {
+            padding: 1.5rem 3rem;
+            font-size: 1.1rem;
+        }
+        
+        .btn-coffee-large .coffee-icon {
+            font-size: 1.8rem;
+        }
+        
+        .btn-coffee-large .coffee-main {
+            font-size: 1.2rem;
+        }
+        
+        .btn-coffee-large .coffee-sub {
+            font-size: 0.9rem;
+        }
+        
+        /* 確保按鈕在按鈕組中正確對齊 */
+        .cta-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        /* 單個按鈕居中 */
+        .cta-buttons:has(.btn:only-child) {
+            justify-content: center;
+        }
+        
+        /* 確保按鈕高度一致 */
+        .btn, .btn-coffee {
+            height: 56px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 工具展示區域 */
+        .tools-section {
+            padding: 6rem 0;
+            background: rgba(45, 45, 45, 0.1);
+        }
+        
+        .section-title {
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+        
+        .tool-card {
+            background: rgba(45, 45, 45, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .tool-card:hover::before {
+            left: 100%;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(78, 205, 196, 0.5);
+        }
+        
+        .tool-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tool-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        
+        .tool-description {
+            color: #b8b8b8;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .tool-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+        
+        .tool-features li {
+            color: #d1d5db;
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .tool-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        .tool-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .tool-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+        }
+        
+        /* 頻道介紹區域 */
+        .channel-section {
+            padding: 6rem 0;
+            text-align: center;
+            background: rgba(26, 26, 26, 0.2);
+        }
+        
+        .channel-card {
+            background: rgba(45, 45, 45, 0.4);
+            border-radius: 30px;
+            padding: 4rem 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .channel-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .channel-avatar:hover {
+            transform: scale(1.1);
+        }
+        
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .channel-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .channel-description {
+            font-size: 1.2rem;
+            color: #b8b8b8;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .channel-stats {
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4ecdc4;
+            display: block;
+        }
+        
+        .stat-label {
+            color: #b8b8b8;
+            font-size: 0.9rem;
+        }
+        
+        .stat-description {
+            color: #4ecdc4;
+            font-size: 0.8rem;
+            font-style: italic;
+            display: block;
+            margin-top: 0.3rem;
+        }
+        
+        /* 頁腳 */
+        .footer {
+            background: rgba(26, 26, 26, 0.8);
+            padding: 3rem 0 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: #b8b8b8;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #4ecdc4;
+        }
+        
+        .footer-bottom {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-content .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .channel-stats {
+                gap: 2rem;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .nav-container {
+                padding: 0 1rem;
+            }
+            
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .tool-card {
+                padding: 1.5rem;
+            }
+        }
+        
+        /* 滾動動畫 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* 載入動畫 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #4ecdc4;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 彈出視窗樣式 */
+        .modal {
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            margin: 2% auto;
+            padding: 0;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: #4ecdc4;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .close {
+            color: #b8b8b8;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .close:hover {
+            color: #4ecdc4;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+            max-height: calc(90vh - 120px);
+        }
+        
+        /* 自定義滾動條 */
+        .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .modal-body::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        .modal-body::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            border-radius: 4px;
+        }
+        
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #45b7d1, #4ecdc4);
+        }
+        
+        .donation-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .donation-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .donation-option:hover {
+            transform: translateY(-5px);
+            border-color: rgba(78, 205, 196, 0.5);
+            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.2);
+        }
+        
+        .option-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .donation-option h4 {
+            color: #ffffff;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .donation-option p {
+            color: #b8b8b8;
+            margin: 0.3rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .copy-btn {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-top: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+        }
+        
+        /* 轉帳步驟樣式 */
+        .transfer-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border-left: 4px solid #4ecdc4;
+        }
+        
+        .step-number {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .step-content h5 {
+            color: #ffffff;
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+        }
+        
+        .step-content p {
+            color: #b8b8b8;
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        /* Toast 動畫 */
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes toastSlideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .modal {
+                padding: 1rem;
+            }
+            
+            .modal-content {
+                margin: 1% auto;
+                width: 95%;
+                max-height: 95vh;
+            }
+            
+            .modal-body {
+                max-height: calc(95vh - 100px);
+                padding: 1rem;
+            }
+            
+            .donation-options {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .modal-header {
+                padding: 1rem;
+            }
+            
+            .donation-option {
+                padding: 1rem;
+            }
+            
+            .transfer-step {
+                flex-direction: column;
+                text-align: center;
+                padding: 0.8rem;
+            }
+            
+            .step-number {
+                margin: 0 auto 0.5rem;
+            }
+            
+            /* 咖啡按鈕響應式 */
+            .btn-coffee {
+                padding: 0.8rem 1.5rem;
+                gap: 0.8rem;
+            }
+            
+            .btn-coffee .coffee-icon {
+                font-size: 1.5rem;
+            }
+            
+            .coffee-cat-icon {
+                width: 2rem;
+                height: 2rem;
+            }
+            
+            .btn-coffee .coffee-main {
+                font-size: 0.9rem;
+            }
+            
+            .btn-coffee .coffee-sub {
+                font-size: 0.7rem;
+            }
+            
+            .btn-coffee-large {
+                padding: 1.2rem 2.5rem;
+            }
+            
+            .btn-coffee-large .coffee-cat-icon {
+                width: 2.5rem;
+                height: 2.5rem;
+            }
+            
+            .btn-coffee-large .coffee-main {
+                font-size: 1.1rem;
+            }
+            
+            .btn-coffee-large .coffee-sub {
+                font-size: 0.8rem;
+            }
+            
+            /* Logo 響應式 */
+            .logo-cat {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .logo-main {
+                font-size: 1.5rem;
+            }
+            
+            .logo-sub {
+                font-size: 0.6rem;
+            }
+            
+            /* 頻道頭像響應式 */
+            .channel-avatar {
+                width: 100px;
+                height: 100px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .modal {
+                padding: 0.5rem;
+            }
+            
+            .modal-content {
+                margin: 0.5% auto;
+                width: 98%;
+                max-height: 98vh;
+            }
+            
+            .modal-body {
+                max-height: calc(98vh - 80px);
+                padding: 0.8rem;
+            }
+            
+            .modal-header {
+                padding: 0.8rem;
+            }
+            
+            .modal-header h3 {
+                font-size: 1.2rem;
+            }
+            
+            .close {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 動態背景 -->
+    <div class="bg-animation"></div>
+    
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="assets/cat-avatar.png" alt="口袋裡的貓" class="logo-cat">
+                <div class="logo-text">
+                    <div class="logo-main">Sonic Pulse</div>
+                    <div class="logo-sub">🐱 口袋裡的貓</div>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">首頁</a></li>
+                <li><a href="#tools">工具</a></li>
+                <li><a href="articles/index.html">文章</a></li>
+                <li><a href="#channel">頻道</a></li>
+                <li><a href="#contact">聯繫</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- 主要內容 -->
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="container">
+                <div class="hero-content fade-in">
+                    <h1>🐱 音樂脈動</h1>
+                    <p class="subtitle">Sonic Pulse</p>
+                    <p class="subtitle" style="font-size: 1.2rem; color: #96ceb4; margin-top: 0.5rem;">
+                        🐱 口袋裡的貓 🐱
+                    </p>
+                    <p class="description">
+                        專業的音樂創作工具平台，為音樂創作者提供強大的音頻可視化、YouTube SEO 優化等服務，
+                        讓你的音樂作品更加出色，吸引更多聽眾。
+                    </p>
+                    <div class="cta-buttons">
+                        <a href="https://www.youtube.com/@%E9%9F%B3%E6%A8%82%E8%84%88%E5%8B%95SonicPulse" 
+                           class="btn btn-primary" target="_blank">
+                            <i class="fab fa-youtube"></i>
+                            訂閱頻道
+                        </a>
+                        <a href="#tools" class="btn btn-secondary">
+                            <i class="fas fa-tools"></i>
+                            探索工具
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 工具展示區域 -->
+        <section id="tools" class="tools-section">
+            <div class="container">
+                <h2 class="section-title fade-in">創作工具集合</h2>
+                <div class="tools-grid">
+                    <!-- 音頻可視化器 -->
+                    <div class="tool-card fade-in">
+                        <div class="tool-icon">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <h3 class="tool-title">音頻可視化器 Pro</h3>
+                        <p class="tool-description">
+                            強大的音頻可視化工具，將你的音樂轉化為震撼的視覺效果。
+                            支援多種視覺風格、字幕生成和捲軸字幕錄製，讓你的音樂影片更加專業。
+                        </p>
+                        <ul class="tool-features">
+                            <li>多種視覺效果模式</li>
+                            <li>即時音頻分析</li>
+                            <li>AI 字幕生成</li>
+                            <li>捲軸字幕錄製</li>
+                            <li>高品質渲染輸出</li>
+                            <li>自定義顏色主題</li>
+                        </ul>
+                        <a href="tools/visualizer/" class="tool-link" target="_blank">
+                            <i class="fas fa-external-link-alt"></i>
+                            立即使用
+                        </a>
+                    </div>
+                    
+                    <!-- YouTube SEO 工具 -->
+                    <div class="tool-card fade-in">
+                        <div class="tool-icon">
+                            <i class="fab fa-youtube"></i>
+                        </div>
+                        <h3 class="tool-title">YouTube SEO 優化器</h3>
+                        <p class="tool-description">
+                            AI 驅動的 YouTube 標題、描述和標籤生成工具。
+                            幫助你的音樂影片獲得更好的搜尋排名和曝光度。
+                        </p>
+                        <ul class="tool-features">
+                            <li>AI 智能標題生成</li>
+                            <li>多語言支援</li>
+                            <li>18種音樂風格</li>
+                            <li>SEO 評分系統</li>
+                            <li>歷史紀錄功能</li>
+                        </ul>
+                        <a href="tools/seo/" class="tool-link" target="_blank">
+                            <i class="fas fa-external-link-alt"></i>
+                            立即使用
+                        </a>
+                    </div>
+                    
+                    <!-- 字體效果生成器 -->
+                    <div class="tool-card fade-in">
+                        <div class="tool-icon">
+                            <i class="fas fa-font"></i>
+                        </div>
+                        <h3 class="tool-title">字體效果生成器</h3>
+                        <p class="tool-description">
+                            為你的音樂創作製作精美的字卡和封面。
+                            多種文字特效和字體選擇，創造專業的視覺設計。
+                        </p>
+                        <ul class="tool-features">
+                            <li>多種文字特效</li>
+                            <li>豐富字體選擇</li>
+                            <li>即時預覽</li>
+                            <li>高解析度輸出</li>
+                        </ul>
+                        <a href="tools/font-effects/" class="tool-link" target="_blank">
+                            <i class="fas fa-external-link-alt"></i>
+                            立即使用
+                        </a>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
+        
+        <!-- 頻道介紹區域 -->
+        <section id="channel" class="channel-section">
+            <div class="container">
+                <div class="channel-card fade-in">
+                    <div class="channel-avatar">
+                        <img src="assets/channel-avatar.png" alt="音樂脈動頻道" class="avatar-image">
+                    </div>
+                    <h2 class="channel-name">音樂脈動-Sonic Pulse</h2>
+                    <p style="font-size: 1.3rem; color: #96ceb4; margin-bottom: 1.5rem;">
+                        🐱 口袋裡的貓
+                    </p>
+                    <p class="channel-description">
+                        專注於高品質音樂內容創作，提供各種風格的音樂作品和專業的音樂製作工具。
+                        我們的目標是幫助音樂創作者提升作品品質，讓每個音符都能觸動人心。
+                    </p>
+                    <div class="channel-stats">
+                        <div class="stat">
+                            <span class="stat-number">100+</span>
+                            <span class="stat-label">訂閱者</span>
+                            <span class="stat-description">（快來訂閱我～不要錯過我發布的新工具）</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">50+</span>
+                            <span class="stat-label">音樂作品</span>
+                        </div>
+                    </div>
+                    <div class="cta-buttons">
+                        <a href="https://www.youtube.com/@%E9%9F%B3%E6%A8%82%E8%84%88%E5%8B%95SonicPulse" 
+                           class="btn btn-primary" target="_blank">
+                            <i class="fab fa-youtube"></i>
+                            前往 YouTube 頻道
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- 頁腳 -->
+    <footer id="contact" class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://www.youtube.com/@%E9%9F%B3%E6%A8%82%E8%84%88%E5%8B%95SonicPulse" target="_blank">
+                    <i class="fab fa-youtube"></i> YouTube
+                </a>
+                <a href="mailto:contact@sonicpulse.com">
+                    <i class="fas fa-envelope"></i> 聯繫我們
+                </a>
+                <a href="#privacy">
+                    <i class="fas fa-shield-alt"></i> 隱私政策
+                </a>
+                <a href="#terms">
+                    <i class="fas fa-file-contract"></i> 使用條款
+                </a>
+            </div>
+            
+            <!-- 頁腳 Buy Me a Coffee 按鈕 -->
+            <div style="margin: 2rem 0; text-align: center;">
+                <p style="color: #b8b8b8; margin-bottom: 1rem;">喜歡我的工具嗎？請我喝杯咖啡吧！</p>
+                <a href="https://buymeacoffee.com/sonicpulse2025" target="_blank" class="btn btn-coffee btn-coffee-large">
+                    <img src="assets/cat-avatar.png" alt="口袋裡的貓" class="coffee-cat-icon">
+                    <div class="coffee-text">
+                        <span class="coffee-main">贊助口袋裡的貓</span>
+                        <span class="coffee-sub">Buy me a coffee</span>
+                    </div>
+                </a>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear"></span> 音樂脈動-Sonic Pulse. 保留所有權利. | 用 ❤️ 為音樂創作者打造</p>
+            </div>
+        </div>
+    </footer>
+    
+    
+    <!-- 手機轉帳詳細指南彈出視窗 -->
+    <div id="mobileTransferModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>📲 手機轉帳詳細步驟</h3>
+                <span class="close" onclick="closeMobileTransferModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="color: #4ecdc4; margin-bottom: 1rem;">📱 通用步驟（適用於各大銀行 App）</h4>
+                    
+                    <div class="transfer-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h5>開啟銀行 App</h5>
+                            <p>打開你常用的銀行手機 App（如：台新、國泰、富邦、玉山、中信等）</p>
+                        </div>
+                    </div>
+                    
+                    <div class="transfer-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h5>登入並選擇轉帳</h5>
+                            <p>使用指紋、臉部辨識或密碼登入，找到「轉帳」或「轉帳付款」功能</p>
+                        </div>
+                    </div>
+                    
+                    <div class="transfer-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h5>選擇轉帳方式</h5>
+                            <p>選擇「一般轉帳」或「跨行轉帳」（如果不是同銀行）</p>
+                        </div>
+                    </div>
+                    
+                    <div class="transfer-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h5>輸入收款資訊</h5>
+                            <div style="background: rgba(78, 205, 196, 0.1); padding: 1rem; border-radius: 10px; margin-top: 0.5rem;">
+                                <p><strong>銀行代碼：</strong>XXX</p>
+                                <p><strong>帳號：</strong>XXXXXXXXX</p>
+                                <p><strong>戶名：</strong>口袋裡的貓</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="transfer-step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h5>輸入金額和備註</h5>
+                            <p>輸入你想支持的金額，在備註欄位寫上「音樂脈動支持」</p>
+                        </div>
+                    </div>
+                    
+                    <div class="transfer-step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <h5>確認並送出</h5>
+                            <p>仔細檢查資訊無誤後，輸入轉帳密碼或使用生物辨識確認轉帳</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(78, 205, 196, 0.3);">
+                    <h4 style="color: #4ecdc4; margin-bottom: 1rem;">💡 小貼士</h4>
+                    <ul style="color: #b8b8b8; padding-left: 1.5rem;">
+                        <li>第一次轉帳可能需要新增收款人，建議儲存以便下次使用</li>
+                        <li>轉帳時間：平日 9:00-15:30 即時到帳，其他時間次一營業日到帳</li>
+                        <li>手續費：同行轉帳通常免費，跨行轉帳約 15-30 元</li>
+                        <li>記得在備註寫上「音樂脈動支持」，這樣我就能知道是你了！</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <button onclick="copyToClipboard('銀行代碼：XXX\n帳號：XXXXXXXXX\n戶名：口袋裡的貓\n備註：音樂脈動支持')" class="copy-btn" style="margin-right: 1rem;">
+                        複製轉帳資訊
+                    </button>
+                    <button onclick="closeMobileTransferModal()" class="copy-btn" style="background: rgba(255, 255, 255, 0.1);">
+                        關閉指南
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <script>
+        // 滾動動畫
+        function handleScrollAnimation() {
+            const elements = document.querySelectorAll('.fade-in');
+            const windowHeight = window.innerHeight;
+            
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < windowHeight - elementVisible) {
+                    element.classList.add('visible');
+                }
+            });
+        }
+        
+        // 平滑滾動
+        function smoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+        
+        // 導航欄滾動效果
+        function handleNavbarScroll() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 100) {
+                navbar.style.background = 'rgba(0, 0, 0, 0.98)';
+            } else {
+                navbar.style.background = 'rgba(0, 0, 0, 0.95)';
+            }
+        }
+        
+        // 更新連結函數
+        function updateLinks() {
+            // 更新工具連結
+            const audioVisualizerLink = document.querySelector('a[href*="audio-visualizer"]');
+            if (audioVisualizerLink && window.CONFIG) {
+                audioVisualizerLink.href = window.CONFIG.tools.audioVisualizer;
+            }
+            
+            const youtubeSEOLink = document.querySelector('a[href*="youtube-title-seo"]');
+            if (youtubeSEOLink && window.CONFIG) {
+                youtubeSEOLink.href = window.CONFIG.tools.youtubeSEO;
+            }
+            
+            const fontEffectsLink = document.querySelector('a[href*="font-effects-generator"]');
+            if (fontEffectsLink && window.CONFIG) {
+                fontEffectsLink.href = window.CONFIG.tools.fontEffects;
+            }
+            
+            // 更新社交連結
+            const youtubeLinks = document.querySelectorAll('a[href*="youtube.com"]');
+            youtubeLinks.forEach(link => {
+                if (window.CONFIG) {
+                    link.href = window.CONFIG.social.youtube;
+                }
+            });
+            
+            const paypalLinks = document.querySelectorAll('a[href*="paypal.com"]');
+            paypalLinks.forEach(link => {
+                if (window.CONFIG) {
+                    link.href = window.CONFIG.social.paypal;
+                }
+            });
+        }
+        
+        // 更新年份函數
+        function updateCurrentYear() {
+            const yearElement = document.getElementById('currentYear');
+            if (yearElement) {
+                yearElement.textContent = new Date().getFullYear();
+            }
+        }
+        
+        
+        // 點擊背景關閉彈出視窗
+        window.onclick = function(event) {
+            const mobileModal = document.getElementById('mobileTransferModal');
+            if (event.target === mobileModal) {
+                closeMobileTransferModal();
+            }
+        }
+        
+        // 顯示手機轉帳指南
+        function showMobileTransferGuide() {
+            const modal = document.getElementById('mobileTransferModal');
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                centerModal(modal);
+            }
+        }
+        
+        // 關閉手機轉帳指南
+        function closeMobileTransferModal() {
+            const modal = document.getElementById('mobileTransferModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        
+        // 居中顯示彈出視窗
+        function centerModal(modal) {
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                // 確保彈出視窗在螢幕範圍內
+                const windowHeight = window.innerHeight;
+                const windowWidth = window.innerWidth;
+                const modalHeight = modalContent.offsetHeight;
+                const modalWidth = modalContent.offsetWidth;
+                
+                // 如果彈出視窗高度超過螢幕高度，調整最大高度
+                if (modalHeight > windowHeight * 0.9) {
+                    modalContent.style.maxHeight = '90vh';
+                }
+                
+                // 如果彈出視窗寬度超過螢幕寬度，調整最大寬度
+                if (modalWidth > windowWidth * 0.9) {
+                    modalContent.style.maxWidth = '90vw';
+                }
+                
+                // 滾動到頂部
+                const modalBody = modalContent.querySelector('.modal-body');
+                if (modalBody) {
+                    modalBody.scrollTop = 0;
+                }
+            }
+        }
+        
+        // 複製到剪貼板函數
+        function copyToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showCopySuccess();
+                });
+            } else {
+                // 備用方案
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showCopySuccess();
+            }
+        }
+        
+        // 顯示複製成功提示
+        function showCopySuccess() {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 10px;
+                z-index: 3000;
+                animation: toastSlideIn 0.3s ease;
+            `;
+            toast.innerHTML = '✅ 已複製到剪貼板！';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'toastSlideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 2000);
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 更新年份
+            updateCurrentYear();
+            
+            // 等待配置檔案載入後更新連結
+            setTimeout(updateLinks, 100);
+            
+            smoothScroll();
+            handleScrollAnimation();
+            
+            // 綁定滾動事件
+            window.addEventListener('scroll', function() {
+                handleScrollAnimation();
+                handleNavbarScroll();
+            });
+            
+            // 添加載入動畫
+            const toolLinks = document.querySelectorAll('.tool-link');
+            toolLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    const loading = document.createElement('span');
+                    loading.className = 'loading';
+                    this.appendChild(loading);
+                    
+                    setTimeout(() => {
+                        loading.remove();
+                    }, 1000);
+                });
+            });
+        });
+        
+        // 添加頁面載入動畫
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '1';
+            document.querySelectorAll('.fade-in').forEach((element, index) => {
+                setTimeout(() => {
+                    element.classList.add('visible');
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

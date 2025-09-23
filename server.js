@@ -31,7 +31,7 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  let filePath = path.join(__dirname, 'unified-website', req.url === '/' ? 'index.html' : req.url);
+  let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
   
   // 處理目錄請求 - 如果請求以 / 結尾，添加 index.html
   if (filePath.endsWith('/')) {
@@ -40,7 +40,7 @@ const server = http.createServer((req, res) => {
   
   // 安全檢查：防止路徑遍歷攻擊
   const safePath = path.resolve(filePath);
-  const rootPath = path.resolve(path.join(__dirname, 'unified-website'));
+  const rootPath = path.resolve(__dirname);
   
   if (!safePath.startsWith(rootPath)) {
     res.writeHead(403);
@@ -55,7 +55,7 @@ const server = http.createServer((req, res) => {
   fs.stat(filePath, (err, stats) => {
     if (err) {
       // 文件不存在，嘗試返回主頁面
-      fs.readFile(path.join(__dirname, 'unified-website', 'index.html'), (err, content) => {
+      fs.readFile(path.join(__dirname, 'index.html'), (err, content) => {
         if (err) {
           res.writeHead(404);
           res.end('File not found');
