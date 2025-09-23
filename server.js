@@ -25,6 +25,7 @@ const mimeTypes = {
 
 const server = http.createServer((req, res) => {
   console.log(`${req.method} ${req.url}`);
+  console.log('Requested path:', req.url);
 
   // 設置 CORS 標頭
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -32,6 +33,7 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+  console.log('Resolved file path:', filePath);
   
   // 處理目錄請求 - 如果請求以 / 結尾，添加 index.html
   if (filePath.endsWith('/')) {

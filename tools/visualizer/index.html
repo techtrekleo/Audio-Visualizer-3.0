@@ -57,12 +57,15 @@
     <script>
         // 直接重定向到音頻可視化器
         console.log('Redirecting to audio visualizer...');
+        console.log('Current URL:', window.location.href);
         
         // 添加延遲確保頁面載入完成
         setTimeout(() => {
             try {
+                const targetUrl = '/audio-visualizer-source/index.html';
+                console.log('Attempting to open:', targetUrl);
                 // 開啟新視窗到音頻可視化器
-                window.open('/audio-visualizer-source/index.html', '_blank');
+                window.open(targetUrl, '_blank');
                 // 關閉當前視窗
                 window.close();
             } catch (error) {
