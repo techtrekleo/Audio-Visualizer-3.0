@@ -33,6 +33,11 @@ const server = http.createServer((req, res) => {
 
   let filePath = path.join(__dirname, 'unified-website', req.url === '/' ? 'index.html' : req.url);
   
+  // 處理目錄請求 - 如果請求以 / 結尾，添加 index.html
+  if (filePath.endsWith('/')) {
+    filePath = path.join(filePath, 'index.html');
+  }
+  
   // 安全檢查：防止路徑遍歷攻擊
   const safePath = path.resolve(filePath);
   const rootPath = path.resolve(path.join(__dirname, 'unified-website'));
@@ -46,27 +51,47 @@ const server = http.createServer((req, res) => {
   const extname = String(path.extname(filePath)).toLowerCase();
   const mimeType = mimeTypes[extname] || 'application/octet-stream';
 
-  fs.readFile(filePath, (error, content) => {
-    if (error) {
-      if (error.code === 'ENOENT') {
-        // 文件不存在，嘗試返回 index.html
-        fs.readFile(path.join(__dirname, 'unified-website', 'index.html'), (err, content) => {
-          if (err) {
-            res.writeHead(404);
-            res.end('File not found');
-          } else {
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end(content, 'utf-8');
-          }
-        });
-      } else {
+  // 檢查文件是否存在且是文件（不是目錄）
+  fs.stat(filePath, (err, stats) => {
+    if (err) {
+      // 文件不存在，嘗試返回主頁面
+      fs.readFile(path.join(__dirname, 'unified-website', 'index.html'), (err, content) => {
+        if (err) {
+          res.writeHead(404);
+          res.end('File not found');
+        } else {
+          res.writeHead(200, { 'Content-Type': 'text/html' });
+          res.end(content, 'utf-8');
+        }
+      });
+      return;
+    }
+
+    // 如果是目錄，嘗試讀取目錄中的 index.html
+    if (stats.isDirectory()) {
+      const indexPath = path.join(filePath, 'index.html');
+      fs.readFile(indexPath, (err, content) => {
+        if (err) {
+          res.writeHead(404);
+          res.end('Directory index not found');
+        } else {
+          res.writeHead(200, { 'Content-Type': 'text/html' });
+          res.end(content, 'utf-8');
+        }
+      });
+      return;
+    }
+
+    // 讀取文件
+    fs.readFile(filePath, (error, content) => {
+      if (error) {
         res.writeHead(500);
         res.end(`Server Error: ${error.code}`);
+      } else {
+        res.writeHead(200, { 'Content-Type': mimeType });
+        res.end(content, 'utf-8');
       }
-    } else {
-      res.writeHead(200, { 'Content-Type': mimeType });
-      res.end(content, 'utf-8');
-    }
+    });
   });
 });
 
