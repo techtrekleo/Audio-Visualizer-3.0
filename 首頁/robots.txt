@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+
+# 允許搜尋引擎索引，但限制爬蟲頻率
+Crawl-delay: 5
+
+# 禁止爬取 API 相關路徑（如果有的話）
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
+
+# 允許主要的搜尋引擎
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 2
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 3
+
+# 禁止惡意爬蟲
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+# Sitemap 位置
+Sitemap: https://your-domain.com/sitemap.xml

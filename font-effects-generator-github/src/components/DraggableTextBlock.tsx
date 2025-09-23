@@ -1,0 +1,206 @@
+import React from 'react';
+import type { TextBlock, EffectId } from '../types';
+import { fonts, effects } from '../constants';
+import { ColorInput } from './ColorInput';
+
+interface DraggableTextBlockProps {
+  textBlock: TextBlock;
+  onUpdate: (updatedTextBlock: TextBlock) => void;
+  isSelected: boolean;
+}
+
+export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
+  textBlock,
+  onUpdate,
+  isSelected
+}) => {
+  // 移除未使用的拖動相關代碼，因為我們使用滑塊控制位置
+
+  const handleEffectToggle = (effectId: EffectId) => {
+    if (effectId === 'none') {
+      onUpdate({ ...textBlock, effectIds: [] });
+      return;
+    }
+    
+    const currentEffectIds = textBlock.effectIds || [];
+    const newEffectIds = new Set(currentEffectIds);
+    
+    if (newEffectIds.has(effectId)) {
+      newEffectIds.delete(effectId);
+    } else {
+      newEffectIds.add(effectId);
+    }
+    
+    onUpdate({
+      ...textBlock,
+      effectIds: Array.from(newEffectIds).sort()
+    });
+  };
+
+  const renderColorPickers = () => {
+    const effects = new Set(textBlock.effectIds);
+    const pickers: React.ReactNode[] = [];
+
+    if (effects.has('neon')) {
+      pickers.push(
+        <ColorInput key="neon1" label="光暈顏色" value={textBlock.color1} onChange={(c) => onUpdate({ ...textBlock, color1: c })} />
+      );
+    } else {
+      pickers.push(
+        <ColorInput key="c1" label="文字顏色" value={textBlock.color1} onChange={(c) => onUpdate({ ...textBlock, color1: c })} />
+      );
+    }
+
+    const hasColor2Effect = effects.has('shadow') || effects.has('outline') || effects.has('faux-3d');
+    if (hasColor2Effect) {
+      const labels = [];
+      if (effects.has('shadow')) labels.push('陰影');
+      if (effects.has('outline')) labels.push('描邊');
+      if (effects.has('faux-3d')) labels.push('立體');
+      
+      pickers.push(
+        <ColorInput key="c2" label={`${labels.join('/')} 顏色`} value={textBlock.color2} onChange={(c) => onUpdate({ ...textBlock, color2: c })} />
+      );
+    }
+    
+    return <>{pickers}</>;
+  };
+
+  const getTypeLabel = () => {
+    switch (textBlock.type) {
+      case 'main': return '主標題';
+      case 'sub1': return '副標題一';
+      case 'sub2': return '副標題二';
+      default: return '文字';
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-300">{getTypeLabel()}</h3>
+        <div className={`w-3 h-3 rounded-full ${isSelected ? 'bg-cyan-500' : 'bg-gray-500'}`}></div>
+      </div>
+
+      <div className="space-y-3">
+        <input
+          type="text"
+          value={textBlock.text}
+          onChange={(e) => onUpdate({ ...textBlock, text: e.target.value })}
+          placeholder={`輸入${getTypeLabel()}...`}
+          maxLength={30}
+          className="w-full p-3 bg-gray-900 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+        />
+        <p className="text-right text-sm text-gray-500 -mt-2">{textBlock.text.length} / 30</p>
+      </div>
+
+      <div className="space-y-3">
+        <label className="block text-sm font-semibold text-gray-300">字體</label>
+        <div className="grid grid-cols-2 gap-2">
+          {fonts.map(font => (
+            <button
+              key={font.id}
+              onClick={() => onUpdate({ ...textBlock, fontId: font.id })}
+              className={`py-2 px-2 rounded-lg text-center transition-all duration-200 border text-xs truncate ${
+                textBlock.fontId === font.id ? 'bg-cyan-600 border-cyan-400' : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
+              }`}
+              style={{ fontFamily: `"${font.family}"`, fontWeight: font.weight }}
+              title={font.name}
+            >
+              {font.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <label className="block text-sm font-semibold text-gray-300">特效 (可複選)</label>
+        <div className="grid grid-cols-3 gap-2">
+          {effects.map(effect => {
+            const isActive = effect.id === 'none' 
+              ? textBlock.effectIds.length === 0 
+              : textBlock.effectIds.includes(effect.id);
+            return (
+              <button
+                key={effect.id}
+                onClick={() => handleEffectToggle(effect.id)}
+                className={`py-2 px-2 rounded-lg text-center font-semibold transition-all duration-200 border text-xs ${
+                  isActive ? 'bg-cyan-600 border-cyan-400' : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
+                }`}
+              >
+                {effect.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <label className="block text-sm font-semibold text-gray-300">字體大小</label>
+        <div className="bg-gray-800 p-3 rounded-lg border border-gray-600">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-gray-300 font-medium">當前大小</span>
+            <span className="text-cyan-400 font-bold text-lg">{textBlock.fontSize}px</span>
+          </div>
+          
+          {/* 手動輸入 */}
+          <div className="mb-3">
+            <label className="block text-xs text-gray-400 mb-1">手動輸入字體大小</label>
+            <input
+              type="number"
+              min="10"
+              max="500"
+              value={textBlock.fontSize}
+              onChange={(e) => onUpdate({ ...textBlock, fontSize: Number(e.target.value) })}
+              className="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="輸入字體大小 (10-500px)"
+            />
+          </div>
+          
+          <div className="text-xs text-gray-400 mb-2">
+            💡 提示：可以直接輸入數字，或在右側畫布上拖動右下角藍色控制點
+          </div>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={() => onUpdate({ ...textBlock, fontSize: 120 })}
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition"
+            >
+              重置為 120px
+            </button>
+            <button
+              onClick={() => onUpdate({ ...textBlock, fontSize: 60 })}
+              className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition"
+            >
+              重置為 60px
+            </button>
+            <button
+              onClick={() => onUpdate({ ...textBlock, fontSize: 400 })}
+              className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded transition"
+            >
+              大標題 400px
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">{renderColorPickers()}</div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-semibold text-gray-300">位置</label>
+        <div className="text-xs text-gray-400 bg-gray-800 p-3 rounded-lg border border-gray-600">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-yellow-400">💡</span>
+            <span className="font-semibold">拖動操作說明</span>
+          </div>
+          <p className="mb-1">• 直接在右側畫布上拖動文字區塊來調整位置</p>
+          <p className="mb-1">• 選中的文字區塊會顯示青色邊框</p>
+          <p>• 拖動時會顯示黃色邊框和提示</p>
+        </div>
+        <div className="text-xs text-gray-500 bg-gray-900 p-2 rounded">
+          當前位置：X: {Math.round(textBlock.x)}px, Y: {Math.round(textBlock.y)}px
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音樂脈動 - 文章專區</title>
+    <link rel="icon" href="../assets/channel-avatar.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+            padding: 3rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        
+        .header p {
+            color: #b8b8b8;
+            font-size: 1.1rem;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4ecdc4;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #45b7d1;
+        }
+        
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+        
+        .article-card {
+            background: rgba(45, 45, 45, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .article-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(78, 205, 196, 0.5);
+        }
+        
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            color: #b8b8b8;
+            font-size: 0.9rem;
+        }
+        
+        .article-date {
+            background: rgba(78, 205, 196, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+        }
+        
+        .article-category {
+            background: rgba(255, 107, 107, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        
+        .article-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #ffffff;
+            line-height: 1.4;
+        }
+        
+        .article-excerpt {
+            color: #b8b8b8;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .article-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #ff6b9d 0%, #4ecdc4 100%);
+            color: white;
+            text-decoration: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .article-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #b8b8b8;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #4ecdc4;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .articles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            回到首頁
+        </a>
+        
+        <div class="header">
+            <h1>文章專區</h1>
+            <p>音樂創作心得、工具使用技巧、最新更新分享</p>
+        </div>
+        
+        <div class="articles-grid" id="articlesGrid">
+            <!-- 文章列表將在這裡動態生成 -->
+        </div>
+        
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <i class="fas fa-newspaper"></i>
+            <h3>還沒有文章</h3>
+            <p>敬請期待更多精彩內容！</p>
+        </div>
+    </div>
+
+    <script>
+        // 文章列表
+        const articles = [
+            {
+                title: "歡迎來到音樂脈動！",
+                excerpt: "介紹我的音樂創作工具和服務，以及如何使用這些工具來提升你的音樂創作效率。",
+                date: "2025-01-23",
+                category: "介紹",
+                filename: "welcome.html"
+            }
+            // 未來可以在這裡添加更多文章
+        ];
+        
+        function displayArticles() {
+            const grid = document.getElementById('articlesGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (articles.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            grid.innerHTML = articles.map(article => `
+                <div class="article-card">
+                    <div class="article-meta">
+                        <span class="article-date">
+                            <i class="fas fa-calendar"></i>
+                            ${article.date}
+                        </span>
+                        <span class="article-category">
+                            <i class="fas fa-tag"></i>
+                            ${article.category}
+                        </span>
+                    </div>
+                    <h3 class="article-title">${article.title}</h3>
+                    <p class="article-excerpt">${article.excerpt}</p>
+                    <a href="${article.filename}" class="article-link">
+                        閱讀全文
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            `).join('');
+        }
+        
+        // 頁面載入時顯示文章
+        document.addEventListener('DOMContentLoaded', displayArticles);
+    </script>
+</body>
+</html>

@@ -1,0 +1,355 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 響應式設計優化 */
+@import './responsive.css';
+
+/* Base styles for the entire application */
+html, body, #root {
+  height: 100%;
+  background-color: #111827; /* Dark gray background */
+  color: #f3f4f6; /* Light text color */
+  font-family: "Poppins", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure the root element takes full height */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom slider styles - Enhanced with stronger specificity */
+input[type="range"].slider,
+.slider {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  height: 8px !important;
+  border-radius: 4px !important;
+  outline: none !important;
+}
+
+/* Webkit slider track */
+input[type="range"].slider::-webkit-slider-track,
+.slider::-webkit-slider-track {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: #374151 !important;
+  height: 8px !important;
+  border-radius: 4px !important;
+  border: none !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Webkit slider thumb */
+input[type="range"].slider::-webkit-slider-thumb,
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: #06b6d4 !important;
+  height: 20px !important;
+  width: 20px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
+  margin-top: -6px !important;
+}
+
+input[type="range"].slider::-webkit-slider-thumb:hover,
+.slider::-webkit-slider-thumb:hover {
+  background: #0891b2 !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Mozilla slider track */
+input[type="range"].slider::-moz-range-track,
+.slider::-moz-range-track {
+  background: #374151 !important;
+  height: 8px !important;
+  border-radius: 4px !important;
+  border: none !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Mozilla slider thumb */
+input[type="range"].slider::-moz-range-thumb,
+.slider::-moz-range-thumb {
+  background: #06b6d4 !important;
+  height: 20px !important;
+  width: 20px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+input[type="range"].slider::-moz-range-thumb:hover,
+.slider::-moz-range-thumb:hover {
+  background: #0891b2 !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Enhanced button hover effects */
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #374151;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #06b6d4;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0891b2;
+}
+
+/* Focus ring improvements */
+.focus\:ring-cyan-400:focus {
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.5);
+}
+
+/* Enhanced backdrop blur */
+.backdrop-blur-sm {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Additional background improvements */
+body {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+}
+
+/* Canvas background fallback */
+canvas {
+  background-color: transparent;
+}
+
+/* Main container background */
+.main-container {
+  background-color: #111827;
+  min-height: 100vh;
+}
+
+/* Ensure sliders are visible */
+input[type="range"] {
+  background: transparent !important;
+}
+
+/* Force slider visibility */
+input[type="range"]::-webkit-slider-track {
+  background: #374151 !important;
+  height: 8px !important;
+  border-radius: 4px !important;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  background: #06b6d4 !important;
+  height: 20px !important;
+  width: 20px !important;
+  border-radius: 50% !important;
+}
+
+/* 增強版滑桿樣式 */
+input[type="range"].slider-enhanced,
+.slider-enhanced {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  height: 8px !important;
+  border-radius: 4px !important;
+  outline: none !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* 增強版滑桿軌道 */
+input[type="range"].slider-enhanced::-webkit-slider-track,
+.slider-enhanced::-webkit-slider-track {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: transparent !important;
+  height: 8px !important;
+  border-radius: 4px !important;
+  border: none !important;
+}
+
+/* 增強版滑桿拇指 */
+input[type="range"].slider-enhanced::-webkit-slider-thumb,
+.slider-enhanced::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: #ffffff !important;
+  height: 24px !important;
+  width: 24px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  border: 3px solid #06b6d4 !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
+  margin-top: -8px !important;
+  position: relative !important;
+  z-index: 20 !important;
+}
+
+input[type="range"].slider-enhanced::-webkit-slider-thumb:hover,
+.slider-enhanced::-webkit-slider-thumb:hover {
+  background: #f8fafc !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4) !important;
+  border-color: #0891b2 !important;
+}
+
+/* Mozilla 增強版滑桿 */
+input[type="range"].slider-enhanced::-moz-range-track,
+.slider-enhanced::-moz-range-track {
+  background: transparent !important;
+  height: 8px !important;
+  border-radius: 4px !important;
+  border: none !important;
+}
+
+input[type="range"].slider-enhanced::-moz-range-thumb,
+.slider-enhanced::-moz-range-thumb {
+  background: #ffffff !important;
+  height: 24px !important;
+  width: 24px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  border: 3px solid #06b6d4 !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+input[type="range"].slider-enhanced::-moz-range-thumb:hover,
+.slider-enhanced::-moz-range-thumb:hover {
+  background: #f8fafc !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4) !important;
+  border-color: #0891b2 !important;
+}
+
+/* 摺疊動畫優化 */
+.collapsible-content {
+  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.collapsible-content.expanded {
+  max-height: 1000px;
+  opacity: 1;
+}
+
+.collapsible-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* 快速設置面板動畫 */
+.quick-settings-panel {
+  transition: all 0.3s ease-in-out;
+}
+
+.quick-settings-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* 設置管理面板優化 */
+.settings-manager-panel {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+/* 觸控設備優化 */
+@media (hover: none) and (pointer: coarse) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .touch-target button {
+    padding: 12px 16px;
+  }
+  
+  .touch-target input[type="range"] {
+    height: 12px;
+  }
+  
+  .touch-target .preset-color {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* 高對比度模式支持 */
+@media (prefers-contrast: high) {
+  .high-contrast {
+    border: 2px solid currentColor;
+  }
+  
+  .high-contrast button {
+    border: 2px solid currentColor;
+    background-color: transparent;
+  }
+  
+  .high-contrast input {
+    border: 2px solid currentColor;
+  }
+  
+  .high-contrast select {
+    border: 2px solid currentColor;
+  }
+}
+
+/* 減少動畫模式 */
+@media (prefers-reduced-motion: reduce) {
+  .reduced-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .collapsible-content {
+    transition: none !important;
+  }
+  
+  .quick-settings-panel {
+    transition: none !important;
+  }
+}

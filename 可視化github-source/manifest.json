@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "音訊視覺化工具 Pro",
+  "description": "將任何音訊轉換為酷炫的視覺化影片！提供多種風格、完整自訂功能，並可錄製下載。",
+  "version": "1.0.1",
+  "action": {
+    "default_title": "開啟音訊視覺化工具 Pro"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'self'"
+  }
+}
