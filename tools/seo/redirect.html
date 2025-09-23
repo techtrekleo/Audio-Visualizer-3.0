@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音頻可視化器 - 重定向中...</title>
+    <title>YouTube SEO 優化器 - 音樂脈動-Sonic Pulse</title>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -19,51 +19,51 @@
         .loading-container {
             text-align: center;
         }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid #4ecdc4;
+        .loading {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .loading-text {
-            font-size: 1.2rem;
+            border-top-color: #4ecdc4;
+            animation: spin 1s ease-in-out infinite;
             margin-bottom: 20px;
         }
-        .back-link {
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-text {
             color: #4ecdc4;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .back-link {
+            color: #b8b8b8;
             text-decoration: none;
-            display: none;
+            font-size: 0.9rem;
         }
         .back-link:hover {
-            text-decoration: underline;
+            color: #4ecdc4;
         }
     </style>
 </head>
 <body>
     <div class="loading-container">
-        <div class="spinner"></div>
-        <div class="loading-text">正在載入音頻可視化器...</div>
-        <a href="/" class="back-link">← 返回首頁</a>
+        <div class="loading"></div>
+        <div class="loading-text">正在載入 YouTube SEO 優化器...</div>
+        <a href="../" class="back-link">← 返回首頁</a>
     </div>
     
     <script>
-        // 直接重定向到音頻可視化器
-        console.log('Redirecting to audio visualizer...');
-        console.log('Current URL:', window.location.href);
+        // 直接重定向到 YouTube SEO 工具
+        console.log('Redirecting to YouTube SEO tool...');
         
         // 添加延遲確保頁面載入完成
         setTimeout(() => {
             try {
-                const targetUrl = 'https://audio-visualizer-30-production.up.railway.app/audio-visualizer-source/index.html';
+                const targetUrl = 'https://audio-visualizer-30-production.up.railway.app/youtube-seo-source/index.html';
                 console.log('Attempting to open:', targetUrl);
-                // 開啟新視窗到音頻可視化器
+                // 開啟新視窗到 YouTube SEO 工具
                 window.open(targetUrl, '_blank');
                 // 不關閉當前視窗，讓用戶可以看到重定向頁面
             } catch (error) {

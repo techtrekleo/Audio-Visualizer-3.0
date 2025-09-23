@@ -32,7 +32,12 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+  // 處理根路徑
+  if (req.url === '/') {
+    req.url = '/index.html';
+  }
+
+  let filePath = path.join(__dirname, req.url);
   console.log('Resolved file path:', filePath);
   
   // 處理目錄請求 - 如果請求以 / 結尾，添加 index.html
@@ -52,6 +57,11 @@ const server = http.createServer((req, res) => {
 
   const extname = String(path.extname(filePath)).toLowerCase();
   const mimeType = mimeTypes[extname] || 'application/octet-stream';
+  
+  // 特別處理 JavaScript 文件
+  if (extname === '.js') {
+    console.log('JavaScript file requested:', filePath);
+  }
 
   // 檢查文件是否存在且是文件（不是目錄）
   fs.stat(filePath, (err, stats) => {
