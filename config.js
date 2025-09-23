@@ -4,9 +4,9 @@
 const CONFIG = {
     // 主要工具連結
     tools: {
-        audioVisualizer: '/tools/visualizer/',
-        youtubeSEO: '/tools/seo/',
-        fontEffects: '/tools/font-effects/'
+        audioVisualizer: '/audio-visualizer/',
+        youtubeSEO: '/youtube-seo/',
+        fontEffects: '/font-effects/'
     },
     
     // 頻道和社交連結

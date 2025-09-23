@@ -14,9 +14,9 @@ const ENV_CONFIG = {
     
     // 工具連結配置
     TOOLS: {
-        visualizer: '/tools/visualizer/',
-        seo: '/tools/seo/',
-        fontEffects: '/tools/font-effects/'
+        visualizer: '/audio-visualizer/',
+        seo: '/youtube-seo/',
+        fontEffects: '/font-effects/'
     }
 };
 
