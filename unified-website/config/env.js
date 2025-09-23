@@ -3,10 +3,10 @@
 
 const ENV_CONFIG = {
     // YouTube Title SEO 工具
-    VITE_GEMINI_API_KEY_SEO: import.meta.env.VITE_GEMINI_API_KEY_SEO,
+    VITE_GEMINI_API_KEY_SEO: process.env.VITE_GEMINI_API_KEY_SEO || '',
     
     // Audio Visualizer 工具  
-    VITE_GEMINI_API_KEY_VISUALIZER: import.meta.env.VITE_GEMINI_API_KEY_VISUALIZER,
+    VITE_GEMINI_API_KEY_VISUALIZER: process.env.VITE_GEMINI_API_KEY_VISUALIZER || '',
     
     // 網站配置
     SITE_TITLE: '音樂脈動-Sonic Pulse | 三合一完整版',
@@ -20,5 +20,9 @@ const ENV_CONFIG = {
     }
 };
 
-// 導出配置
-export default ENV_CONFIG;
+// 導出配置（使用 CommonJS 語法）
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ENV_CONFIG;
+} else {
+    window.ENV_CONFIG = ENV_CONFIG;
+}

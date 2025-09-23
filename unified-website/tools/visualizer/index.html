@@ -56,7 +56,19 @@
     
     <script>
         // 直接重定向到音頻可視化器
-        window.location.href = '/可視化github-source/index.html';
+        console.log('Redirecting to audio visualizer...');
+        
+        // 添加延遲確保頁面載入完成
+        setTimeout(() => {
+            try {
+                window.location.href = '/可視化github-source/index.html';
+            } catch (error) {
+                console.error('Redirect failed:', error);
+                // 如果重定向失敗，顯示錯誤訊息
+                document.querySelector('.loading-text').textContent = '重定向失敗，請手動訪問工具';
+                document.querySelector('.back-link').style.display = 'block';
+            }
+        }, 1000);
     </script>
 </body>
 </html>
