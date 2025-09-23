@@ -48,11 +48,11 @@ body {
     background-clip: unset !important;
 }
 
-/* 統一按鈕樣式 - 更明顯的顏色 */
+/* 統一按鈕樣式 - 柔和的藍紫色配色 */
 .btn-primary,
 .btn-secondary,
 .tool-link {
-    background: #00d4aa !important;
+    background: #6c5ce7 !important;
     border: none !important;
     color: #ffffff !important;
     font-weight: 600 !important;
@@ -61,12 +61,12 @@ body {
 .btn-primary:hover,
 .btn-secondary:hover,
 .tool-link:hover {
-    background: #00b894 !important;
+    background: #5f3dc4 !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3) !important;
 }
 
-/* Buy Me a Coffee 按鈕 - 更鮮豔的漸層 */
+/* Buy Me a Coffee 按鈕 - 保持原有的醒目漸層（維生工具） */
 .btn-coffee,
 .btn-coffee-large {
     background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%) !important;
@@ -82,10 +82,10 @@ body {
     box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4) !important;
 }
 
-/* 工具卡片按鈕 - 更明顯的青色 */
+/* 工具卡片按鈕 - 柔和的藍紫色 */
 .tool-link {
-    background: #00d4aa !important;
-    border: 2px solid #00d4aa !important;
+    background: #6c5ce7 !important;
+    border: 2px solid #6c5ce7 !important;
     color: #ffffff !important;
     padding: 12px 24px !important;
     border-radius: 8px !important;
@@ -98,27 +98,27 @@ body {
 }
 
 .tool-link:hover {
-    background: #00b894 !important;
-    border-color: #00b894 !important;
+    background: #5f3dc4 !important;
+    border-color: #5f3dc4 !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(0, 212, 170, 0.4) !important;
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4) !important;
 }
 
-/* 統一連結顏色 - 更明顯 */
+/* 統一連結顏色 - 柔和的藍紫色 */
 a {
-    color: #00d4aa !important;
+    color: #6c5ce7 !important;
 }
 
 a:hover {
-    color: #00b894 !important;
+    color: #5f3dc4 !important;
 }
 
 /* 統一輸入框焦點顏色 */
 input:focus,
 textarea:focus,
 select:focus {
-    border-color: #00d4aa !important;
-    box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.2) !important;
+    border-color: #6c5ce7 !important;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2) !important;
 }
 
 /* 統一導航欄背景 */
@@ -194,14 +194,14 @@ select:focus {
 
 .card:hover,
 .tool-card:hover {
-    border-color: #00d4aa !important;
-    box-shadow: 0 8px 25px rgba(0, 212, 170, 0.2) !important;
+    border-color: #6c5ce7 !important;
+    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.2) !important;
     transform: translateY(-4px) !important;
 }
 
-/* 工具圖標 - 更明顯的顏色 */
+/* 工具圖標 - 柔和的藍紫色 */
 .tool-icon {
-    color: #00d4aa !important;
+    color: #6c5ce7 !important;
     font-size: 2.5rem !important;
 }
 
@@ -217,14 +217,14 @@ select:focus {
     line-height: 1.6 !important;
 }
 
-/* 工具功能列表 - 綠色勾選標記 */
+/* 工具功能列表 - 藍紫色勾選標記 */
 .tool-features li {
     color: #ffffff !important;
 }
 
 .tool-features li::before {
     content: "✓" !important;
-    color: #00d4aa !important;
+    color: #6c5ce7 !important;
     font-weight: bold !important;
     margin-right: 8px !important;
 }
@@ -244,11 +244,11 @@ select:focus {
 
 /* 統一連結顏色 */
 a {
-    color: #4ecdc4 !important;
+    color: #6c5ce7 !important;
 }
 
 a:hover {
-    color: #45b7d1 !important;
+    color: #5f3dc4 !important;
 }
 
 /* 移除陰影效果以提升性能 */
