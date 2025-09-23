@@ -66,8 +66,7 @@
                 console.log('Attempting to open:', targetUrl);
                 // 開啟新視窗到音頻可視化器
                 window.open(targetUrl, '_blank');
-                // 關閉當前視窗
-                window.close();
+                // 不關閉當前視窗，讓用戶可以看到重定向頁面
             } catch (error) {
                 console.error('Redirect failed:', error);
                 // 如果重定向失敗，顯示錯誤訊息
