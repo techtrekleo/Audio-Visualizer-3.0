@@ -703,32 +703,6 @@ function App() {
                     </p>
                 </div>
                 
-                {/* 抖內支持按鈕 */}
-                <div className="mb-4">
-                    <p className="text-gray-400 mb-3">喜歡我的工具嗎？請我喝杯咖啡吧！</p>
-                    <a 
-                        href="https://buymeacoffee.com/sonicpulse2025" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-3 bg-gradient-to-r from-pink-500 to-teal-400 hover:from-pink-600 hover:to-teal-500 text-white px-8 py-4 rounded-2xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl border border-white/20 relative overflow-hidden"
-                        style={{
-                            background: 'linear-gradient(135deg, #ff6b9d 0%, #4ecdc4 100%)',
-                            fontFamily: 'Poppins, sans-serif',
-                            backdropFilter: 'blur(10px)'
-                        }}
-                    >
-                        <img 
-                            src="/assets/cat-avatar.png" 
-                            alt="口袋裡的貓" 
-                            className="w-8 h-8 rounded-full"
-                            style={{ width: '2rem', height: '2rem' }}
-                        />
-                        <div className="flex flex-col items-start">
-                            <span className="text-lg font-semibold">贊助口袋裡的貓</span>
-                            <span className="text-sm opacity-80">Buy me a coffee</span>
-                        </div>
-                    </a>
-                </div>
                 
             </footer>
             
