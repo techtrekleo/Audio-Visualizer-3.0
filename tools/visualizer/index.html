@@ -62,10 +62,9 @@
         setTimeout(() => {
             try {
                 const targetUrl = 'https://audio-visualizer-30-production.up.railway.app/audio-visualizer-source/index.html';
-                console.log('Attempting to open:', targetUrl);
-                // 開啟新視窗到音頻可視化器
-                window.open(targetUrl, '_blank');
-                // 不關閉當前視窗，讓用戶可以看到重定向頁面
+                console.log('Attempting to redirect to:', targetUrl);
+                // 直接跳轉到音頻可視化器（避免瀏覽器阻擋彈出視窗）
+                window.location.href = targetUrl;
             } catch (error) {
                 console.error('Redirect failed:', error);
                 // 如果重定向失敗，顯示錯誤訊息
