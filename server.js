@@ -44,12 +44,15 @@ const server = http.createServer((req, res) => {
   if (req.url.startsWith('/audio-visualizer-source/')) {
     const relativePath = req.url.replace('/audio-visualizer-source', '');
     req.url = '/audio-visualizer-source/dist' + relativePath;
+    console.log('Rewritten audio-visualizer path:', req.url);
   } else if (req.url.startsWith('/youtube-seo-source/')) {
     const relativePath = req.url.replace('/youtube-seo-source', '');
     req.url = '/youtube-seo-source/dist' + relativePath;
+    console.log('Rewritten youtube-seo path:', req.url);
   } else if (req.url.startsWith('/font-effects-source/')) {
     const relativePath = req.url.replace('/font-effects-source', '');
     req.url = '/font-effects-source/dist' + relativePath;
+    console.log('Rewritten font-effects path:', req.url);
   }
 
   let filePath = path.join(__dirname, req.url);
@@ -58,6 +61,7 @@ const server = http.createServer((req, res) => {
   // 處理目錄請求 - 如果請求以 / 結尾，添加 index.html
   if (filePath.endsWith('/')) {
     filePath = path.join(filePath, 'index.html');
+    console.log('Added index.html to directory path:', filePath);
   }
   
   // 安全檢查：防止路徑遍歷攻擊
