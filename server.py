@@ -63,14 +63,20 @@ def main():
         else:
             print(f"❌ Missing: {file_path}")
     
-    with socketserver.TCPServer(("", PORT), CustomHTTPRequestHandler) as httpd:
-        print(f"🚀 Server running at http://localhost:{PORT}")
-        print(f"🚀 Server running at http://0.0.0.0:{PORT}")
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("\n🛑 Server stopped")
-            sys.exit(0)
+    # 確保綁定到所有接口
+    try:
+        with socketserver.TCPServer(("0.0.0.0", PORT), CustomHTTPRequestHandler) as httpd:
+            print(f"🚀 Server running at http://0.0.0.0:{PORT}")
+            print(f"🚀 Server running at http://localhost:{PORT}")
+            print(f"🚀 Health check available at http://0.0.0.0:{PORT}/")
+            try:
+                httpd.serve_forever()
+            except KeyboardInterrupt:
+                print("\n🛑 Server stopped")
+                sys.exit(0)
+    except Exception as e:
+        print(f"❌ Server failed to start: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
