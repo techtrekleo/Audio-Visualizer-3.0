@@ -27,6 +27,9 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- 統一主題設定 -->
+    <link rel="stylesheet" href="assets/unified-theme.css">
+    
     <!-- Configuration -->
     <script src="config.js"></script>
     
@@ -39,7 +42,7 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
+            background: #000000;
             color: #ffffff;
             line-height: 1.6;
             overflow-x: hidden;
@@ -53,26 +56,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
-        }
-        
-        .bg-animation::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+            background: #000000;
         }
         
         /* 導航欄 */

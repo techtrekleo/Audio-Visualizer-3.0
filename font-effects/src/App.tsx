@@ -158,7 +158,7 @@ const App: React.FC = () => {
     canvasSizeId === 'square';
 
   return (
-    <div className="text-white min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8" style={{ fontFamily: "'Noto Sans TC', sans-serif", background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%)' }}>
+    <div className="text-white min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8" style={{ fontFamily: "'Noto Sans TC', sans-serif", background: '#000000' }}>
       <header className="w-full max-w-7xl mb-6 text-center">
         <h1 className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-600" style={{ fontFamily: "'Noto Sans TC', sans-serif", fontWeight: 900 }}>字體特效產生器</h1>
         <p className="text-gray-400 mt-2">三個可拖動文字區塊，創造獨一無二的客製化字卡</p>
