@@ -12,24 +12,12 @@ const server = http.createServer((req, res) => {
   
   let filePath;
   
-  // 如果是 audio-visualizer 相關的路由，服務 dist 目錄
-  if (req.url.startsWith('/audio-visualizer')) {
-    const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
-    const relativePath = req.url.replace('/audio-visualizer', '');
-    filePath = path.join(distPath, relativePath);
-    
-    // 如果是目錄，添加 index.html
-    if (filePath.endsWith('/') || !path.extname(filePath)) {
-      filePath = path.join(filePath, 'index.html');
-    }
-  } else {
-    // 其他路由服務根目錄
-    filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
-    
-    // 如果是目錄，添加 index.html
-    if (filePath.endsWith('/')) {
-      filePath = path.join(filePath, 'index.html');
-    }
+  // 所有路由都服務根目錄
+  filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+  
+  // 如果是目錄，添加 index.html
+  if (filePath.endsWith('/')) {
+    filePath = path.join(filePath, 'index.html');
   }
   
   fs.readFile(filePath, (error, content) => {
