@@ -12,15 +12,25 @@ const server = http.createServer((req, res) => {
   
   let filePath;
   
-  // 如果是 audio-visualizer 相關的路由，服務 dist 目錄
-  if (req.url.startsWith('/audio-visualizer') || req.url === '/') {
+  // 如果是 audio-visualizer 相關的路由或根目錄，服務 dist 目錄
+  if (req.url.startsWith('/audio-visualizer') || req.url === '/' || req.url.startsWith('/assets/')) {
     const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
-    const relativePath = req.url === '/' ? '/audio-visualizer/' : req.url;
-    filePath = path.join(distPath, relativePath.replace('/audio-visualizer', ''));
     
-    // 如果是目錄，添加 index.html
-    if (filePath.endsWith('/') || !path.extname(filePath)) {
-      filePath = path.join(filePath, 'index.html');
+    if (req.url === '/') {
+      // 根目錄服務 dist/index.html
+      filePath = path.join(distPath, 'index.html');
+    } else if (req.url.startsWith('/assets/')) {
+      // 資源文件直接服務
+      filePath = path.join(distPath, req.url);
+    } else {
+      // 其他 audio-visualizer 路由
+      const relativePath = req.url.replace('/audio-visualizer', '');
+      filePath = path.join(distPath, relativePath);
+      
+      // 如果是目錄，添加 index.html
+      if (filePath.endsWith('/') || !path.extname(filePath)) {
+        filePath = path.join(filePath, 'index.html');
+      }
     }
   } else {
     // 其他路由服務根目錄
