@@ -131,6 +131,11 @@ function injectUnifiedLayout(htmlContent) {
                     border-color: #000000 !important;
                   }
                   
+                  /* 覆蓋 Tailwind 全局 border-color - 只針對有 border 的元素 */
+                  [class*="border"] {
+                    border-color: #000000 !important;
+                  }
+                  
                   /* 覆蓋 hover 狀態的灰色邊框 */
                   .hover\:border-gray-800:hover {
                     border-color: #000000 !important;
