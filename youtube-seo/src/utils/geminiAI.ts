@@ -128,6 +128,7 @@ ${musicStyles.map(style => {
 4. 整體要吸引人點擊且符合風格特色
 5. 必須使用符號：${randomSymbol}
 6. 隨機選擇音樂風格變體
+7. **重要：標題長度必須嚴格控制在100字以內**
 
 只回傳標題，不要其他文字。`
     } else if (language === 'en') {
@@ -159,6 +160,7 @@ Please ensure:
 4. Overall is click-worthy
 5. Must use symbol: ${randomSymbol}
 6. Randomly choose music style variant
+7. **IMPORTANT: Title length must be strictly limited to 100 characters or less**
 
 Return only the title, no other text.`
     } else if (language === 'ja') {
@@ -190,6 +192,7 @@ Return only the title, no other text.`
 4. 全体的にクリックしたくなる
 5. 必ず記号を使用：${randomSymbol}
 6. 音楽スタイル変体をランダムに選択
+7. **重要：タイトル長は100文字以内に厳格に制限**
 
 タイトルのみを返してください。`
     } else {
