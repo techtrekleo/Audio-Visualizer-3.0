@@ -651,11 +651,11 @@ const server = http.createServer((req, res) => {
   
   // 處理各個工具的 dist 目錄 - 使用絕對路徑
   if (req.url.startsWith('/audio-visualizer/assets/')) {
-    // 處理 Audio Visualizer 的 assets 請求
+    // 處理 Audio Visualizer 的 assets 請求 (第二層分層結構)
     const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
     const assetPath = req.url.replace('/audio-visualizer', '');
     filePath = path.join(distPath, assetPath);
-    console.log('Audio Visualizer Assets:', req.url, '->', filePath);
+    console.log('Audio Visualizer Assets (分層結構):', req.url, '->', filePath);
   } else if (req.url.startsWith('/audio-visualizer')) {
     const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
     const relativePath = req.url.replace('/audio-visualizer', '');
