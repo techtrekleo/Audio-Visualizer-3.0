@@ -696,6 +696,11 @@ const server = http.createServer((req, res) => {
     // 處理 YouTube SEO 的 assets 請求
     const distPath = path.join(__dirname, 'youtube-seo', 'dist');
     filePath = path.join(distPath, req.url);
+  } else if (req.url.startsWith('/assets/') && (req.url.includes('main-') || req.url.includes('cat-avatar'))) {
+    // 處理根目錄的 Audio Visualizer assets 請求
+    const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
+    filePath = path.join(distPath, req.url);
+    console.log('根目錄 Audio Visualizer Assets:', req.url, '->', filePath);
   } else {
     // 其他路由服務根目錄
     filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
