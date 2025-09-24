@@ -136,6 +136,21 @@ function injectUnifiedLayout(htmlContent) {
                     border-color: #000000 !important;
                   }
                   
+                  /* 強制覆蓋所有邊框顏色 */
+                  * {
+                    border-color: #000000 !important;
+                  }
+                  
+                  /* 覆蓋所有可能的邊框樣式 */
+                  .border, .border-1, .border-2, .border-4, .border-8 {
+                    border-color: #000000 !important;
+                  }
+                  
+                  /* 覆蓋所有方向的邊框 */
+                  .border-t, .border-r, .border-b, .border-l {
+                    border-color: #000000 !important;
+                  }
+                  
                   /* 覆蓋 hover 狀態的灰色邊框 */
                   .hover\:border-gray-800:hover {
                     border-color: #000000 !important;
