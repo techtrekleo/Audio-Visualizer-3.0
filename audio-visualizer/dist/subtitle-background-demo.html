@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>字幕背景樣式預覽 - Audio Visualizer Pro</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #111827;
+            color: #f3f4f6;
+        }
+        h1, h2, h3 {
+            color: #67E8F9;
+        }
+        .container {
+            background-color: #1f2937;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #374151;
+        }
+        .demo-section {
+            background-color: #374151;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .subtitle-preview {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .subtitle-text {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .subtitle-none {
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .subtitle-semi {
+            color: #ffffff;
+            background-color: rgba(0,0,0,0.5);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .subtitle-solid {
+            color: #ffffff;
+            background-color: rgba(0,0,0,0.8);
+            text-shadow: none;
+        }
+        .style-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .style-option {
+            background-color: #4B5563;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #6B7280;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .style-option:hover {
+            border-color: #67E8F9;
+            background-color: #1e40af;
+        }
+        .style-option.active {
+            border-color: #67E8F9;
+            background-color: #1e40af;
+        }
+        .style-preview {
+            width: 60px;
+            height: 40px;
+            margin: 0 auto 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .preview-none {
+            background-color: transparent;
+            border: 2px solid #9CA3AF;
+            color: #9CA3AF;
+        }
+        .preview-semi {
+            background-color: rgba(0,0,0,0.5);
+            border: 2px solid #9CA3AF;
+            color: #ffffff;
+        }
+        .preview-solid {
+            background-color: rgba(0,0,0,0.8);
+            border: 2px solid #9CA3AF;
+            color: #ffffff;
+        }
+        .feature-list {
+            background-color: #059669;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #10B981;
+        }
+        .usage-tips {
+            background-color: #1e40af;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3B82F6;
+        }
+        .demo-texts {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .demo-text {
+            background-color: #4B5563;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #6B7280;
+        }
+        .demo-text:hover {
+            background-color: #6B7280;
+            border-color: #67E8F9;
+        }
+        .demo-text.active {
+            background-color: #67E8F9;
+            color: #111827;
+            border-color: #67E8F9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 字幕背景樣式預覽</h1>
+        <p><strong>最後更新：2025年8月29日</strong></p>
+        
+        <div class="feature-list">
+            <h3>✨ 功能特色</h3>
+            <ul>
+                <li><strong>三種背景樣式</strong>：無背景、半透明、實色</li>
+                <li><strong>即時預覽</strong>：選擇不同樣式立即看到效果</li>
+                <li><strong>自定義文字</strong>：可以輸入自己的文字來測試</li>
+                <li><strong>響應式設計</strong>：支援各種螢幕尺寸</li>
+            </ul>
+        </div>
+        
+        <h2>🎯 字幕背景樣式選擇</h2>
+        <div class="style-options">
+            <div class="style-option active" onclick="changeStyle('none')">
+                <div class="style-preview preview-none">A</div>
+                <h4>無背景</h4>
+                <p>純文字，無背景</p>
+                <ul style="text-align: left; font-size: 12px; margin-top: 10px;">
+                    <li>適合淺色背景</li>
+                    <li>視覺效果最乾淨</li>
+                    <li>需要文字陰影</li>
+                </ul>
+            </div>
+            
+            <div class="style-option" onclick="changeStyle('semi')">
+                <div class="style-preview preview-semi">A</div>
+                <h4>半透明背景</h4>
+                <p>黑色半透明背景</p>
+                <ul style="text-align: left; font-size: 12px; margin-top: 10px;">
+                    <li>平衡可讀性</li>
+                    <li>適合複雜背景</li>
+                    <li>現代感設計</li>
+                </ul>
+            </div>
+            
+            <div class="style-option" onclick="changeStyle('solid')">
+                <div class="style-preview preview-solid">A</div>
+                <h4>實色背景</h4>
+                <p>黑色實心背景</p>
+                <ul style="text-align: left; font-size: 12px; margin-top: 10px;">
+                    <li>最高可讀性</li>
+                    <li>適合動態背景</li>
+                    <li>專業感強</li>
+                </ul>
+            </div>
+        </div>
+        
+        <h2>📝 自定義測試文字</h2>
+        <div class="demo-texts">
+            <div class="demo-text active" onclick="changeText('這是一段測試字幕文字')">這是一段測試字幕文字</div>
+            <div class="demo-text" onclick="changeText('Hello World! 你好世界！')">Hello World! 你好世界！</div>
+            <div class="demo-text" onclick="changeText('🎵 音樂視覺化特效 🎵')">🎵 音樂視覺化特效 🎵</div>
+            <div class="demo-text" onclick="changeText('Audio Visualizer Pro')">Audio Visualizer Pro</div>
+            <div class="demo-text" onclick="changeText('自定義輸入文字...')">自定義輸入文字...</div>
+        </div>
+        
+        <div class="demo-section">
+            <label for="custom-text" style="display: block; margin-bottom: 10px; font-weight: bold;">輸入自定義文字：</label>
+            <input 
+                type="text" 
+                id="custom-text" 
+                value="這是一段測試字幕文字"
+                style="width: 100%; padding: 10px; background: #4B5563; border: 1px solid #6B7280; border-radius: 6px; color: #ffffff; font-size: 16px;"
+                oninput="changeText(this.value)"
+            >
+        </div>
+        
+        <h2>👀 即時預覽效果</h2>
+        <div class="subtitle-preview">
+            <div id="subtitle-text" class="subtitle-text subtitle-none">
+                這是一段測試字幕文字
+            </div>
+        </div>
+        
+        <div class="usage-tips">
+            <h3>💡 使用建議</h3>
+            <ul>
+                <li><strong>無背景</strong>：適合簡單、乾淨的視覺效果，建議搭配文字陰影</li>
+                <li><strong>半透明背景</strong>：適合複雜背景，提供良好的可讀性平衡</li>
+                <li><strong>實色背景</strong>：適合動態背景或需要最高可讀性的場合</li>
+            </ul>
+        </div>
+        
+        <h2>🔧 在 Audio Visualizer Pro 中使用</h2>
+        <ol>
+            <li>在「字幕設定」區塊中找到「字幕背景」選項</li>
+            <li>選擇你喜歡的背景樣式</li>
+            <li>輸入或生成字幕文字</li>
+            <li>調整字體大小、顏色和效果</li>
+            <li>開始錄製你的音頻視覺化影片</li>
+        </ol>
+        
+        <p><a href="/" style="color: #67E8F9; text-decoration: none;">← 返回首頁開始製作</a></p>
+    </div>
+
+    <script>
+        function changeStyle(style) {
+            // 更新樣式選項的活動狀態
+            document.querySelectorAll('.style-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.closest('.style-option').classList.add('active');
+            
+            // 更新字幕文字樣式
+            const subtitleText = document.getElementById('subtitle-text');
+            subtitleText.className = 'subtitle-text';
+            
+            switch(style) {
+                case 'none':
+                    subtitleText.classList.add('subtitle-none');
+                    break;
+                case 'semi':
+                    subtitleText.classList.add('subtitle-semi');
+                    break;
+                case 'solid':
+                    subtitleText.classList.add('subtitle-solid');
+                    break;
+            }
+        }
+        
+        function changeText(text) {
+            // 更新字幕文字內容
+            document.getElementById('subtitle-text').textContent = text;
+            document.getElementById('custom-text').value = text;
+            
+            // 更新文字選項的活動狀態
+            document.querySelectorAll('.demo-text').forEach(demoText => {
+                demoText.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 設置初始樣式
+            changeStyle('none');
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
