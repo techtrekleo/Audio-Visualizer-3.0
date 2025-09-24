@@ -69,11 +69,26 @@ function injectUnifiedLayout(htmlContent) {
       
                   /* 統一頁尾樣式 - 使用首頁樣式 */
                   .unified-footer {
-                    background: rgba(26, 26, 26, 0.8);
+                    background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
                     padding: 3rem 0 2rem;
                     text-align: center;
                     border-top: 1px solid rgba(255, 255, 255, 0.1);
                     margin-top: 2rem;
+                    position: relative;
+                  }
+                  
+                  .unified-footer::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-image: 
+                      radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
+                      radial-gradient(circle at 40% 40%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
+                    z-index: -1;
                   }
                   .unified-footer .footer-content {
                     max-width: 1200px;
