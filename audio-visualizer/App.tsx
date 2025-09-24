@@ -198,6 +198,14 @@ function App() {
         }
         
         const apiKey = (import.meta as any).env.VITE_API_KEY;
+        
+        // 調試信息
+        console.log("API Key 狀態:", {
+            hasApiKey: !!apiKey,
+            apiKeyLength: apiKey ? apiKey.length : 0,
+            apiKeyPrefix: apiKey ? apiKey.substring(0, 10) + "..." : "無",
+            envKeys: Object.keys((import.meta as any).env || {})
+        });
 
         if (!apiKey) {
             console.error("API Key is not configured. Please set 'VITE_API_KEY' in your deployment environment variables and redeploy.");
