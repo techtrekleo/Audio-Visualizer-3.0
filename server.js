@@ -67,7 +67,7 @@ function injectUnifiedLayout(htmlContent) {
         color: white;
       }
       
-                  /* 統一頁尾樣式 - 使用首頁樣式 */
+                  /* 統一頁尾樣式 - 使用首頁樣式（優化版） */
                   .unified-footer {
                     background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
                     padding: 3rem 0 2rem;
@@ -77,6 +77,7 @@ function injectUnifiedLayout(htmlContent) {
                     position: relative;
                   }
                   
+                  /* 輕量版動態背景 - 減少 GPU 負擔 */
                   .unified-footer::before {
                     content: '';
                     position: absolute;
@@ -84,10 +85,7 @@ function injectUnifiedLayout(htmlContent) {
                     left: 0;
                     width: 100%;
                     height: 100%;
-                    background-image: 
-                      radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
-                      radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
-                      radial-gradient(circle at 40% 40%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
+                    background: radial-gradient(circle at 50% 50%, rgba(78, 205, 196, 0.08) 0%, transparent 70%);
                     z-index: -1;
                   }
                   .unified-footer .footer-content {
