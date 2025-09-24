@@ -68,7 +68,7 @@ function App() {
       <UnifiedHeader />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <div className="space-y-6">
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-gray-700 p-6">
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
             <h2 className="text-xl font-semibold text-gray-100 mb-6">
               Generate SEO-friendly titles and tags for your music covers
             </h2>
@@ -84,7 +84,7 @@ function App() {
                   value={songName}
                   onChange={(e) => setSongName(e.target.value)}
                   placeholder="e.g., Shape of You, Bohemian Rhapsody"
-                  className="w-full px-3 py-2 bg-gray-900 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                  className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
                 />
               </div>
 
@@ -98,7 +98,7 @@ function App() {
                   value={artist}
                   onChange={(e) => setArtist(e.target.value)}
                   placeholder="e.g., Ed Sheeran, Queen"
-                  className="w-full px-3 py-2 bg-gray-900 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                  className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
                 />
               </div>
 
@@ -114,7 +114,7 @@ function App() {
                       className={`p-3 rounded-lg border-2 transition-all duration-200 text-center ${
                         selectedLanguage === lang.id
                           ? 'border-cyan-500 bg-cyan-500/20 text-cyan-300'
-                          : 'border-gray-700 bg-gray-800 hover:border-gray-600 hover:bg-gray-700'
+                          : 'border-black bg-gray-800 hover:border-gray-800 hover:bg-gray-700'
                       }`}
                     >
                       <div className="font-medium text-sm">
@@ -137,7 +137,7 @@ function App() {
                       className={`p-3 rounded-lg border-2 transition-all duration-200 text-left ${
                         selectedStyles.includes(category.id)
                           ? 'border-cyan-500 bg-cyan-500/20 text-cyan-300'
-                          : 'border-gray-700 bg-gray-800 hover:border-gray-600 hover:bg-gray-700'
+                          : 'border-black bg-gray-800 hover:border-gray-800 hover:bg-gray-700'
                       }`}
                     >
                       <div className="font-medium text-sm">
@@ -176,7 +176,7 @@ function App() {
 
           {seoContent && (
             <div className="space-y-6">
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-gray-700 p-6">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-100">Title (標題)</h3>
                   <button
@@ -194,7 +194,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-gray-700 p-6">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-100">Description (歌曲說明)</h3>
                   <button
@@ -212,7 +212,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-gray-700 p-6">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-100">Tags (標籤)</h3>
                   <button
