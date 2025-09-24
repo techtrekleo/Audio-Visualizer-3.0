@@ -655,6 +655,7 @@ const server = http.createServer((req, res) => {
     const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
     const assetPath = req.url.replace('/audio-visualizer', '');
     filePath = path.join(distPath, assetPath);
+    console.log('Audio Visualizer Assets:', req.url, '->', filePath);
   } else if (req.url.startsWith('/audio-visualizer')) {
     const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
     const relativePath = req.url.replace('/audio-visualizer', '');
@@ -682,11 +683,6 @@ const server = http.createServer((req, res) => {
     if (filePath.endsWith('/') || !path.extname(filePath)) {
       filePath = path.join(filePath, 'index.html');
     }
-  } else if ((req.url.startsWith('/assets/') || req.url.startsWith('/audio-visualizer/assets/')) && (req.url.includes('main-') || req.url.includes('cat-avatar'))) {
-    // 處理 Audio Visualizer 的 assets 請求
-    const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
-    const assetPath = req.url.startsWith('/audio-visualizer/assets/') ? req.url.replace('/audio-visualizer', '') : req.url;
-    filePath = path.join(distPath, assetPath);
   } else if (req.url.startsWith('/assets/') && req.url.includes('DUtiRxny')) {
     // 處理字體特效產生器的 assets 請求
     const distPath = path.join(__dirname, 'font-effects', 'dist');
