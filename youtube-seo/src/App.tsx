@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { musicCategories } from './utils/musicCategories'
 import { generateAIContent } from './utils/geminiAI'
-import { UnifiedHeader, UnifiedFooter } from './components/UnifiedLayout'
+import { UnifiedHeader } from './components/UnifiedLayout'
 
 interface SEOContent {
   title: string
@@ -245,8 +245,6 @@ function App() {
           )}
         </div>
       </main>
-
-      <UnifiedFooter />
     </div>
   )
 }

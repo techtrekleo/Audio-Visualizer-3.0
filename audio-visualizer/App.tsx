@@ -11,7 +11,7 @@ import OptimizedControls from './components/OptimizedControls';
 import Icon from './components/Icon';
 import AdSenseAd from './components/AdSenseAd';
 import LyricsDisplay from './components/LyricsDisplay';
-import { UnifiedHeader, UnifiedFooter } from './components/UnifiedLayout';
+import { UnifiedHeader } from './components/UnifiedLayout';
 // import AdManager from './components/AdManager';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
@@ -690,8 +690,6 @@ function App() {
             <div className="w-full max-w-7xl mx-auto px-4 mb-4">
                 <AdSenseAd type="footer" />
             </div>
-            
-            <UnifiedFooter />
             
         </div>
     );

@@ -3,7 +3,7 @@ import { DownloadIcon, ClearIcon, InspirationIcon, PhotoIcon } from './component
 import { DraggableTextBlock } from './components/DraggableTextBlock';
 import { VisualCanvas } from './components/VisualCanvas';
 import { PresetManager } from './components/PresetManager';
-import { UnifiedHeader, UnifiedFooter } from './components/UnifiedLayout';
+import { UnifiedHeader } from './components/UnifiedLayout';
 import { renderComposition, getRandomItem, getRandomHexColor } from './utils/canvas';
 import { fonts, effects, canvasSizes, DEFAULT_COLOR_1, DEFAULT_COLOR_2 } from './constants';
 import type { TextBlock, CanvasSizeId, EffectId, SavedPreset } from './types';
@@ -291,8 +291,6 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
-      
-      <UnifiedFooter />
     </div>
   );
 };
