@@ -72,7 +72,7 @@ function injectUnifiedLayout(htmlContent) {
                     background: #000000;
                     padding: 3rem 0 2rem;
                     text-align: center;
-                    border-top: 1px solid rgba(255, 255, 255, 0.1);
+                    border-top: 1px solid #000000;
                     margin-top: 2rem;
                   }
                   .unified-footer .footer-content {
