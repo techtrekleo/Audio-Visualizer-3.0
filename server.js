@@ -157,8 +157,8 @@ function injectUnifiedLayout(htmlContent) {
                     border-color: #000000 !important;
                   }
                   
-                  /* 聯繫我們彈出視窗樣式 */
-                  .contact-modal {
+                  /* 彈出視窗樣式 */
+                  .contact-modal, .privacy-modal, .terms-modal {
                     display: none;
                     position: fixed;
                     z-index: 1000;
@@ -169,37 +169,41 @@ function injectUnifiedLayout(htmlContent) {
                     background-color: rgba(0, 0, 0, 0.8);
                     backdrop-filter: blur(5px);
                   }
-                  .contact-modal-content {
+                  .contact-modal-content, .privacy-modal-content, .terms-modal-content {
                     background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-                    margin: 10% auto;
+                    margin: 5% auto;
                     padding: 2rem;
                     border: 1px solid #4ecdc4;
                     border-radius: 20px;
                     width: 90%;
-                    max-width: 500px;
+                    max-width: 600px;
+                    max-height: 80vh;
+                    overflow-y: auto;
                     position: relative;
                     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
                   }
-                  .contact-modal-header {
+                  .contact-modal-header, .privacy-modal-header, .terms-modal-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     margin-bottom: 2rem;
+                    padding-bottom: 1rem;
+                    border-bottom: 1px solid #4ecdc4;
                   }
-                  .contact-modal-title {
+                  .contact-modal-title, .privacy-modal-title, .terms-modal-title {
                     color: #4ecdc4;
                     font-size: 1.5rem;
                     font-weight: bold;
                     margin: 0;
                   }
-                  .contact-modal-close {
+                  .contact-modal-close, .privacy-modal-close, .terms-modal-close {
                     color: #aaa;
                     font-size: 2rem;
                     font-weight: bold;
                     cursor: pointer;
                     transition: color 0.3s ease;
                   }
-                  .contact-modal-close:hover {
+                  .contact-modal-close:hover, .privacy-modal-close:hover, .terms-modal-close:hover {
                     color: #4ecdc4;
                   }
                   .contact-options {
@@ -243,6 +247,37 @@ function injectUnifiedLayout(htmlContent) {
                   .contact-option-desc {
                     font-size: 0.9rem;
                     color: #b8b8b8;
+                  }
+                  
+                  /* 隱私政策和使用條款內容樣式 */
+                  .privacy-content, .terms-content {
+                    color: #e5e7eb;
+                    line-height: 1.6;
+                  }
+                  .privacy-content h3, .terms-content h3 {
+                    color: #4ecdc4;
+                    font-size: 1.2rem;
+                    margin-top: 2rem;
+                    margin-bottom: 1rem;
+                    border-left: 3px solid #4ecdc4;
+                    padding-left: 1rem;
+                  }
+                  .privacy-content h3:first-child, .terms-content h3:first-child {
+                    margin-top: 0;
+                  }
+                  .privacy-content p, .terms-content p {
+                    margin-bottom: 1rem;
+                    text-align: justify;
+                  }
+                  .privacy-content ul, .terms-content ul {
+                    margin-left: 1.5rem;
+                    margin-bottom: 1rem;
+                  }
+                  .privacy-content li, .terms-content li {
+                    margin-bottom: 0.5rem;
+                  }
+                  .privacy-content strong, .terms-content strong {
+                    color: #4ecdc4;
                   }
                   
                   /* Buy Me a Coffee 按鈕樣式 */
@@ -380,10 +415,10 @@ function injectUnifiedLayout(htmlContent) {
                       <a href="#" onclick="openContactModal()">
                         <i class="fas fa-envelope"></i> 聯繫我們
                       </a>
-                      <a href="#privacy">
+                      <a href="#" onclick="openPrivacyModal(); return false;">
                         <i class="fas fa-shield-alt"></i> 隱私政策
                       </a>
-                      <a href="#terms">
+                      <a href="#" onclick="openTermsModal(); return false;">
                         <i class="fas fa-file-contract"></i> 使用條款
                       </a>
                     </div>
@@ -408,7 +443,7 @@ function injectUnifiedLayout(htmlContent) {
               `;
 
               // 添加彈出視窗HTML到body最後
-              const contactModalHtml = `
+              const modalHtml = `
                 <!-- 聯繫我們彈出視窗 -->
                 <div id="contactModal" class="contact-modal">
                   <div class="contact-modal-content">
@@ -448,6 +483,109 @@ function injectUnifiedLayout(htmlContent) {
                   </div>
                 </div>
                 
+                <!-- 隱私政策彈出視窗 -->
+                <div id="privacyModal" class="privacy-modal">
+                  <div class="privacy-modal-content">
+                    <div class="privacy-modal-header">
+                      <h3 class="privacy-modal-title">隱私政策</h3>
+                      <span class="privacy-modal-close" onclick="closePrivacyModal()">&times;</span>
+                    </div>
+                    <div class="privacy-content">
+                      <h3>資料收集與使用</h3>
+                      <p>我們致力於保護您的隱私權。本政策說明我們如何收集、使用和保護您的個人資料。</p>
+                      
+                      <h3>收集的資料類型</h3>
+                      <ul>
+                        <li><strong>使用資料：</strong>當您使用我們的服務時，我們會收集您與服務互動的相關資訊</li>
+                        <li><strong>技術資料：</strong>包括 IP 地址、瀏覽器類型、作業系統等技術資訊</li>
+                        <li><strong>內容資料：</strong>您上傳或輸入的音樂、文字等創作內容</li>
+                      </ul>
+                      
+                      <h3>資料使用目的</h3>
+                      <p>我們使用收集的資料來：</p>
+                      <ul>
+                        <li>提供、維護和改善我們的服務</li>
+                        <li>處理您的請求並提供客戶支援</li>
+                        <li>分析使用模式以優化服務體驗</li>
+                        <li>確保服務的安全性和穩定性</li>
+                      </ul>
+                      
+                      <h3>資料保護</h3>
+                      <p>我們採用業界標準的安全措施來保護您的資料，包括加密傳輸、安全儲存和存取控制。</p>
+                      
+                      <h3>資料分享</h3>
+                      <p>我們不會出售、交易或轉讓您的個人資料給第三方，除非：</p>
+                      <ul>
+                        <li>獲得您的明確同意</li>
+                        <li>法律要求或法院命令</li>
+                        <li>保護我們的權利和財產</li>
+                      </ul>
+                      
+                      <h3>您的權利</h3>
+                      <p>您有權：</p>
+                      <ul>
+                        <li>存取、更正或刪除您的個人資料</li>
+                        <li>限制或反對資料處理</li>
+                        <li>資料可攜權</li>
+                        <li>撤回同意</li>
+                      </ul>
+                      
+                      <h3>政策更新</h3>
+                      <p>我們可能會不時更新此隱私政策。重大變更將透過網站公告或電子郵件通知您。</p>
+                      
+                      <p><strong>最後更新：</strong>2025年1月</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 使用條款彈出視窗 -->
+                <div id="termsModal" class="terms-modal">
+                  <div class="terms-modal-content">
+                    <div class="terms-modal-header">
+                      <h3 class="terms-modal-title">使用條款</h3>
+                      <span class="terms-modal-close" onclick="closeTermsModal()">&times;</span>
+                    </div>
+                    <div class="terms-content">
+                      <h3>服務條款</h3>
+                      <p>歡迎使用音樂脈動-Sonic Pulse 的服務。使用我們的服務即表示您同意遵守以下條款。</p>
+                      
+                      <h3>服務描述</h3>
+                      <p>我們提供音樂創作、音訊可視化和 YouTube SEO 優化等工具，幫助音樂創作者提升創作效率和作品品質。</p>
+                      
+                      <h3>使用者責任</h3>
+                      <ul>
+                        <li><strong>合法使用：</strong>您承諾僅將服務用於合法目的，不得用於任何違法活動</li>
+                        <li><strong>內容責任：</strong>您對上傳或創作的內容負完全責任，確保不侵犯他人權利</li>
+                        <li><strong>帳戶安全：</strong>您有責任保護帳戶安全，不得與他人分享帳戶資訊</li>
+                        <li><strong>遵守規定：</strong>您必須遵守所有適用的法律法規和平台規則</li>
+                      </ul>
+                      
+                      <h3>智慧財產權</h3>
+                      <p>服務中的所有內容、功能、設計和技術均受智慧財產權法保護。未經授權，不得複製、修改或分發。</p>
+                      
+                      <h3>使用者內容</h3>
+                      <p>您保留對上傳內容的所有權利。使用我們的服務即表示您授予我們必要的使用權限來提供服務。</p>
+                      
+                      <h3>服務可用性</h3>
+                      <p>我們努力保持服務的穩定運行，但不保證服務不會中斷。我們保留在必要時暫停或終止服務的權利。</p>
+                      
+                      <h3>免責聲明</h3>
+                      <p>服務按「現狀」提供，我們不提供任何明示或暗示的保證。我們不對服務中斷、資料遺失或任何損害負責。</p>
+                      
+                      <h3>責任限制</h3>
+                      <p>在法律允許的最大範圍內，我們的責任限於您為服務支付的費用。</p>
+                      
+                      <h3>條款修改</h3>
+                      <p>我們保留隨時修改這些條款的權利。修改後的條款將在網站上公布，繼續使用服務即表示接受新條款。</p>
+                      
+                      <h3>爭議解決</h3>
+                      <p>任何爭議應透過友好協商解決。如無法解決，應提交有管轄權的法院處理。</p>
+                      
+                      <p><strong>最後更新：</strong>2025年1月</p>
+                    </div>
+                  </div>
+                </div>
+                
                 <script>
                   // 更新年份
                   document.getElementById('currentYear').textContent = new Date().getFullYear();
@@ -463,11 +601,40 @@ function injectUnifiedLayout(htmlContent) {
                     document.body.style.overflow = 'auto';
                   }
                   
+                  // 隱私政策彈出視窗功能
+                  function openPrivacyModal() {
+                    document.getElementById('privacyModal').style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                  }
+                  
+                  function closePrivacyModal() {
+                    document.getElementById('privacyModal').style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                  }
+                  
+                  // 使用條款彈出視窗功能
+                  function openTermsModal() {
+                    document.getElementById('termsModal').style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                  }
+                  
+                  function closeTermsModal() {
+                    document.getElementById('termsModal').style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                  }
+                  
                   // 點擊背景關閉彈出視窗
                   window.onclick = function(event) {
-                    const modal = document.getElementById('contactModal');
-                    if (event.target === modal) {
+                    const contactModal = document.getElementById('contactModal');
+                    const privacyModal = document.getElementById('privacyModal');
+                    const termsModal = document.getElementById('termsModal');
+                    
+                    if (event.target === contactModal) {
                       closeContactModal();
+                    } else if (event.target === privacyModal) {
+                      closePrivacyModal();
+                    } else if (event.target === termsModal) {
+                      closeTermsModal();
                     }
                   }
                   
@@ -475,6 +642,8 @@ function injectUnifiedLayout(htmlContent) {
                   document.addEventListener('keydown', function(event) {
                     if (event.key === 'Escape') {
                       closeContactModal();
+                      closePrivacyModal();
+                      closeTermsModal();
                     }
                   });
                 </script>
@@ -490,7 +659,7 @@ function injectUnifiedLayout(htmlContent) {
   modifiedHtml = modifiedHtml.replace('</body>', `${unifiedFooter}</body>`);
   
   // 注入彈出視窗到 body 最後
-  modifiedHtml = modifiedHtml.replace('</body>', `${contactModalHtml}</body>`);
+  modifiedHtml = modifiedHtml.replace('</body>', `${modalHtml}</body>`);
   
   return modifiedHtml;
 }
