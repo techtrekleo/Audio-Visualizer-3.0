@@ -3,6 +3,7 @@ import { DownloadIcon, ClearIcon, InspirationIcon, PhotoIcon } from './component
 import { DraggableTextBlock } from './components/DraggableTextBlock';
 import { VisualCanvas } from './components/VisualCanvas';
 import { PresetManager } from './components/PresetManager';
+import { UnifiedHeader, UnifiedFooter } from './components/UnifiedLayout';
 import { renderComposition, getRandomItem, getRandomHexColor } from './utils/canvas';
 import { fonts, effects, canvasSizes, DEFAULT_COLOR_1, DEFAULT_COLOR_2 } from './constants';
 import type { TextBlock, CanvasSizeId, EffectId, SavedPreset } from './types';
@@ -159,12 +160,8 @@ const App: React.FC = () => {
 
   return (
     <div className="text-white min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8" style={{ fontFamily: "'Noto Sans TC', sans-serif", background: '#000000' }}>
-      <header className="w-full max-w-7xl mb-6 text-center">
-        <h1 className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-600" style={{ fontFamily: "'Noto Sans TC', sans-serif", fontWeight: 900 }}>字體特效產生器</h1>
-        <p className="text-gray-400 mt-2">三個可拖動文字區塊，創造獨一無二的客製化字卡</p>
-      </header>
-      
-      <main className="w-full max-w-7xl space-y-8">
+      <UnifiedHeader />
+      <main className="w-full max-w-7xl space-y-8 pt-24">
         {/* 頂部預覽區域 - 佔滿一整行 */}
         <div className="bg-gray-800/20 p-6 rounded-2xl border border-dashed border-gray-700">
           <div className="text-center mb-4">
@@ -295,22 +292,7 @@ const App: React.FC = () => {
         </div>
       </main>
       
-      {/* 抖內按鈕頁腳 */}
-      <footer className="w-full max-w-7xl mt-8 mb-4 text-center">
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-gray-300 text-sm">© {new Date().getFullYear()} Sonic Pulse. Built with ❤️ by 音樂脈動-Sonic Pulse</p>
-          <p className="mt-2">
-            <a 
-              href="https://www.youtube.com/@%E9%9F%B3%E6%A8%82%E8%84%88%E5%8B%95SonicPulse" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200"
-            >
-              🎵 Sonic Pulse YouTube Channel
-            </a>
-          </p>
-        </div>
-      </footer>
+      <UnifiedFooter />
     </div>
   );
 };

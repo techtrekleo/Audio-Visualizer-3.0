@@ -11,6 +11,7 @@ import OptimizedControls from './components/OptimizedControls';
 import Icon from './components/Icon';
 import AdSenseAd from './components/AdSenseAd';
 import LyricsDisplay from './components/LyricsDisplay';
+import { UnifiedHeader, UnifiedFooter } from './components/UnifiedLayout';
 // import AdManager from './components/AdManager';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
@@ -483,6 +484,7 @@ function App() {
 
     return (
         <div className="h-full flex flex-col">
+            <UnifiedHeader />
             {audioUrl && (
                 <audio
                     key={audioUrl}
@@ -514,7 +516,7 @@ function App() {
                 </div>
             </header>
 
-            <main className="flex-1 flex flex-col p-4 overflow-y-auto">
+            <main className="flex-1 flex flex-col p-4 overflow-y-auto pt-24">
                 <div className="w-full max-w-7xl mx-auto flex flex-col items-center gap-4">
                         <div style={wrapperStyle} className="flex items-center justify-center bg-black rounded-lg border border-gray-700 overflow-hidden">
                             <div 
@@ -688,23 +690,7 @@ function App() {
                 <AdSenseAd type="footer" />
             </div>
             
-            <footer className="w-full text-center p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-600 flex-shrink-0">
-                <div className="mb-4">
-                    <p className="text-gray-300">© {new Date().getFullYear()} Sonic Pulse. Built with ❤️ by 音樂脈動-Sonic Pulse</p>
-                    <p className="mt-2">
-                        <a 
-                            href="https://www.youtube.com/@%E9%9F%B3%E6%A8%82%E8%84%88%E5%8B%95SonicPulse" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200"
-                        >
-                            🎵 Sonic Pulse YouTube Channel
-                        </a>
-                    </p>
-                </div>
-                
-                
-            </footer>
+            <UnifiedFooter />
             
         </div>
     );

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { musicCategories } from './utils/musicCategories'
 import { generateAIContent } from './utils/geminiAI'
+import { UnifiedHeader, UnifiedFooter } from './components/UnifiedLayout'
 
 interface SEOContent {
   title: string
@@ -64,22 +65,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black">
-      <header className="bg-gray-800/50 backdrop-blur-sm shadow-sm border-b border-gray-700">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-100">
-                🎵 YouTube SEO Generator
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-400">by 音樂脈動-Sonic Pulse</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <UnifiedHeader />
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <div className="space-y-6">
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-gray-700 p-6">
             <h2 className="text-xl font-semibold text-gray-100 mb-6">
@@ -259,24 +246,7 @@ function App() {
         </div>
       </main>
 
-      <footer className="bg-gray-800/50 backdrop-blur-sm border-t border-gray-700 mt-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-400 text-sm">
-            <p>© {new Date().getFullYear()} Sonic Pulse. Built with ❤️ by 音樂脈動-Sonic Pulse</p>
-            <p className="mt-2">
-              <a 
-                href="https://www.youtube.com/@%E9%9F%B3%E6%A8%82%E8%84%88%E5%8B%95SonicPulse" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-cyan-400 hover:text-cyan-300 font-medium"
-              >
-                🎵 Sonic Pulse YouTube Channel
-              </a>
-            </p>
-            
-          </div>
-        </div>
-      </footer>
+      <UnifiedFooter />
     </div>
   )
 }
