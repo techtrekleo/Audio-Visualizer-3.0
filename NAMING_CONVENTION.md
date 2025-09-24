@@ -180,8 +180,8 @@ tool-name/
 
 ### Railway 環境變數設置
 ```
-VITE_API_KEY=your_key_here
-GEMINI_API_KEY=your_key_here
+VITE_API_KEY=your_gemini_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 PORT=8000
 ```
 
