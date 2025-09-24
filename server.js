@@ -67,26 +67,13 @@ function injectUnifiedLayout(htmlContent) {
         color: white;
       }
       
-                  /* 統一頁尾樣式 - 使用首頁樣式（優化版） */
+                  /* 統一頁尾樣式 - 工具頁面使用純色背景 */
                   .unified-footer {
-                    background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
+                    background: #000000;
                     padding: 3rem 0 2rem;
                     text-align: center;
                     border-top: 1px solid rgba(255, 255, 255, 0.1);
                     margin-top: 2rem;
-                    position: relative;
-                  }
-                  
-                  /* 輕量版動態背景 - 減少 GPU 負擔 */
-                  .unified-footer::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: radial-gradient(circle at 50% 50%, rgba(78, 205, 196, 0.08) 0%, transparent 70%);
-                    z-index: -1;
                   }
                   .unified-footer .footer-content {
                     max-width: 1200px;
