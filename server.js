@@ -713,6 +713,10 @@ const server = http.createServer((req, res) => {
     // 處理字體特效產生器的 assets 請求
     const distPath = path.join(__dirname, 'font-effects', 'dist');
     filePath = path.join(distPath, req.url);
+  } else if (req.url.startsWith('/assets/') && (req.url.includes('main-') || req.url.includes('cat-avatar'))) {
+    // 處理 Audio Visualizer 的 assets 請求
+    const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
+    filePath = path.join(distPath, req.url);
   } else {
     // 其他路由服務根目錄
     filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
