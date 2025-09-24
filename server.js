@@ -100,6 +100,20 @@ function injectUnifiedLayout(htmlContent) {
                     font-size: 0.9rem;
                   }
                   
+                  /* 覆蓋工具頁面的灰色邊框 */
+                  .border-gray-700 {
+                    border-color: #000000 !important;
+                  }
+                  .border-gray-600 {
+                    border-color: #000000 !important;
+                  }
+                  .border-gray-500 {
+                    border-color: #000000 !important;
+                  }
+                  .border-gray-400 {
+                    border-color: #000000 !important;
+                  }
+                  
                   /* 聯繫我們彈出視窗樣式 */
                   .contact-modal {
                     display: none;
