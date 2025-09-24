@@ -96,21 +96,17 @@ export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
 
       <div className="space-y-3">
         <label className="block text-sm font-semibold text-gray-300">字體</label>
-        <div className="grid grid-cols-2 gap-2">
+        <select
+          value={textBlock.fontId}
+          onChange={(e) => onUpdate({ ...textBlock, fontId: e.target.value })}
+          className="w-full p-3 bg-gray-900 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-200"
+        >
           {fonts.map(font => (
-            <button
-              key={font.id}
-              onClick={() => onUpdate({ ...textBlock, fontId: font.id })}
-              className={`py-2 px-2 rounded-lg text-center transition-all duration-200 border text-xs truncate ${
-                textBlock.fontId === font.id ? 'bg-cyan-600 border-cyan-400' : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
-              }`}
-              style={{ fontFamily: `"${font.family}"`, fontWeight: font.weight }}
-              title={font.name}
-            >
+            <option key={font.id} value={font.id} style={{ fontFamily: `"${font.family}"`, fontWeight: font.weight }}>
               {font.name}
-            </button>
+            </option>
           ))}
-        </div>
+        </select>
       </div>
 
       <div className="space-y-3">

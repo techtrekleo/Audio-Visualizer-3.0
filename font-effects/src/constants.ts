@@ -10,6 +10,8 @@ export const fonts = [
   { id: 'rocknroll-one', name: '搖滾圓體', family: 'RocknRoll One', weight: 400 },
   { id: 'reggae-one', name: '雷鬼 Stencil', family: 'Reggae One', weight: 400 },
   { id: 'rampart-one', name: '立體裝甲', family: 'Rampart One', weight: 400 },
+  { id: 'poppins-bold', name: 'Poppins (粗體)', family: 'Poppins', weight: 700 },
+  { id: 'roboto-mono', name: 'Roboto Mono', family: 'Roboto Mono', weight: 400 },
 ] as const;
 
 
