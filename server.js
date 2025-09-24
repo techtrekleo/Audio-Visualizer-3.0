@@ -100,6 +100,94 @@ function injectUnifiedLayout(htmlContent) {
                     font-size: 0.9rem;
                   }
                   
+                  /* 聯繫我們彈出視窗樣式 */
+                  .contact-modal {
+                    display: none;
+                    position: fixed;
+                    z-index: 1000;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.8);
+                    backdrop-filter: blur(5px);
+                  }
+                  .contact-modal-content {
+                    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+                    margin: 10% auto;
+                    padding: 2rem;
+                    border: 1px solid #4ecdc4;
+                    border-radius: 20px;
+                    width: 90%;
+                    max-width: 500px;
+                    position: relative;
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+                  }
+                  .contact-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 2rem;
+                  }
+                  .contact-modal-title {
+                    color: #4ecdc4;
+                    font-size: 1.5rem;
+                    font-weight: bold;
+                    margin: 0;
+                  }
+                  .contact-modal-close {
+                    color: #aaa;
+                    font-size: 2rem;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: color 0.3s ease;
+                  }
+                  .contact-modal-close:hover {
+                    color: #4ecdc4;
+                  }
+                  .contact-options {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.5rem;
+                  }
+                  .contact-option {
+                    display: flex;
+                    align-items: center;
+                    padding: 1rem;
+                    background: rgba(78, 205, 196, 0.1);
+                    border: 1px solid rgba(78, 205, 196, 0.3);
+                    border-radius: 15px;
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                    text-decoration: none;
+                    color: white;
+                  }
+                  .contact-option:hover {
+                    background: rgba(78, 205, 196, 0.2);
+                    border-color: #4ecdc4;
+                    transform: translateY(-2px);
+                  }
+                  .contact-option-icon {
+                    width: 40px;
+                    height: 40px;
+                    margin-right: 1rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.5rem;
+                  }
+                  .contact-option-text {
+                    flex: 1;
+                  }
+                  .contact-option-title {
+                    font-weight: bold;
+                    margin-bottom: 0.25rem;
+                  }
+                  .contact-option-desc {
+                    font-size: 0.9rem;
+                    color: #b8b8b8;
+                  }
+                  
                   /* Buy Me a Coffee 按鈕樣式 */
                   .btn-coffee {
                     background: linear-gradient(135deg, #ff6b9d 0%, #4ecdc4 100%);
@@ -232,7 +320,7 @@ function injectUnifiedLayout(htmlContent) {
                       <a href="https://www.youtube.com/@%E9%9F%B3%E6%A8%82%E8%84%88%E5%8B%95SonicPulse" target="_blank">
                         <i class="fab fa-youtube"></i> YouTube
                       </a>
-                      <a href="mailto:contact@sonicpulse.com">
+                      <a href="#" onclick="openContactModal()">
                         <i class="fas fa-envelope"></i> 聯繫我們
                       </a>
                       <a href="#privacy">
@@ -261,9 +349,74 @@ function injectUnifiedLayout(htmlContent) {
                   </div>
                 </footer>
                 
+                <!-- 聯繫我們彈出視窗 -->
+                <div id="contactModal" class="contact-modal">
+                  <div class="contact-modal-content">
+                    <div class="contact-modal-header">
+                      <h3 class="contact-modal-title">聯繫我們</h3>
+                      <span class="contact-modal-close" onclick="closeContactModal()">&times;</span>
+                    </div>
+                    <div class="contact-options">
+                      <a href="https://discord.com/users/104427212337332224" target="_blank" class="contact-option">
+                        <div class="contact-option-icon">
+                          <i class="fab fa-discord" style="color: #5865F2;"></i>
+                        </div>
+                        <div class="contact-option-text">
+                          <div class="contact-option-title">Discord</div>
+                          <div class="contact-option-desc">即時聊天與技術支援</div>
+                        </div>
+                      </a>
+                      <a href="https://www.threads.com/@sonicpulse.taiwan" target="_blank" class="contact-option">
+                        <div class="contact-option-icon">
+                          <i class="fab fa-threads" style="color: #000000;"></i>
+                        </div>
+                        <div class="contact-option-text">
+                          <div class="contact-option-title">Threads</div>
+                          <div class="contact-option-desc">社群互動與最新消息</div>
+                        </div>
+                      </a>
+                      <a href="mailto:contact@sonicpulse.com" class="contact-option">
+                        <div class="contact-option-icon">
+                          <i class="fas fa-envelope" style="color: #4ecdc4;"></i>
+                        </div>
+                        <div class="contact-option-text">
+                          <div class="contact-option-title">Email</div>
+                          <div class="contact-option-desc">正式商務聯繫</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                
                 <script>
                   // 更新年份
                   document.getElementById('currentYear').textContent = new Date().getFullYear();
+                  
+                  // 聯繫我們彈出視窗功能
+                  function openContactModal() {
+                    document.getElementById('contactModal').style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                  }
+                  
+                  function closeContactModal() {
+                    document.getElementById('contactModal').style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                  }
+                  
+                  // 點擊背景關閉彈出視窗
+                  window.onclick = function(event) {
+                    const modal = document.getElementById('contactModal');
+                    if (event.target === modal) {
+                      closeContactModal();
+                    }
+                  }
+                  
+                  // ESC鍵關閉彈出視窗
+                  document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape') {
+                      closeContactModal();
+                    }
+                  });
                 </script>
               `;
 

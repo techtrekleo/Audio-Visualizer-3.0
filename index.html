@@ -1242,7 +1242,7 @@
                 <a href="https://www.youtube.com/@%E9%9F%B3%E6%A8%82%E8%84%88%E5%8B%95SonicPulse" target="_blank">
                     <i class="fab fa-youtube"></i> YouTube
                 </a>
-                <a href="mailto:contact@sonicpulse.com">
+                <a href="#" onclick="openContactModal()">
                     <i class="fas fa-envelope"></i> 聯繫我們
                 </a>
                 <a href="#privacy">
@@ -1582,6 +1582,73 @@
                     element.classList.add('visible');
                 }, index * 100);
             });
+        });
+    </script>
+    
+    <!-- 聯繫我們彈出視窗 -->
+    <div id="contactModal" class="contact-modal">
+        <div class="contact-modal-content">
+            <div class="contact-modal-header">
+                <h3 class="contact-modal-title">聯繫我們</h3>
+                <span class="contact-modal-close" onclick="closeContactModal()">&times;</span>
+            </div>
+            <div class="contact-options">
+                <a href="https://discord.com/users/104427212337332224" target="_blank" class="contact-option">
+                    <div class="contact-option-icon">
+                        <i class="fab fa-discord" style="color: #5865F2;"></i>
+                    </div>
+                    <div class="contact-option-text">
+                        <div class="contact-option-title">Discord</div>
+                        <div class="contact-option-desc">即時聊天與技術支援</div>
+                    </div>
+                </a>
+                <a href="https://www.threads.com/@sonicpulse.taiwan" target="_blank" class="contact-option">
+                    <div class="contact-option-icon">
+                        <i class="fab fa-threads" style="color: #000000;"></i>
+                    </div>
+                    <div class="contact-option-text">
+                        <div class="contact-option-title">Threads</div>
+                        <div class="contact-option-desc">社群互動與最新消息</div>
+                    </div>
+                </a>
+                <a href="mailto:contact@sonicpulse.com" class="contact-option">
+                    <div class="contact-option-icon">
+                        <i class="fas fa-envelope" style="color: #4ecdc4;"></i>
+                    </div>
+                    <div class="contact-option-text">
+                        <div class="contact-option-title">Email</div>
+                        <div class="contact-option-desc">正式商務聯繫</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 聯繫我們彈出視窗功能
+        function openContactModal() {
+            document.getElementById('contactModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeContactModal() {
+            document.getElementById('contactModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // 點擊背景關閉彈出視窗
+        window.onclick = function(event) {
+            const modal = document.getElementById('contactModal');
+            if (event.target === modal) {
+                closeContactModal();
+            }
+        }
+        
+        // ESC鍵關閉彈出視窗
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeContactModal();
+            }
         });
     </script>
 </body>
