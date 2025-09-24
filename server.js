@@ -10,11 +10,26 @@ const server = http.createServer((req, res) => {
   // 設置 CORS 標頭
   res.setHeader('Access-Control-Allow-Origin', '*');
   
-  let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+  let filePath;
   
-  // 如果是目錄，添加 index.html
-  if (filePath.endsWith('/')) {
-    filePath = path.join(filePath, 'index.html');
+  // 如果是 audio-visualizer 相關的路由，服務 dist 目錄
+  if (req.url.startsWith('/audio-visualizer') || req.url === '/') {
+    const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
+    const relativePath = req.url === '/' ? '/audio-visualizer/' : req.url;
+    filePath = path.join(distPath, relativePath.replace('/audio-visualizer', ''));
+    
+    // 如果是目錄，添加 index.html
+    if (filePath.endsWith('/') || !path.extname(filePath)) {
+      filePath = path.join(filePath, 'index.html');
+    }
+  } else {
+    // 其他路由服務根目錄
+    filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+    
+    // 如果是目錄，添加 index.html
+    if (filePath.endsWith('/')) {
+      filePath = path.join(filePath, 'index.html');
+    }
   }
   
   fs.readFile(filePath, (error, content) => {
