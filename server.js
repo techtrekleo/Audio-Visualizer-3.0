@@ -67,38 +67,131 @@ function injectUnifiedLayout(htmlContent) {
         color: white;
       }
       
-      /* 統一頁尾樣式 */
-      .unified-footer {
-        background: rgba(26, 26, 26, 0.8);
-        padding: 3rem 0 2rem;
-        text-align: center;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        margin-top: 2rem;
-      }
-      .unified-footer .footer-content {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 2rem;
-      }
-      .unified-footer .footer-links {
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        margin-bottom: 2rem;
-        flex-wrap: wrap;
-      }
-      .unified-footer .footer-links a {
-        color: #b8b8b8;
-        text-decoration: none;
-        transition: color 0.3s ease;
-      }
-      .unified-footer .footer-links a:hover {
-        color: #4ecdc4;
-      }
-      .unified-footer .footer-bottom {
-        color: #666;
-        font-size: 0.9rem;
-      }
+                  /* 統一頁尾樣式 - 使用首頁樣式 */
+                  .unified-footer {
+                    background: rgba(26, 26, 26, 0.8);
+                    padding: 3rem 0 2rem;
+                    text-align: center;
+                    border-top: 1px solid rgba(255, 255, 255, 0.1);
+                    margin-top: 2rem;
+                  }
+                  .unified-footer .footer-content {
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    padding: 0 2rem;
+                  }
+                  .unified-footer .footer-links {
+                    display: flex;
+                    justify-content: center;
+                    gap: 2rem;
+                    margin-bottom: 2rem;
+                    flex-wrap: wrap;
+                  }
+                  .unified-footer .footer-links a {
+                    color: #b8b8b8;
+                    text-decoration: none;
+                    transition: color 0.3s ease;
+                  }
+                  .unified-footer .footer-links a:hover {
+                    color: #4ecdc4;
+                  }
+                  .unified-footer .footer-bottom {
+                    color: #666;
+                    font-size: 0.9rem;
+                  }
+                  
+                  /* Buy Me a Coffee 按鈕樣式 */
+                  .btn-coffee {
+                    background: linear-gradient(135deg, #ff6b9d 0%, #4ecdc4 100%);
+                    color: white;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border-radius: 15px;
+                    padding: 1rem 2rem;
+                    font-weight: 600;
+                    text-decoration: none;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 1rem;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+                    position: relative;
+                    overflow: hidden;
+                    font-family: 'Poppins', sans-serif;
+                    backdrop-filter: blur(10px);
+                  }
+                  
+                  .btn-coffee::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+                    transition: left 0.5s ease;
+                  }
+                  
+                  .btn-coffee:hover::before {
+                    left: 100%;
+                  }
+                  
+                  .btn-coffee:hover {
+                    background: linear-gradient(135deg, #ff8fb3 0%, #5dd5d5 100%);
+                    transform: translateY(-3px);
+                    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+                    color: white;
+                  }
+                  
+                  .btn-coffee:active {
+                    transform: translateY(-1px) scale(1.02);
+                  }
+                  
+                  .coffee-cat-icon {
+                    width: 2.5rem;
+                    height: 2.5rem;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    border: 2px solid rgba(255, 255, 255, 0.3);
+                    animation: coffeeSteam 2s ease-in-out infinite;
+                  }
+                  
+                  @keyframes coffeeSteam {
+                    0%, 100% { transform: translateY(0px) scale(1); }
+                    50% { transform: translateY(-3px) scale(1.05); }
+                  }
+                  
+                  .coffee-text {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    line-height: 1.2;
+                  }
+                  
+                  .coffee-main {
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    display: block;
+                  }
+                  
+                  .coffee-sub {
+                    font-size: 0.8rem;
+                    opacity: 0.9;
+                    display: block;
+                    margin-top: 0.3rem;
+                  }
+                  
+                  .btn-coffee-large {
+                    padding: 1.5rem 3rem;
+                    font-size: 1.1rem;
+                  }
+                  
+                  .btn-coffee-large .coffee-main {
+                    font-size: 1.2rem;
+                  }
+                  
+                  .btn-coffee-large .coffee-sub {
+                    font-size: 0.9rem;
+                  }
       
       /* 為 React 應用添加 padding-top */
       #root {
@@ -130,49 +223,49 @@ function injectUnifiedLayout(htmlContent) {
     </nav>
   `;
 
-  // 統一的頁尾 HTML
-  const unifiedFooter = `
-    <!-- 統一頁尾 -->
-    <footer class="unified-footer">
-      <div class="footer-content">
-        <div class="footer-links">
-          <a href="https://www.youtube.com/@%E9%9F%B3%E6%A8%82%E8%84%88%E5%8B%95SonicPulse" target="_blank">
-            <i class="fab fa-youtube"></i> YouTube
-          </a>
-          <a href="mailto:contact@sonicpulse.com">
-            <i class="fas fa-envelope"></i> 聯繫我們
-          </a>
-          <a href="#privacy">
-            <i class="fas fa-shield-alt"></i> 隱私政策
-          </a>
-          <a href="#terms">
-            <i class="fas fa-file-contract"></i> 使用條款
-          </a>
-        </div>
-        
-        <!-- Buy Me a Coffee 按鈕 -->
-        <div style="margin: 2rem 0; text-align: center;">
-          <p style="color: #b8b8b8; margin-bottom: 1rem;">喜歡我的工具嗎？請我喝杯咖啡吧！</p>
-          <a href="https://buymeacoffee.com/sonicpulse2025" target="_blank" style="display: inline-flex; align-items: center; gap: 0.75rem; background: linear-gradient(to right, #eab308, #ea580c); color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-            <img src="/assets/cat-avatar.png" alt="口袋裡的貓" style="width: 2rem; height: 2rem; border-radius: 50%;">
-            <div style="text-align: left;">
-              <div style="font-weight: 600;">贊助口袋裡的貓</div>
-              <div style="font-size: 0.875rem; opacity: 0.9;">Buy me a coffee</div>
-            </div>
-          </a>
-        </div>
-        
-        <div class="footer-bottom">
-          <p>&copy; <span id="currentYear"></span> 音樂脈動-Sonic Pulse. 保留所有權利. | 用 ❤️ 為音樂創作者打造</p>
-        </div>
-      </div>
-    </footer>
-    
-    <script>
-      // 更新年份
-      document.getElementById('currentYear').textContent = new Date().getFullYear();
-    </script>
-  `;
+              // 統一的頁尾 HTML - 使用首頁樣式
+              const unifiedFooter = `
+                <!-- 統一頁尾 -->
+                <footer class="unified-footer">
+                  <div class="footer-content">
+                    <div class="footer-links">
+                      <a href="https://www.youtube.com/@%E9%9F%B3%E6%A8%82%E8%84%88%E5%8B%95SonicPulse" target="_blank">
+                        <i class="fab fa-youtube"></i> YouTube
+                      </a>
+                      <a href="mailto:contact@sonicpulse.com">
+                        <i class="fas fa-envelope"></i> 聯繫我們
+                      </a>
+                      <a href="#privacy">
+                        <i class="fas fa-shield-alt"></i> 隱私政策
+                      </a>
+                      <a href="#terms">
+                        <i class="fas fa-file-contract"></i> 使用條款
+                      </a>
+                    </div>
+                    
+                    <!-- Buy Me a Coffee 按鈕 -->
+                    <div style="margin: 2rem 0; text-align: center;">
+                      <p style="color: #b8b8b8; margin-bottom: 1rem;">喜歡我的工具嗎？請我喝杯咖啡吧！</p>
+                      <a href="https://buymeacoffee.com/sonicpulse2025" target="_blank" class="btn btn-coffee btn-coffee-large">
+                        <img src="/assets/cat-avatar.png" alt="口袋裡的貓" class="coffee-cat-icon">
+                        <div class="coffee-text">
+                          <span class="coffee-main">贊助口袋裡的貓</span>
+                          <span class="coffee-sub">Buy me a coffee</span>
+                        </div>
+                      </a>
+                    </div>
+                    
+                    <div class="footer-bottom">
+                      <p>&copy; <span id="currentYear"></span> 音樂脈動-Sonic Pulse. 保留所有權利. | 用 ❤️ 為音樂創作者打造</p>
+                    </div>
+                  </div>
+                </footer>
+                
+                <script>
+                  // 更新年份
+                  document.getElementById('currentYear').textContent = new Date().getFullYear();
+                </script>
+              `;
 
   // 注入樣式到 head
   let modifiedHtml = htmlContent.replace('</head>', `${unifiedStyles}</head>`);
