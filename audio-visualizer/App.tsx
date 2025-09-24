@@ -197,7 +197,7 @@ function App() {
             return;
         }
         
-        const apiKey = (import.meta as any).env.VITE_API_KEY;
+        const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY;
         
         // 調試信息
         console.log("API Key 狀態:", {
@@ -208,8 +208,8 @@ function App() {
         });
 
         if (!apiKey) {
-            console.error("API Key is not configured. Please set 'VITE_API_KEY' in your deployment environment variables and redeploy.");
-            alert("API Key 未設定，無法使用 AI 功能。\n\n請確認您已在 Railway 的 Variables 設定中，新增一個名為 VITE_API_KEY 的變數並填入您的金鑰。如果您已設定，請務必重新部署 (redeploy) 專案以讓變更生效。");
+            console.error("API Key is not configured. Please set 'VITE_GEMINI_API_KEY' in your deployment environment variables and redeploy.");
+            alert("API Key 未設定，無法使用 AI 功能。\n\n請確認您已在 Railway 的 Variables 設定中，新增一個名為 VITE_GEMINI_API_KEY 的變數並填入您的金鑰。如果您已設定，請務必重新部署 (redeploy) 專案以讓變更生效。");
             return;
         }
 
