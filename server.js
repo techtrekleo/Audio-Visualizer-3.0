@@ -100,35 +100,38 @@ function injectUnifiedLayout(htmlContent) {
                     font-size: 0.9rem;
                   }
                   
-                  /* 覆蓋工具頁面的灰色邊框 */
-                  .border-gray-800 {
-                    border-color: #000000 !important;
-                  }
-                  .border-gray-700 {
-                    border-color: #000000 !important;
-                  }
-                  .border-gray-600 {
-                    border-color: #000000 !important;
-                  }
-                  .border-gray-500 {
-                    border-color: #000000 !important;
-                  }
-                  .border-gray-400 {
-                    border-color: #000000 !important;
-                  }
-                  .border-gray-300 {
-                    border-color: #000000 !important;
-                  }
-                  .border-gray-200 {
-                    border-color: #000000 !important;
-                  }
-                  .border-gray-100 {
-                    border-color: #000000 !important;
+                  /* 純色設定 - 低亮度低彩度 */
+                  body {
+                    background-color: #1a1a1a !important;
                   }
                   
-                  /* 簡化：強制覆蓋所有邊框顏色 */
-                  * {
-                    border-color: #000000 !important;
+                  /* 為畫布添加低彩度邊框 */
+                  canvas {
+                    border: 2px solid #4a5568 !important;
+                    border-radius: 8px !important;
+                  }
+                  
+                  /* 工具頁面背景 */
+                  .bg-gray-800, .bg-gray-900 {
+                    background-color: #2d3748 !important;
+                    border-color: #4a5568 !important;
+                  }
+                  
+                  /* 純色設定 - 低亮度低彩度 */
+                  body {
+                    background-color: #1a1a1a !important;
+                  }
+                  
+                  /* 為畫布添加低彩度邊框 */
+                  canvas {
+                    border: 2px solid #4a5568 !important;
+                    border-radius: 8px !important;
+                  }
+                  
+                  /* 工具頁面背景 */
+                  .bg-gray-800, .bg-gray-900 {
+                    background-color: #2d3748 !important;
+                    border-color: #4a5568 !important;
                   }
                   
                   /* 彈出視窗樣式 */
