@@ -385,7 +385,7 @@ function injectUnifiedLayout(htmlContent) {
                       </a>
                       <a href="https://www.threads.com/@sonicpulse.taiwan" target="_blank" class="contact-option">
                         <div class="contact-option-icon">
-                          <i class="fab fa-threads" style="color: #000000;"></i>
+                          <i class="fas fa-at" style="color: #000000;"></i>
                         </div>
                         <div class="contact-option-text">
                           <div class="contact-option-title">Threads</div>
