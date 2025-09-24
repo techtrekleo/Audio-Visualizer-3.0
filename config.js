@@ -4,9 +4,9 @@
 const CONFIG = {
     // 主要工具連結
     tools: {
-        audioVisualizer: '/audio-visualizer/',
-        youtubeSEO: '/youtube-seo/',
-        fontEffects: '/font-effects/'
+        audioVisualizer: 'audio-visualizer/',
+        youtubeSEO: 'youtube-seo/',
+        fontEffects: 'font-effects/'
     },
     
     // 頻道和社交連結
@@ -20,7 +20,7 @@ const CONFIG = {
     site: {
         title: '音樂脈動-Sonic Pulse | 音樂創作工具集合',
         description: '音樂脈動-Sonic Pulse 官方網站 - 提供專業的音樂創作工具，包括音頻可視化器、YouTube SEO 優化工具等，幫助音樂創作者提升作品品質',
-        domain: 'audio-visualizer-30-production.up.railway.app',
+        domain: 'sonicpulse.qzz.io',
         ogImage: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
         networkName: '🐱 口袋裡的貓' // 網路名字
     },
