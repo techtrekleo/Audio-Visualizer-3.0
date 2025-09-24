@@ -650,7 +650,7 @@ const server = http.createServer((req, res) => {
   let filePath;
   
   // 處理各個工具的 dist 目錄 - 使用絕對路徑
-  if (req.url.startsWith('/audio-visualizer')) {
+  if (req.url.startsWith('/audio-visualizer') && !req.url.startsWith('/audio-visualizer/assets/')) {
     const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
     const relativePath = req.url.replace('/audio-visualizer', '');
     filePath = path.join(distPath, relativePath);
