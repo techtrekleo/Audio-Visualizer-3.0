@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TextBlock, EffectId } from '../types';
+import type { TextBlock, EffectId, FontId } from '../types';
 import { fonts, effects } from '../constants';
 import { ColorInput } from './ColorInput';
 
@@ -98,7 +98,7 @@ export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
         <label className="block text-sm font-semibold text-gray-300">字體</label>
         <select
           value={textBlock.fontId}
-          onChange={(e) => onUpdate({ ...textBlock, fontId: e.target.value })}
+          onChange={(e) => onUpdate({ ...textBlock, fontId: e.target.value as FontId })}
           className="w-full p-3 bg-gray-900 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-200"
         >
           {fonts.map(font => (
