@@ -14,9 +14,9 @@ const server = http.createServer((req, res) => {
   
   // 處理各個工具的 dist 目錄
   if (req.url.startsWith('/audio-visualizer')) {
-    const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
+    // audio-visualizer 服務根目錄的 index.html，但資源從 dist 目錄載入
     const relativePath = req.url.replace('/audio-visualizer', '');
-    filePath = path.join(distPath, relativePath);
+    filePath = path.join(__dirname, 'audio-visualizer', relativePath);
     
     // 如果是目錄，添加 index.html
     if (filePath.endsWith('/') || !path.extname(filePath)) {
