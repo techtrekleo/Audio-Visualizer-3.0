@@ -32,9 +32,9 @@ const server = http.createServer((req, res) => {
       filePath = path.join(filePath, 'index.html');
     }
   } else if (req.url.startsWith('/youtube-seo')) {
-    // youtube-seo 服務根目錄的 index.html，但資源從 dist 目錄載入
+    const distPath = path.join(__dirname, 'youtube-seo', 'dist');
     const relativePath = req.url.replace('/youtube-seo', '');
-    filePath = path.join(__dirname, 'youtube-seo', relativePath);
+    filePath = path.join(distPath, relativePath);
     
     // 如果是目錄，添加 index.html
     if (filePath.endsWith('/') || !path.extname(filePath)) {
