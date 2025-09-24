@@ -4,21 +4,20 @@
 
 ### 環境變數命名
 ```
-VITE_GEMINI_API_KEY_AUDIO_VISUALIZER  # 音頻可視化工具專用
-VITE_GEMINI_API_KEY_YOUTUBE_SEO       # YouTube SEO 工具專用  
-VITE_GEMINI_API_KEY_FONT_EFFECTS      # 字體特效工具專用
+VITE_API_KEY        # 前端 Vite 環境使用 (字幕生成、標題生成)
+GEMINI_API_KEY      # 後端 Node.js 環境使用 (備用)
 ```
 
 ### 代碼中的變數命名
 ```typescript
-// 音頻可視化工具
-const audioVisualizerApiKey = (import.meta as any).env.VITE_GEMINI_API_KEY_AUDIO_VISUALIZER;
+// 音頻可視化工具 - 字幕生成
+const audioVisualizerApiKey = (import.meta as any).env.VITE_API_KEY;
 
-// YouTube SEO 工具
-const youtubeSeoApiKey = (import.meta as any).env.VITE_GEMINI_API_KEY_YOUTUBE_SEO;
+// YouTube SEO 工具 - 標題生成
+const youtubeSeoApiKey = (import.meta as any).env.VITE_API_KEY;
 
-// 字體特效工具
-const fontEffectsApiKey = (import.meta as any).env.VITE_GEMINI_API_KEY_FONT_EFFECTS;
+// 字體特效工具 - 不需要 AI API
+// 無需 AI 功能
 ```
 
 ## 2. 函數命名規範
@@ -181,9 +180,8 @@ tool-name/
 
 ### Railway 環境變數設置
 ```
-VITE_GEMINI_API_KEY_AUDIO_VISUALIZER=your_key_here
-VITE_GEMINI_API_KEY_YOUTUBE_SEO=your_key_here
-VITE_GEMINI_API_KEY_FONT_EFFECTS=your_key_here
+VITE_API_KEY=your_key_here
+GEMINI_API_KEY=your_key_here
 PORT=8000
 ```
 
