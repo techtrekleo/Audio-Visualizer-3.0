@@ -348,7 +348,10 @@ function injectUnifiedLayout(htmlContent) {
                     </div>
                   </div>
                 </footer>
-                
+              `;
+
+              // 添加彈出視窗HTML到body最後
+              const contactModalHtml = `
                 <!-- 聯繫我們彈出視窗 -->
                 <div id="contactModal" class="contact-modal">
                   <div class="contact-modal-content">
@@ -428,6 +431,9 @@ function injectUnifiedLayout(htmlContent) {
   
   // 注入頁尾到 body 結束
   modifiedHtml = modifiedHtml.replace('</body>', `${unifiedFooter}</body>`);
+  
+  // 注入彈出視窗到 body 最後
+  modifiedHtml = modifiedHtml.replace('</body>', `${contactModalHtml}</body>`);
   
   return modifiedHtml;
 }
