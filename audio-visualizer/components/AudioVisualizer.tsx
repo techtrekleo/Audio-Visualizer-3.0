@@ -3589,7 +3589,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
     }, [ref]);
 
 
-    return <canvas ref={ref} className="w-full h-full" style={{ backgroundColor: 'transparent' }} />;
+    return <canvas ref={ref} className="w-full h-full" style={{ backgroundColor: 'transparent', border: '2px solid #4ecdc4', borderRadius: '8px' }} />;
 });
 
 AudioVisualizer.displayName = 'AudioVisualizer';

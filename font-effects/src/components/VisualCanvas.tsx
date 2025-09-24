@@ -520,7 +520,7 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
         ref={canvasRef}
         width={canvasWidth}
         height={canvasHeight}
-        className={`border border-gray-600 rounded-lg ${
+        className={`border-2 border-cyan-400 rounded-lg ${
           isDragging ? 'cursor-grabbing' : 'cursor-pointer'
         }`}
         onMouseDown={handleMouseDown}
