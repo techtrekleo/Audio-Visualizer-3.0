@@ -705,13 +705,13 @@ const server = http.createServer((req, res) => {
     if (filePath.endsWith('/') || !path.extname(filePath)) {
       filePath = path.join(filePath, 'index.html');
     }
-  } else if (req.url.startsWith('/assets/') && req.url.includes('index-')) {
-    // 處理 YouTube SEO 的 assets 請求
-    const distPath = path.join(__dirname, 'youtube-seo', 'dist');
-    filePath = path.join(distPath, req.url);
   } else if (req.url.startsWith('/assets/') && req.url.includes('DQeRsr4b')) {
     // 處理字體特效產生器的 assets 請求
     const distPath = path.join(__dirname, 'font-effects', 'dist');
+    filePath = path.join(distPath, req.url);
+  } else if (req.url.startsWith('/assets/') && req.url.includes('index-')) {
+    // 處理 YouTube SEO 的 assets 請求
+    const distPath = path.join(__dirname, 'youtube-seo', 'dist');
     filePath = path.join(distPath, req.url);
   } else if (req.url.startsWith('/assets/') && (req.url.includes('main-') || req.url.includes('cat-avatar'))) {
     // 處理 Audio Visualizer 的 assets 請求
