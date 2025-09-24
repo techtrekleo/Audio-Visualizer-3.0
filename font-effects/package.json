@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "start": "serve -s dist",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -20,6 +21,6 @@
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
     "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "vite": "^5.2.0"
   }
 }

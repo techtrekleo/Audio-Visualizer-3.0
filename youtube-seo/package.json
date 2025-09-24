@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "vite preview --host 0.0.0.0 --port $PORT"
+    "start": "vite preview --host 0.0.0.0 --port $PORT",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@google/generative-ai": "^0.2.1",
@@ -25,7 +26,7 @@
     "@types/react-dom": "^18.2.15",
     "@vitejs/plugin-react": "^4.1.1",
     "typescript": "^5.2.2",
-    "vite": "^4.5.0"
+    "vite": "^5.2.0"
   },
   "keywords": [
     "youtube",

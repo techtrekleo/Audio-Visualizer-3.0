@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
     // Explicitly define environment variables to be statically replaced at build time.
     // This is a more robust approach for deployment environments.
     define: {
-      'process.env.VITE_API_KEY': JSON.stringify(env.VITE_API_KEY)
+      'process.env.VITE_GEMINI_API_KEY_AUDIO_VISUALIZER': JSON.stringify(env.VITE_GEMINI_API_KEY_AUDIO_VISUALIZER)
     },
     build: {
       outDir: 'dist',

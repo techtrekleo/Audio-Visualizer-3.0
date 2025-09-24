@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
 // 初始化 Gemini AI - 支援 Vite 和 Node.js 環境
-const apiKey = (import.meta as any).env?.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env?.GEMINI_API_KEY : '') || 'AIzaSyDBvpNXzZQR980TLv7NtQRb6OARBe_VUCs'
+const apiKey = (import.meta as any).env?.VITE_GEMINI_API_KEY_YOUTUBE_SEO || (typeof process !== 'undefined' ? process.env?.GEMINI_API_KEY : '') || 'AIzaSyDBvpNXzZQR980TLv7NtQRb6OARBe_VUCs'
 console.log('🔑 Gemini API Key available:', !!apiKey, 'Length:', apiKey.length)
 
 const genAI = new GoogleGenerativeAI(apiKey)

@@ -3,7 +3,7 @@
 declare const chrome: any;
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import AudioUploader from './components/AudioUploader';
 import AudioVisualizer from './components/AudioVisualizer';
 import Controls from './components/Controls';
@@ -197,11 +197,11 @@ function App() {
             return;
         }
         
-        const apiKey = (import.meta as any).env.VITE_API_KEY;
+        const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY_AUDIO_VISUALIZER;
 
         if (!apiKey) {
-            console.error("API Key is not configured. Please set 'VITE_API_KEY' in your deployment environment variables and redeploy.");
-            alert("API Key 未設定，無法使用 AI 功能。\n\n請確認您已在 Railway 的 Variables 設定中，新增一個名為 VITE_API_KEY 的變數並填入您的金鑰。如果您已設定，請務必重新部署 (redeploy) 專案以讓變更生效。");
+            console.error("API Key is not configured. Please set 'VITE_GEMINI_API_KEY_AUDIO_VISUALIZER' in your deployment environment variables and redeploy.");
+            alert("API Key 未設定，無法使用 AI 功能。\n\n請確認您已在 Railway 的 Variables 設定中，新增一個名為 VITE_GEMINI_API_KEY_AUDIO_VISUALIZER 的變數並填入您的金鑰。如果您已設定，請務必重新部署 (redeploy) 專案以讓變更生效。");
             return;
         }
 
@@ -221,7 +221,7 @@ function App() {
                 reader.readAsDataURL(audioFile);
             });
 
-            const ai = new GoogleGenAI({ apiKey });
+            const ai = new GoogleGenerativeAI(apiKey);
             
             const audioPart = {
                 inlineData: {
@@ -251,12 +251,13 @@ function App() {
 **回應格式：** 僅回應 LRC 格式的文字，不要添加任何介紹性文字、摘要或說明。`
             };
             
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: { parts: [textPart, audioPart] },
-            });
+            const model = ai.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            
+            const response = await model.generateContent([textPart, audioPart]);
+            const result = await response.response;
+            const text = result.text();
 
-            setSubtitlesRawText(response.text.trim());
+            setSubtitlesRawText(text.trim());
 
         } catch (error) {
             console.error("Error generating subtitles with AI:", error);
