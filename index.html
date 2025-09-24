@@ -19,11 +19,6 @@
     <meta name="twitter:title" content="音樂脈動-Sonic Pulse | 音樂創作工具集合">
     <meta name="twitter:description" content="專業的音樂創作工具平台，提供音頻可視化、YouTube SEO 優化等服務">
     
-    <!-- Favicon - 貓咪頭像 -->
-    <link rel="icon" type="image/png" href="assets/cat-avatar.png">
-    <link rel="shortcut icon" type="image/png" href="assets/cat-avatar.png">
-    <link rel="apple-touch-icon" href="assets/cat-avatar.png">
-    
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,9 +26,6 @@
     
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- 統一主題設定 -->
-    <link rel="stylesheet" href="assets/unified-theme.css">
     
     <!-- Configuration -->
     <script src="config.js"></script>
@@ -47,7 +39,7 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background: #000000;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
             color: #ffffff;
             line-height: 1.6;
             overflow-x: hidden;
@@ -61,7 +53,26 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: #000000;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
+        }
+        
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
         }
         
         /* 導航欄 */
@@ -1090,7 +1101,8 @@
                         🐱 口袋裡的貓 🐱
                     </p>
                     <p class="description">
-                        大家好～我是口袋裡的貓，我跟我的AI好夥伴創造了幾個非常適合音樂創作者的工具，音頻可視化、字幕錄製、YouTube SEO 優化、封面產生器，後續如果各位有需要也可以持續提出你的需求，讓我們一起在音樂賽道上互相加油吧！希望我的小工具可以讓你的音樂作品更加出色，吸引更多觀眾。
+                        專業的音樂創作工具平台，為音樂創作者提供強大的音頻可視化、YouTube SEO 優化等服務，
+                        讓你的音樂作品更加出色，吸引更多聽眾。
                     </p>
                     <div class="cta-buttons">
                         <a href="https://www.youtube.com/@%E9%9F%B3%E6%A8%82%E8%84%88%E5%8B%95SonicPulse" 
