@@ -12,10 +12,28 @@ const server = http.createServer((req, res) => {
   
   let filePath;
   
-  // 如果是 audio-visualizer 相關的路由，服務 dist 目錄
+  // 處理各個工具的 dist 目錄
   if (req.url.startsWith('/audio-visualizer')) {
     const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
     const relativePath = req.url.replace('/audio-visualizer', '');
+    filePath = path.join(distPath, relativePath);
+    
+    // 如果是目錄，添加 index.html
+    if (filePath.endsWith('/') || !path.extname(filePath)) {
+      filePath = path.join(filePath, 'index.html');
+    }
+  } else if (req.url.startsWith('/youtube-seo')) {
+    const distPath = path.join(__dirname, 'youtube-seo', 'dist');
+    const relativePath = req.url.replace('/youtube-seo', '');
+    filePath = path.join(distPath, relativePath);
+    
+    // 如果是目錄，添加 index.html
+    if (filePath.endsWith('/') || !path.extname(filePath)) {
+      filePath = path.join(filePath, 'index.html');
+    }
+  } else if (req.url.startsWith('/font-effects')) {
+    const distPath = path.join(__dirname, 'font-effects', 'dist');
+    const relativePath = req.url.replace('/font-effects', '');
     filePath = path.join(distPath, relativePath);
     
     // 如果是目錄，添加 index.html
