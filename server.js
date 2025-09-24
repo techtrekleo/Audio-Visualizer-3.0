@@ -101,6 +101,9 @@ function injectUnifiedLayout(htmlContent) {
                   }
                   
                   /* 覆蓋工具頁面的灰色邊框 */
+                  .border-gray-800 {
+                    border-color: #000000 !important;
+                  }
                   .border-gray-700 {
                     border-color: #000000 !important;
                   }
@@ -111,6 +114,46 @@ function injectUnifiedLayout(htmlContent) {
                     border-color: #000000 !important;
                   }
                   .border-gray-400 {
+                    border-color: #000000 !important;
+                  }
+                  .border-gray-300 {
+                    border-color: #000000 !important;
+                  }
+                  .border-gray-200 {
+                    border-color: #000000 !important;
+                  }
+                  .border-gray-100 {
+                    border-color: #000000 !important;
+                  }
+                  
+                  /* 強制覆蓋所有可能的灰色邊框 */
+                  [class*="border-gray"] {
+                    border-color: #000000 !important;
+                  }
+                  
+                  /* 覆蓋 hover 狀態的灰色邊框 */
+                  .hover\:border-gray-800:hover {
+                    border-color: #000000 !important;
+                  }
+                  .hover\:border-gray-700:hover {
+                    border-color: #000000 !important;
+                  }
+                  .hover\:border-gray-600:hover {
+                    border-color: #000000 !important;
+                  }
+                  .hover\:border-gray-500:hover {
+                    border-color: #000000 !important;
+                  }
+                  .hover\:border-gray-400:hover {
+                    border-color: #000000 !important;
+                  }
+                  .hover\:border-gray-300:hover {
+                    border-color: #000000 !important;
+                  }
+                  .hover\:border-gray-200:hover {
+                    border-color: #000000 !important;
+                  }
+                  .hover\:border-gray-100:hover {
                     border-color: #000000 !important;
                   }
                   
