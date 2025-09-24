@@ -14,18 +14,18 @@ const server = http.createServer((req, res) => {
   
   // 處理各個工具的 dist 目錄
   if (req.url.startsWith('/audio-visualizer')) {
-    // audio-visualizer 服務根目錄的 index.html，但資源從 dist 目錄載入
+    const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
     const relativePath = req.url.replace('/audio-visualizer', '');
-    filePath = path.join(__dirname, 'audio-visualizer', relativePath);
+    filePath = path.join(distPath, relativePath);
     
     // 如果是目錄，添加 index.html
     if (filePath.endsWith('/') || !path.extname(filePath)) {
       filePath = path.join(filePath, 'index.html');
     }
   } else if (req.url.startsWith('/font-effects')) {
-    // font-effects 服務根目錄的 index.html，但資源從 dist 目錄載入
+    const distPath = path.join(__dirname, 'font-effects', 'dist');
     const relativePath = req.url.replace('/font-effects', '');
-    filePath = path.join(__dirname, 'font-effects', relativePath);
+    filePath = path.join(distPath, relativePath);
     
     // 如果是目錄，添加 index.html
     if (filePath.endsWith('/') || !path.extname(filePath)) {
