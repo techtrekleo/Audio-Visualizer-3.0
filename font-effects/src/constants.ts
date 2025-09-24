@@ -12,6 +12,16 @@ export const fonts = [
   { id: 'rampart-one', name: '立體裝甲', family: 'Rampart One', weight: 400 },
   { id: 'poppins-bold', name: 'Poppins (粗體)', family: 'Poppins', weight: 700 },
   { id: 'roboto-mono', name: 'Roboto Mono', family: 'Roboto Mono', weight: 400 },
+  { id: 'open-sans', name: 'Open Sans', family: 'Open Sans', weight: 400 },
+  { id: 'lato', name: 'Lato', family: 'Lato', weight: 400 },
+  { id: 'montserrat', name: 'Montserrat', family: 'Montserrat', weight: 400 },
+  { id: 'source-sans-pro', name: 'Source Sans Pro', family: 'Source Sans Pro', weight: 400 },
+  { id: 'raleway', name: 'Raleway', family: 'Raleway', weight: 400 },
+  { id: 'ubuntu', name: 'Ubuntu', family: 'Ubuntu', weight: 400 },
+  { id: 'playfair-display', name: 'Playfair Display', family: 'Playfair Display', weight: 400 },
+  { id: 'merriweather', name: 'Merriweather', family: 'Merriweather', weight: 400 },
+  { id: 'oswald', name: 'Oswald', family: 'Oswald', weight: 400 },
+  { id: 'lobster', name: 'Lobster', family: 'Lobster', weight: 400 },
 ] as const;
 
 
