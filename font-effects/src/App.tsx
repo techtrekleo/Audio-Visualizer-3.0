@@ -163,10 +163,10 @@ const App: React.FC = () => {
       <UnifiedHeader />
       <main className="w-full max-w-7xl space-y-8 pt-24">
         {/* 頂部預覽區域 - 佔滿一整行 */}
-        <div className="bg-gray-800/60 p-6 rounded-2xl border border-dashed border-gray-600">
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
           <div className="text-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-300">即時預覽</h2>
-            <p className="text-sm text-gray-400">點擊文字區塊進行編輯</p>
+            <h2 className="text-xl font-semibold text-gray-100">即時預覽</h2>
+            <p className="text-sm text-gray-300">點擊文字區塊進行編輯</p>
           </div>
           <div className="flex justify-center">
             <VisualCanvas
@@ -186,7 +186,7 @@ const App: React.FC = () => {
           {/* 左側設定面板 */}
           <div className="space-y-6">
             {/* 基礎設置 */}
-            <div className="bg-gray-800/70 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-600">
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
               <div className="flex flex-col gap-3">
                 <label className="block text-lg font-semibold text-gray-300">選擇畫布尺寸</label>
                 <div className="grid grid-cols-2 gap-3">
@@ -206,7 +206,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-gray-800/70 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-600">
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
               <div className="flex flex-col gap-3">
                 <label className="block text-lg font-semibold text-gray-300">上傳背景 (選用)</label>
                 <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
@@ -224,7 +224,7 @@ const App: React.FC = () => {
             </div>
 
             {/* 文字區塊選擇 */}
-            <div className="bg-gray-800/70 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-600">
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
               <div className="flex flex-col gap-3">
                 <label className="block text-lg font-semibold text-gray-300">選擇文字區塊</label>
                 <div className="grid grid-cols-3 gap-2">
@@ -244,7 +244,7 @@ const App: React.FC = () => {
             </div>
 
             {/* 預設管理 */}
-            <div className="bg-gray-800/70 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-600">
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
               <div className="flex flex-col gap-4">
                 <h3 className="text-lg font-semibold text-gray-300">預設管理</h3>
                 <PresetManager
@@ -258,7 +258,7 @@ const App: React.FC = () => {
             </div>
 
             {/* 操作按鈕 */}
-            <div className="bg-gray-800/70 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-600">
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
               <div className="flex flex-col gap-4">
                 <button onClick={handleInspiration} className="w-full flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg">
                   <InspirationIcon /> 給我靈感！
@@ -279,7 +279,7 @@ const App: React.FC = () => {
           <div className="space-y-6">
             {/* 文字編輯面板 */}
             {selectedTextBlockId && (
-              <div className="bg-gray-800/70 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-600">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
                 <h3 className="text-lg font-semibold text-gray-300 mb-4">編輯選中文字區塊</h3>
                 <DraggableTextBlock
                   textBlock={textBlocks.find(tb => tb.id === selectedTextBlockId)!}
