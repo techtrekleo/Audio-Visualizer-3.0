@@ -13,6 +13,15 @@ export default defineConfig(({ mode }) => {
     // This is a more robust approach for deployment environments.
     define: {
       'process.env.VITE_API_KEY': JSON.stringify(env.VITE_API_KEY)
+    },
+    build: {
+      outDir: 'dist',
+      assetsDir: 'assets',
+      rollupOptions: {
+        input: {
+          main: './index.html'
+        }
+      }
     }
   }
 });
