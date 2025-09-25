@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
   
   return {
     plugins: [react()],
+    base: '/youtube-seo/', // 設置正確的基礎路徑
     // Explicitly define environment variables to be statically replaced at build time.
     // This is a more robust approach for deployment environments.
     define: {
