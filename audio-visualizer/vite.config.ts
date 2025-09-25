@@ -21,6 +21,12 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           main: './index.html'
+        },
+        output: {
+          // 使用固定文件名，避免哈希變化
+          entryFileNames: 'assets/main.js',
+          chunkFileNames: 'assets/[name].js',
+          assetFileNames: 'assets/[name].[ext]'
         }
       }
     }
