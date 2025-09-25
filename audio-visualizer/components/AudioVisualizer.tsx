@@ -2918,7 +2918,12 @@ const drawWordByWordSubtitles = (
         const bgX = positionX - bgWidth / 2;
         const bgY = positionY - textHeight - bgPaddingY;
         
-        ctx.fillStyle = bgStyle === SubtitleBgStyle.BLACK ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.5)';
+        if (bgStyle === SubtitleBgStyle.BLACK) {
+            ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        } else if (bgStyle === SubtitleBgStyle.TRANSPARENT) {
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        }
+        
         createRoundedRectPath(ctx, bgX, bgY, bgWidth, bgHeight, 5);
         ctx.fill();
     }
