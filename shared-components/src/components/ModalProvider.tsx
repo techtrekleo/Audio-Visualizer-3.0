@@ -41,14 +41,23 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
 
   // 將函數暴露給全局，供 footer 使用
   React.useEffect(() => {
+    console.log('ModalProvider: Setting up global functions');
     (window as any).openContactModal = openContactModal;
     (window as any).closeContactModal = closeContactModal;
     (window as any).openPrivacyModal = openPrivacyModal;
     (window as any).closePrivacyModal = closePrivacyModal;
     (window as any).openTermsModal = openTermsModal;
     (window as any).closeTermsModal = closeTermsModal;
-
+    
+    // 測試函數是否正確設置
+    console.log('ModalProvider: Global functions set:', {
+      openContactModal: typeof (window as any).openContactModal,
+      openPrivacyModal: typeof (window as any).openPrivacyModal,
+      openTermsModal: typeof (window as any).openTermsModal
+    });
+    
     return () => {
+      console.log('ModalProvider: Cleaning up global functions');
       delete (window as any).openContactModal;
       delete (window as any).closeContactModal;
       delete (window as any).openPrivacyModal;
