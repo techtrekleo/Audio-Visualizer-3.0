@@ -5,7 +5,7 @@ const path = require('path');
 const PORT = process.env.PORT || 8000;
 
 // 統一頁首頁尾注入函數
-function injectUnifiedLayout(htmlContent) {
+function injectUnifiedLayout(htmlContent, includeFooter = true) {
   // 統一的頁首頁尾樣式
   const unifiedStyles = `
     <style>
@@ -632,8 +632,10 @@ function injectUnifiedLayout(htmlContent) {
   // 注入頁首到 body 開始
   modifiedHtml = modifiedHtml.replace('<body>', `<body>${unifiedHeader}`);
   
-  // 注入頁尾到 body 結束
-  modifiedHtml = modifiedHtml.replace('</body>', `${unifiedFooter}</body>`);
+  // 注入頁尾到 body 結束（僅當 includeFooter 為 true 時）
+  if (includeFooter) {
+    modifiedHtml = modifiedHtml.replace('</body>', `${unifiedFooter}</body>`);
+  }
   
   // 注入彈出視窗到 body 最後
   modifiedHtml = modifiedHtml.replace('</body>', `${modalHtml}</body>`);
@@ -727,7 +729,9 @@ const server = http.createServer((req, res) => {
         req.url.startsWith('/youtube-seo') || 
         req.url.startsWith('/font-effects')
       )) {
-        content = injectUnifiedLayout(content.toString());
+        // YouTube SEO 工具已經使用共享組件中的 footer，所以不需要注入 server.js 的 footer
+        const includeFooter = !req.url.startsWith('/youtube-seo');
+        content = injectUnifiedLayout(content.toString(), includeFooter);
       }
       
       res.writeHead(200, { 'Content-Type': mimeType });
