@@ -6,6 +6,7 @@ yarn-error.log*
 
 # Build outputs
 dist/
+!audio-visualizer/dist/
 build/
 .next/
 out/
