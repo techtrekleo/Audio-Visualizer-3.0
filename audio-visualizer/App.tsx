@@ -8,6 +8,7 @@ import AudioUploader from './components/AudioUploader';
 import AudioVisualizer from './components/AudioVisualizer';
 import Controls from './components/Controls';
 import OptimizedControls from './components/OptimizedControls';
+import UnifiedFooter from '../shared-components/UnifiedFooter';
 import Icon from './components/Icon';
 import AdSenseAd from './components/AdSenseAd';
 import LyricsDisplay from './components/LyricsDisplay';
@@ -699,6 +700,8 @@ function App() {
                 <AdSenseAd type="footer" />
             </div>
             
+            {/* 統一的 Footer */}
+            <UnifiedFooter />
         </div>
     );
 }

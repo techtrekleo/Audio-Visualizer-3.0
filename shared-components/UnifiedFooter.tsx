@@ -6,8 +6,7 @@ interface FooterProps {
 }
 
 const UnifiedFooter: React.FC<FooterProps> = ({ 
-  className = "", 
-  showAd = true 
+  className = ""
 }) => {
   const currentYear = new Date().getFullYear();
 
