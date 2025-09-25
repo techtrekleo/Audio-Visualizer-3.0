@@ -2892,8 +2892,8 @@ const drawWordByWordSubtitles = (
     const { text } = currentSubtitle;
     const words = text.split('');
     
-    // 計算每個字的顯示時間（假設每個字顯示 0.1 秒）
-    const wordDuration = 0.1;
+    // 計算每個字的顯示時間（每個字顯示 0.2 秒）
+    const wordDuration = 0.2;
     const subtitleStartTime = currentSubtitle.time;
     const elapsedTime = currentTime - subtitleStartTime;
     
