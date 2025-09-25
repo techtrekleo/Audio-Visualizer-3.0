@@ -63,9 +63,9 @@ const UnifiedFooter: React.FC = () => {
             href="https://buymeacoffee.com/sonicpulse2025" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-6 py-3 rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all duration-200 shadow-lg"
+            className="inline-flex items-center space-x-3 bg-gradient-to-r from-pink-500 to-cyan-500 text-white px-6 py-3 rounded-lg hover:from-pink-600 hover:to-cyan-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
           >
-            <img src="/assets/cat-avatar.png" alt="口袋裡的貓" className="w-8 h-8 rounded-full" />
+            <img src="/assets/cat-avatar.png" alt="口袋裡的貓" className="w-8 h-8 rounded-full border-2 border-white/30" />
             <div className="text-left">
               <div className="font-semibold">贊助口袋裡的貓</div>
               <div className="text-sm opacity-90">Buy me a coffee</div>

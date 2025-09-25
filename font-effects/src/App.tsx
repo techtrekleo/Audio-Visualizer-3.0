@@ -4,7 +4,6 @@ import { DraggableTextBlock } from './components/DraggableTextBlock';
 import { VisualCanvas } from './components/VisualCanvas';
 import { PresetManager } from './components/PresetManager';
 import { UnifiedHeader } from './components/UnifiedLayout';
-import UnifiedFooter from '../../shared-components/UnifiedFooter';
 import { renderComposition, getRandomItem, getRandomHexColor } from './utils/canvas';
 import { fonts, effects, canvasSizes, DEFAULT_COLOR_1, DEFAULT_COLOR_2 } from './constants';
 import type { TextBlock, CanvasSizeId, EffectId, SavedPreset } from './types';
@@ -292,9 +291,6 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
-      
-      {/* 統一的 Footer */}
-      <UnifiedFooter />
     </div>
   );
 };
