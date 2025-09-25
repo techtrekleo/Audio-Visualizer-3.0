@@ -1021,6 +1021,12 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                     <span>捲軸字幕</span>
                                                 </span>
                                             )}
+                                            {mode === SubtitleDisplayMode.WORD_BY_WORD && (
+                                                <span className="flex items-center space-x-2">
+                                                    <span>✨</span>
+                                                    <span>逐字顯示</span>
+                                                </span>
+                                            )}
                                         </button>
                                     ))}
                                 </div>

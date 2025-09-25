@@ -680,10 +680,18 @@ const Controls: React.FC<ControlsProps> = ({
                                                     <span className="text-white text-xs">📜</span>
                                                 </div>
                                             )}
+                                            {mode === SubtitleDisplayMode.WORD_BY_WORD && (
+                                                <div className="w-8 h-5 bg-black/50 border border-gray-400 rounded flex items-center justify-center">
+                                                    <span className="text-white text-xs">✨</span>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="text-center text-xs font-medium">{mode}</div>
                                         {mode === SubtitleDisplayMode.LYRICS_SCROLL && (
                                             <div className="text-xs text-yellow-400">🧪 測試中</div>
+                                        )}
+                                        {mode === SubtitleDisplayMode.WORD_BY_WORD && (
+                                            <div className="text-xs text-cyan-400">🎵 邊唱邊顯示</div>
                                         )}
                                     </div>
                                 </button>

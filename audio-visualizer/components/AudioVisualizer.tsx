@@ -2850,6 +2850,101 @@ const drawSubtitles = (
     ctx.restore();
 };
 
+// 逐字顯示字幕函數
+const drawWordByWordSubtitles = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    subtitles: Subtitle[],
+    currentTime: number,
+    { fontFamily, bgStyle, fontSizeVw, color, effect, isBeat }: {
+        fontFamily: string;
+        bgStyle: SubtitleBgStyle;
+        fontSizeVw: number;
+        color: string;
+        effect: GraphicEffectType;
+        isBeat?: boolean;
+    }
+) => {
+    if (subtitles.length === 0) return;
+    
+    ctx.save();
+    
+    const fontSize = (fontSizeVw / 100) * width;
+    ctx.font = `bold ${fontSize}px "${fontFamily}", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    
+    const positionX = width / 2;
+    const positionY = height - (height * 0.08);
+    
+    // 找到當前時間對應的字幕
+    let currentSubtitle: Subtitle | undefined;
+    for (let i = subtitles.length - 1; i >= 0; i--) {
+        if (currentTime >= subtitles[i].time) {
+            currentSubtitle = subtitles[i];
+            break;
+        }
+    }
+    
+    if (!currentSubtitle) return;
+    
+    const { text } = currentSubtitle;
+    const words = text.split('');
+    
+    // 計算每個字的顯示時間（假設每個字顯示 0.1 秒）
+    const wordDuration = 0.1;
+    const subtitleStartTime = currentSubtitle.time;
+    const elapsedTime = currentTime - subtitleStartTime;
+    
+    // 計算應該顯示多少個字
+    const wordsToShow = Math.min(words.length, Math.floor(elapsedTime / wordDuration));
+    
+    if (wordsToShow <= 0) return;
+    
+    // 只顯示前面的字
+    const visibleText = words.slice(0, wordsToShow).join('');
+    
+    const metrics = ctx.measureText(visibleText);
+    const textHeight = metrics.fontBoundingBoxAscent ?? fontSize;
+    const textWidth = metrics.width;
+    
+    // Handle background for readability
+    if (bgStyle !== SubtitleBgStyle.NONE) {
+        const bgPaddingX = fontSize * 0.4;
+        const bgPaddingY = fontSize * 0.2;
+        const bgWidth = textWidth + bgPaddingX * 2;
+        const bgHeight = textHeight + bgPaddingY * 2;
+        const bgX = positionX - bgWidth / 2;
+        const bgY = positionY - textHeight - bgPaddingY;
+        
+        ctx.fillStyle = bgStyle === SubtitleBgStyle.BLACK ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.5)';
+        createRoundedRectPath(ctx, bgX, bgY, bgWidth, bgHeight, 5);
+        ctx.fill();
+    }
+    
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = fontSize * 0.1;
+    
+    // Apply effects
+    if (effect === GraphicEffectType.GLOW && isBeat) {
+        ctx.shadowColor = color;
+        ctx.shadowBlur = fontSize * 0.5;
+    } else {
+        ctx.shadowBlur = 0;
+    }
+    
+    // Draw text outline
+    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+    ctx.strokeText(visibleText, positionX, positionY);
+    
+    // Draw main text
+    ctx.fillStyle = color;
+    ctx.fillText(visibleText, positionX, positionY);
+    
+    ctx.restore();
+};
+
 // 歌詞顯示函數
 const drawLyricsDisplay = (
     ctx: CanvasRenderingContext2D,
@@ -3527,6 +3622,16 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 positionY: propsRef.current.lyricsPositionY,
                 color: subtitleColor,
                 effect: GraphicEffectType.NONE
+            });
+        } else if (propsRef.current.subtitleDisplayMode === SubtitleDisplayMode.WORD_BY_WORD && subtitles.length > 0) {
+            // 逐字顯示模式
+            drawWordByWordSubtitles(ctx, width, height, subtitles, currentTime, { 
+                fontFamily: subtitleFontFamily, 
+                bgStyle: subtitleBgStyle,
+                fontSizeVw: subtitleFontSize,
+                color: subtitleColor,
+                effect: GraphicEffectType.NONE,
+                isBeat
             });
         } else if (propsRef.current.subtitleDisplayMode === SubtitleDisplayMode.CLASSIC && currentSubtitle) {
             // 傳統字幕模式
