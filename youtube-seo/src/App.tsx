@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { musicCategories } from './utils/musicCategories'
 import { generateAIContent } from './utils/geminiAI'
 import { UnifiedHeader } from './components/UnifiedLayout'
+import UnifiedFooter from '../../shared-components/UnifiedFooter'
 
 interface SEOContent {
   title: string
@@ -359,6 +360,9 @@ function App() {
           )}
         </div>
       </main>
+      
+      {/* 統一的 Footer */}
+      <UnifiedFooter />
     </div>
   )
 }
