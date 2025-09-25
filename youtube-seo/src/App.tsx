@@ -23,6 +23,9 @@ function App() {
   const [songName, setSongName] = useState('')
   const [artist, setArtist] = useState('')
   const [selectedStyles, setSelectedStyles] = useState<string[]>([])
+  const [customStyle, setCustomStyle] = useState('')
+  const [showCustomInput, setShowCustomInput] = useState(false)
+  const [styleHistory, setStyleHistory] = useState<string[]>([])
   const [selectedLanguage, setSelectedLanguage] = useState('zh') // 預設中文
   const [seoContent, setSeoContent] = useState<SEOContent | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -36,6 +39,30 @@ function App() {
     )
   }
 
+  const addCustomStyle = () => {
+    if (customStyle.trim() && !selectedStyles.includes(customStyle.trim())) {
+      setSelectedStyles(prev => [...prev, customStyle.trim()])
+      
+      // 添加到歷史記錄
+      if (!styleHistory.includes(customStyle.trim())) {
+        setStyleHistory(prev => [customStyle.trim(), ...prev.slice(0, 9)]) // 保留最近10個
+      }
+      
+      setCustomStyle('')
+      setShowCustomInput(false)
+    }
+  }
+
+  const addFromHistory = (style: string) => {
+    if (!selectedStyles.includes(style)) {
+      setSelectedStyles(prev => [...prev, style])
+    }
+  }
+
+  const removeStyle = (styleId: string) => {
+    setSelectedStyles(prev => prev.filter(id => id !== styleId))
+  }
+
   const generateSEO = async () => {
     if (!songName.trim() || selectedStyles.length === 0) return
 
@@ -44,7 +71,14 @@ function App() {
     
     try {
       const artistName = artist || 'Unknown Artist'
-      const result = await generateAIContent(songName, artistName, selectedStyles, selectedLanguage)
+      
+      // 將風格 ID 轉換為風格名稱
+      const styleNames = selectedStyles.map(styleId => {
+        const category = musicCategories.find(c => c.id === styleId)
+        return category ? category.name : styleId
+      })
+      
+      const result = await generateAIContent(songName, artistName, styleNames, selectedLanguage)
       
       setSeoContent({
         title: result.title,
@@ -129,7 +163,9 @@ function App() {
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Music Style * (可多選)
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                
+                {/* 預設風格選項 */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                   {musicCategories.map((category) => (
                     <button
                       key={category.id}
@@ -151,10 +187,88 @@ function App() {
                     </button>
                   ))}
                 </div>
+
+                {/* 自定義輸入和歷史記錄 */}
+                <div className="space-y-3">
+                  {/* 自定義輸入按鈕 */}
+                  <button
+                    onClick={() => setShowCustomInput(!showCustomInput)}
+                    className="w-full p-3 rounded-lg border-2 border-dashed border-gray-600 bg-gray-800 hover:border-gray-500 hover:bg-gray-700 transition-all duration-200 text-gray-300"
+                  >
+                    <div className="flex items-center justify-center">
+                      <span className="mr-2">+</span>
+                      自定義 Music Style
+                    </div>
+                  </button>
+
+                  {/* 自定義輸入框 */}
+                  {showCustomInput && (
+                    <div className="p-4 bg-gray-800 rounded-lg border border-gray-600">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={customStyle}
+                          onChange={(e) => setCustomStyle(e.target.value)}
+                          placeholder="輸入自定義音樂風格..."
+                          className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500"
+                          onKeyPress={(e) => e.key === 'Enter' && addCustomStyle()}
+                        />
+                        <button
+                          onClick={addCustomStyle}
+                          disabled={!customStyle.trim()}
+                          className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          添加
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 歷史記錄 */}
+                  {styleHistory.length > 0 && (
+                    <div className="p-4 bg-gray-800 rounded-lg border border-gray-600">
+                      <h4 className="text-sm font-medium text-gray-300 mb-3">歷史記錄</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {styleHistory.map((style, index) => (
+                          <button
+                            key={index}
+                            onClick={() => addFromHistory(style)}
+                            disabled={selectedStyles.includes(style)}
+                            className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {style}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 已選擇的風格顯示 */}
                 {selectedStyles.length > 0 && (
-                  <p className="text-sm text-gray-400 mt-2">
-                    已選擇: {selectedStyles.map(id => musicCategories.find(c => c.id === id)?.name).join(', ')}
-                  </p>
+                  <div className="mt-4 p-3 bg-gray-800 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-300 mb-2">已選擇的風格:</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedStyles.map((styleId) => {
+                        const category = musicCategories.find(c => c.id === styleId)
+                        const displayName = category ? category.name : styleId
+                        return (
+                          <span
+                            key={styleId}
+                            className="inline-flex items-center px-3 py-1 bg-cyan-600 text-white text-sm rounded-full"
+                          >
+                            {displayName}
+                            <button
+                              onClick={() => removeStyle(styleId)}
+                              className="ml-2 text-cyan-200 hover:text-white"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        )
+                      })}
+                    </div>
+                  </div>
                 )}
               </div>
 
