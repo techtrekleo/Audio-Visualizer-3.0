@@ -2850,7 +2850,7 @@ const drawSubtitles = (
     ctx.restore();
 };
 
-// 逐字顯示字幕函數
+// 逐字顯示字幕函數（打字機風格）
 const drawWordByWordSubtitles = (
     ctx: CanvasRenderingContext2D,
     width: number,
@@ -2905,7 +2905,12 @@ const drawWordByWordSubtitles = (
     // 只顯示前面的字
     const visibleText = words.slice(0, wordsToShow).join('');
     
-    const metrics = ctx.measureText(visibleText);
+    // 打字機游標效果
+    const cursorBlinkSpeed = 0.5; // 游標閃爍速度（秒）
+    const showCursor = Math.floor(currentTime / cursorBlinkSpeed) % 2 === 0;
+    const displayText = showCursor && wordsToShow < words.length ? visibleText + '|' : visibleText;
+    
+    const metrics = ctx.measureText(displayText);
     const textHeight = metrics.fontBoundingBoxAscent ?? fontSize;
     const textWidth = metrics.width;
     
@@ -2941,11 +2946,31 @@ const drawWordByWordSubtitles = (
     
     // Draw text outline
     ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-    ctx.strokeText(visibleText, positionX, positionY);
+    ctx.strokeText(displayText, positionX, positionY);
     
     // Draw main text
     ctx.fillStyle = color;
-    ctx.fillText(visibleText, positionX, positionY);
+    ctx.fillText(displayText, positionX, positionY);
+    
+    // 打字機特效：為正在輸入的字添加特殊效果
+    if (wordsToShow < words.length) {
+        const currentChar = words[wordsToShow];
+        const beforeCurrentText = words.slice(0, wordsToShow).join('');
+        const beforeMetrics = ctx.measureText(beforeCurrentText);
+        
+        // 計算當前字的位置
+        const charX = positionX - textWidth / 2 + beforeMetrics.width;
+        const charY = positionY;
+        
+        // 為即將出現的字添加發光效果
+        ctx.save();
+        ctx.shadowColor = color;
+        ctx.shadowBlur = fontSize * 0.3;
+        ctx.fillStyle = color;
+        ctx.font = `bold ${fontSize * 1.1}px "${fontFamily}", sans-serif`;
+        ctx.fillText(currentChar, charX, charY);
+        ctx.restore();
+    }
     
     ctx.restore();
 };
