@@ -22,6 +22,14 @@ export const fonts = [
   { id: 'merriweather', name: 'Merriweather', family: 'Merriweather', weight: 400 },
   { id: 'oswald', name: 'Oswald', family: 'Oswald', weight: 400 },
   { id: 'lobster', name: 'Lobster', family: 'Lobster', weight: 400 },
+  { id: 'dancing-script', name: 'Dancing Script (手寫體)', family: 'Dancing Script', weight: 400 },
+  { id: 'caveat', name: 'Caveat (手寫體)', family: 'Caveat', weight: 400 },
+  { id: 'kalam', name: 'Kalam (手寫體)', family: 'Kalam', weight: 400 },
+  { id: 'comfortaa', name: 'Comfortaa (圓體)', family: 'Comfortaa', weight: 400 },
+  { id: 'fredoka-one', name: 'Fredoka One (寬體)', family: 'Fredoka One', weight: 400 },
+  { id: 'nunito', name: 'Nunito (寬體)', family: 'Nunito', weight: 400 },
+  { id: 'quicksand', name: 'Quicksand (寬體)', family: 'Quicksand', weight: 400 },
+  { id: 'rubik', name: 'Rubik (寬體)', family: 'Rubik', weight: 400 },
 ] as const;
 
 
