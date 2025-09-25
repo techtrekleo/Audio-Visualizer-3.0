@@ -28,8 +28,9 @@ export const UnifiedFooter: React.FC<FooterProps> = ({
             href="#" 
             onClick={(e) => {
               e.preventDefault();
-              // 這裡可以添加聯繫我們彈出視窗的邏輯
-              console.log('聯繫我們');
+              if ((window as any).openContactModal) {
+                (window as any).openContactModal();
+              }
             }}
             className="text-gray-400 hover:text-cyan-400 transition-colors duration-200"
           >
@@ -39,8 +40,9 @@ export const UnifiedFooter: React.FC<FooterProps> = ({
             href="#" 
             onClick={(e) => {
               e.preventDefault();
-              // 這裡可以添加隱私政策彈出視窗的邏輯
-              console.log('隱私政策');
+              if ((window as any).openPrivacyModal) {
+                (window as any).openPrivacyModal();
+              }
             }}
             className="text-gray-400 hover:text-cyan-400 transition-colors duration-200"
           >
@@ -50,8 +52,9 @@ export const UnifiedFooter: React.FC<FooterProps> = ({
             href="#" 
             onClick={(e) => {
               e.preventDefault();
-              // 這裡可以添加使用條款彈出視窗的邏輯
-              console.log('使用條款');
+              if ((window as any).openTermsModal) {
+                (window as any).openTermsModal();
+              }
             }}
             className="text-gray-400 hover:text-cyan-400 transition-colors duration-200"
           >

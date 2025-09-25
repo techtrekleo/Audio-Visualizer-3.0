@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { musicCategories } from './utils/musicCategories'
 import { generateAIContent } from './utils/geminiAI'
-import { UnifiedHeader, UnifiedFooter } from '../../shared-components/dist'
+import { UnifiedHeader, UnifiedFooter, ModalProvider } from '../../shared-components/dist'
 
 interface SEOContent {
   title: string
@@ -98,8 +98,9 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-black">
-      <UnifiedHeader />
+    <ModalProvider>
+      <div className="min-h-screen bg-black">
+        <UnifiedHeader />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <div className="space-y-6">
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
@@ -357,12 +358,13 @@ function App() {
               </div>
             </div>
           )}
-        </div>
-      </main>
-      
-      {/* 統一的 Footer */}
-      <UnifiedFooter />
-    </div>
+          </div>
+        </main>
+        
+        {/* 統一的 Footer */}
+        <UnifiedFooter />
+      </div>
+    </ModalProvider>
   )
 }
 
