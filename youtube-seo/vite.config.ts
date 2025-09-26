@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
     // Explicitly define environment variables to be statically replaced at build time.
     // This is a more robust approach for deployment environments.
     define: {
-      'import.meta.env.VITE_API_KEY': JSON.stringify(env.VITE_API_KEY)
+      'import.meta.env.VITE_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
     },
     server: {
       port: 5173,
