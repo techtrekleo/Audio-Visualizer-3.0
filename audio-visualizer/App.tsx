@@ -522,6 +522,11 @@ function App() {
 
             <main className="flex flex-col p-4 overflow-y-auto pt-24">
                 <div className="w-full max-w-7xl mx-auto flex flex-col items-center gap-4">
+                    {/* 頁面標題 */}
+                    <div className="text-center mb-6">
+                        <h1 className="text-3xl font-bold text-white mb-2">音訊可視化工程</h1>
+                        <p className="text-gray-300">將音樂轉化為震撼的視覺效果</p>
+                    </div>
                         <div style={wrapperStyle} className="flex items-center justify-center bg-black rounded-lg border border-gray-700 overflow-hidden">
                             <div 
                                 style={{

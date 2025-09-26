@@ -167,6 +167,7 @@ const App: React.FC = () => {
         {/* 頂部預覽區域 - 佔滿一整行 */}
         <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
           <div className="text-center mb-4">
+            <h1 className="text-3xl font-bold text-white mb-2">封面產生器</h1>
             <h2 className="text-xl font-semibold text-gray-100">即時預覽</h2>
             <p className="text-sm text-gray-300">點擊文字區塊進行編輯</p>
           </div>

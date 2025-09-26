@@ -104,6 +104,7 @@ function App() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <div className="space-y-6">
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
+            <h1 className="text-3xl font-bold text-white mb-2">Seo高分標題模板產生器</h1>
             <h2 className="text-xl font-semibold text-gray-100 mb-6">
               Generate SEO-friendly titles and tags for your music covers
             </h2>
