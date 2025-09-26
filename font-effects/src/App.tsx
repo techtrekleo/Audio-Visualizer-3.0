@@ -4,6 +4,7 @@ import { DraggableTextBlock } from './components/DraggableTextBlock';
 import { VisualCanvas } from './components/VisualCanvas';
 import { PresetManager } from './components/PresetManager';
 import { UnifiedHeader } from './components/UnifiedLayout';
+import { UnifiedFooter, ModalProvider } from '../../shared-components/dist';
 import { renderComposition, getRandomItem, getRandomHexColor } from './utils/canvas';
 import { fonts, effects, canvasSizes, DEFAULT_COLOR_1, DEFAULT_COLOR_2 } from './constants';
 import type { TextBlock, CanvasSizeId, EffectId, SavedPreset } from './types';
@@ -159,8 +160,9 @@ const App: React.FC = () => {
     canvasSizeId === 'square';
 
   return (
-    <div className="text-white min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8" style={{ fontFamily: "'Noto Sans TC', sans-serif", background: '#000000' }}>
-      <UnifiedHeader />
+    <ModalProvider>
+      <div className="text-white flex flex-col items-center p-4 sm:p-6 lg:p-8" style={{ fontFamily: "'Noto Sans TC', sans-serif", background: '#000000' }}>
+        <UnifiedHeader />
       <main className="w-full max-w-7xl space-y-8 pt-24">
         {/* 頂部預覽區域 - 佔滿一整行 */}
         <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
@@ -291,7 +293,11 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
+      
+      {/* 統一的 Footer */}
+      <UnifiedFooter />
     </div>
+  </ModalProvider>
   );
 };
 

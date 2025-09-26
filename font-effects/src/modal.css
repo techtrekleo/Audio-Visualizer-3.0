@@ -11,10 +11,6 @@
   backdrop-filter: blur(5px);
 }
 
-.contact-modal.show {
-  display: block;
-}
-
 .contact-modal-content {
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   margin: 10% auto;
@@ -116,10 +112,6 @@
   height: 100%;
   background-color: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
-}
-
-.privacy-modal.show, .terms-modal.show {
-  display: block;
 }
 
 .privacy-modal-content, .terms-modal-content {

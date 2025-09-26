@@ -12,6 +12,7 @@ import Icon from './components/Icon';
 import AdSenseAd from './components/AdSenseAd';
 import LyricsDisplay from './components/LyricsDisplay';
 import { UnifiedHeader } from './components/UnifiedLayout';
+import { UnifiedFooter, ModalProvider } from '../shared-components/dist';
 // import AdManager from './components/AdManager';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
@@ -492,8 +493,9 @@ function App() {
 
 
     return (
-        <div className="h-full flex flex-col">
-            <UnifiedHeader />
+        <ModalProvider>
+            <div className="flex flex-col">
+                <UnifiedHeader />
             {audioUrl && (
                 <audio
                     key={audioUrl}
@@ -518,14 +520,7 @@ function App() {
                 />
             )}
 
-            <header className="w-full max-w-7xl mx-auto flex items-center justify-between p-4 border-b border-gray-700 flex-shrink-0">
-                <div className="flex items-center space-x-3">
-                    <Icon path={ICON_PATHS.MUSIC_NOTE} className="w-8 h-8 text-cyan-400" />
-                    <h1 className="text-2xl font-bold tracking-wider">音訊視覺化工具 Pro</h1>
-                </div>
-            </header>
-
-            <main className="flex-1 flex flex-col p-4 overflow-y-auto pt-24">
+            <main className="flex flex-col p-4 overflow-y-auto pt-24">
                 <div className="w-full max-w-7xl mx-auto flex flex-col items-center gap-4">
                         <div style={wrapperStyle} className="flex items-center justify-center bg-black rounded-lg border border-gray-700 overflow-hidden">
                             <div 
@@ -694,12 +689,11 @@ function App() {
                         />
                     </div>
             </main>
-            {/* 頁腳廣告 */}
-            <div className="w-full max-w-7xl mx-auto px-4 mb-4">
-                <AdSenseAd type="footer" />
-            </div>
             
+            {/* 統一的 Footer */}
+            <UnifiedFooter />
         </div>
+    </ModalProvider>
     );
 }
 

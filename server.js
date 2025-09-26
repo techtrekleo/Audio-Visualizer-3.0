@@ -565,39 +565,60 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                 
                 <script>
                   // 更新年份
-                  document.getElementById('currentYear').textContent = new Date().getFullYear();
+                  const yearElement = document.getElementById('currentYear');
+                  if (yearElement) {
+                    yearElement.textContent = new Date().getFullYear();
+                  }
                   
                   // 聯繫我們彈出視窗功能
                   function openContactModal() {
-                    document.getElementById('contactModal').style.display = 'block';
-                    document.body.style.overflow = 'hidden';
+                    const modal = document.getElementById('contactModal');
+                    if (modal) {
+                      modal.style.display = 'block';
+                      document.body.style.overflow = 'hidden';
+                    }
                   }
                   
                   function closeContactModal() {
-                    document.getElementById('contactModal').style.display = 'none';
-                    document.body.style.overflow = 'auto';
+                    const modal = document.getElementById('contactModal');
+                    if (modal) {
+                      modal.style.display = 'none';
+                      document.body.style.overflow = 'auto';
+                    }
                   }
                   
                   // 隱私政策彈出視窗功能
                   function openPrivacyModal() {
-                    document.getElementById('privacyModal').style.display = 'block';
-                    document.body.style.overflow = 'hidden';
+                    const modal = document.getElementById('privacyModal');
+                    if (modal) {
+                      modal.style.display = 'block';
+                      document.body.style.overflow = 'hidden';
+                    }
                   }
                   
                   function closePrivacyModal() {
-                    document.getElementById('privacyModal').style.display = 'none';
-                    document.body.style.overflow = 'auto';
+                    const modal = document.getElementById('privacyModal');
+                    if (modal) {
+                      modal.style.display = 'none';
+                      document.body.style.overflow = 'auto';
+                    }
                   }
                   
                   // 使用條款彈出視窗功能
                   function openTermsModal() {
-                    document.getElementById('termsModal').style.display = 'block';
-                    document.body.style.overflow = 'hidden';
+                    const modal = document.getElementById('termsModal');
+                    if (modal) {
+                      modal.style.display = 'block';
+                      document.body.style.overflow = 'hidden';
+                    }
                   }
                   
                   function closeTermsModal() {
-                    document.getElementById('termsModal').style.display = 'none';
-                    document.body.style.overflow = 'auto';
+                    const modal = document.getElementById('termsModal');
+                    if (modal) {
+                      modal.style.display = 'none';
+                      document.body.style.overflow = 'auto';
+                    }
                   }
                   
                   // 點擊背景關閉彈出視窗
@@ -729,8 +750,8 @@ const server = http.createServer((req, res) => {
         req.url.startsWith('/youtube-seo') || 
         req.url.startsWith('/font-effects')
       )) {
-        // YouTube SEO 工具已經使用共享組件中的 footer，所以不需要注入 server.js 的 footer
-        const includeFooter = !req.url.startsWith('/youtube-seo');
+        // 所有工具現在都使用共享組件中的 footer，所以不需要注入 server.js 的 footer
+        const includeFooter = false;
         content = injectUnifiedLayout(content.toString(), includeFooter);
       }
       
