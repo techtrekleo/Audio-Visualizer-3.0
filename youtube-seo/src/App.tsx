@@ -29,6 +29,8 @@ function App() {
   const [customStyle, setCustomStyle] = useState('')
   const [showCustomInput, setShowCustomInput] = useState(false)
   const [styleHistory, setStyleHistory] = useState<string[]>([])
+  const [artistHistory, setArtistHistory] = useState<string[]>([])
+  const [showArtistHistory, setShowArtistHistory] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState('zh') // 預設中文
   const [seoContent, setSeoContent] = useState<SEOContent | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -60,6 +62,11 @@ function App() {
     if (!selectedStyles.includes(style)) {
       setSelectedStyles(prev => [...prev, style])
     }
+  }
+
+  const addArtistFromHistory = (artistName: string) => {
+    setArtist(artistName)
+    setShowArtistHistory(false)
   }
 
   const removeStyle = (styleId: string) => {
@@ -102,6 +109,14 @@ function App() {
         englishDescription: englishResult?.description,
         englishTags: englishResult?.tags
       })
+
+      // 將歌手名稱添加到歷史記錄
+      if (artistName.trim() && artistName !== 'Unknown Artist') {
+        setArtistHistory(prev => {
+          const filtered = prev.filter(name => name !== artistName.trim())
+          return [artistName.trim(), ...filtered.slice(0, 9)] // 保留最近10個
+        })
+      }
     } catch (err) {
       console.error('生成失敗:', err)
       setError('AI 生成失敗，請檢查 API 金鑰或稍後再試')
@@ -145,14 +160,47 @@ function App() {
                 <label htmlFor="artist" className="block text-sm font-medium text-gray-300 mb-2">
                   Original Artist (Optional)
                 </label>
-                <input
-                  id="artist"
-                  type="text"
-                  value={artist}
-                  onChange={(e) => setArtist(e.target.value)}
-                  placeholder="e.g., Ed Sheeran, Queen"
-                  className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
-                />
+                <div className="relative">
+                  <input
+                    id="artist"
+                    type="text"
+                    value={artist}
+                    onChange={(e) => setArtist(e.target.value)}
+                    onFocus={() => setShowArtistHistory(artistHistory.length > 0)}
+                    placeholder="e.g., Ed Sheeran, Queen"
+                    className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                  />
+                  
+                  {/* 歷史記錄按鈕 */}
+                  {artistHistory.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowArtistHistory(!showArtistHistory)}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-cyan-400 transition-colors"
+                      title="查看歷史記錄"
+                    >
+                      📋
+                    </button>
+                  )}
+                </div>
+
+                {/* 歌手歷史記錄 */}
+                {showArtistHistory && artistHistory.length > 0 && (
+                  <div className="mt-2 p-3 bg-gray-800 rounded-lg border border-gray-600">
+                    <h4 className="text-sm font-medium text-gray-300 mb-3">歌手歷史記錄</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {artistHistory.map((artistName, index) => (
+                        <button
+                          key={index}
+                          onClick={() => addArtistFromHistory(artistName)}
+                          className="px-3 py-1 text-xs bg-gray-700 hover:bg-cyan-600 text-gray-300 hover:text-white rounded-full transition-colors duration-200"
+                        >
+                          {artistName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
