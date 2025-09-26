@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-// 初始化 Gemini AI - 使用統一的 VITE_API_KEY
-const apiKey = (import.meta as any).env?.VITE_API_KEY
+// 初始化 Gemini AI - 使用 GEMINI_API_KEY
+const apiKey = (import.meta as any).env?.GEMINI_API_KEY
 console.log('🔑 Gemini API Key available:', !!apiKey, 'Length:', apiKey?.length || 0)
 
 const genAI = new GoogleGenerativeAI(apiKey)
