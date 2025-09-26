@@ -36,9 +36,9 @@ Follow these steps to set up the project on your own computer for development, d
     ```
 
 3.  **Create an Environment File:**
-    Create a new file named `.env` in the root of the project folder. Add your Gemini API key to this file. **The name must be `VITE_API_KEY`**.
+    Create a new file named `.env` in the root of the project folder. Add your Gemini API key to this file. **The name must be `GEMINI_API_KEY`**.
     ```
-    VITE_API_KEY=YOUR_GEMINI_API_KEY_HERE
+    GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
     ```
     Replace `YOUR_GEMINI_API_KEY_HERE` with your actual key. This file is ignored by Git and keeps your key private.
 

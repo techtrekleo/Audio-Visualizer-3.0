@@ -198,7 +198,7 @@ function App() {
             return;
         }
         
-        const apiKey = (import.meta as any).env.VITE_API_KEY;
+        const apiKey = (import.meta as any).env.GEMINI_API_KEY;
         
         // 調試信息
         console.log("API Key 狀態:", {
