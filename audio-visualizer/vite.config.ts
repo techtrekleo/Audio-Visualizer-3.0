@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
     // Explicitly define environment variables to be statically replaced at build time.
     // This is a more robust approach for deployment environments.
     define: {
-      'import.meta.env.VITE_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+      'import.meta.env.VITE_API_KEY': JSON.stringify(env.VITE_API_KEY)
     },
     build: {
       outDir: 'dist',
@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
         },
         output: {
           // 使用固定文件名，避免哈希變化
-          entryFileNames: 'assets/main.js',
+          entryFileNames: 'assets/index.js',
           chunkFileNames: 'assets/[name].js',
           assetFileNames: 'assets/[name].[ext]'
         }
