@@ -783,16 +783,11 @@ const server = http.createServer((req, res) => {
         '.jpg': 'image/jpg'
       }[ext] || 'text/plain';
       
-      // 如果是工具頁面的 index.html，注入統一的頁首頁尾
-      if (ext === '.html' && (
-        req.url.startsWith('/audio-visualizer') || 
-        req.url.startsWith('/youtube-seo') || 
-        req.url.startsWith('/font-effects')
-      )) {
-        // 所有工具現在都使用共享組件中的 footer，所以不需要注入 server.js 的 footer
-        const includeFooter = false;
-        content = injectUnifiedLayout(content.toString(), includeFooter);
-      }
+    // 工具頁面現在完全使用 React 組件，不需要注入 HTML
+    // 只為首頁注入統一的頁首頁尾
+    if (ext === '.html' && req.url === '/') {
+      content = injectUnifiedLayout(content.toString(), true);
+    }
       
       res.writeHead(200, { 'Content-Type': mimeType });
       res.end(content);
