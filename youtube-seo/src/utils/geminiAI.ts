@@ -198,15 +198,15 @@ Return only the title, no other text.`
     } else {
       // 其他語言使用英文
       const randomSymbol = getRandomSymbol()
-      prompt = `Generate a YouTube title for the following music in ${language}:
+      prompt = `Generate a YouTube title for the following music in English:
 
 Song Info:
 - Song Name: ${songName}
 - Original Artist: ${artist}
 - Music Styles: ${musicStyles.join(', ')}
 
-Please use fixed format to generate title:
-【Song Name】- Artist Name ${randomSymbol} Description｜Music Style Variant / Emotional Description / Scene Description
+Please generate a YouTube title in English format:
+[Song Name] - Artist Name ${randomSymbol} Description | Music Style / Emotional Description / Scene Description
 
 Music style variants to choose from:
 - Basic style (e.g., Pop)
@@ -225,6 +225,8 @@ Please ensure:
 4. Overall is click-worthy
 5. Must use symbol: ${randomSymbol}
 6. Randomly choose music style variant
+7. Use English brackets [] instead of Chinese brackets 【】
+8. All text must be in English
 
 Return only the title, no other text.`
     }

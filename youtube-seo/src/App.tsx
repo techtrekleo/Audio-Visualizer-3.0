@@ -8,8 +8,6 @@ interface SEOContent {
   description: string
   tags: string[]
   englishTitle?: string
-  englishDescription?: string
-  englishTags?: string[]
 }
 
 // 支援的語言選項
@@ -105,9 +103,7 @@ function App() {
         title: result.title,
         description: result.description,
         tags: result.tags,
-        englishTitle: englishResult?.title,
-        englishDescription: englishResult?.description,
-        englishTags: englishResult?.tags
+        englishTitle: englishResult?.title
       })
 
       // 將歌手名稱添加到歷史記錄
@@ -442,54 +438,6 @@ function App() {
                       <p className="text-lg font-medium text-blue-100">{seoContent.englishTitle}</p>
                       <p className="text-sm text-blue-400 mt-2">
                         Length: {seoContent.englishTitle.length} characters
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm rounded-lg shadow-2xl border border-blue-500/30 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-blue-300">English Description (英文說明)</h3>
-                      <button
-                        onClick={() => copyToClipboard(seoContent.englishDescription!)}
-                        className="bg-blue-700 hover:bg-blue-600 text-blue-100 font-medium py-2 px-4 rounded-lg transition-colors duration-200"
-                      >
-                        Copy English Description
-                      </button>
-                    </div>
-                    <div className="bg-gray-900/50 p-4 rounded-lg">
-                      <pre className="whitespace-pre-wrap text-sm text-blue-100 font-sans">{seoContent.englishDescription}</pre>
-                      <p className="text-sm text-blue-400 mt-2">
-                        Length: {seoContent.englishDescription!.length} characters
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm rounded-lg shadow-2xl border border-blue-500/30 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-blue-300">English Tags (英文標籤)</h3>
-                      <button
-                        onClick={() => copyToClipboard(seoContent.englishTags!.join(', '))}
-                        className="bg-blue-700 hover:bg-blue-600 text-blue-100 font-medium py-2 px-4 rounded-lg transition-colors duration-200"
-                      >
-                        Copy English Tags
-                      </button>
-                    </div>
-                    <div className="bg-gray-900/50 p-4 rounded-lg">
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {seoContent.englishTags!.map((tag, index) => (
-                          <span 
-                            key={index}
-                            className="px-3 py-1 bg-blue-500/20 text-blue-300 text-sm rounded-full"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <p className="text-sm text-blue-400">
-                        Tags with comma separator: {seoContent.englishTags!.join(', ')}
-                      </p>
-                      <p className="text-sm text-blue-400 mt-2">
-                        Total tags: {seoContent.englishTags!.length} | Total characters: {seoContent.englishTags!.join(', ').length}
                       </p>
                     </div>
                   </div>
