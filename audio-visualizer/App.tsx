@@ -198,7 +198,7 @@ function App() {
             return;
         }
         
-        const apiKey = (import.meta as any).env.VITE_API_KEY || 'AIzaSyDBvpNXzZQR980TLv7NtQRb6OARBe_VUCs';
+        const apiKey = (import.meta as any).env.VITE_API_KEY;
         
         // 調試信息
         console.log("API Key 狀態:", {

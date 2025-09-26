@@ -18,7 +18,6 @@ export const UnifiedHeader: React.FC<HeaderProps> = ({ className = "" }) => {
         <ul className="flex items-center space-x-6">
           <li><a href="/" className="text-gray-300 hover:text-white transition-colors">首頁</a></li>
           <li><a href="/#tools" className="text-gray-300 hover:text-white transition-colors">工具</a></li>
-          <li><a href="/articles/index.html" className="text-gray-300 hover:text-white transition-colors">文章</a></li>
           <li><a href="/#channel" className="text-gray-300 hover:text-white transition-colors">頻道</a></li>
           <li><a href="/#contact" className="text-gray-300 hover:text-white transition-colors">聯繫</a></li>
         </ul>
