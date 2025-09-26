@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 3000;
 
 // 統一頁首頁尾注入函數
 function injectUnifiedLayout(htmlContent, includeFooter = true) {

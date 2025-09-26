@@ -16,5 +16,8 @@ COPY . .
 # 暴露端口
 EXPOSE 3000
 
+# 設置環境變數
+ENV PORT=3000
+
 # 啟動命令
 CMD ["npm", "start"]
