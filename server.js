@@ -9,7 +9,7 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
   // 統一的頁首頁尾樣式
   const unifiedStyles = `
     <style>
-      /* 統一頁首樣式 */
+      /* 統一頁首樣式 - 與首頁一致 */
       .unified-navbar {
         position: fixed;
         top: 0;
@@ -24,47 +24,87 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
       .unified-navbar .nav-container {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 0 2rem;
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: center;
+        padding: 0 2rem;
       }
       .unified-navbar .logo {
+        font-family: 'Orbitron', monospace;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 1rem;
       }
       .unified-navbar .logo-cat {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 50px;
+        height: 50px;
         border-radius: 50%;
-      }
-      .unified-navbar .logo-text {
-        color: white;
+        object-fit: cover;
       }
       .unified-navbar .logo-main {
-        font-weight: bold;
-        font-size: 1.125rem;
+        font-size: 1.8rem;
+        font-weight: 900;
+        background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: unified-gradient 3s ease infinite;
       }
       .unified-navbar .logo-sub {
-        color: #9ca3af;
-        font-size: 0.875rem;
+        font-size: 0.7rem;
+        font-weight: 400;
+        color: #96ceb4;
+        margin-top: -2px;
       }
       .unified-navbar .nav-links {
         display: flex;
-        align-items: center;
-        gap: 1.5rem;
         list-style: none;
+        gap: 2rem;
         margin: 0;
         padding: 0;
       }
       .unified-navbar .nav-links a {
-        color: #d1d5db;
+        color: #ffffff;
         text-decoration: none;
+        font-weight: 500;
         transition: color 0.3s ease;
+        position: relative;
       }
       .unified-navbar .nav-links a:hover {
-        color: white;
+        color: #4ecdc4;
+      }
+      .unified-navbar .nav-links a::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        transition: width 0.3s ease;
+      }
+      .unified-navbar .nav-links a:hover::after {
+        width: 100%;
+      }
+      @keyframes unified-gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      @media (max-width: 768px) {
+        .unified-navbar .nav-container {
+          padding: 0 1rem;
+        }
+        .unified-navbar .logo-main {
+          font-size: 1.5rem;
+        }
+        .unified-navbar .logo-sub {
+          font-size: 0.6rem;
+        }
+        .unified-navbar .nav-links {
+          display: none;
+        }
       }
       
                   /* 統一頁尾樣式 - 工具頁面使用純色背景 */
@@ -372,7 +412,6 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
         <ul class="nav-links">
           <li><a href="/">首頁</a></li>
           <li><a href="/#tools">工具</a></li>
-          <li><a href="/articles/index.html">文章</a></li>
           <li><a href="/#channel">頻道</a></li>
           <li><a href="/#contact">聯繫</a></li>
         </ul>
