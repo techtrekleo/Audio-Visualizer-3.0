@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode }) => {
   // Load .env files based on `mode` in the current working directory.
   // This will also load environment variables from the platform (e.g., Railway).
-  const env = loadEnv(mode, '', '');
+  const env = loadEnv(mode, process.cwd() + '/..', '');
   
   return {
     plugins: [react()],
