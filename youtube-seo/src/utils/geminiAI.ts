@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-// 初始化 Gemini AI - 使用 GEMINI_API_KEY
-const apiKey = (import.meta as any).env?.GEMINI_API_KEY
+// 初始化 Gemini AI - 使用 VITE_API_KEY
+const apiKey = (import.meta as any).env?.VITE_API_KEY
 console.log('🔑 Gemini API Key available:', !!apiKey, 'Length:', apiKey?.length || 0)
 
 const genAI = new GoogleGenerativeAI(apiKey)
@@ -56,13 +56,13 @@ export const generateAITitle = async (songName: string, artist: string, musicSty
   console.log('🤖 Starting AI title generation...')
   try {
     if (!apiKey) {
-      console.error('❌ No API key available - please set GEMINI_API_KEY environment variable')
-      throw new Error('No API key available - please set GEMINI_API_KEY environment variable')
+      console.error('❌ No API key available - please set VITE_API_KEY environment variable')
+      throw new Error('No API key available - please set VITE_API_KEY environment variable')
     }
     
     if (apiKey === 'your_gemini_api_key_here' || apiKey.length < 10) {
-      console.error('❌ Invalid API key - please check your GEMINI_API_KEY setting')
-      throw new Error('Invalid API key - please check your GEMINI_API_KEY setting')
+      console.error('❌ Invalid API key - please check your VITE_API_KEY setting')
+      throw new Error('Invalid API key - please check your VITE_API_KEY setting')
     }
     
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
@@ -259,13 +259,13 @@ export const generateAIDescription = async (songName: string, artist: string, mu
   console.log('🤖 Starting AI description generation...')
   try {
     if (!apiKey) {
-      console.error('❌ No API key available - please set GEMINI_API_KEY environment variable')
-      throw new Error('No API key available - please set GEMINI_API_KEY environment variable')
+      console.error('❌ No API key available - please set VITE_API_KEY environment variable')
+      throw new Error('No API key available - please set VITE_API_KEY environment variable')
     }
     
     if (apiKey === 'your_gemini_api_key_here' || apiKey.length < 10) {
-      console.error('❌ Invalid API key - please check your GEMINI_API_KEY setting')
-      throw new Error('Invalid API key - please check your GEMINI_API_KEY setting')
+      console.error('❌ Invalid API key - please check your VITE_API_KEY setting')
+      throw new Error('Invalid API key - please check your VITE_API_KEY setting')
     }
     
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
@@ -418,13 +418,13 @@ export const generateAITags = async (songName: string, artist: string, musicStyl
   console.log('🤖 Starting AI tags generation...')
   try {
     if (!apiKey) {
-      console.error('❌ No API key available - please set GEMINI_API_KEY environment variable')
-      throw new Error('No API key available - please set GEMINI_API_KEY environment variable')
+      console.error('❌ No API key available - please set VITE_API_KEY environment variable')
+      throw new Error('No API key available - please set VITE_API_KEY environment variable')
     }
     
     if (apiKey === 'your_gemini_api_key_here' || apiKey.length < 10) {
-      console.error('❌ Invalid API key - please check your GEMINI_API_KEY setting')
-      throw new Error('Invalid API key - please check your GEMINI_API_KEY setting')
+      console.error('❌ Invalid API key - please check your VITE_API_KEY setting')
+      throw new Error('Invalid API key - please check your VITE_API_KEY setting')
     }
     
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
