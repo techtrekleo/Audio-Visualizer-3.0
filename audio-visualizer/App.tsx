@@ -79,6 +79,20 @@ function App() {
     const [lyricsPositionX, setLyricsPositionX] = useState<number>(0); // 水平位置偏移 (-50 到 50)
     const [lyricsPositionY, setLyricsPositionY] = useState<number>(0); // 垂直位置偏移 (-50 到 50)
     
+    // 字幕拖曳位置狀態
+    const [subtitleDragOffset, setSubtitleDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    const [lyricsDragOffset, setLyricsDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    
+    // 可視化拖曳和大小調整狀態
+    const [visualizationTransform, setVisualizationTransform] = useState<{
+        x: number;
+        y: number;
+        scale: number;
+    }>({ x: 0, y: 0, scale: 1.0 });
+    
+    // 可視化大小控制
+    const [visualizationScale, setVisualizationScale] = useState<number>(1.0);
+    
     // 幾何圖形可視化狀態
     const [showGeometricControls, setShowGeometricControls] = useState<boolean>(false); // 幾何圖形控制面板
     const [geometricFrameImage, setGeometricFrameImage] = useState<string | null>(null); // 方框圖片
@@ -616,6 +630,14 @@ function App() {
                                     lyricsPositionY={lyricsPositionY}
                                     subtitleDisplayMode={subtitleDisplayMode}
                                     disableVisualizer={!showVisualizer}
+                                    subtitleDragOffset={subtitleDragOffset}
+                                    lyricsDragOffset={lyricsDragOffset}
+                                    onSubtitleDragUpdate={setSubtitleDragOffset}
+                                    onLyricsDragUpdate={setLyricsDragOffset}
+                                    visualizationTransform={visualizationTransform}
+                                    onVisualizationTransformUpdate={setVisualizationTransform}
+                                    visualizationScale={visualizationScale}
+                                    onVisualizationScaleChange={setVisualizationScale}
                 geometricFrameImage={geometricFrameImage}
                 geometricSemicircleImage={geometricSemicircleImage}
                 geometricSongName={geometricSongName}
@@ -745,6 +767,8 @@ function App() {
                             onGeometricSongNameChange={setGeometricSongName}
                             geometricArtistName={geometricArtistName}
                             onGeometricArtistNameChange={setGeometricArtistName}
+                            visualizationScale={visualizationScale}
+                            onVisualizationScaleChange={setVisualizationScale}
                         />
                     </div>
             </main>

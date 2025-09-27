@@ -194,6 +194,9 @@ interface OptimizedControlsProps {
     onGeometricSongNameChange?: (name: string) => void;
     geometricArtistName: string | null;
     onGeometricArtistNameChange?: (name: string) => void;
+    // 可視化大小控制
+    visualizationScale?: number;
+    onVisualizationScaleChange?: (scale: number) => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
@@ -1134,10 +1137,10 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         </CollapsibleControlSection>
                     )}
 
-                    {/* 幾何圖形控制面板 */}
+                    {/* 可夜視覺化專用面板 */}
                     {props.visualizationType === VisualizationType.GEOMETRIC_BARS && (
                         <CollapsibleControlSection
-                            title="幾何圖形控制"
+                            title="可夜視覺化專用面板"
                             icon="🔧"
                             priority="high"
                             defaultExpanded={true}

@@ -136,6 +136,65 @@ export type Subtitle = {
     text: string;
 };
 
+export interface AudioVisualizerProps {
+    analyser: AnalyserNode | null;
+    audioRef: React.RefObject<HTMLAudioElement>;
+    visualizationType: VisualizationType;
+    isPlaying: boolean;
+    customText: string;
+    textColor: string;
+    fontFamily: FontType;
+    graphicEffect: GraphicEffectType;
+    textSize: number;
+    textPositionX: number;
+    textPositionY: number;
+    sensitivity: number;
+    smoothing: number;
+    equalization: number;
+    backgroundColor: string;
+    colors: Palette;
+    backgroundImage: string | null;
+    watermarkPosition: WatermarkPosition;
+    waveformStroke: boolean;
+    isTransitioning: boolean;
+    transitionType: TransitionType;
+    backgroundImages: string[];
+    currentImageIndex: number;
+    // Subtitle props
+    subtitles: Subtitle[];
+    showSubtitles: boolean;
+    subtitleFontSize: number;
+    subtitleFontFamily: FontType;
+    subtitleColor: string;
+    subtitleBgStyle: SubtitleBgStyle;
+    effectScale: number;
+    effectOffsetX: number;
+    effectOffsetY: number;
+    // Lyrics Display props
+    showLyricsDisplay: boolean;
+    currentTime: number;
+    lyricsFontSize: number;
+    lyricsPositionX: number;
+    lyricsPositionY: number;
+    subtitleDisplayMode: SubtitleDisplayMode;
+    // When true, skip drawing visualizer effects but keep background and subtitles
+    disableVisualizer?: boolean;
+    // 幾何圖形可視化參數
+    geometricFrameImage?: string | null;
+    geometricSemicircleImage?: string | null;
+    geometricSongName?: string | null;
+    geometricArtistName?: string | null;
+    // 拖曳位置狀態
+    subtitleDragOffset?: { x: number; y: number };
+    lyricsDragOffset?: { x: number; y: number };
+    onSubtitleDragUpdate?: (offset: { x: number; y: number }) => void;
+    onLyricsDragUpdate?: (offset: { x: number; y: number }) => void;
+    // 可視化變換狀態
+    visualizationTransform?: { x: number; y: number; scale: number };
+    onVisualizationTransformUpdate?: (transform: { x: number; y: number; scale: number }) => void;
+    visualizationScale?: number;
+}
+
 export type Palette = {
     name: ColorPaletteType;
     primary: string;

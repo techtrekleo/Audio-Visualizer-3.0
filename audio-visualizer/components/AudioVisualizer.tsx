@@ -50,6 +50,15 @@ interface AudioVisualizerProps {
     geometricSemicircleImage?: string | null;
     geometricSongName?: string | null;
     geometricArtistName?: string | null;
+    // 拖曳位置狀態
+    subtitleDragOffset?: { x: number; y: number };
+    lyricsDragOffset?: { x: number; y: number };
+    onSubtitleDragUpdate?: (offset: { x: number; y: number }) => void;
+    onLyricsDragUpdate?: (offset: { x: number; y: number }) => void;
+    // 可視化變換狀態
+    visualizationTransform?: { x: number; y: number; scale: number };
+    onVisualizationTransformUpdate?: (transform: { x: number; y: number; scale: number }) => void;
+    visualizationScale?: number;
 }
 
 /**
@@ -3181,13 +3190,14 @@ const drawSubtitles = (
     width: number,
     height: number,
     currentSubtitle: Subtitle | undefined,
-    { fontSizeVw, fontFamily, color, effect, bgStyle, isBeat }: {
+    { fontSizeVw, fontFamily, color, effect, bgStyle, isBeat, dragOffset = { x: 0, y: 0 } }: {
         fontSizeVw: number;
         fontFamily: string;
         color: string;
         effect: GraphicEffectType;
         bgStyle: SubtitleBgStyle;
         isBeat?: boolean;
+        dragOffset?: { x: number; y: number };
     }
 ) => {
     if (!currentSubtitle || !currentSubtitle.text) return;
@@ -3201,8 +3211,8 @@ const drawSubtitles = (
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     
-    const positionX = width / 2;
-    const positionY = height - (height * 0.08);
+    const positionX = width / 2 + dragOffset.x;
+    const positionY = height - (height * 0.08) + dragOffset.y;
 
     const metrics = ctx.measureText(text);
     const textHeight = metrics.fontBoundingBoxAscent ?? fontSize;
@@ -3265,13 +3275,14 @@ const drawWordByWordSubtitles = (
     height: number,
     subtitles: Subtitle[],
     currentTime: number,
-    { fontFamily, bgStyle, fontSizeVw, color, effect, isBeat }: {
+    { fontFamily, bgStyle, fontSizeVw, color, effect, isBeat, dragOffset = { x: 0, y: 0 } }: {
         fontFamily: string;
         bgStyle: SubtitleBgStyle;
         fontSizeVw: number;
         color: string;
         effect: GraphicEffectType;
         isBeat?: boolean;
+        dragOffset?: { x: number; y: number };
     }
 ) => {
     if (subtitles.length === 0) return;
@@ -3283,8 +3294,8 @@ const drawWordByWordSubtitles = (
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     
-    const positionX = width / 2;
-    const positionY = height - (height * 0.08);
+    const positionX = width / 2 + dragOffset.x;
+    const positionY = height - (height * 0.08) + dragOffset.y;
     
     // 找到當前時間對應的字幕
     let currentSubtitle: Subtitle | undefined;
@@ -3390,7 +3401,7 @@ const drawLyricsDisplay = (
     height: number,
     subtitles: Subtitle[],
     currentTime: number,
-    { fontFamily, bgStyle, fontSize, positionX, positionY, color, effect }: { 
+    { fontFamily, bgStyle, fontSize, positionX, positionY, color, effect, dragOffset = { x: 0, y: 0 } }: { 
         fontFamily: string; 
         bgStyle: SubtitleBgStyle;
         fontSize: number;
@@ -3398,6 +3409,7 @@ const drawLyricsDisplay = (
         positionY: number;
         color: string;
         effect: GraphicEffectType;
+        dragOffset?: { x: number; y: number };
     }
 ) => {
     if (subtitles.length === 0) return;
@@ -3426,8 +3438,8 @@ const drawLyricsDisplay = (
     
     // 計算每行的位置
     const lineHeight = height * 0.08; // 每行高度
-    const centerX = width / 2 + (positionX * width / 100); // 水平位置調整
-    const centerY = height / 2 + (positionY * height / 100); // 垂直位置調整
+    const centerX = width / 2 + (positionX * width / 100) + dragOffset.x; // 水平位置調整
+    const centerY = height / 2 + (positionY * height / 100) + dragOffset.y; // 垂直位置調整
     const startY = centerY - (displayLines.length * lineHeight) / 2; // 以調整後的中心為基準
     
     displayLines.forEach((line, index) => {
@@ -3844,6 +3856,14 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
     const geometricFrameImageRef = useRef<HTMLImageElement | null>(null);
     const geometricSemicircleImageRef = useRef<HTMLImageElement | null>(null);
     const propsRef = useRef(props);
+    
+    // 拖曳狀態管理
+    const dragState = useRef({
+        isDragging: false,
+        draggedElement: null as string | null,
+        dragOffset: { x: 0, y: 0 },
+        startPosition: { x: 0, y: 0 }
+    });
 
     useEffect(() => {
         propsRef.current = props;
@@ -4020,8 +4040,11 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
 
             if (shouldTransform) {
                 ctx.save();
-                ctx.translate(centerX + effectOffsetX, centerY + effectOffsetY);
-                ctx.scale(effectScale, effectScale);
+                const currentTransform = propsRef.current.visualizationTransform || { x: 0, y: 0, scale: 1.0 };
+                const dragOffset = dragState.current.draggedElement === 'visualization' ? dragState.current.dragOffset : { x: 0, y: 0 };
+                const scale = propsRef.current.visualizationScale || 1.0;
+                ctx.translate(centerX + effectOffsetX + currentTransform.x + dragOffset.x, centerY + effectOffsetY + currentTransform.y + dragOffset.y);
+                ctx.scale(effectScale * scale, effectScale * scale);
                 ctx.translate(-centerX, -centerY);
             }
 
@@ -4096,28 +4119,40 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         // 根據字幕顯示模式決定顯示內容
         if (propsRef.current.subtitleDisplayMode === SubtitleDisplayMode.LYRICS_SCROLL && subtitles.length > 0) {
             // 捲軸歌詞模式
+            const dragOffset = dragState.current.draggedElement === 'lyrics' ? dragState.current.dragOffset : (propsRef.current.lyricsDragOffset || { x: 0, y: 0 });
             drawLyricsDisplay(ctx, width, height, subtitles, currentTime, { 
                 fontFamily: subtitleFontFamily, 
                 bgStyle: subtitleBgStyle,
                 fontSize: propsRef.current.lyricsFontSize,
-                positionX: propsRef.current.lyricsPositionX,
-                positionY: propsRef.current.lyricsPositionY,
+                positionX: propsRef.current.lyricsPositionX + (dragOffset.x / width) * 100,
+                positionY: propsRef.current.lyricsPositionY + (dragOffset.y / height) * 100,
                 color: subtitleColor,
                 effect: GraphicEffectType.NONE
             });
         } else if (propsRef.current.subtitleDisplayMode === SubtitleDisplayMode.WORD_BY_WORD && subtitles.length > 0) {
             // 逐字顯示模式
+            const dragOffset = dragState.current.draggedElement === 'subtitle' ? dragState.current.dragOffset : (propsRef.current.subtitleDragOffset || { x: 0, y: 0 });
             drawWordByWordSubtitles(ctx, width, height, subtitles, currentTime, { 
                 fontFamily: subtitleFontFamily, 
                 bgStyle: subtitleBgStyle,
                 fontSizeVw: subtitleFontSize,
                 color: subtitleColor,
                 effect: GraphicEffectType.NONE,
-                isBeat
+                isBeat,
+                dragOffset
             });
         } else if (propsRef.current.subtitleDisplayMode === SubtitleDisplayMode.CLASSIC && currentSubtitle) {
             // 傳統字幕模式
-            drawSubtitles(ctx, width, height, currentSubtitle, { fontSizeVw: subtitleFontSize, fontFamily: subtitleFontFamily, color: subtitleColor, effect: GraphicEffectType.NONE, bgStyle: subtitleBgStyle, isBeat });
+            const dragOffset = dragState.current.draggedElement === 'subtitle' ? dragState.current.dragOffset : (propsRef.current.subtitleDragOffset || { x: 0, y: 0 });
+            drawSubtitles(ctx, width, height, currentSubtitle, { 
+                fontSizeVw: subtitleFontSize, 
+                fontFamily: subtitleFontFamily, 
+                color: subtitleColor, 
+                effect: GraphicEffectType.NONE, 
+                bgStyle: subtitleBgStyle, 
+                isBeat,
+                dragOffset
+            });
         }
         // 無字幕模式：不顯示任何字幕
         if (customText) {
@@ -4134,6 +4169,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 isBeat 
             });
         }
+        
         
         if (propsRef.current.isPlaying) {
             animationFrameId.current = requestAnimationFrame(renderFrame);
@@ -4174,6 +4210,170 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             observer.disconnect();
         };
     }, [ref]);
+
+    // 拖曳事件處理
+    useEffect(() => {
+        const canvas = (ref as React.RefObject<HTMLCanvasElement>)?.current;
+        if (!canvas) return;
+
+        const getCanvasPosition = (e: MouseEvent) => {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        };
+
+        const handleMouseDown = (e: MouseEvent) => {
+            const pos = getCanvasPosition(e);
+            const { width, height } = canvas;
+            
+            // 檢測點擊的元素
+            const clickedElement = detectElementAtPosition(pos, width, height);
+            if (clickedElement) {
+                // 拖曳
+                dragState.current.isDragging = true;
+                dragState.current.draggedElement = clickedElement;
+                dragState.current.startPosition = pos;
+                dragState.current.dragOffset = { x: 0, y: 0 };
+                canvas.style.cursor = 'grabbing';
+                
+                // 防止默認行為
+                e.preventDefault();
+            }
+        };
+
+        const handleMouseMove = (e: MouseEvent) => {
+            if (dragState.current.isDragging && dragState.current.draggedElement) {
+                const pos = getCanvasPosition(e);
+                dragState.current.dragOffset = {
+                    x: pos.x - dragState.current.startPosition.x,
+                    y: pos.y - dragState.current.startPosition.y
+                };
+                
+                // 防止默認行為
+                e.preventDefault();
+            }
+        };
+
+        const handleMouseUp = () => {
+            if (dragState.current.isDragging && dragState.current.draggedElement) {
+                // 更新元素位置
+                updateElementPosition(dragState.current.draggedElement, dragState.current.dragOffset);
+                
+                // 重置拖曳狀態
+                dragState.current.isDragging = false;
+                dragState.current.draggedElement = null;
+                dragState.current.dragOffset = { x: 0, y: 0 };
+                canvas.style.cursor = 'default';
+            }
+        };
+
+        canvas.addEventListener('mousedown', handleMouseDown, { passive: false });
+        canvas.addEventListener('mousemove', handleMouseMove, { passive: false });
+        canvas.addEventListener('mouseup', handleMouseUp);
+        canvas.addEventListener('mouseleave', handleMouseUp);
+
+        return () => {
+            canvas.removeEventListener('mousedown', handleMouseDown);
+            canvas.removeEventListener('mousemove', handleMouseMove);
+            canvas.removeEventListener('mouseup', handleMouseUp);
+            canvas.removeEventListener('mouseleave', handleMouseUp);
+        };
+    }, [ref]);
+
+    // 檢測點擊位置的元素
+    const detectElementAtPosition = (pos: { x: number; y: number }, width: number, height: number): string | null => {
+        const { visualizationType, showSubtitles, subtitleDisplayMode, subtitles, currentTime } = propsRef.current;
+        
+        // 檢測可視化區域 - 縮小拖曳範圍
+        if (visualizationType === VisualizationType.GEOMETRIC_BARS) {
+            const centerX = width / 2;
+            const centerY = height * 0.4;
+            const frameSize = Math.min(width * 0.4, height * 0.5);
+            const frameX = centerX - frameSize / 2;
+            const frameY = centerY - frameSize / 2;
+            
+            // 縮小拖曳範圍，只在中央區域
+            const dragMargin = frameSize * 0.2; // 縮小20%的邊界
+            if (pos.x >= frameX + dragMargin && pos.x <= frameX + frameSize - dragMargin &&
+                pos.y >= frameY + dragMargin && pos.y <= frameY + frameSize - dragMargin) {
+                return 'visualization';
+            }
+            
+        } else {
+            // 其他可視化類型 - 縮小中央區域
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const vizWidth = width * 0.6; // 從0.8縮小到0.6
+            const vizHeight = height * 0.6; // 從0.8縮小到0.6
+            
+            if (pos.x >= centerX - vizWidth / 2 && pos.x <= centerX + vizWidth / 2 &&
+                pos.y >= centerY - vizHeight / 2 && pos.y <= centerY + vizHeight / 2) {
+                return 'visualization';
+            }
+        }
+        
+        // 檢測字幕區域 - 優化拖曳判定
+        if (showSubtitles && subtitles.length > 0) {
+            if (subtitleDisplayMode === SubtitleDisplayMode.LYRICS_SCROLL) {
+                // 捲軸歌詞模式 - 擴大檢測區域
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const lyricsWidth = width * 0.9; // 擴大檢測範圍
+                const lyricsHeight = height * 0.7; // 擴大檢測範圍
+                
+                if (pos.x >= centerX - lyricsWidth / 2 && 
+                    pos.x <= centerX + lyricsWidth / 2 &&
+                    pos.y >= centerY - lyricsHeight / 2 && 
+                    pos.y <= centerY + lyricsHeight / 2) {
+                    return 'lyrics';
+                }
+            } else {
+                // 傳統字幕和逐字顯示模式 - 擴大底部檢測區域
+                const subtitleY = height - (height * 0.08);
+                const subtitleHeight = height * 0.25; // 從0.15擴大到0.25
+                
+                if (pos.y >= subtitleY - subtitleHeight && pos.y <= subtitleY + subtitleHeight) {
+                    return 'subtitle';
+                }
+            }
+        }
+        
+        return null;
+    };
+
+    // 更新元素位置
+    const updateElementPosition = (element: string, offset: { x: number; y: number }) => {
+        const { width, height } = (ref as React.RefObject<HTMLCanvasElement>).current || { width: 0, height: 0 };
+        
+        if (element === 'visualization') {
+            // 更新可視化位置
+            if (propsRef.current.onVisualizationTransformUpdate) {
+                const currentTransform = propsRef.current.visualizationTransform || { x: 0, y: 0, scale: 1.0 };
+                propsRef.current.onVisualizationTransformUpdate({
+                    ...currentTransform,
+                    x: currentTransform.x + offset.x,
+                    y: currentTransform.y + offset.y
+                });
+            }
+        } else if (element === 'lyrics') {
+            // 更新歌詞位置
+            const newPositionX = (offset.x / width) * 100;
+            const newPositionY = (offset.y / height) * 100;
+            
+            // 通過回調更新位置
+            if (propsRef.current.onLyricsDragUpdate) {
+                propsRef.current.onLyricsDragUpdate({ x: offset.x, y: offset.y });
+            }
+        } else if (element === 'subtitle') {
+            // 更新字幕位置
+            if (propsRef.current.onSubtitleDragUpdate) {
+                propsRef.current.onSubtitleDragUpdate({ x: offset.x, y: offset.y });
+            }
+        }
+    };
+
 
 
     return <canvas ref={ref} className="w-full h-full" style={{ backgroundColor: 'transparent', border: '2px solid #4ecdc4', borderRadius: '8px' }} />;
