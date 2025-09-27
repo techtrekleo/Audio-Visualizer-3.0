@@ -45,6 +45,11 @@ interface AudioVisualizerProps {
     subtitleDisplayMode: SubtitleDisplayMode;
     // When true, skip drawing visualizer effects but keep background and subtitles
     disableVisualizer?: boolean;
+    // 幾何圖形可視化參數
+    geometricFrameImage?: string | null;
+    geometricSemicircleImage?: string | null;
+    geometricSongName?: string | null;
+    geometricArtistName?: string | null;
 }
 
 /**
@@ -2674,6 +2679,409 @@ const drawAudioLandscape = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array
     ctx.restore();
 };
 
+// 可夜特別訂製版可視化
+const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[], geometricFrameImage?: HTMLImageElement | null, geometricSemicircleImage?: HTMLImageElement | null, props?: any) => {
+    if (!dataArray) return;
+    ctx.save();
+    
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    // 音頻分析
+    const bass = dataArray.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
+    const mid = dataArray.slice(32, 96).reduce((a, b) => a + b, 0) / 64;
+    const treble = dataArray.slice(96, 128).reduce((a, b) => a + b, 0) / 32;
+    
+    const normalizedBass = bass / 255;
+    const normalizedMid = mid / 255;
+    const normalizedTreble = treble / 255;
+    
+    // 1. 中央正方形 (使用貝茲曲線)
+    const frameSize = Math.min(width * 0.4, height * 0.5); // 正方形，取較小值
+    const frameX = centerX - frameSize / 2;
+    const frameY = centerY - frameSize / 2;
+    
+    // 方框背景
+    if (geometricFrameImage) {
+        ctx.drawImage(geometricFrameImage, frameX, frameY, frameSize, frameSize);
+    } else {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(frameX, frameY, frameSize, frameSize);
+    }
+    
+    // 計算震動強度
+    const bassIntensity = dataArray ? dataArray[0] / 255 : 0;
+    const midIntensity = dataArray ? dataArray[Math.floor(dataArray.length * 0.3)] / 255 : 0;
+    const highIntensity = dataArray ? dataArray[Math.floor(dataArray.length * 0.7)] / 255 : 0;
+    
+    // 震動幅度 (根據頻率強度)
+    const vibrationAmplitude = 8;
+    const bassVibration = bassIntensity * vibrationAmplitude;
+    const midVibration = midIntensity * vibrationAmplitude * 0.7;
+    const highVibration = highIntensity * vibrationAmplitude * 0.5;
+    
+    // 貝茲曲線方框邊框 (隨音樂震動)
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    // 左上角 (隨高音震動)
+    ctx.moveTo(frameX + 10 + highVibration, frameY + highVibration);
+    ctx.bezierCurveTo(
+        frameX + highVibration, frameY + highVibration, 
+        frameX + highVibration, frameY + highVibration, 
+        frameX + highVibration, frameY + 10 + highVibration
+    );
+    
+    // 左邊 (隨中音震動)
+    ctx.lineTo(frameX + midVibration, frameY + frameSize - 10 + midVibration);
+    ctx.bezierCurveTo(
+        frameX + midVibration, frameY + frameSize + midVibration, 
+        frameX + midVibration, frameY + frameSize + midVibration, 
+        frameX + 10 + midVibration, frameY + frameSize + midVibration
+    );
+    
+    // 下邊 (隨低音震動)
+    ctx.lineTo(frameX + frameSize - 10 + bassVibration, frameY + frameSize + bassVibration);
+    ctx.bezierCurveTo(
+        frameX + frameSize + bassVibration, frameY + frameSize + bassVibration, 
+        frameX + frameSize + bassVibration, frameY + frameSize + bassVibration, 
+        frameX + frameSize + bassVibration, frameY + frameSize - 10 + bassVibration
+    );
+    
+    // 右邊 (隨中音震動)
+    ctx.lineTo(frameX + frameSize + midVibration, frameY + 10 + midVibration);
+    ctx.bezierCurveTo(
+        frameX + frameSize + midVibration, frameY + midVibration, 
+        frameX + frameSize + midVibration, frameY + midVibration, 
+        frameX + frameSize - 10 + midVibration, frameY + midVibration
+    );
+    
+    // 上邊 (隨高音震動)
+    ctx.lineTo(frameX + 10 + highVibration, frameY + highVibration);
+    
+    ctx.stroke();
+    
+    // 2. 右側半圓 (直徑等於正方形邊長，被正方形遮住一半)
+    const semicircleRadius = frameSize / 2; // 半徑等於正方形邊長的一半
+    const semicircleCenterX = frameX + frameSize; // 圓形中心在正方形右邊
+    const semicircleCenterY = centerY;
+    
+    // 半圓背景和旋轉
+    ctx.save();
+    
+    // 設置裁剪區域，只顯示右半圓
+    ctx.beginPath();
+    ctx.arc(semicircleCenterX, semicircleCenterY, semicircleRadius, -Math.PI/2, Math.PI/2); // 只繪製右半圓
+    ctx.clip();
+    
+    // 旋轉內部內容
+    ctx.translate(semicircleCenterX, semicircleCenterY);
+    ctx.rotate((frame * 0.01) % (Math.PI * 2));
+    
+    if (geometricSemicircleImage) {
+        ctx.drawImage(geometricSemicircleImage, -semicircleRadius, -semicircleRadius, semicircleRadius * 2, semicircleRadius * 2);
+    } else {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.beginPath();
+        ctx.arc(0, 0, semicircleRadius, 0, Math.PI * 2); // 完整圓形
+        ctx.fill();
+    }
+    
+    ctx.restore();
+    
+    // 繪製固定的半圓邊框
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(semicircleCenterX, semicircleCenterY, semicircleRadius, -Math.PI/2, Math.PI/2);
+    ctx.stroke();
+    
+    // 3. 左側聲波橫條 (從正方形左邊向左延伸)
+    const numBars = 20;
+    const barThickness = 8; // 條的厚度（加粗）
+    const maxBarLength = frameSize * 0.8; // 最大條長度
+    
+    // 聲波條的起始位置（正方形左邊）
+    const barStartX = frameX;
+    const startY = frameY + frameSize; // 從正方形左下角開始
+    const endY = frameY; // 到正方形左上角結束
+    
+    for (let i = 0; i < numBars; i++) {
+        const dataIndex = Math.floor((i / numBars) * dataArray.length);
+        const amplitude = dataArray[dataIndex] / 255;
+        const barLength = Math.pow(amplitude, 1.5) * maxBarLength * sensitivity;
+        
+        if (barLength < 2) continue;
+        
+        // 計算條的垂直位置（沿著正方形左邊分布）
+        const progress = i / (numBars - 1);
+        const barY = startY - progress * frameSize; // 從下到上
+        
+        // 動態顏色
+        const hue = (i / numBars) * 60 + 200; // 藍色到青色範圍
+        const saturation = 80 + amplitude * 20;
+        const lightness = 50 + amplitude * 30;
+        const alpha = 0.7 + amplitude * 0.3;
+        
+        ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
+        
+        // 繪製橫向條（向左延伸）
+        const barX = barStartX - barLength; // 從方框左邊向左延伸
+        
+        // 繪製圓角矩形條
+        const radius = Math.min(barThickness * 0.3, barLength * 0.1);
+        createRoundedRectPath(ctx, barX, barY - barThickness / 2, barLength, barThickness, radius);
+        ctx.fill();
+        
+        // 發光效果
+        if (isBeat && amplitude > 0.7) {
+            ctx.shadowColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+            ctx.shadowBlur = 15;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+    }
+    
+    // 4. 圓形內部的月牙形（只在沒有自定義圖片時顯示）
+    if (!geometricSemicircleImage) {
+        const crescentRadius = semicircleRadius * 0.6;
+        const crescentOffset = semicircleRadius * 0.3;
+        
+        ctx.save();
+        
+        // 設置裁剪區域，只顯示右半圓
+        ctx.beginPath();
+        ctx.arc(semicircleCenterX, semicircleCenterY, semicircleRadius, -Math.PI/2, Math.PI/2);
+        ctx.clip();
+        
+        // 旋轉內部內容
+        ctx.translate(semicircleCenterX, semicircleCenterY);
+        ctx.rotate((frame * 0.01) % (Math.PI * 2));
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.globalAlpha = 0.8;
+        ctx.beginPath();
+        ctx.arc(crescentOffset, 0, crescentRadius, 0, Math.PI * 2);
+        ctx.arc(0, 0, crescentRadius, 0, Math.PI * 2);
+        ctx.fill('evenodd');
+        ctx.globalAlpha = 1;
+        
+        ctx.restore();
+    }
+    
+    // 5. 底部假播放器 (卡片風格 + 持續抖動 + 真實秒數)
+    const playerWidth = frameSize; // 與中央方塊同寬
+    const playerHeight = height * 0.15;
+    const playerX = centerX - playerWidth / 2;
+    const playerY = height * 0.82;
+    
+    // 持續的小抖動
+    const baseShake = Math.sin(frame * 0.1) * 1.5;
+    const shakeX = baseShake + Math.sin(frame * 0.07) * 0.8;
+    const shakeY = Math.cos(frame * 0.13) * 1.2;
+    
+    // 卡片背景 (灰綠色)
+    ctx.fillStyle = 'rgba(100, 120, 100, 0.9)';
+    ctx.beginPath();
+    const cornerRadius = 16 + Math.sin(frame * 0.05) * 1;
+    ctx.moveTo(playerX + cornerRadius + shakeX, playerY + shakeY);
+    ctx.lineTo(playerX + playerWidth - cornerRadius + shakeX, playerY + shakeY);
+    ctx.quadraticCurveTo(playerX + playerWidth + shakeX, playerY + shakeY, playerX + playerWidth + shakeX, playerY + cornerRadius + shakeY);
+    ctx.lineTo(playerX + playerWidth + shakeX, playerY + playerHeight - cornerRadius + shakeY);
+    ctx.quadraticCurveTo(playerX + playerWidth + shakeX, playerY + playerHeight + shakeY, playerX + playerWidth - cornerRadius + shakeX, playerY + playerHeight + shakeY);
+    ctx.lineTo(playerX + cornerRadius + shakeX, playerY + playerHeight + shakeY);
+    ctx.quadraticCurveTo(playerX + shakeX, playerY + playerHeight + shakeY, playerX + shakeX, playerY + playerHeight - cornerRadius + shakeY);
+    ctx.lineTo(playerX + shakeX, playerY + cornerRadius + shakeY);
+    ctx.quadraticCurveTo(playerX + shakeX, playerY + shakeY, playerX + cornerRadius + shakeX, playerY + shakeY);
+    ctx.fill();
+    
+    // 專輯封面 (左上角)
+    const albumSize = playerHeight * 0.6;
+    const albumX = playerX + 20 + shakeX;
+    const albumY = playerY + 20 + shakeY;
+    
+    // 專輯封面背景
+    ctx.fillStyle = 'rgba(80, 100, 80, 0.8)';
+    ctx.beginPath();
+    const albumRadius = 8 + Math.sin(frame * 0.03) * 0.5;
+    ctx.moveTo(albumX + albumRadius, albumY);
+    ctx.lineTo(albumX + albumSize - albumRadius, albumY);
+    ctx.quadraticCurveTo(albumX + albumSize, albumY, albumX + albumSize, albumY + albumRadius);
+    ctx.lineTo(albumX + albumSize, albumY + albumSize - albumRadius);
+    ctx.quadraticCurveTo(albumX + albumSize, albumY + albumSize, albumX + albumSize - albumRadius, albumY + albumSize);
+    ctx.lineTo(albumX + albumRadius, albumY + albumSize);
+    ctx.quadraticCurveTo(albumX, albumY + albumSize, albumX, albumY + albumSize - albumRadius);
+    ctx.lineTo(albumX, albumY + albumRadius);
+    ctx.quadraticCurveTo(albumX, albumY, albumX + albumRadius, albumY);
+    ctx.fill();
+    
+    // 專輯封面裝飾 (抽象圖案)
+    ctx.fillStyle = 'rgba(120, 140, 120, 0.6)';
+    // 波浪線
+    ctx.beginPath();
+    for (let i = 0; i < albumSize; i += 2) {
+        const x = albumX + i;
+        const y = albumY + albumSize * 0.3 + Math.sin(i * 0.1 + frame * 0.05) * 8;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    
+    // 小圓點
+    for (let i = 0; i < 3; i++) {
+        const dotX = albumX + albumSize * 0.2 + i * albumSize * 0.3;
+        const dotY = albumY + albumSize * 0.7;
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // 歌曲資訊 (右側)
+    const infoX = albumX + albumSize + 20;
+    const infoY = albumY + 10;
+    
+    // 歌曲名稱
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'left';
+    const songName = props.geometricSongName || 'Name of the song';
+    ctx.fillText(songName, infoX + Math.sin(frame * 0.02) * 0.5, infoY + Math.cos(frame * 0.03) * 0.3);
+    
+    // 歌手名稱
+    ctx.font = '14px Arial';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    const artistName = props.geometricArtistName || 'Artist';
+    ctx.fillText(artistName, infoX + Math.sin(frame * 0.025) * 0.3, infoY + 25 + Math.cos(frame * 0.035) * 0.2);
+    
+    // 右上角圖標
+    const iconX = playerX + playerWidth - 60 + shakeX;
+    const iconY = albumY + 10 + shakeY;
+    
+    // 耳機圖標
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '18px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('🎧', iconX + Math.sin(frame * 0.04) * 0.3, iconY + Math.cos(frame * 0.05) * 0.2);
+    
+    // 三點菜單
+    ctx.fillText('⋯', iconX + 25 + Math.sin(frame * 0.06) * 0.2, iconY + Math.cos(frame * 0.04) * 0.2);
+    
+    // 進度條
+    const progressBarWidth = playerWidth - 40;
+    const progressBarHeight = 4;
+    const progressBarX = playerX + 20 + shakeX;
+    const progressBarY = playerY + playerHeight - 60 + shakeY;
+    
+    // 進度條背景
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
+    
+    // 進度條 (真實秒數控制)
+    const currentTime = props.audioRef?.current?.currentTime || 0;
+    const totalSeconds = props.audioRef?.current?.duration || 240; // 使用實際音頻長度
+    const progress = totalSeconds > 0 ? Math.min(currentTime / totalSeconds, 1) : 0;
+    const currentProgressWidth = progressBarWidth * progress;
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(progressBarX, progressBarY, currentProgressWidth, progressBarHeight);
+    
+    // 時間顯示
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'left';
+    const currentMinutes = Math.floor(currentTime / 60);
+    const currentSecs = Math.floor(currentTime % 60);
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const totalSecs = Math.floor(totalSeconds % 60);
+    ctx.fillText(`${currentMinutes}:${currentSecs.toString().padStart(2, '0')}`, progressBarX + Math.sin(frame * 0.02) * 0.3, progressBarY - 8 + Math.cos(frame * 0.03) * 0.2);
+    
+    ctx.textAlign = 'right';
+    ctx.fillText(`${totalMinutes}:${totalSecs.toString().padStart(2, '0')}`, progressBarX + progressBarWidth + Math.sin(frame * 0.025) * 0.3, progressBarY - 8 + Math.cos(frame * 0.035) * 0.2);
+    
+    // 控制按鈕區域
+    const buttonY = playerY + playerHeight - 25 + shakeY;
+    const buttonSpacing = 40;
+    const startX = playerX + playerWidth / 2 - (buttonSpacing * 2) + shakeX;
+    
+    // 隨機播放按鈕
+    const shuffleX = startX;
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔀', shuffleX + Math.sin(frame * 0.03) * 0.3, buttonY + Math.cos(frame * 0.04) * 0.2);
+    
+    // 前一首按鈕
+    const prevX = startX + buttonSpacing;
+    ctx.fillText('⏮', prevX + Math.sin(frame * 0.035) * 0.2, buttonY + Math.cos(frame * 0.045) * 0.2);
+    
+    // 播放/暫停按鈕 (中央大按鈕)
+    const playX = startX + buttonSpacing * 2;
+    const playRadius = 20 + Math.sin(frame * 0.08) * 1;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(playX, buttonY, playRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 暫停圖標 (兩條豎線)
+    ctx.fillStyle = 'rgba(100, 120, 100, 0.9)';
+    ctx.fillRect(playX - 6, buttonY - 8, 3, 16);
+    ctx.fillRect(playX + 3, buttonY - 8, 3, 16);
+    
+    // 下一首按鈕
+    const nextX = startX + buttonSpacing * 3;
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '16px Arial';
+    ctx.fillText('⏭', nextX + Math.sin(frame * 0.04) * 0.2, buttonY + Math.cos(frame * 0.05) * 0.2);
+    
+    // 重複播放按鈕
+    const repeatX = startX + buttonSpacing * 4;
+    ctx.fillText('🔁', repeatX + Math.sin(frame * 0.045) * 0.3, buttonY + Math.cos(frame * 0.055) * 0.2);
+    
+    // 7. 動態效果
+    // 正方形內的掃描線
+    if (isBeat) {
+        const scanLineY = frameY + (frame * 2) % frameSize;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(frameX, scanLineY);
+        ctx.lineTo(frameX + frameSize, scanLineY);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+    }
+    
+    // 圓形內的動態效果（只在沒有自定義圖片時顯示）
+    if (!geometricSemicircleImage && normalizedBass > 0.5) {
+        const pulseRadius = semicircleRadius * (0.8 + normalizedBass * 0.2);
+        
+        ctx.save();
+        
+        // 設置裁剪區域，只顯示右半圓
+        ctx.beginPath();
+        ctx.arc(semicircleCenterX, semicircleCenterY, semicircleRadius, -Math.PI/2, Math.PI/2);
+        ctx.clip();
+        
+        // 旋轉內部內容
+        ctx.translate(semicircleCenterX, semicircleCenterY);
+        ctx.rotate((frame * 0.01) % (Math.PI * 2));
+        
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.4;
+        ctx.beginPath();
+        ctx.arc(0, 0, pulseRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        
+        ctx.restore();
+    }
+    
+    ctx.restore();
+};
+
 const drawPianoVirtuoso = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[]) => {
     if (!dataArray) return;
     ctx.save();
@@ -3362,7 +3770,9 @@ type DrawFunction = (
     graphicEffect: GraphicEffectType,
     isBeat?: boolean,
     waveformStroke?: boolean,
-    particles?: Particle[]
+    particles?: Particle[],
+    geometricFrameImage?: HTMLImageElement | null,
+    geometricSemicircleImage?: HTMLImageElement | null,
 ) => void;
 
 const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
@@ -3386,6 +3796,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.REPULSOR_FIELD]: drawRepulsorField,
     [VisualizationType.AUDIO_LANDSCAPE]: drawAudioLandscape,
     [VisualizationType.PIANO_VIRTUOSO]: drawPianoVirtuoso,
+    [VisualizationType.GEOMETRIC_BARS]: drawGeometricBars,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
@@ -3430,6 +3841,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
     const particlesRef = useRef<Particle[]>([]);
     const shockwavesRef = useRef<Shockwave[]>([]);
     const backgroundImageRef = useRef<HTMLImageElement | null>(null);
+    const geometricFrameImageRef = useRef<HTMLImageElement | null>(null);
+    const geometricSemicircleImageRef = useRef<HTMLImageElement | null>(null);
     const propsRef = useRef(props);
 
     useEffect(() => {
@@ -3466,6 +3879,45 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             backgroundImageRef.current = null;
         }
     }, [props.backgroundImage]);
+
+    // 載入幾何圖形圖片
+    useEffect(() => {
+        if (props.geometricFrameImage) {
+            console.log('Loading geometric frame image:', props.geometricFrameImage);
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = props.geometricFrameImage;
+            img.onload = () => {
+                console.log('Geometric frame image loaded successfully');
+                geometricFrameImageRef.current = img;
+            };
+            img.onerror = (error) => {
+                console.error('Failed to load geometric frame image:', error);
+                geometricFrameImageRef.current = null;
+            };
+        } else {
+            geometricFrameImageRef.current = null;
+        }
+    }, [props.geometricFrameImage]);
+
+    useEffect(() => {
+        if (props.geometricSemicircleImage) {
+            console.log('Loading geometric semicircle image:', props.geometricSemicircleImage);
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = props.geometricSemicircleImage;
+            img.onload = () => {
+                console.log('Geometric semicircle image loaded successfully');
+                geometricSemicircleImageRef.current = img;
+            };
+            img.onerror = (error) => {
+                console.error('Failed to load geometric semicircle image:', error);
+                geometricSemicircleImageRef.current = null;
+            };
+        } else {
+            geometricSemicircleImageRef.current = null;
+        }
+    }, [props.geometricSemicircleImage]);
 
     const renderFrame = useCallback(() => {
         const {
@@ -3583,7 +4035,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 ctx.fillStyle = bgGradient;
                 ctx.fillRect(0, 0, width, height);
             }
-            drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
+            drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, propsRef.current);
             
             if (shouldTransform) {
                 ctx.restore();
@@ -4132,5 +4584,6 @@ const drawRandomPixels = (ctx: CanvasRenderingContext2D, width: number, height: 
         ctx.fillRect(x, y, 2, 2);
     }
 };
+
 
 export default AudioVisualizer;

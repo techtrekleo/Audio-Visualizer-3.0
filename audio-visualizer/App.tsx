@@ -75,9 +75,16 @@ function App() {
     
     // Lyrics Display State (測試中)
     const [showLyricsDisplay, setShowLyricsDisplay] = useState<boolean>(false);
-    const [lyricsFontSize, setLyricsFontSize] = useState<number>(4); // 字體大小百分比
+    const [lyricsFontSize, setLyricsFontSize] = useState<number>(2); // 字體大小百分比
     const [lyricsPositionX, setLyricsPositionX] = useState<number>(0); // 水平位置偏移 (-50 到 50)
     const [lyricsPositionY, setLyricsPositionY] = useState<number>(0); // 垂直位置偏移 (-50 到 50)
+    
+    // 幾何圖形可視化狀態
+    const [showGeometricControls, setShowGeometricControls] = useState<boolean>(false); // 幾何圖形控制面板
+    const [geometricFrameImage, setGeometricFrameImage] = useState<string | null>(null); // 方框圖片
+    const [geometricSemicircleImage, setGeometricSemicircleImage] = useState<string | null>(null); // 半圓圖片
+    const [geometricSongName, setGeometricSongName] = useState<string>(''); // 歌曲名稱
+    const [geometricArtistName, setGeometricArtistName] = useState<string>(''); // 歌手名稱
     
     const audioRef = useRef<HTMLAudioElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -343,6 +350,37 @@ function App() {
         console.log('背景圖片已清除');
     };
 
+    // 幾何圖形圖片處理函數
+    const handleGeometricFrameImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setGeometricFrameImage(e.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleGeometricSemicircleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setGeometricSemicircleImage(e.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const clearGeometricFrameImage = () => {
+        setGeometricFrameImage(null);
+    };
+
+    const clearGeometricSemicircleImage = () => {
+        setGeometricSemicircleImage(null);
+    };
+
     const handleRecordingComplete = useCallback((url: string, extension: string) => {
         setVideoUrl(url);
         setVideoExtension(extension);
@@ -578,6 +616,10 @@ function App() {
                                     lyricsPositionY={lyricsPositionY}
                                     subtitleDisplayMode={subtitleDisplayMode}
                                     disableVisualizer={!showVisualizer}
+                geometricFrameImage={geometricFrameImage}
+                geometricSemicircleImage={geometricSemicircleImage}
+                geometricSongName={geometricSongName}
+                geometricArtistName={geometricArtistName}
                                 />
                             </div>
                         </div>
@@ -691,6 +733,18 @@ function App() {
                             onShowVisualizerChange={setShowVisualizer}
                             showBackgroundImage={showBackgroundImage}
                             onShowBackgroundImageChange={setShowBackgroundImage}
+                            showGeometricControls={showGeometricControls}
+                            onShowGeometricControlsChange={setShowGeometricControls}
+                            geometricFrameImage={geometricFrameImage}
+                            onGeometricFrameImageUpload={handleGeometricFrameImageUpload}
+                            onClearGeometricFrameImage={clearGeometricFrameImage}
+                            geometricSemicircleImage={geometricSemicircleImage}
+                            onGeometricSemicircleImageUpload={handleGeometricSemicircleImageUpload}
+                            onClearGeometricSemicircleImage={clearGeometricSemicircleImage}
+                            geometricSongName={geometricSongName}
+                            onGeometricSongNameChange={setGeometricSongName}
+                            geometricArtistName={geometricArtistName}
+                            onGeometricArtistNameChange={setGeometricArtistName}
                         />
                     </div>
             </main>

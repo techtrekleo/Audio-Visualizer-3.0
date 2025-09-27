@@ -21,7 +21,7 @@ const CONFIG = {
         title: '音樂脈動-Sonic Pulse | 音樂創作工具集合',
         description: '音樂脈動-Sonic Pulse 官方網站 - 提供專業的音樂創作工具，包括音頻可視化器、YouTube SEO 優化工具等，幫助音樂創作者提升作品品質',
         domain: 'sonicpulse.qzz.io',
-        ogImage: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+        ogImage: '/assets/cat-avatar.png',
         networkName: '🐱 口袋裡的貓' // 網路名字
     },
     

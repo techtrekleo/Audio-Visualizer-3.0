@@ -21,6 +21,7 @@ export enum VisualizationType {
     REPULSOR_FIELD = '排斥力場 (Repulsion Field)',
     AUDIO_LANDSCAPE = '音訊地貌',
     PIANO_VIRTUOSO = '鋼琴演奏家',
+    GEOMETRIC_BARS = '可夜特別訂製版',
 }
 
 // 特效分類系統

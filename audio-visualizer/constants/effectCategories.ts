@@ -160,6 +160,14 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         difficulty: 'medium',
         performance: 'medium',
         tags: ['鋼琴', '鍵盤', '音樂', '教育']
+    },
+    {
+        type: VisualizationType.GEOMETRIC_BARS,
+        category: EffectCategory.EXPERIMENTAL,
+        description: '可夜特別訂製版，現代藝術風格',
+        difficulty: 'hard',
+        performance: 'high',
+        tags: ['幾何', '橫條', '現代', '藝術', '實驗']
     }
 ];
 

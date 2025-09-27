@@ -181,6 +181,19 @@ interface OptimizedControlsProps {
     onShowVisualizerChange: (show: boolean) => void;
     showBackgroundImage: boolean;
     onShowBackgroundImageChange: (show: boolean) => void;
+    // 幾何圖形控制面板
+    showGeometricControls: boolean;
+    onShowGeometricControlsChange: (show: boolean) => void;
+    geometricFrameImage: string | null;
+    onGeometricFrameImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onClearGeometricFrameImage: () => void;
+    geometricSemicircleImage: string | null;
+    onGeometricSemicircleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onClearGeometricSemicircleImage: () => void;
+    geometricSongName: string | null;
+    onGeometricSongNameChange?: (name: string) => void;
+    geometricArtistName: string | null;
+    onGeometricArtistNameChange?: (name: string) => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
@@ -1091,9 +1104,9 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         label="字體大小 (%)"
                                         value={props.lyricsFontSize}
                                         onChange={props.onLyricsFontSizeChange}
-                                        min={2}
+                                        min={0.5}
                                         max={10}
-                                        step={0.5}
+                                        step={0.1}
                                         colorType="scale"
                                     />
                                     
@@ -1117,6 +1130,127 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         colorType="position"
                                     />
                                 </div>
+                            </div>
+                        </CollapsibleControlSection>
+                    )}
+
+                    {/* 幾何圖形控制面板 */}
+                    {props.visualizationType === VisualizationType.GEOMETRIC_BARS && (
+                        <CollapsibleControlSection
+                            title="幾何圖形控制"
+                            icon="🔧"
+                            priority="high"
+                            defaultExpanded={true}
+                            badge="自定義"
+                        >
+                            <div className="space-y-6">
+                                {/* 歌曲資訊輸入 */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            歌曲名稱
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={props.geometricSongName || ''}
+                                            onChange={(e) => props.onGeometricSongNameChange?.(e.target.value)}
+                                            placeholder="輸入歌曲名稱..."
+                                            className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            歌手名稱
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={props.geometricArtistName || ''}
+                                            onChange={(e) => props.onGeometricArtistNameChange?.(e.target.value)}
+                                            placeholder="輸入歌手名稱..."
+                                            className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                                        />
+                                    </div>
+                                </div>
+                                
+                                {/* 方框圖片上傳 */}
+                                <div className="space-y-3">
+                                    <label className="block text-sm font-medium text-gray-300">
+                                        方框圖片
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={props.onGeometricFrameImageUpload}
+                                            className="hidden"
+                                            id="frame-image-upload"
+                                        />
+                                        <label
+                                            htmlFor="frame-image-upload"
+                                            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg cursor-pointer transition-colors"
+                                        >
+                                            選擇圖片
+                                        </label>
+                                        {props.geometricFrameImage && (
+                                            <button
+                                                onClick={props.onClearGeometricFrameImage}
+                                                className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                                            >
+                                                清除
+                                            </button>
+                                        )}
+                                    </div>
+                                    {props.geometricFrameImage && (
+                                        <div className="mt-2">
+                                            <img
+                                                src={props.geometricFrameImage}
+                                                alt="方框預覽"
+                                                className="w-20 h-20 object-cover rounded border"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* 半圓圖片上傳 */}
+                                <div className="space-y-3">
+                                    <label className="block text-sm font-medium text-gray-300">
+                                        半圓圖片
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={props.onGeometricSemicircleImageUpload}
+                                            className="hidden"
+                                            id="semicircle-image-upload"
+                                        />
+                                        <label
+                                            htmlFor="semicircle-image-upload"
+                                            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg cursor-pointer transition-colors"
+                                        >
+                                            選擇圖片
+                                        </label>
+                                        {props.geometricSemicircleImage && (
+                                            <button
+                                                onClick={props.onClearGeometricSemicircleImage}
+                                                className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                                            >
+                                                清除
+                                            </button>
+                                        )}
+                                    </div>
+                                    {props.geometricSemicircleImage && (
+                                        <div className="mt-2">
+                                            <img
+                                                src={props.geometricSemicircleImage}
+                                                alt="半圓預覽"
+                                                className="w-20 h-20 object-cover rounded border"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
                             </div>
                         </CollapsibleControlSection>
                     )}
