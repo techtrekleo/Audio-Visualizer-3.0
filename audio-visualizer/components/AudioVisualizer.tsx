@@ -2685,7 +2685,7 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
     ctx.save();
     
     const centerX = width / 2;
-    const centerY = height / 2;
+    const centerY = height * 0.4; // 上移中心點，減少上方留白
     
     // 音頻分析
     const bass = dataArray.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
@@ -2874,7 +2874,7 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
     const playerWidth = frameSize; // 與中央方塊同寬
     const playerHeight = height * 0.15;
     const playerX = centerX - playerWidth / 2;
-    const playerY = height * 0.82;
+    const playerY = height * 0.7; // 上移播放器，減少下方留白
     
     // 持續的小抖動
     const baseShake = Math.sin(frame * 0.1) * 1.5;

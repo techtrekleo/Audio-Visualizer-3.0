@@ -44,3 +44,4 @@
    ```bash
    ./version-manager.sh deploy v1.0.0
    ```
+

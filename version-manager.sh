@@ -58,3 +58,4 @@ case "$1" in
         echo "  ./version-manager.sh deploy v1.0.0"
         ;;
 esac
+
