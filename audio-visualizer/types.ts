@@ -193,6 +193,11 @@ export interface AudioVisualizerProps {
     visualizationTransform?: { x: number; y: number; scale: number };
     onVisualizationTransformUpdate?: (transform: { x: number; y: number; scale: number }) => void;
     visualizationScale?: number;
+    // CTA 動畫狀態
+    showCtaAnimation?: boolean;
+    ctaChannelName?: string;
+    ctaPosition?: { x: number; y: number };
+    onCtaPositionUpdate?: (position: { x: number; y: number }) => void;
 }
 
 export type Palette = {

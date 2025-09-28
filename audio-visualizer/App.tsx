@@ -93,6 +93,11 @@ function App() {
     // 可視化大小控制
     const [visualizationScale, setVisualizationScale] = useState<number>(1.0);
     
+    // CTA 動畫控制
+    const [showCtaAnimation, setShowCtaAnimation] = useState<boolean>(false);
+    const [ctaChannelName, setCtaChannelName] = useState<string>('口袋裡的貓');
+    const [ctaPosition, setCtaPosition] = useState<{ x: number; y: number }>({ x: 50, y: 50 }); // 百分比位置
+    
     // 幾何圖形可視化狀態
     const [showGeometricControls, setShowGeometricControls] = useState<boolean>(false); // 幾何圖形控制面板
     const [geometricFrameImage, setGeometricFrameImage] = useState<string | null>(null); // 方框圖片
@@ -638,6 +643,10 @@ function App() {
                                     onVisualizationTransformUpdate={setVisualizationTransform}
                                     visualizationScale={visualizationScale}
                                     onVisualizationScaleChange={setVisualizationScale}
+                                    showCtaAnimation={showCtaAnimation}
+                                    ctaChannelName={ctaChannelName}
+                                    ctaPosition={ctaPosition}
+                                    onCtaPositionUpdate={setCtaPosition}
                 geometricFrameImage={geometricFrameImage}
                 geometricSemicircleImage={geometricSemicircleImage}
                 geometricSongName={geometricSongName}
@@ -769,6 +778,10 @@ function App() {
                             onGeometricArtistNameChange={setGeometricArtistName}
                             visualizationScale={visualizationScale}
                             onVisualizationScaleChange={setVisualizationScale}
+                            showCtaAnimation={showCtaAnimation}
+                            onShowCtaAnimationChange={setShowCtaAnimation}
+                            ctaChannelName={ctaChannelName}
+                            onCtaChannelNameChange={setCtaChannelName}
                         />
                     </div>
             </main>

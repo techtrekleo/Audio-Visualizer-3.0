@@ -197,6 +197,11 @@ interface OptimizedControlsProps {
     // 可視化大小控制
     visualizationScale?: number;
     onVisualizationScaleChange?: (scale: number) => void;
+    // CTA 動畫控制
+    showCtaAnimation?: boolean;
+    onShowCtaAnimationChange?: (show: boolean) => void;
+    ctaChannelName?: string;
+    onCtaChannelNameChange?: (name: string) => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
@@ -615,6 +620,19 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     }} 
                                 />
                             </label>
+                            
+                            {/* CTA 動畫控制 */}
+                            <div className="flex items-center justify-between bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3">
+                                <span className="text-sm text-gray-200">加入 CTA 動畫</span>
+                                <button
+                                    onClick={() => props.onShowCtaAnimationChange?.(!props.showCtaAnimation)}
+                                    type="button"
+                                    className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${props.showCtaAnimation ? 'bg-cyan-600' : 'bg-gray-500'}`}
+                                    aria-pressed={props.showCtaAnimation}
+                                >
+                                    <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${props.showCtaAnimation ? 'translate-x-6' : 'translate-x-1'}`} />
+                                </button>
+                            </div>
                             {props.audioFile && (
                                 <Button onClick={props.onClearAudio} variant="danger">
                                     <Icon path={ICON_PATHS.CHANGE_MUSIC} className="w-5 h-5"/>
@@ -634,6 +652,22 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 </a>
                             )}
                         </div>
+                        
+                        {/* CTA 動畫頻道名稱輸入 */}
+                        {props.showCtaAnimation && (
+                            <div className="mt-4">
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    頻道名稱
+                                </label>
+                                <input
+                                    type="text"
+                                    value={props.ctaChannelName || ''}
+                                    onChange={(e) => props.onCtaChannelNameChange?.(e.target.value)}
+                                    placeholder="輸入頻道名稱..."
+                                    className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -1253,6 +1287,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         </div>
                                     )}
                                 </div>
+                                
 
                             </div>
                         </CollapsibleControlSection>

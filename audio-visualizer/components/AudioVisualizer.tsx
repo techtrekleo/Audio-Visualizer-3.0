@@ -59,6 +59,11 @@ interface AudioVisualizerProps {
     visualizationTransform?: { x: number; y: number; scale: number };
     onVisualizationTransformUpdate?: (transform: { x: number; y: number; scale: number }) => void;
     visualizationScale?: number;
+    // CTA 動畫狀態
+    showCtaAnimation?: boolean;
+    ctaChannelName?: string;
+    ctaPosition?: { x: number; y: number };
+    onCtaPositionUpdate?: (position: { x: number; y: number }) => void;
 }
 
 /**
@@ -3864,6 +3869,14 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         dragOffset: { x: 0, y: 0 },
         startPosition: { x: 0, y: 0 }
     });
+    
+    // CTA 動畫狀態
+    const ctaAnimationState = useRef({
+        isPlaying: false,
+        startTime: 0,
+        duration: 5000, // 5秒
+        currentFrame: 0
+    });
 
     useEffect(() => {
         propsRef.current = props;
@@ -4170,6 +4183,21 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             });
         }
         
+        // 繪製 CTA 動畫（獨立功能，適用於所有可視化）
+        if (propsRef.current.showCtaAnimation && propsRef.current.ctaChannelName) {
+            // 計算 CTA 位置，包含拖動偏移
+            const basePosition = propsRef.current.ctaPosition || { x: 50, y: 50 };
+            const dragOffset = dragState.current.isDragging && dragState.current.draggedElement === 'cta' 
+                ? dragState.current.dragOffset 
+                : { x: 0, y: 0 };
+            
+            const ctaPosition = {
+                x: basePosition.x + (dragOffset.x / width) * 100,
+                y: basePosition.y + (dragOffset.y / height) * 100
+            };
+            
+            drawCtaAnimation(ctx, width, height, propsRef.current.ctaChannelName, ctaPosition);
+        }
         
         if (propsRef.current.isPlaying) {
             animationFrameId.current = requestAnimationFrame(renderFrame);
@@ -4230,6 +4258,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             
             // 檢測點擊的元素
             const clickedElement = detectElementAtPosition(pos, width, height);
+            console.log('Mouse down at:', pos, 'Clicked element:', clickedElement);
             if (clickedElement) {
                 // 拖曳
                 dragState.current.isDragging = true;
@@ -4237,6 +4266,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 dragState.current.startPosition = pos;
                 dragState.current.dragOffset = { x: 0, y: 0 };
                 canvas.style.cursor = 'grabbing';
+                
+                console.log('Started dragging:', clickedElement);
                 
                 // 防止默認行為
                 e.preventDefault();
@@ -4285,6 +4316,30 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
     // 檢測點擊位置的元素
     const detectElementAtPosition = (pos: { x: number; y: number }, width: number, height: number): string | null => {
         const { visualizationType, showSubtitles, subtitleDisplayMode, subtitles, currentTime } = propsRef.current;
+        
+        // 優先檢測 CTA 動畫區域（獨立功能，適用於所有可視化）
+        if (propsRef.current.showCtaAnimation && propsRef.current.ctaChannelName && propsRef.current.ctaPosition) {
+            const basePosition = propsRef.current.ctaPosition || { x: 50, y: 50 };
+            const dragOffset = dragState.current.isDragging && dragState.current.draggedElement === 'cta' 
+                ? dragState.current.dragOffset 
+                : { x: 0, y: 0 };
+            
+            // 使用與渲染時相同的計算方式
+            const ctaPosition = {
+                x: basePosition.x + (dragOffset.x / width) * 100,
+                y: basePosition.y + (dragOffset.y / height) * 100
+            };
+            
+            const ctaX = (ctaPosition.x / 100) * width;
+            const ctaY = (ctaPosition.y / 100) * height;
+            const ctaSize = 600; // 擴大 CTA 檢測區域，因為 CTA 動畫比較大 (520x140)
+            
+            if (pos.x >= ctaX - ctaSize / 2 && pos.x <= ctaX + ctaSize / 2 &&
+                pos.y >= ctaY - ctaSize / 2 && pos.y <= ctaY + ctaSize / 2) {
+                console.log('CTA detected at:', { ctaX, ctaY, ctaSize, pos });
+                return 'cta';
+            }
+        }
         
         // 檢測可視化區域 - 縮小拖曳範圍
         if (visualizationType === VisualizationType.GEOMETRIC_BARS) {
@@ -4357,6 +4412,14 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                     y: currentTransform.y + offset.y
                 });
             }
+        } else if (element === 'cta') {
+            // 更新 CTA 位置
+            if (propsRef.current.onCtaPositionUpdate) {
+                const currentPosition = propsRef.current.ctaPosition || { x: 50, y: 50 };
+                const newX = Math.max(0, Math.min(100, currentPosition.x + (offset.x / width) * 100));
+                const newY = Math.max(0, Math.min(100, currentPosition.y + (offset.y / height) * 100));
+                propsRef.current.onCtaPositionUpdate({ x: newX, y: newY });
+            }
         } else if (element === 'lyrics') {
             // 更新歌詞位置
             const newPositionX = (offset.x / width) * 100;
@@ -4375,6 +4438,173 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
     };
 
 
+
+    // 繪製 CTA 動畫
+    const drawCtaAnimation = (ctx: CanvasRenderingContext2D, width: number, height: number, channelName: string, position: { x: number; y: number }) => {
+        const currentTime = Date.now();
+        const audioCurrentTime = propsRef.current.audioRef?.current?.currentTime || 0;
+        
+        // 只在音頻開始的前10秒顯示，但允許拖動時或暫停時顯示
+        if (audioCurrentTime > 10 && !dragState.current.isDragging && propsRef.current.isPlaying) return;
+        
+        const ctaX = (position.x / 100) * width;
+        const ctaY = (position.y / 100) * height;
+        
+        // 動畫進度 (0-1)
+        const progress = Math.min(audioCurrentTime / 10, 1);
+        
+        // 淡入效果
+        const alpha = progress < 0.1 ? progress * 10 : (progress > 0.9 ? (1 - progress) * 10 : 1);
+        
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        
+        // 計算動畫階段 - 全部一起閃動
+        const flashPhase = Math.min(audioCurrentTime / 6, 1); // 前6秒：全部元素一起閃動
+        
+        // 美化透明圓角框背景
+        const frameWidth = 520;
+        const frameHeight = 140;
+        const cornerRadius = 25;
+        
+        // 外層光暈效果
+        const outerGlow = ctx.createRadialGradient(ctaX, ctaY, 0, ctaX, ctaY, frameWidth / 2 + 30);
+        outerGlow.addColorStop(0, 'rgba(255, 0, 0, 0.1)');
+        outerGlow.addColorStop(0.7, 'rgba(255, 0, 0, 0.05)');
+        outerGlow.addColorStop(1, 'rgba(255, 0, 0, 0)');
+        ctx.fillStyle = outerGlow;
+        ctx.fillRect(ctaX - frameWidth / 2 - 30, ctaY - frameHeight / 2 - 30, frameWidth + 60, frameHeight + 60);
+        
+        // 主背景 - 漸變效果
+        const bgGradient = ctx.createLinearGradient(ctaX - frameWidth / 2, ctaY - frameHeight / 2, ctaX + frameWidth / 2, ctaY + frameHeight / 2);
+        bgGradient.addColorStop(0, 'rgba(0, 0, 0, 0.4)');
+        bgGradient.addColorStop(0.5, 'rgba(20, 20, 20, 0.5)');
+        bgGradient.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
+        ctx.fillStyle = bgGradient;
+        
+        // 邊框漸變
+        const borderGradient = ctx.createLinearGradient(ctaX - frameWidth / 2, ctaY - frameHeight / 2, ctaX + frameWidth / 2, ctaY + frameHeight / 2);
+        borderGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+        borderGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.6)');
+        borderGradient.addColorStop(1, 'rgba(255, 255, 255, 0.8)');
+        ctx.strokeStyle = borderGradient;
+        ctx.lineWidth = 3;
+        
+        // 繪製圓角矩形
+        ctx.beginPath();
+        ctx.roundRect(ctaX - frameWidth / 2, ctaY - frameHeight / 2, frameWidth, frameHeight, cornerRadius);
+        ctx.fill();
+        ctx.stroke();
+        
+        
+        // 全部元素一起閃動
+        if (flashPhase > 0) {
+            const scale = 1 + Math.sin(flashPhase * Math.PI * 4) * 0.2; // 統一閃動效果
+            
+            // 左側訂閱按鈕
+            const subscribeX = ctaX - 160;
+            const subscribeY = ctaY;
+            
+            ctx.save();
+            ctx.translate(subscribeX, subscribeY);
+            ctx.scale(scale, scale);
+            
+            // 按鈕陰影
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            
+            // YouTube 紅色背景
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.arc(0, 0, 45, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 白色播放按鈕
+            ctx.shadowColor = 'transparent';
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.moveTo(-14, -20);
+            ctx.lineTo(-14, 20);
+            ctx.lineTo(20, 0);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.restore();
+            
+            // 中央文字
+            ctx.save();
+            ctx.translate(ctaX, ctaY);
+            ctx.scale(scale, scale);
+            ctx.translate(-ctaX, -ctaY);
+            
+            // 文字陰影效果
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 3;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
+            
+            // 訂閱文字（中文）- 搖滾圓體字體，增加行距
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.font = 'bold 36px "RocknRoll One", "Noto Sans TC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('訂閱', ctaX, ctaY - 35);
+            
+            // 訂閱文字（英文）- 搖滾圓體字體，增加行距
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            ctx.font = 'bold 28px "RocknRoll One", "Noto Sans TC", sans-serif';
+            ctx.fillText('SUBSCRIBE', ctaX, ctaY + 5);
+            
+            // 頻道名稱，搖滾圓體字體，增加行距
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+            ctx.font = 'bold 22px "RocknRoll One", "Noto Sans TC", sans-serif';
+            ctx.fillText(channelName, ctaX, ctaY + 50);
+            
+            ctx.restore();
+            
+            // 右側鈴鐺 - 使用🔔字元，修正垂直對齊
+            const bellX = ctaX + 160;
+            const bellY = ctaY; // 與中央文字對齊
+            
+            ctx.save();
+            ctx.translate(bellX, bellY);
+            ctx.scale(scale, scale);
+            ctx.translate(-bellX, -bellY);
+            
+            // 文字陰影效果
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 3;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
+            
+            // 鈴鐺字元，調整垂直位置使其與文字對齊
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.font = 'bold 80px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🔔', bellX, bellY + 10); // 向下調整鈴鐺位置
+            
+            ctx.restore();
+            
+            // 移除貓掌動畫
+        }
+        
+        // 清除陰影
+        ctx.shadowColor = 'transparent';
+        
+        // 背景光暈效果
+        const glowRadius = 150 + Math.sin(currentTime * 0.002) * 50;
+        const glowGradient = ctx.createRadialGradient(ctaX, ctaY, 0, ctaX, ctaY, glowRadius);
+        glowGradient.addColorStop(0, 'rgba(255, 0, 0, 0.15)');
+        glowGradient.addColorStop(0.5, 'rgba(255, 0, 0, 0.08)');
+        glowGradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+        ctx.fillStyle = glowGradient;
+        ctx.fillRect(ctaX - glowRadius, ctaY - glowRadius, glowRadius * 2, glowRadius * 2);
+        
+        ctx.restore();
+    };
 
     return <canvas ref={ref} className="w-full h-full" style={{ backgroundColor: 'transparent', border: '2px solid #4ecdc4', borderRadius: '8px' }} />;
 });
