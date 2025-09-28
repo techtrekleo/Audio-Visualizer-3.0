@@ -529,7 +529,22 @@ const Controls: React.FC<ControlsProps> = ({
                         label="字體"
                         value={fontFamily}
                         onChange={(value) => onFontFamilyChange(value as FontType)}
-                        options={Object.entries(FONT_MAP).map(([value, label]) => ({ value, label }))}
+                        options={[
+                            { value: FontType.POPPINS, label: '現代 (Poppins)' },
+                            { value: FontType.NOTO_SANS_TC, label: '思源黑體' },
+                            { value: FontType.SOURCE_HAN_SANS, label: '思源黑體 (TC)' },
+                            { value: FontType.CW_TEX_KAI, label: 'cwTeXKai' },
+                            { value: FontType.KLEE_ONE, label: 'Klee One' },
+                            { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
+                            { value: FontType.PACIFICO, label: 'Pacifico' },
+                            { value: FontType.LOBSTER, label: 'Lobster' },
+                            { value: FontType.BUNGEE, label: 'Bungee' },
+                            { value: FontType.ORBITRON, label: 'Orbitron' },
+                            { value: FontType.PRESS_START_2P, label: 'Press Start 2P' },
+                            { value: FontType.ROCKNROLL_ONE, label: '搖滾圓體 (RocknRoll One)' },
+                            { value: FontType.REGGAE_ONE, label: 'Reggae One' },
+                            { value: FontType.VT323, label: 'VT323' }
+                        ]}
                     />
                     
                     <SelectControl
@@ -713,7 +728,22 @@ const Controls: React.FC<ControlsProps> = ({
                             label="字幕字體"
                             value={subtitleFontFamily}
                             onChange={(value) => onSubtitleFontFamilyChange(value as FontType)}
-                            options={Object.entries(FONT_MAP).map(([value, label]) => ({ value, label }))}
+                            options={[
+                                { value: FontType.POPPINS, label: '現代 (Poppins)' },
+                                { value: FontType.NOTO_SANS_TC, label: '思源黑體' },
+                                { value: FontType.SOURCE_HAN_SANS, label: '思源黑體 (TC)' },
+                                { value: FontType.CW_TEX_KAI, label: 'cwTeXKai' },
+                                { value: FontType.KLEE_ONE, label: 'Klee One' },
+                                { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
+                                { value: FontType.PACIFICO, label: 'Pacifico' },
+                                { value: FontType.LOBSTER, label: 'Lobster' },
+                                { value: FontType.BUNGEE, label: 'Bungee' },
+                                { value: FontType.ORBITRON, label: 'Orbitron' },
+                                { value: FontType.PRESS_START_2P, label: 'Press Start 2P' },
+                                { value: FontType.ROCKNROLL_ONE, label: '搖滾圓體 (RocknRoll One)' },
+                                { value: FontType.REGGAE_ONE, label: 'Reggae One' },
+                                { value: FontType.VT323, label: 'VT323' }
+                            ]}
                         />
                         
                         <div className="space-y-2">
