@@ -76,6 +76,7 @@ function App() {
     // Lyrics Display State (測試中)
     const [showLyricsDisplay, setShowLyricsDisplay] = useState<boolean>(false);
     const [lyricsFontSize, setLyricsFontSize] = useState<number>(2); // 字體大小百分比
+    const [lyricsFontFamily, setLyricsFontFamily] = useState<FontType>(FontType.POPPINS); // 捲軸字幕字體
     const [lyricsPositionX, setLyricsPositionX] = useState<number>(0); // 水平位置偏移 (-50 到 50)
     const [lyricsPositionY, setLyricsPositionY] = useState<number>(0); // 垂直位置偏移 (-50 到 50)
     
@@ -653,6 +654,7 @@ function App() {
                                     showLyricsDisplay={showLyricsDisplay}
                                     currentTime={currentTime}
                                     lyricsFontSize={lyricsFontSize}
+                                    lyricsFontFamily={lyricsFontFamily}
                                     lyricsPositionX={lyricsPositionX}
                                     lyricsPositionY={lyricsPositionY}
                                     subtitleDisplayMode={subtitleDisplayMode}
@@ -777,6 +779,8 @@ function App() {
                             onShowLyricsDisplayChange={setShowLyricsDisplay}
                             lyricsFontSize={lyricsFontSize}
                             onLyricsFontSizeChange={setLyricsFontSize}
+                            lyricsFontFamily={lyricsFontFamily}
+                            onLyricsFontFamilyChange={setLyricsFontFamily}
                             lyricsPositionX={lyricsPositionX}
                             onLyricsPositionXChange={setLyricsPositionX}
                             lyricsPositionY={lyricsPositionY}

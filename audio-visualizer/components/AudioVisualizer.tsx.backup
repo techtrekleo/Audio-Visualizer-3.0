@@ -4010,7 +4010,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         
         if (analyser) {
             dataArray = new Uint8Array(analyser.frequencyBinCount);
-            analyser.getByteFrequencyData(dataArray as any);
+            analyser.getByteFrequencyData(dataArray);
             bassAvg = dataArray.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
             if (bassAvg > 180) {
                 isBeat = true;
@@ -4183,7 +4183,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             // 捲軸歌詞模式
             const dragOffset = dragState.current.draggedElement === 'lyrics' ? dragState.current.dragOffset : (propsRef.current.lyricsDragOffset || { x: 0, y: 0 });
             drawLyricsDisplay(ctx, width, height, subtitles, currentTime, { 
-                fontFamily: (propsRef.current as any).lyricsFontFamily as FontType, 
+                fontFamily: propsRef.current.lyricsFontFamily, 
                 bgStyle: subtitleBgStyle,
                 fontSize: propsRef.current.lyricsFontSize,
                 positionX: propsRef.current.lyricsPositionX + (dragOffset.x / width) * 100,
@@ -5049,10 +5049,10 @@ const drawRandomPixels = (ctx: CanvasRenderingContext2D, width: number, height: 
 };
 
 // Z總訂製款 - 黑膠唱片旋轉效果
-const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, height: number, centerImage: string | null, propsRef: React.MutableRefObject<AudioVisualizerProps>, frame: number | null) => {
+const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, height: number, centerImage: string | null, propsRef: React.MutableRefObject<AudioVisualizerProps>, frame: number) => {
     // 獲取 Z總訂製款的控制參數
-    const zCustomScale = (propsRef.current as any).zCustomScale || 1.0;
-    const zCustomPosition = (propsRef.current as any).zCustomPosition || { x: 0, y: 0 };
+    const zCustomScale = propsRef.current.zCustomScale || 1.0;
+    const zCustomPosition = propsRef.current.zCustomPosition || { x: 0, y: 0 };
     const colors = propsRef.current.colors;
     
     // 計算中心位置（包含位置偏移）
@@ -5066,7 +5066,7 @@ const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, 
     let audioData: Uint8Array | null = null;
     if (analyser) {
         audioData = new Uint8Array(analyser.frequencyBinCount);
-        analyser.getByteFrequencyData(audioData as any);
+        analyser.getByteFrequencyData(audioData);
     }
     
     // 計算音頻強度
@@ -5075,7 +5075,7 @@ const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, 
     const highIntensity = audioData ? audioData.slice(50, 100).reduce((a, b) => a + b, 0) / 50 / 255 : 0;
     
     // 計算旋轉角度（與可夜訂製款相同的速度）
-    const frameValue = frame ?? 0;
+    const frameValue = typeof frame === 'object' ? (frame?.current || 0) : (frame || 0);
     const rotationAngle = (frameValue * 0.01) % (Math.PI * 2);
     
     // 調試：檢查 frame 值

@@ -166,6 +166,8 @@ interface OptimizedControlsProps {
     onShowLyricsDisplayChange: (show: boolean) => void;
     lyricsFontSize: number;
     onLyricsFontSizeChange: (size: number) => void;
+    lyricsFontFamily: FontType;
+    onLyricsFontFamilyChange: (font: FontType) => void;
     lyricsPositionX: number;
     onLyricsPositionXChange: (value: number) => void;
     lyricsPositionY: number;
@@ -447,6 +449,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         effectOffsetX: props.effectOffsetX,
         effectOffsetY: props.effectOffsetY,
         lyricsFontSize: props.lyricsFontSize,
+        lyricsFontFamily: props.lyricsFontFamily,
         lyricsPositionX: props.lyricsPositionX,
         lyricsPositionY: props.lyricsPositionY,
     });
@@ -476,6 +479,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.effectOffsetX !== undefined) props.onEffectOffsetXChange(settings.effectOffsetX);
         if (settings.effectOffsetY !== undefined) props.onEffectOffsetYChange(settings.effectOffsetY);
         if (settings.lyricsFontSize !== undefined) props.onLyricsFontSizeChange(settings.lyricsFontSize);
+        if (settings.lyricsFontFamily !== undefined) props.onLyricsFontFamilyChange(settings.lyricsFontFamily);
         if (settings.lyricsPositionX !== undefined) props.onLyricsPositionXChange(settings.lyricsPositionX);
         if (settings.lyricsPositionY !== undefined) props.onLyricsPositionYChange(settings.lyricsPositionY);
     };
@@ -488,13 +492,13 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         [FontType.PRESS_START_2P]: 'Press Start 2P',
         [FontType.PACIFICO]: 'Pacifico',
         [FontType.DANCING_SCRIPT]: 'Dancing Script',
-        [FontType.ROCKNROLL_ONE]: '搖滾圓體',
-        [FontType.REGGAE_ONE]: '雷鬼 Stencil',
-        [FontType.VT323]: '立體裝甲',
+        [FontType.ROCKNROLL_ONE]: 'RocknRoll One',
+        [FontType.REGGAE_ONE]: 'Reggae One',
+        [FontType.VT323]: 'VT323',
         [FontType.NOTO_SANS_TC]: 'Noto Sans TC',
-        [FontType.SOURCE_HAN_SANS]: 'Source Han Sans',
-        [FontType.CW_TEX_KAI]: 'cwTeXKai (仿楷體)',
-        [FontType.KLEE_ONE]: 'Klee One (楷書風)',
+        [FontType.SOURCE_HAN_SANS]: 'Source Han Sans TC',
+        [FontType.CW_TEX_KAI]: 'cwTeXKai',
+        [FontType.KLEE_ONE]: 'Klee One',
     };
 
     const handleBackgroundImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1155,6 +1159,29 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         max={10}
                                         step={0.1}
                                         colorType="scale"
+                                    />
+                                    
+                                    <DropdownControl
+                                        label="字體"
+                                        value={props.lyricsFontFamily}
+                                        onChange={props.onLyricsFontFamilyChange}
+                                        options={[
+                                            { value: FontType.POPPINS, label: '現代 (Poppins)' },
+                                            { value: FontType.NOTO_SANS_TC, label: '思源黑體' },
+                                            { value: FontType.SOURCE_HAN_SANS, label: '思源黑體 (TC)' },
+                                            { value: FontType.CW_TEX_KAI, label: 'cwTeXKai' },
+                                            { value: FontType.KLEE_ONE, label: 'Klee One' },
+                                            { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
+                                            { value: FontType.PACIFICO, label: 'Pacifico' },
+                                            { value: FontType.LOBSTER, label: 'Lobster' },
+                                            { value: FontType.BUNGEE, label: 'Bungee' },
+                                            { value: FontType.ORBITRON, label: 'Orbitron' },
+                                            { value: FontType.PRESS_START_2P, label: 'Press Start 2P' },
+                                            { value: FontType.ROCKNROLL_ONE, label: 'RocknRoll One' },
+                                            { value: FontType.REGGAE_ONE, label: 'Reggae One' },
+                                            { value: FontType.VT323, label: 'VT323' }
+                                        ]}
+                                        className="sm:col-span-1 md:col-span-2"
                                     />
                                     
                                     <SliderControl

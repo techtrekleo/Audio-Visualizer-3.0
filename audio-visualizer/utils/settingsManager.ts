@@ -24,6 +24,7 @@ export interface SavedSettings {
     effectOffsetX: number;
     effectOffsetY: number;
     lyricsFontSize: number;
+    lyricsFontFamily: FontType;
     lyricsPositionX: number;
     lyricsPositionY: number;
 }

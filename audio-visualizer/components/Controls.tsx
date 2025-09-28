@@ -341,13 +341,13 @@ const Controls: React.FC<ControlsProps> = ({
         [FontType.PRESS_START_2P]: 'Press Start 2P',
         [FontType.PACIFICO]: 'Pacifico',
         [FontType.DANCING_SCRIPT]: 'Dancing Script',
-        [FontType.ROCKNROLL_ONE]: '搖滾圓體',
-        [FontType.REGGAE_ONE]: '雷鬼 Stencil',
-        [FontType.VT323]: '立體裝甲',
+        [FontType.ROCKNROLL_ONE]: 'RocknRoll One',
+        [FontType.REGGAE_ONE]: 'Reggae One',
+        [FontType.VT323]: 'VT323',
         [FontType.NOTO_SANS_TC]: 'Noto Sans TC',
-        [FontType.SOURCE_HAN_SANS]: 'Source Han Sans',
-        [FontType.CW_TEX_KAI]: 'cwTeXKai (仿楷體)',
-        [FontType.KLEE_ONE]: 'Klee One (楷書風)',
+        [FontType.SOURCE_HAN_SANS]: 'Source Han Sans TC',
+        [FontType.CW_TEX_KAI]: 'cwTeXKai',
+        [FontType.KLEE_ONE]: 'Klee One',
     };
 
     const handleBackgroundImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

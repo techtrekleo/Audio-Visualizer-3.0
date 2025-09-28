@@ -175,6 +175,7 @@ export interface AudioVisualizerProps {
     showLyricsDisplay: boolean;
     currentTime: number;
     lyricsFontSize: number;
+    lyricsFontFamily: FontType;
     lyricsPositionX: number;
     lyricsPositionY: number;
     subtitleDisplayMode: SubtitleDisplayMode;

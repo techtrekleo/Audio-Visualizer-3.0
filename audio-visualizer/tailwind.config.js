@@ -18,6 +18,9 @@ export default {
         'rocknroll-one': ['"RocknRoll One"', 'sans-serif'],
         'reggae-one': ['"Reggae One"', 'cursive'],
         vt323: ['VT323', 'monospace'],
+        'noto-sans-tc': ['"Noto Sans TC"', 'sans-serif'],
+        'source-han-sans': ['"Source Han Sans TC"', 'sans-serif'],
+        'klee-one': ['"Klee One"', 'cursive'],
       }
     },
   },
