@@ -499,6 +499,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         [FontType.SOURCE_HAN_SANS]: 'Source Han Sans TC',
         [FontType.CW_TEX_KAI]: 'cwTeXKai',
         [FontType.KLEE_ONE]: 'Klee One',
+        [FontType.QINGSONG_1]: 'QingSong 1',
+        [FontType.QINGSONG_2]: 'QingSong 2',
     };
 
     const handleBackgroundImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -889,11 +891,15 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 value={props.fontFamily}
                                 onChange={(value) => props.onFontFamilyChange(value as FontType)}
                                 options={[
-                                    { value: FontType.POPPINS, label: '現代 (Poppins)' },
+                                    // 中文字體
                                     { value: FontType.NOTO_SANS_TC, label: '思源黑體' },
                                     { value: FontType.SOURCE_HAN_SANS, label: '思源黑體 (TC)' },
                                     { value: FontType.CW_TEX_KAI, label: 'cwTeXKai' },
                                     { value: FontType.KLEE_ONE, label: 'Klee One' },
+                                    { value: FontType.QINGSONG_1, label: '清松手寫體1' },
+                                    { value: FontType.QINGSONG_2, label: '清松手寫體2' },
+                                    // 英文字體
+                                    { value: FontType.POPPINS, label: '現代 (Poppins)' },
                                     { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
                                     { value: FontType.PACIFICO, label: 'Pacifico' },
                                     { value: FontType.LOBSTER, label: 'Lobster' },
@@ -1126,11 +1132,15 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     value={props.subtitleFontFamily}
                                     onChange={(value) => props.onSubtitleFontFamilyChange(value as FontType)}
                                     options={[
-                                        { value: FontType.POPPINS, label: '現代 (Poppins)' },
+                                        // 中文字體
                                         { value: FontType.NOTO_SANS_TC, label: '思源黑體' },
                                         { value: FontType.SOURCE_HAN_SANS, label: '思源黑體 (TC)' },
                                         { value: FontType.CW_TEX_KAI, label: 'cwTeXKai' },
                                         { value: FontType.KLEE_ONE, label: 'Klee One' },
+                                        { value: FontType.QINGSONG_1, label: '清松手寫體1' },
+                                        { value: FontType.QINGSONG_2, label: '清松手寫體2' },
+                                        // 英文字體
+                                        { value: FontType.POPPINS, label: '現代 (Poppins)' },
                                         { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
                                         { value: FontType.PACIFICO, label: 'Pacifico' },
                                         { value: FontType.LOBSTER, label: 'Lobster' },
@@ -1196,11 +1206,15 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         value={props.lyricsFontFamily}
                                         onChange={props.onLyricsFontFamilyChange}
                                         options={[
-                                            { value: FontType.POPPINS, label: '現代 (Poppins)' },
+                                            // 中文字體
                                             { value: FontType.NOTO_SANS_TC, label: '思源黑體' },
                                             { value: FontType.SOURCE_HAN_SANS, label: '思源黑體 (TC)' },
                                             { value: FontType.CW_TEX_KAI, label: 'cwTeXKai' },
                                             { value: FontType.KLEE_ONE, label: 'Klee One' },
+                                            { value: FontType.QINGSONG_1, label: '清松手寫體1' },
+                                            { value: FontType.QINGSONG_2, label: '清松手寫體2' },
+                                            // 英文字體
+                                            { value: FontType.POPPINS, label: '現代 (Poppins)' },
                                             { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
                                             { value: FontType.PACIFICO, label: 'Pacifico' },
                                             { value: FontType.LOBSTER, label: 'Lobster' },

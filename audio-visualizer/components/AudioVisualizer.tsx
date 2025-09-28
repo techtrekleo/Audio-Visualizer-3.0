@@ -18,6 +18,8 @@ const FONT_MAP: Record<FontType, string> = {
     [FontType.SOURCE_HAN_SANS]: 'Source Han Sans TC',
     [FontType.CW_TEX_KAI]: 'cwTeXKai',
     [FontType.KLEE_ONE]: 'Klee One',
+    [FontType.QINGSONG_1]: 'QingSong 1',
+    [FontType.QINGSONG_2]: 'QingSong 2',
 };
 
 interface AudioVisualizerProps {
@@ -4584,21 +4586,21 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
             
-            // 訂閱文字（中文）- 搖滾圓體字體，增加行距
+            // 訂閱文字（中文）- 清松手寫體1，增加行距
             ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-            ctx.font = 'bold 36px "RocknRoll One", "Noto Sans TC", sans-serif';
+            ctx.font = 'bold 36px "QingSong 1", "Noto Sans TC", sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('訂閱', ctaX, ctaY - 35);
             
-            // 訂閱文字（英文）- 搖滾圓體字體，增加行距
+            // 訂閱文字（英文）- 清松手寫體1，增加行距
             ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-            ctx.font = 'bold 28px "RocknRoll One", "Noto Sans TC", sans-serif';
+            ctx.font = 'bold 28px "QingSong 1", "Noto Sans TC", sans-serif';
             ctx.fillText('SUBSCRIBE', ctaX, ctaY + 5);
             
-            // 頻道名稱，搖滾圓體字體，增加行距
+            // 頻道名稱，清松手寫體1，增加行距
             ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-            ctx.font = 'bold 22px "RocknRoll One", "Noto Sans TC", sans-serif';
+            ctx.font = 'bold 22px "QingSong 1", "Noto Sans TC", sans-serif';
             ctx.fillText(channelName, ctaX, ctaY + 50);
             
             ctx.restore();

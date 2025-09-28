@@ -57,6 +57,8 @@ export enum FontType {
     SOURCE_HAN_SANS = 'Source Han Sans',
     CW_TEX_KAI = 'cwTeXKai',
     KLEE_ONE = 'Klee One',
+    QINGSONG_1 = 'QingSong 1',
+    QINGSONG_2 = 'QingSong 2',
 }
 
 export enum BackgroundColorType {
