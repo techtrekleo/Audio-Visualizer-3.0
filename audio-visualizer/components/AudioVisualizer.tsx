@@ -4098,7 +4098,16 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 ctx.fillStyle = bgGradient;
                 ctx.fillRect(0, 0, width, height);
             }
-            drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
+            if (visualizationType === VisualizationType.GEOMETRIC_BARS) {
+                // 可夜特別訂製版需要特殊處理，傳遞額外參數
+                drawGeometricBars(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, propsRef.current);
+            } else if (visualizationType === VisualizationType.Z_CUSTOM) {
+                // Z總訂製款需要特殊處理，傳遞額外參數
+                const currentFrame = typeof frame.current === 'number' ? frame.current : 0;
+                drawZCustomVisualization(ctx, width, height, propsRef.current.zCustomCenterImage, propsRef, currentFrame);
+            } else {
+                drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
+            }
             
             if (shouldTransform) {
                 ctx.restore();
@@ -4146,26 +4155,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         });
         particlesRef.current = particlesRef.current.filter(p => p.opacity > 0 && p.y < height + 100);
 
-        // 繪製 Z總訂製款可視化
-        if (propsRef.current.visualizationType === VisualizationType.Z_CUSTOM) {
-            drawZCustomVisualization(ctx, width, height, propsRef.current.zCustomCenterImage, propsRef, frame.current);
-        }
-        
-        // 繪製 CTA 動畫（獨立功能，適用於所有可視化）
-        if (propsRef.current.showCtaAnimation && propsRef.current.ctaChannelName) {
-            // 計算 CTA 位置，包含拖動偏移
-            const basePosition = propsRef.current.ctaPosition || { x: 50, y: 50 };
-            const dragOffset = dragState.current.isDragging && dragState.current.draggedElement === 'cta' 
-                ? dragState.current.dragOffset 
-                : { x: 0, y: 0 };
-            
-            const ctaPosition = {
-                x: basePosition.x + (dragOffset.x / width) * 100,
-                y: basePosition.y + (dragOffset.y / height) * 100
-            };
-            
-            drawCtaAnimation(ctx, width, height, propsRef.current.ctaChannelName, ctaPosition);
-        }
+        // Z總訂製款可視化已在主要繪製循環中處理，無需重複繪製
 
         // 字幕和自定義文字最後繪製，確保在最上層
         const currentTime = audioRef.current?.currentTime ?? 0;
@@ -4183,7 +4173,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             // 捲軸歌詞模式
             const dragOffset = dragState.current.draggedElement === 'lyrics' ? dragState.current.dragOffset : (propsRef.current.lyricsDragOffset || { x: 0, y: 0 });
             drawLyricsDisplay(ctx, width, height, subtitles, currentTime, { 
-                fontFamily: (propsRef.current as any).lyricsFontFamily as FontType, 
+                fontFamily: subtitleFontFamily, 
                 bgStyle: subtitleBgStyle,
                 fontSize: propsRef.current.lyricsFontSize,
                 positionX: propsRef.current.lyricsPositionX + (dragOffset.x / width) * 100,
@@ -4230,6 +4220,22 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 textPositionY: textPositionY,
                 isBeat 
             });
+        }
+        
+        // 繪製 CTA 動畫（在字幕之後，但確保不覆蓋字幕）
+        if (propsRef.current.showCtaAnimation && propsRef.current.ctaChannelName) {
+            // 計算 CTA 位置，包含拖動偏移
+            const basePosition = propsRef.current.ctaPosition || { x: 50, y: 50 };
+            const dragOffset = dragState.current.isDragging && dragState.current.draggedElement === 'cta' 
+                ? dragState.current.dragOffset 
+                : { x: 0, y: 0 };
+            
+            const ctaPosition = {
+                x: basePosition.x + (dragOffset.x / width) * 100,
+                y: basePosition.y + (dragOffset.y / height) * 100
+            };
+            
+            drawCtaAnimation(ctx, width, height, propsRef.current.ctaChannelName, ctaPosition);
         }
         
         if (propsRef.current.isPlaying) {

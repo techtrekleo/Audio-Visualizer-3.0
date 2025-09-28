@@ -1161,7 +1161,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         colorType="scale"
                                     />
                                     
-                                    <DropdownControl
+                                    <SelectControl
                                         label="字體"
                                         value={props.lyricsFontFamily}
                                         onChange={props.onLyricsFontFamilyChange}
