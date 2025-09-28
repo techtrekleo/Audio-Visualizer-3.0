@@ -22,6 +22,7 @@ export enum VisualizationType {
     AUDIO_LANDSCAPE = '音訊地貌',
     PIANO_VIRTUOSO = '鋼琴演奏家',
     GEOMETRIC_BARS = '可夜特別訂製版',
+    Z_CUSTOM = 'Z總訂製款',
 }
 
 // 特效分類系統
@@ -198,6 +199,11 @@ export interface AudioVisualizerProps {
     ctaChannelName?: string;
     ctaPosition?: { x: number; y: number };
     onCtaPositionUpdate?: (position: { x: number; y: number }) => void;
+    // Z總訂製款狀態
+    zCustomCenterImage?: string | null;
+    zCustomScale?: number;
+    zCustomPosition?: { x: number; y: number };
+    onZCustomPositionUpdate?: (position: { x: number; y: number }) => void;
 }
 
 export type Palette = {

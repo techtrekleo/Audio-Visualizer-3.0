@@ -168,6 +168,14 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         difficulty: 'hard',
         performance: 'high',
         tags: ['幾何', '橫條', '現代', '藝術', '實驗']
+    },
+    {
+        type: VisualizationType.Z_CUSTOM,
+        category: EffectCategory.EXPERIMENTAL,
+        description: 'Z總訂製款，黑膠唱片旋轉效果',
+        difficulty: 'medium',
+        performance: 'medium',
+        tags: ['黑膠', '旋轉', '唱片', '自訂圖片', '實驗']
     }
 ];
 

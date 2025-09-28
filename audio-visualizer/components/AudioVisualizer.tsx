@@ -64,6 +64,8 @@ interface AudioVisualizerProps {
     ctaChannelName?: string;
     ctaPosition?: { x: number; y: number };
     onCtaPositionUpdate?: (position: { x: number; y: number }) => void;
+    // Z總訂製款狀態
+    zCustomCenterImage?: string | null;
 }
 
 /**
@@ -4183,6 +4185,11 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             });
         }
         
+        // 繪製 Z總訂製款可視化
+        if (propsRef.current.visualizationType === VisualizationType.Z_CUSTOM) {
+            drawZCustomVisualization(ctx, width, height, propsRef.current.zCustomCenterImage, propsRef, frame);
+        }
+        
         // 繪製 CTA 動畫（獨立功能，適用於所有可視化）
         if (propsRef.current.showCtaAnimation && propsRef.current.ctaChannelName) {
             // 計算 CTA 位置，包含拖動偏移
@@ -5013,6 +5020,173 @@ const drawRandomPixels = (ctx: CanvasRenderingContext2D, width: number, height: 
         const y = Math.random() * height;
         ctx.fillRect(x, y, 2, 2);
     }
+};
+
+// Z總訂製款 - 黑膠唱片旋轉效果
+const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, height: number, centerImage: string | null, propsRef: React.MutableRefObject<AudioVisualizerProps>, frame: number) => {
+    // 獲取 Z總訂製款的控制參數
+    const zCustomScale = propsRef.current.zCustomScale || 1.0;
+    const zCustomPosition = propsRef.current.zCustomPosition || { x: 0, y: 0 };
+    const colors = propsRef.current.colors;
+    
+    // 計算中心位置（包含位置偏移）
+    const centerX = width / 2 + (zCustomPosition.x / 100) * width;
+    const centerY = height / 2 + (zCustomPosition.y / 100) * height;
+    const recordSize = Math.min(width, height) * 0.6 * zCustomScale;
+    const recordRadius = recordSize / 2;
+    
+    // 獲取音頻數據
+    const analyser = propsRef.current.analyser;
+    let audioData: Uint8Array | null = null;
+    if (analyser) {
+        audioData = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(audioData);
+    }
+    
+    // 計算音頻強度
+    const bassIntensity = audioData ? audioData.slice(0, 10).reduce((a, b) => a + b, 0) / 10 / 255 : 0;
+    const midIntensity = audioData ? audioData.slice(10, 50).reduce((a, b) => a + b, 0) / 40 / 255 : 0;
+    const highIntensity = audioData ? audioData.slice(50, 100).reduce((a, b) => a + b, 0) / 50 / 255 : 0;
+    
+    // 計算旋轉角度（與可夜訂製款相同的速度）
+    const frameValue = typeof frame === 'object' ? frame.current : frame;
+    const rotationAngle = (frameValue * 0.01) % (Math.PI * 2);
+    
+    // 調試：檢查 frame 值
+    console.log('Z總訂製款 frame:', frame, 'frameValue:', frameValue, 'rotationAngle:', rotationAngle);
+    
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(rotationAngle);
+    
+    // 繪製黑膠唱片外圈
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    ctx.arc(0, 0, recordRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 繪製唱片紋路（同心圓）
+    ctx.strokeStyle = '#333333';
+    ctx.lineWidth = 1;
+    for (let i = 1; i <= 8; i++) {
+        const radius = (recordRadius * 0.2) + (recordRadius * 0.8 * i / 8);
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+    
+    // 繪製中央黃色標籤
+    const labelRadius = recordRadius * 0.25;
+    ctx.fillStyle = '#FFD700'; // 金黃色
+    ctx.beginPath();
+    ctx.arc(0, 0, labelRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 如果有上傳的圖片，裁切成圓形並繪製在中央標籤上
+    if (centerImage) {
+        const image = new Image();
+        image.src = centerImage;
+        
+        if (image.complete && image.naturalWidth > 0) {
+            // 創建圓形裁切路徑
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(0, 0, labelRadius, 0, Math.PI * 2);
+            ctx.clip();
+            
+            // 繪製圖片（填滿整個圓形區域）
+            ctx.drawImage(image, -labelRadius, -labelRadius, labelRadius * 2, labelRadius * 2);
+            ctx.restore();
+        }
+    }
+    
+    // 繪製中央孔洞
+    const holeRadius = labelRadius * 0.15;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(0, 0, holeRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+    
+    // 繪製螺旋包覆效果
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    
+    // 螺旋參數
+    const spiralRadius = recordRadius + 15; // 螺旋起始半徑
+    const spiralTurns = 3; // 螺旋圈數
+    const spiralPoints = 200; // 螺旋點數
+    const spiralThickness = 4; // 螺旋線寬
+    
+    // 繪製第一圈螺旋（內層）
+    ctx.strokeStyle = colors.primary;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    for (let i = 0; i < spiralPoints; i++) {
+        const t = i / spiralPoints;
+        const angle = t * Math.PI * 2 + frameValue * 0.03; // 第一圈
+        const radius = spiralRadius + t * 15;
+        
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    }
+    ctx.stroke();
+    
+    // 繪製第二圈柱狀聲波圖
+    const barCount = 60; // 柱狀圖數量
+    const barWidth = 3; // 柱狀圖寬度
+    const baseRadius = spiralRadius + 20; // 第二圈基礎半徑
+    
+    for (let i = 0; i < barCount; i++) {
+        const angle = (i / barCount) * Math.PI * 2 + frameValue * 0.02;
+        const barHeight = audioData ? (audioData[i % audioData.length] / 255) * 30 : 0;
+        
+        // 柱狀圖位置
+        const x = Math.cos(angle) * baseRadius;
+        const y = Math.sin(angle) * baseRadius;
+        
+        // 繪製柱狀圖（使用顏色主題）
+        ctx.fillStyle = colors.accent;
+        ctx.fillRect(x - barWidth/2, y - barHeight/2, barWidth, barHeight);
+    }
+    
+    // 繪製第三圈螺旋（外層，隨柱狀圖震動撐開）
+    ctx.strokeStyle = colors.secondary;
+    ctx.lineWidth = spiralThickness;
+    ctx.beginPath();
+    
+    for (let i = 0; i < spiralPoints; i++) {
+        const t = i / spiralPoints;
+        const angle = t * Math.PI * 2 + frameValue * 0.02; // 第三圈
+        const baseRadius = spiralRadius + 40;
+        
+        // 根據柱狀圖高度計算撐開效果
+        const barIndex = Math.floor((angle / (Math.PI * 2)) * barCount);
+        const barHeight = audioData ? (audioData[barIndex % audioData.length] / 255) * 30 : 0;
+        const expansion = barHeight * 0.5; // 撐開係數
+        
+        const radius = baseRadius + t * 20 + expansion;
+        
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    }
+    ctx.stroke();
+    
+    ctx.restore();
 };
 
 

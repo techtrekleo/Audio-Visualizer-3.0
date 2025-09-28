@@ -202,6 +202,16 @@ interface OptimizedControlsProps {
     onShowCtaAnimationChange?: (show: boolean) => void;
     ctaChannelName?: string;
     onCtaChannelNameChange?: (name: string) => void;
+    // Z總訂製款控制
+    showZCustomControls?: boolean;
+    onShowZCustomControlsChange?: (show: boolean) => void;
+    zCustomCenterImage?: string | null;
+    onZCustomCenterImageUpload?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onClearZCustomCenterImage?: () => void;
+    zCustomScale?: number;
+    onZCustomScaleChange?: (scale: number) => void;
+    zCustomPosition?: { x: number; y: number };
+    onZCustomPositionUpdate?: (position: { x: number; y: number }) => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
@@ -1289,6 +1299,102 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 </div>
                                 
 
+                            </div>
+                        </CollapsibleControlSection>
+                    )}
+
+                    {/* Z總訂製款控制面板 */}
+                    {props.visualizationType === VisualizationType.Z_CUSTOM && (
+                        <CollapsibleControlSection
+                            title="Z總訂製款控制"
+                            icon={ICON_PATHS.SETTINGS}
+                            priority="high"
+                            defaultExpanded={true}
+                            badge="黑膠唱片"
+                        >
+                            <div className="space-y-4">
+                                {/* 中央圖片上傳 */}
+                                <div className="space-y-3">
+                                    <label className="block text-sm font-medium text-gray-300">
+                                        中央圖片
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={props.onZCustomCenterImageUpload}
+                                            className="hidden"
+                                            id="z-custom-center-image-upload"
+                                        />
+                                        <label
+                                            htmlFor="z-custom-center-image-upload"
+                                            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg cursor-pointer transition-colors"
+                                        >
+                                            選擇圖片
+                                        </label>
+                                        {props.zCustomCenterImage && (
+                                            <button
+                                                onClick={props.onClearZCustomCenterImage}
+                                                className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                                            >
+                                                清除
+                                            </button>
+                                        )}
+                                    </div>
+                                    {props.zCustomCenterImage && (
+                                        <div className="mt-2">
+                                            <img
+                                                src={props.zCustomCenterImage}
+                                                alt="中央圖片預覽"
+                                                className="w-20 h-20 object-cover rounded border"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                {/* 大小控制 */}
+                                <SliderControl
+                                    label="可視化大小"
+                                    value={props.zCustomScale || 1.0}
+                                    onChange={props.onZCustomScaleChange || (() => {})}
+                                    min={0.1}
+                                    max={3.0}
+                                    step={0.1}
+                                    unit="倍"
+                                />
+                                
+                                {/* 位置控制 */}
+                                <div className="space-y-3">
+                                    <label className="block text-sm font-medium text-gray-300">
+                                        位置調整
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <SliderControl
+                                            label="水平位置"
+                                            value={props.zCustomPosition?.x || 0}
+                                            onChange={(x) => props.onZCustomPositionUpdate?.({ 
+                                                x, 
+                                                y: props.zCustomPosition?.y || 0 
+                                            })}
+                                            min={-100}
+                                            max={100}
+                                            step={1}
+                                            unit="%"
+                                        />
+                                        <SliderControl
+                                            label="垂直位置"
+                                            value={props.zCustomPosition?.y || 0}
+                                            onChange={(y) => props.onZCustomPositionUpdate?.({ 
+                                                x: props.zCustomPosition?.x || 0, 
+                                                y 
+                                            })}
+                                            min={-100}
+                                            max={100}
+                                            step={1}
+                                            unit="%"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </CollapsibleControlSection>
                     )}

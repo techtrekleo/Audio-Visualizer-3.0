@@ -105,6 +105,12 @@ function App() {
     const [geometricSongName, setGeometricSongName] = useState<string>(''); // 歌曲名稱
     const [geometricArtistName, setGeometricArtistName] = useState<string>(''); // 歌手名稱
     
+    // Z總訂製款可視化狀態
+    const [showZCustomControls, setShowZCustomControls] = useState<boolean>(false); // Z總訂製款控制面板
+    const [zCustomCenterImage, setZCustomCenterImage] = useState<string | null>(null); // 中央圖片
+    const [zCustomScale, setZCustomScale] = useState<number>(1.0); // Z總訂製款大小
+    const [zCustomPosition, setZCustomPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 }); // Z總訂製款位置
+    
     const audioRef = useRef<HTMLAudioElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     
@@ -400,6 +406,22 @@ function App() {
         setGeometricSemicircleImage(null);
     };
 
+    // Z總訂製款圖片處理函數
+    const handleZCustomCenterImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setZCustomCenterImage(url);
+        }
+    };
+
+    const clearZCustomCenterImage = () => {
+        if (zCustomCenterImage) {
+            URL.revokeObjectURL(zCustomCenterImage);
+        }
+        setZCustomCenterImage(null);
+    };
+
     const handleRecordingComplete = useCallback((url: string, extension: string) => {
         setVideoUrl(url);
         setVideoExtension(extension);
@@ -647,10 +669,14 @@ function App() {
                                     ctaChannelName={ctaChannelName}
                                     ctaPosition={ctaPosition}
                                     onCtaPositionUpdate={setCtaPosition}
-                geometricFrameImage={geometricFrameImage}
-                geometricSemicircleImage={geometricSemicircleImage}
-                geometricSongName={geometricSongName}
-                geometricArtistName={geometricArtistName}
+                                    zCustomCenterImage={zCustomCenterImage}
+                                    zCustomScale={zCustomScale}
+                                    zCustomPosition={zCustomPosition}
+                                    onZCustomPositionUpdate={setZCustomPosition}
+                                    geometricFrameImage={geometricFrameImage}
+                                    geometricSemicircleImage={geometricSemicircleImage}
+                                    geometricSongName={geometricSongName}
+                                    geometricArtistName={geometricArtistName}
                                 />
                             </div>
                         </div>
@@ -782,6 +808,15 @@ function App() {
                             onShowCtaAnimationChange={setShowCtaAnimation}
                             ctaChannelName={ctaChannelName}
                             onCtaChannelNameChange={setCtaChannelName}
+                            showZCustomControls={showZCustomControls}
+                            onShowZCustomControlsChange={setShowZCustomControls}
+                            zCustomCenterImage={zCustomCenterImage}
+                            onZCustomCenterImageUpload={handleZCustomCenterImageUpload}
+                            onClearZCustomCenterImage={clearZCustomCenterImage}
+                            zCustomScale={zCustomScale}
+                            onZCustomScaleChange={setZCustomScale}
+                            zCustomPosition={zCustomPosition}
+                            onZCustomPositionUpdate={setZCustomPosition}
                         />
                     </div>
             </main>
