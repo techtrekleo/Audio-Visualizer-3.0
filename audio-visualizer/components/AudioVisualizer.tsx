@@ -3240,7 +3240,6 @@ const drawSubtitles = (
     
     const fontSize = (fontSizeVw / 100) * width;
     const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
-    console.log('傳統字幕字體設定:', { fontFamily, actualFontName, fontSize });
     ctx.font = `bold ${fontSize}px "${actualFontName}", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
@@ -3325,7 +3324,6 @@ const drawWordByWordSubtitles = (
     
     const fontSize = (fontSizeVw / 100) * width;
     const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
-    console.log('打字機字幕字體設定:', { fontFamily, actualFontName, fontSize });
     ctx.font = `bold ${fontSize}px "${actualFontName}", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
@@ -3494,7 +3492,6 @@ const drawLyricsDisplay = (
         const baseFontSize = width * (fontSize / 100); // 字體大小百分比
         const currentFontSize = isCurrentLine ? baseFontSize * 1.5 : baseFontSize; // 當前行放大1.5倍
         const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
-        console.log('捲軸歌詞字體設定:', { fontFamily, actualFontName, currentFontSize });
         ctx.font = `bold ${currentFontSize}px "${actualFontName}", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
