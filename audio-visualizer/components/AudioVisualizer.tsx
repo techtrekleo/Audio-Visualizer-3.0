@@ -60,6 +60,7 @@ interface AudioVisualizerProps {
     showLyricsDisplay: boolean;
     currentTime: number;
     lyricsFontSize: number;
+    lyricsFontFamily: FontType;
     lyricsPositionX: number;
     lyricsPositionY: number;
     subtitleDisplayMode: SubtitleDisplayMode;
@@ -79,6 +80,7 @@ interface AudioVisualizerProps {
     visualizationTransform?: { x: number; y: number; scale: number };
     onVisualizationTransformUpdate?: (transform: { x: number; y: number; scale: number }) => void;
     visualizationScale?: number;
+    onVisualizationScaleChange?: (scale: number) => void;
     // CTA 動畫狀態
     showCtaAnimation?: boolean;
     ctaChannelName?: string;
@@ -86,6 +88,9 @@ interface AudioVisualizerProps {
     onCtaPositionUpdate?: (position: { x: number; y: number }) => void;
     // Z總訂製款狀態
     zCustomCenterImage?: string | null;
+    zCustomScale?: number;
+    zCustomPosition?: { x: number; y: number };
+    onZCustomPositionUpdate?: (position: { x: number; y: number }) => void;
 }
 
 /**

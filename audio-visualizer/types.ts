@@ -116,6 +116,11 @@ export enum SubtitleDisplayMode {
     WORD_BY_WORD = '逐字顯示',
 }
 
+export enum SubtitleFormat {
+    BRACKET = '方括號格式 [00:00.00]',
+    SRT = 'SRT格式 00:00:14,676 --> 00:00:19,347',
+}
+
 export enum TransitionType {
     TV_STATIC = '電視雜訊',
     FADE = '淡入淡出',

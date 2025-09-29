@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType } from '../types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat } from '../types';
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
 import CollapsibleControlSection from './CollapsibleControlSection';
@@ -7,69 +7,100 @@ import QuickSettingsPanel from './QuickSettingsPanel';
 import SettingsManagerComponent from './SettingsManagerComponent';
 
 // 將原始字幕文本轉換為標準SRT格式
-const convertToSRT = (rawText: string): string => {
-    if (!rawText.trim()) return '';
+// 解析字幕文字，支援兩種格式
+const parseSubtitles = (rawText: string, format: 'bracket' | 'srt'): Array<{ time: number; text: string }> => {
+    if (!rawText.trim()) return [];
     
     const lines = rawText.trim().split('\n');
     const subtitles: Array<{ time: number; text: string }> = [];
     
-    // First, try to parse [00:00.00] format
-    const timeRegex1 = /\[(\d{2}):(\d{2})\.(\d{2})\]/;
-    
-    // Then, try to parse "00:00:05 - 文本" format
-    const timeRegex2 = /^(\d{1,2}):(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?\s*[-–]\s*(.+)$/;
-    
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
+    if (format === 'bracket') {
+        // 解析 [00:00.00] 格式
+        const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2})\]/;
         
-        let time: number | null = null;
-        let text: string | null = null;
-        
-        // Try [00:00.00] format first
-        const match1 = line.match(timeRegex1);
-        if (match1) {
-            const minutes = parseInt(match1[1], 10);
-            const seconds = parseInt(match1[2], 10);
-            const centiseconds = parseInt(match1[3], 10);
-            time = minutes * 60 + seconds + centiseconds / 100;
-            text = line.replace(timeRegex1, '').trim();
-        } else {
-            // Try "00:00:05 - 文本" format
-            const match2 = line.match(timeRegex2);
-            if (match2) {
-                const hours = parseInt(match2[1], 10);
-                const minutes = parseInt(match2[2], 10);
-                const seconds = parseInt(match2[3], 10);
-                const milliseconds = match2[4] ? parseInt(match2[4], 10) : 0;
-                time = hours * 3600 + minutes * 60 + seconds + milliseconds / 1000;
-                text = match2[5];
-            } else {
-                // If no time format found, skip this line
-                continue;
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+            
+            const match = line.match(timeRegex);
+            if (match) {
+                const minutes = parseInt(match[1], 10);
+                const seconds = parseInt(match[2], 10);
+                const centiseconds = parseInt(match[3], 10);
+                const time = minutes * 60 + seconds + centiseconds / 100;
+                const text = line.replace(timeRegex, '').trim();
+                
+                if (text) {
+                    subtitles.push({ time, text });
+                }
             }
         }
+    } else if (format === 'srt') {
+        // 解析 SRT 格式 00:00:14,676 --> 00:00:19,347
+        const srtTimeRegex = /^(\d{1,2}):(\d{1,2}):(\d{1,2}),(\d{1,3})\s*-->\s*(\d{1,2}):(\d{1,2}):(\d{1,2}),(\d{1,3})$/;
         
-        if (time !== null && text) {
-            subtitles.push({ time, text });
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+            
+            const match = line.match(srtTimeRegex);
+            if (match) {
+                // 使用開始時間
+                const hours = parseInt(match[1], 10);
+                const minutes = parseInt(match[2], 10);
+                const seconds = parseInt(match[3], 10);
+                const milliseconds = parseInt(match[4], 10);
+                const time = hours * 3600 + minutes * 60 + seconds + milliseconds / 1000;
+                
+                // 下一行是文字
+                if (i + 1 < lines.length) {
+                    const text = lines[i + 1].trim();
+                    if (text) {
+                        subtitles.push({ time, text });
+                        i++; // 跳過文字行
+                    }
+                }
+            }
         }
     }
     
-    // Sort by time
+    // 按時間排序
     subtitles.sort((a, b) => a.time - b.time);
+    return subtitles;
+};
+
+// 轉換為指定格式
+const convertToFormat = (rawText: string, fromFormat: 'bracket' | 'srt', toFormat: 'bracket' | 'srt'): string => {
+    const subtitles = parseSubtitles(rawText, fromFormat);
     
-    // Convert to SRT format
-    let srtContent = '';
-    subtitles.forEach((subtitle, index) => {
-        const startTime = formatSRTTime(subtitle.time);
-        const endTime = formatSRTTime(subtitle.time + 3); // Default 3 seconds duration
-        
-        srtContent += `${index + 1}\n`;
-        srtContent += `${startTime} --> ${endTime}\n`;
-        srtContent += `${subtitle.text}\n\n`;
-    });
+    if (toFormat === 'bracket') {
+        // 轉換為 [00:00.00] 格式
+        return subtitles.map(subtitle => {
+            const minutes = Math.floor(subtitle.time / 60);
+            const seconds = Math.floor(subtitle.time % 60);
+            const centiseconds = Math.floor((subtitle.time % 1) * 100);
+            return `[${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}] ${subtitle.text}`;
+        }).join('\n');
+    } else if (toFormat === 'srt') {
+        // 轉換為 SRT 格式
+        let srtContent = '';
+        subtitles.forEach((subtitle, index) => {
+            const startTime = formatSRTTime(subtitle.time);
+            const endTime = formatSRTTime(subtitle.time + 3); // 預設3秒持續時間
+            
+            srtContent += `${index + 1}\n`;
+            srtContent += `${startTime} --> ${endTime}\n`;
+            srtContent += `${subtitle.text}\n\n`;
+        });
+        return srtContent;
+    }
     
-    return srtContent;
+    return rawText;
+};
+
+// 舊的 convertToSRT 函數，保持向後相容
+const convertToSRT = (rawText: string): string => {
+    return convertToFormat(rawText, 'bracket', 'srt');
 };
 
 // 格式化時間為SRT格式 (HH:MM:SS,mmm)
@@ -155,6 +186,8 @@ interface OptimizedControlsProps {
     onSubtitleColorChange: (color: string) => void;
     subtitleBgStyle: SubtitleBgStyle;
     onSubtitleBgStyleChange: (style: SubtitleBgStyle) => void;
+    subtitleFormat: SubtitleFormat;
+    onSubtitleFormatChange: (format: SubtitleFormat) => void;
     effectScale: number;
     onEffectScaleChange: (value: number) => void;
     effectOffsetX: number;
@@ -1003,14 +1036,30 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         badge="AI 功能"
                     >
                         <div className="space-y-6">
+                            {/* 字幕格式選擇 */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-300">字幕文字 (使用格式 [00:00.00] 或由 AI 生成)</label>
+                                <label className="text-sm font-medium text-gray-300">字幕格式</label>
+                                <SelectControl
+                                    value={props.subtitleFormat}
+                                    onChange={(value) => props.onSubtitleFormatChange(value as SubtitleFormat)}
+                                    options={[
+                                        { value: SubtitleFormat.BRACKET, label: '方括號格式 [00:00.00]' },
+                                        { value: SubtitleFormat.SRT, label: 'SRT格式 00:00:14,676 --> 00:00:19,347' }
+                                    ]}
+                                />
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-300">字幕文字</label>
                                 <textarea 
                                     value={props.subtitlesRawText}
                                     onChange={(e) => props.onSubtitlesRawTextChange(e.target.value)}
                                     rows={5}
                                     className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent font-mono text-sm"
-                                    placeholder="使用格式 [00:00.00] 歌詞文字，或點擊「AI 產生字幕」按鈕自動產生歌詞..."
+                                    placeholder={props.subtitleFormat === SubtitleFormat.BRACKET 
+                                        ? "使用格式 [00:00.00] 歌詞文字，或點擊「AI 產生字幕」按鈕自動產生歌詞..."
+                                        : "使用格式 00:00:14,676 --> 00:00:19,347 歌詞文字，或點擊「AI 產生字幕」按鈕自動產生歌詞..."
+                                    }
                                 />
                             </div>
                             
@@ -1053,8 +1102,10 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             return;
                                         }
                                         
-                                        // 將原始字幕文本轉換為標準SRT格式
-                                        const srtContent = convertToSRT(props.subtitlesRawText);
+                                        // 根據選擇的格式轉換字幕
+                                        const currentFormat = props.subtitleFormat === SubtitleFormat.BRACKET ? 'bracket' : 'srt';
+                                        const targetFormat = 'srt'; // 下載時統一轉換為 SRT 格式
+                                        const srtContent = convertToFormat(props.subtitlesRawText, currentFormat, targetFormat);
                                         const blob = new Blob([srtContent], { type: 'text/plain;charset=utf-8' });
                                         const url = URL.createObjectURL(blob);
                                         const a = document.createElement('a');

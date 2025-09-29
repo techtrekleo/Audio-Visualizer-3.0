@@ -17,7 +17,7 @@ import { UnifiedFooter, ModalProvider } from '../shared-components/dist';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
 import { useMediaRecorder } from './hooks/useMediaRecorder';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType } from './types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat } from './types';
 import { ICON_PATHS, COLOR_PALETTES, RESOLUTION_MAP } from './constants';
 
 function App() {
@@ -72,6 +72,7 @@ function App() {
     const [subtitleColor, setSubtitleColor] = useState<string>('#FFFFFF');
     const [subtitleBgStyle, setSubtitleBgStyle] = useState<SubtitleBgStyle>(SubtitleBgStyle.TRANSPARENT);
     const [subtitleDisplayMode, setSubtitleDisplayMode] = useState<SubtitleDisplayMode>(SubtitleDisplayMode.CLASSIC);
+    const [subtitleFormat, setSubtitleFormat] = useState<SubtitleFormat>(SubtitleFormat.BRACKET);
     
     // Lyrics Display State (測試中)
     const [showLyricsDisplay, setShowLyricsDisplay] = useState<boolean>(false);
@@ -124,24 +125,55 @@ function App() {
     
     useEffect(() => {
         const lines = subtitlesRawText.split('\n');
-        const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2})\]/;
         const newSubtitles: Subtitle[] = [];
 
-        lines.forEach(line => {
-            const match = line.match(timeRegex);
-            if (match) {
-                const minutes = parseInt(match[1], 10);
-                const seconds = parseInt(match[2], 10);
-                const centiseconds = parseInt(match[3], 10);
-                const time = minutes * 60 + seconds + centiseconds / 100;
-                const text = line.replace(timeRegex, '').trim();
-                if (text) {
-                    newSubtitles.push({ time, text });
+        if (subtitleFormat === SubtitleFormat.BRACKET) {
+            // 解析 [00:00.00] 格式
+            const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2})\]/;
+            lines.forEach(line => {
+                const match = line.match(timeRegex);
+                if (match) {
+                    const minutes = parseInt(match[1], 10);
+                    const seconds = parseInt(match[2], 10);
+                    const centiseconds = parseInt(match[3], 10);
+                    const time = minutes * 60 + seconds + centiseconds / 100;
+                    const text = line.replace(timeRegex, '').trim();
+                    if (text) {
+                        newSubtitles.push({ time, text });
+                    }
+                }
+            });
+        } else if (subtitleFormat === SubtitleFormat.SRT) {
+            // 解析 SRT 格式 00:00:14,676 --> 00:00:19,347
+            const srtTimeRegex = /^(\d{1,2}):(\d{1,2}):(\d{1,2}),(\d{1,3})\s*-->\s*(\d{1,2}):(\d{1,2}):(\d{1,2}),(\d{1,3})$/;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const match = line.match(srtTimeRegex);
+                if (match) {
+                    // 使用開始時間
+                    const hours = parseInt(match[1], 10);
+                    const minutes = parseInt(match[2], 10);
+                    const seconds = parseInt(match[3], 10);
+                    const milliseconds = parseInt(match[4], 10);
+                    const time = hours * 3600 + minutes * 60 + seconds + milliseconds / 1000;
+                    
+                    // 下一行是文字
+                    if (i + 1 < lines.length) {
+                        const text = lines[i + 1].trim();
+                        if (text) {
+                            newSubtitles.push({ time, text });
+                            i++; // 跳過文字行
+                        }
+                    }
                 }
             }
-        });
+        }
+        
         setSubtitles(newSubtitles.sort((a, b) => a.time - b.time));
-    }, [subtitlesRawText]);
+    }, [subtitlesRawText, subtitleFormat]);
 
     // 背景圖片輪播邏輯
     useEffect(() => {
@@ -769,6 +801,8 @@ function App() {
                             onSubtitleColorChange={setSubtitleColor}
                             subtitleBgStyle={subtitleBgStyle}
                             onSubtitleBgStyleChange={setSubtitleBgStyle}
+                            subtitleFormat={subtitleFormat}
+                            onSubtitleFormatChange={setSubtitleFormat}
                             effectScale={effectScale}
                             onEffectScaleChange={setEffectScale}
                             effectOffsetX={effectOffsetX}
