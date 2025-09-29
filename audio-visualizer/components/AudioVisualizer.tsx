@@ -18,8 +18,8 @@ const FONT_MAP: Record<FontType, string> = {
     [FontType.SOURCE_HAN_SANS]: 'Source Han Sans TC',
     [FontType.CW_TEX_KAI]: 'cwTeXKai',
     [FontType.KLEE_ONE]: 'Klee One',
-    [FontType.QINGSONG_1]: 'JasonWriting1',
-    [FontType.QINGSONG_2]: 'JasonWriting2',
+    [FontType.QINGSONG_1]: 'Jason Handwriting 1',
+    [FontType.QINGSONG_2]: 'Jason Handwriting 2',
 };
 
 interface AudioVisualizerProps {
@@ -4602,19 +4602,19 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             
             // 訂閱文字（中文）- 清松手寫體1，增加行距
             ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-            ctx.font = 'bold 36px "JasonWriting1", "Noto Sans TC", sans-serif';
+            ctx.font = 'bold 36px "Jason Handwriting 1", "Noto Sans TC", sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('訂閱', ctaX, ctaY - 35);
             
             // 訂閱文字（英文）- 清松手寫體1，增加行距
             ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-            ctx.font = 'bold 28px "JasonWriting1", "Noto Sans TC", sans-serif';
+            ctx.font = 'bold 28px "Jason Handwriting 1", "Noto Sans TC", sans-serif';
             ctx.fillText('SUBSCRIBE', ctaX, ctaY + 5);
             
             // 頻道名稱，清松手寫體1，增加行距
             ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-            ctx.font = 'bold 22px "JasonWriting1", "Noto Sans TC", sans-serif';
+            ctx.font = 'bold 22px "Jason Handwriting 1", "Noto Sans TC", sans-serif';
             ctx.fillText(channelName, ctaX, ctaY + 50);
             
             ctx.restore();

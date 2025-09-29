@@ -348,8 +348,8 @@ const Controls: React.FC<ControlsProps> = ({
         [FontType.SOURCE_HAN_SANS]: 'Source Han Sans TC',
         [FontType.CW_TEX_KAI]: 'cwTeXKai',
         [FontType.KLEE_ONE]: 'Klee One',
-        [FontType.QINGSONG_1]: 'JasonWriting1',
-        [FontType.QINGSONG_2]: 'JasonWriting2',
+        [FontType.QINGSONG_1]: 'Jason Handwriting 1',
+        [FontType.QINGSONG_2]: 'Jason Handwriting 2',
     };
 
     const handleBackgroundImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
