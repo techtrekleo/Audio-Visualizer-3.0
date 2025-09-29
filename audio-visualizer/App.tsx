@@ -139,7 +139,9 @@ function App() {
                     const time = minutes * 60 + seconds + centiseconds / 100;
                     const text = line.replace(timeRegex, '').trim();
                     if (text) {
-                        newSubtitles.push({ time, text });
+                        // 預設顯示3秒
+                        const endTime = time + 3;
+                        newSubtitles.push({ time, text, endTime });
                     }
                 }
             });
@@ -153,18 +155,25 @@ function App() {
                 
                 const match = line.match(srtTimeRegex);
                 if (match) {
-                    // 使用開始時間
-                    const hours = parseInt(match[1], 10);
-                    const minutes = parseInt(match[2], 10);
-                    const seconds = parseInt(match[3], 10);
-                    const milliseconds = parseInt(match[4], 10);
-                    const time = hours * 3600 + minutes * 60 + seconds + milliseconds / 1000;
+                    // 開始時間
+                    const startHours = parseInt(match[1], 10);
+                    const startMinutes = parseInt(match[2], 10);
+                    const startSeconds = parseInt(match[3], 10);
+                    const startMilliseconds = parseInt(match[4], 10);
+                    const time = startHours * 3600 + startMinutes * 60 + startSeconds + startMilliseconds / 1000;
+                    
+                    // 結束時間
+                    const endHours = parseInt(match[5], 10);
+                    const endMinutes = parseInt(match[6], 10);
+                    const endSeconds = parseInt(match[7], 10);
+                    const endMilliseconds = parseInt(match[8], 10);
+                    const endTime = endHours * 3600 + endMinutes * 60 + endSeconds + endMilliseconds / 1000;
                     
                     // 下一行是文字
                     if (i + 1 < lines.length) {
                         const text = lines[i + 1].trim();
                         if (text) {
-                            newSubtitles.push({ time, text });
+                            newSubtitles.push({ time, text, endTime });
                             i++; // 跳過文字行
                         }
                     }

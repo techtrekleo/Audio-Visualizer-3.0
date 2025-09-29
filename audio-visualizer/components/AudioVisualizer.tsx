@@ -3336,9 +3336,13 @@ const drawWordByWordSubtitles = (
     // 找到當前時間對應的字幕
     let currentSubtitle: Subtitle | undefined;
     for (let i = subtitles.length - 1; i >= 0; i--) {
-        if (currentTime >= subtitles[i].time) {
-            currentSubtitle = subtitles[i];
-            break;
+        const subtitle = subtitles[i];
+        if (currentTime >= subtitle.time) {
+            // 檢查結束時間
+            if (!subtitle.endTime || currentTime <= subtitle.endTime) {
+                currentSubtitle = subtitle;
+                break;
+            }
         }
     }
     
@@ -3455,8 +3459,12 @@ const drawLyricsDisplay = (
     // 找到當前時間對應的歌詞
     let currentIndex = 0;
     for (let i = 0; i < subtitles.length; i++) {
-        if (currentTime >= subtitles[i].time) {
-            currentIndex = i;
+        const subtitle = subtitles[i];
+        if (currentTime >= subtitle.time) {
+            // 檢查結束時間
+            if (!subtitle.endTime || currentTime <= subtitle.endTime) {
+                currentIndex = i;
+            }
         } else {
             break;
         }
@@ -4169,9 +4177,13 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         let currentSubtitle: Subtitle | undefined = undefined;
         if (showSubtitles && subtitles.length > 0) {
             for (let i = subtitles.length - 1; i >= 0; i--) {
-                if (currentTime >= subtitles[i].time) {
-                    currentSubtitle = subtitles[i];
-                    break;
+                const subtitle = subtitles[i];
+                if (currentTime >= subtitle.time) {
+                    // 檢查結束時間
+                    if (!subtitle.endTime || currentTime <= subtitle.endTime) {
+                        currentSubtitle = subtitle;
+                        break;
+                    }
                 }
             }
         }

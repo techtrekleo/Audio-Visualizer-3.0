@@ -8,11 +8,11 @@ import SettingsManagerComponent from './SettingsManagerComponent';
 
 // 將原始字幕文本轉換為標準SRT格式
 // 解析字幕文字，支援兩種格式
-const parseSubtitles = (rawText: string, format: 'bracket' | 'srt'): Array<{ time: number; text: string }> => {
+const parseSubtitles = (rawText: string, format: 'bracket' | 'srt'): Array<{ time: number; text: string; endTime?: number }> => {
     if (!rawText.trim()) return [];
     
     const lines = rawText.trim().split('\n');
-    const subtitles: Array<{ time: number; text: string }> = [];
+    const subtitles: Array<{ time: number; text: string; endTime?: number }> = [];
     
     if (format === 'bracket') {
         // 解析 [00:00.00] 格式
@@ -31,7 +31,9 @@ const parseSubtitles = (rawText: string, format: 'bracket' | 'srt'): Array<{ tim
                 const text = line.replace(timeRegex, '').trim();
                 
                 if (text) {
-                    subtitles.push({ time, text });
+                    // 預設顯示3秒
+                    const endTime = time + 3;
+                    subtitles.push({ time, text, endTime });
                 }
             }
         }
@@ -45,18 +47,25 @@ const parseSubtitles = (rawText: string, format: 'bracket' | 'srt'): Array<{ tim
             
             const match = line.match(srtTimeRegex);
             if (match) {
-                // 使用開始時間
-                const hours = parseInt(match[1], 10);
-                const minutes = parseInt(match[2], 10);
-                const seconds = parseInt(match[3], 10);
-                const milliseconds = parseInt(match[4], 10);
-                const time = hours * 3600 + minutes * 60 + seconds + milliseconds / 1000;
+                // 開始時間
+                const startHours = parseInt(match[1], 10);
+                const startMinutes = parseInt(match[2], 10);
+                const startSeconds = parseInt(match[3], 10);
+                const startMilliseconds = parseInt(match[4], 10);
+                const time = startHours * 3600 + startMinutes * 60 + startSeconds + startMilliseconds / 1000;
+                
+                // 結束時間
+                const endHours = parseInt(match[5], 10);
+                const endMinutes = parseInt(match[6], 10);
+                const endSeconds = parseInt(match[7], 10);
+                const endMilliseconds = parseInt(match[8], 10);
+                const endTime = endHours * 3600 + endMinutes * 60 + endSeconds + endMilliseconds / 1000;
                 
                 // 下一行是文字
                 if (i + 1 < lines.length) {
                     const text = lines[i + 1].trim();
                     if (text) {
-                        subtitles.push({ time, text });
+                        subtitles.push({ time, text, endTime });
                         i++; // 跳過文字行
                     }
                 }

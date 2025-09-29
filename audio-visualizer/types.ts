@@ -142,6 +142,7 @@ export enum TransitionType {
 export type Subtitle = {
     time: number;
     text: string;
+    endTime?: number; // 結束時間（可選）
 };
 
 export interface AudioVisualizerProps {
