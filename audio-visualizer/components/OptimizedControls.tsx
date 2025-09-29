@@ -541,8 +541,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         [FontType.SOURCE_HAN_SANS]: 'Source Han Sans TC',
         [FontType.CW_TEX_KAI]: 'cwTeXKai',
         [FontType.KLEE_ONE]: 'Klee One',
-        [FontType.QINGSONG_1]: '清松手寫體1-Regular',
-        [FontType.QINGSONG_2]: '清松手寫體2-Regular',
+        [FontType.QINGSONG_1]: 'JasonWriting1',
+        [FontType.QINGSONG_2]: 'JasonWriting2',
     };
 
     const handleBackgroundImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
