@@ -4189,7 +4189,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             // 捲軸歌詞模式
             const dragOffset = dragState.current.draggedElement === 'lyrics' ? dragState.current.dragOffset : (propsRef.current.lyricsDragOffset || { x: 0, y: 0 });
             drawLyricsDisplay(ctx, width, height, subtitles, currentTime, { 
-                fontFamily: subtitleFontFamily, 
+                fontFamily: propsRef.current.lyricsFontFamily, 
                 bgStyle: subtitleBgStyle,
                 fontSize: propsRef.current.lyricsFontSize,
                 positionX: propsRef.current.lyricsPositionX + (dragOffset.x / width) * 100,
