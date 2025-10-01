@@ -139,10 +139,20 @@ function App() {
                     const time = minutes * 60 + seconds + centiseconds / 100;
                     const text = line.replace(timeRegex, '').trim();
                     if (text) {
-                        // 預設顯示3秒
-                        const endTime = time + 3;
-                        newSubtitles.push({ time, text, endTime });
+                        // 先不設定 endTime，稍後統一計算
+                        newSubtitles.push({ time, text });
                     }
+                }
+            });
+            
+            // 為方括號格式計算 endTime：使用下一句的開始時間，或預設 5 秒
+            newSubtitles.forEach((subtitle, index) => {
+                if (index < newSubtitles.length - 1) {
+                    // 不是最後一句：endTime 設為下一句的開始時間
+                    subtitle.endTime = newSubtitles[index + 1].time;
+                } else {
+                    // 最後一句：預設顯示 5 秒
+                    subtitle.endTime = subtitle.time + 5;
                 }
             });
         } else if (subtitleFormat === SubtitleFormat.SRT) {
