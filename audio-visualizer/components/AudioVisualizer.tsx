@@ -3456,16 +3456,26 @@ const drawLyricsDisplay = (
     
     // 找到當前時間對應的歌詞
     let currentIndex = 0;
+    let lastValidIndex = 0;
+    
     for (let i = 0; i < subtitles.length; i++) {
         const subtitle = subtitles[i];
-        if (currentTime >= subtitle.time) {
-            // 檢查結束時間
-            if (!subtitle.endTime || currentTime <= subtitle.endTime) {
-                currentIndex = i;
-            }
-        } else {
+        
+        // 如果當前時間還沒到這句歌詞，停止搜尋
+        if (currentTime < subtitle.time) {
             break;
         }
+        
+        // 記錄這是最後一句已經開始的歌詞
+        lastValidIndex = i;
+        
+        // 如果這句歌詞還在顯示時間內（沒有結束時間或還沒過結束時間）
+        if (!subtitle.endTime || currentTime <= subtitle.endTime) {
+            currentIndex = i;
+            break;
+        }
+        // 如果已經過了結束時間，繼續找下一句，但保留這個索引作為備用
+        currentIndex = i;
     }
     
     // 獲取要顯示的10行歌詞（當前行前後各5行）
