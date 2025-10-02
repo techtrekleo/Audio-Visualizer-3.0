@@ -145,14 +145,14 @@ function App() {
                 }
             });
             
-            // 為方括號格式計算 endTime：使用下一句的開始時間，或預設 5 秒
+            // 為方括號格式計算 endTime：持續到下一句開始前，或預設 10 秒
             newSubtitles.forEach((subtitle, index) => {
                 if (index < newSubtitles.length - 1) {
-                    // 不是最後一句：endTime 設為下一句的開始時間
+                    // 不是最後一句：endTime 設為下一句的開始時間（保持到下一句出現前）
                     subtitle.endTime = newSubtitles[index + 1].time;
                 } else {
-                    // 最後一句：預設顯示 5 秒
-                    subtitle.endTime = subtitle.time + 5;
+                    // 最後一句：預設顯示 10 秒
+                    subtitle.endTime = subtitle.time + 10;
                 }
             });
         } else if (subtitleFormat === SubtitleFormat.SRT) {
