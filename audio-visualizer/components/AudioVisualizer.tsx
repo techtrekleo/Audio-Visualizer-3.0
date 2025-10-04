@@ -2933,7 +2933,7 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         const maxFontSize = 100;
         const clampedFontSize = Math.min(cardFontSize, maxFontSize);
         const heightMultiplier = Math.max(1, clampedFontSize / 24); // 字體越大，高度越大
-        const playerHeight = Math.min(baseHeight * heightMultiplier, height * 0.3); // 最大不超過30%高度
+        let playerHeight = Math.min(baseHeight * heightMultiplier, height * 0.3); // 最大不超過30%高度
         const playerX = centerX - playerWidth / 2;
         // 動態調整Y位置，字體越大越往上移
         const baseY = height * 0.75;
