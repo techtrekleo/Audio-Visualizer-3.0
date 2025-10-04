@@ -2850,49 +2850,85 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
     ctx.arc(semicircleCenterX, semicircleCenterY, semicircleRadius, -Math.PI/2, Math.PI/2);
     ctx.stroke();
     
-    // 3. 左側聲波橫條 (從正方形左邊向左延伸)
-    const numBars = 20;
-    const barThickness = 8; // 條的厚度（加粗）
-    const maxBarLength = frameSize * 0.8; // 最大條長度
+    // 3. 左側聲波橫條 (從正方形左邊向左延伸) - 新樣式：寬線條、圓角、無空隙
+    const numBars = 18; // 減少條數，讓每條更寬
+    const barThickness = Math.max(12, frameSize / numBars * 0.8); // 動態調整厚度，確保無空隙
+    const maxBarLength = frameSize * 0.9; // 最大條長度
     
     // 聲波條的起始位置（正方形左邊）
     const barStartX = frameX;
     const startY = frameY + frameSize; // 從正方形左下角開始
     const endY = frameY; // 到正方形左上角結束
     
+    // 計算每條的垂直間距，確保無空隙
+    const totalBarHeight = frameSize;
+    const barSpacing = totalBarHeight / numBars;
+    
     for (let i = 0; i < numBars; i++) {
         const dataIndex = Math.floor((i / numBars) * dataArray.length);
         const amplitude = dataArray[dataIndex] / 255;
-        const barLength = Math.pow(amplitude, 1.5) * maxBarLength * sensitivity;
+        const barLength = Math.pow(amplitude, 1.2) * maxBarLength * sensitivity; // 調整振幅曲線
         
-        if (barLength < 2) continue;
+        if (barLength < 3) continue; // 最小長度
         
-        // 計算條的垂直位置（沿著正方形左邊分布）
-        const progress = i / (numBars - 1);
-        const barY = startY - progress * frameSize; // 從下到上
+        // 計算條的垂直位置（確保無空隙）
+        const barY = startY - (i * barSpacing + barSpacing / 2); // 居中對齊
         
-        // 動態顏色
-        const hue = (i / numBars) * 60 + 200; // 藍色到青色範圍
-        const saturation = 80 + amplitude * 20;
-        const lightness = 50 + amplitude * 30;
-        const alpha = 0.7 + amplitude * 0.3;
+        // 使用快速設置的顏色主題
+        let color;
+        if (colors.name === ColorPaletteType.WHITE) {
+            const lightness = 85 + (amplitude * 15);
+            color = `hsla(220, 10%, ${lightness}%, ${0.8 + amplitude * 0.2})`;
+        } else if (colors.name === ColorPaletteType.RAINBOW) {
+            const hue = (i / numBars) * 360; // 全色譜
+            const saturation = 85 + amplitude * 15;
+            const lightness = 55 + amplitude * 25;
+            color = `hsla(${hue}, ${saturation}%, ${lightness}%, ${0.8 + amplitude * 0.2})`;
+        } else {
+            // 使用主題的色調範圍
+            const [startHue, endHue] = colors.hueRange;
+            const hueRangeSpan = endHue - startHue;
+            const hue = startHue + ((i / numBars) * hueRangeSpan);
+            const saturation = 85 + amplitude * 15;
+            const lightness = 55 + amplitude * 25;
+            color = `hsla(${hue}, ${saturation}%, ${lightness}%, ${0.8 + amplitude * 0.2})`;
+        }
         
-        ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
+        ctx.fillStyle = color;
         
         // 繪製橫向條（向左延伸）
         const barX = barStartX - barLength; // 從方框左邊向左延伸
         
-        // 繪製圓角矩形條
-        const radius = Math.min(barThickness * 0.3, barLength * 0.1);
+        // 繪製圓角矩形條 - 更大的圓角
+        const radius = Math.min(barThickness * 0.4, 8); // 增加圓角大小
         createRoundedRectPath(ctx, barX, barY - barThickness / 2, barLength, barThickness, radius);
         ctx.fill();
         
-        // 發光效果
-        if (isBeat && amplitude > 0.7) {
-            ctx.shadowColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-            ctx.shadowBlur = 15;
+        // 發光效果 - 使用主題顏色
+        if (amplitude > 0.5) {
+            // 提取色調用於發光效果
+            const hueMatch = color.match(/hsl\(([^,]+)/);
+            const hue = hueMatch ? parseFloat(hueMatch[1]) : 220;
+            const saturation = 85 + amplitude * 15;
+            const lightness = 55 + amplitude * 25;
+            
+            ctx.shadowColor = `hsla(${hue}, ${saturation}%, ${lightness + 20}%, 0.6)`;
+            ctx.shadowBlur = Math.max(5, amplitude * 20);
             ctx.fill();
             ctx.shadowBlur = 0;
+        }
+        
+        // 高振幅時的特殊效果
+        if (isBeat && amplitude > 0.8) {
+            // 使用更亮的顏色
+            const hueMatch = color.match(/hsl\(([^,]+)/);
+            const hue = hueMatch ? parseFloat(hueMatch[1]) : 220;
+            const saturation = 85 + amplitude * 15;
+            const lightness = 55 + amplitude * 25;
+            
+            ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness + 30}%, 0.9)`;
+            createRoundedRectPath(ctx, barX, barY - barThickness / 2, barLength, barThickness, radius);
+            ctx.fill();
         }
     }
     
