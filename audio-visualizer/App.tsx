@@ -17,7 +17,7 @@ import { UnifiedFooter, ModalProvider } from '../shared-components/dist';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
 import { useMediaRecorder } from './hooks/useMediaRecorder';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat } from './types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, FilterEffectType, ControlCardStyle } from './types';
 import { ICON_PATHS, COLOR_PALETTES, RESOLUTION_MAP } from './constants';
 
 function App() {
@@ -113,6 +113,23 @@ function App() {
     const [zCustomScale, setZCustomScale] = useState<number>(1.0); // Z總訂製款大小
     const [zCustomPosition, setZCustomPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 }); // Z總訂製款位置
     
+    // 全畫面濾鏡特效狀態
+    const [filterEffectType, setFilterEffectType] = useState<FilterEffectType>(FilterEffectType.SNOW); // 濾鏡特效類型
+    const [filterEffectIntensity, setFilterEffectIntensity] = useState<number>(0.5); // 濾鏡特效強度 (0-1)
+    const [filterEffectOpacity, setFilterEffectOpacity] = useState<number>(0.6); // 濾鏡特效透明度 (0-1)
+    const [filterEffectSpeed, setFilterEffectSpeed] = useState<number>(1.0); // 濾鏡特效速度 (0.5-2)
+    const [filterEffectEnabled, setFilterEffectEnabled] = useState<boolean>(false); // 濾鏡特效開關
+    
+    // 可夜訂製版控制卡狀態
+    const [controlCardEnabled, setControlCardEnabled] = useState<boolean>(true); // 控制卡開關
+    const [controlCardFontSize, setControlCardFontSize] = useState<number>(24); // 控制卡字體大小 (24-50px)
+    const [controlCardStyle, setControlCardStyle] = useState<ControlCardStyle>(ControlCardStyle.FILLED); // 控制卡樣式
+    const [controlCardColor, setControlCardColor] = useState<string>('#ffffff'); // 控制卡顏色
+    const [controlCardBackgroundColor, setControlCardBackgroundColor] = useState<string>('rgba(100, 120, 100, 0.9)'); // 控制卡背景顏色
+    const [songNameList, setSongNameList] = useState<string[]>([]); // 歌名列表
+    const [currentSongIndex, setCurrentSongIndex] = useState<number>(0); // 當前歌曲索引
+    const [autoChangeSong, setAutoChangeSong] = useState<boolean>(false); // 自動切換歌曲
+    
     const audioRef = useRef<HTMLAudioElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     
@@ -193,6 +210,65 @@ function App() {
         
         setSubtitles(newSubtitles.sort((a, b) => a.time - b.time));
     }, [subtitlesRawText, subtitleFormat]);
+
+    // 基於時間戳的自動切換歌曲邏輯
+    useEffect(() => {
+        if (!autoChangeSong || !audioRef.current || songNameList.length === 0) return;
+
+        const audio = audioRef.current;
+        let lastSongIndex = -1; // 記錄上次切換的歌名索引
+
+        const handleTimeUpdate = () => {
+            const currentTime = audio.currentTime;
+            
+            // 如果使用時間戳模式，從字幕中提取時間和歌名
+            if (subtitles.length > 0) {
+                // 找到當前時間對應的字幕
+                let currentSubtitleIndex = -1;
+                for (let i = 0; i < subtitles.length; i++) {
+                    const subtitle = subtitles[i];
+                    if (currentTime >= subtitle.time && currentTime < (subtitle.endTime || subtitle.time + 5)) {
+                        currentSubtitleIndex = i;
+                        break;
+                    }
+                }
+                
+                // 如果找到了對應的字幕且與上次不同，則切換歌名
+                if (currentSubtitleIndex !== -1 && currentSubtitleIndex !== lastSongIndex) {
+                    lastSongIndex = currentSubtitleIndex;
+                    setGeometricSongName(subtitles[currentSubtitleIndex].text);
+                }
+            } else {
+                // 備用邏輯：當沒有字幕時，使用原來的95%切換邏輯
+                const duration = audio.duration;
+                if (currentTime >= duration * 0.95) {
+                    const nextIndex = (currentSongIndex + 1) % songNameList.length;
+                    setCurrentSongIndex(nextIndex);
+                    setGeometricSongName(songNameList[nextIndex]);
+                }
+            }
+        };
+
+        audio.addEventListener('timeupdate', handleTimeUpdate);
+        return () => audio.removeEventListener('timeupdate', handleTimeUpdate);
+    }, [autoChangeSong, subtitles, currentSongIndex, songNameList]);
+
+    // 初始化歌名列表（從字幕中提取）
+    useEffect(() => {
+        if (subtitles.length > 0) {
+            const songNames = subtitles
+                .map(subtitle => subtitle.text)
+                .filter(text => text.length > 0)
+                .slice(0, 10); // 最多取前10個作為歌名列表
+            
+            if (songNames.length > 0) {
+                setSongNameList(songNames);
+                if (songNames.length > currentSongIndex) {
+                    setGeometricSongName(songNames[currentSongIndex]);
+                }
+            }
+        }
+    }, [subtitles]);
 
     // 背景圖片輪播邏輯
     useEffect(() => {
@@ -730,6 +806,18 @@ function App() {
                                     geometricSemicircleImage={geometricSemicircleImage}
                                     geometricSongName={geometricSongName}
                                     geometricArtistName={geometricArtistName}
+                                    // Filter Effects props
+                                    filterEffectType={filterEffectType}
+                                    filterEffectIntensity={filterEffectIntensity}
+                                    filterEffectOpacity={filterEffectOpacity}
+                                    filterEffectSpeed={filterEffectSpeed}
+                                    filterEffectEnabled={filterEffectEnabled}
+                                    // Control Card props
+                                    controlCardEnabled={controlCardEnabled}
+                                    controlCardFontSize={controlCardFontSize}
+                                    controlCardStyle={controlCardStyle}
+                                    controlCardColor={controlCardColor}
+                                    controlCardBackgroundColor={controlCardBackgroundColor}
                                 />
                             </div>
                         </div>
@@ -874,6 +962,32 @@ function App() {
                             onZCustomScaleChange={setZCustomScale}
                             zCustomPosition={zCustomPosition}
                             onZCustomPositionUpdate={setZCustomPosition}
+                            // Filter Effects props
+                            filterEffectType={filterEffectType}
+                            onFilterEffectTypeChange={setFilterEffectType}
+                            filterEffectIntensity={filterEffectIntensity}
+                            onFilterEffectIntensityChange={setFilterEffectIntensity}
+                            filterEffectOpacity={filterEffectOpacity}
+                            onFilterEffectOpacityChange={setFilterEffectOpacity}
+                            filterEffectSpeed={filterEffectSpeed}
+                            onFilterEffectSpeedChange={setFilterEffectSpeed}
+                            filterEffectEnabled={filterEffectEnabled}
+                            onFilterEffectEnabledChange={setFilterEffectEnabled}
+                            // Control Card props
+                            controlCardEnabled={controlCardEnabled}
+                            onControlCardEnabledChange={setControlCardEnabled}
+                            controlCardFontSize={controlCardFontSize}
+                            onControlCardFontSizeChange={setControlCardFontSize}
+                            controlCardStyle={controlCardStyle}
+                            onControlCardStyleChange={setControlCardStyle}
+                            controlCardColor={controlCardColor}
+                            onControlCardColorChange={setControlCardColor}
+                            controlCardBackgroundColor={controlCardBackgroundColor}
+                            onControlCardBackgroundColorChange={setControlCardBackgroundColor}
+                            songNameList={songNameList}
+                            onSongNameListChange={setSongNameList}
+                            autoChangeSong={autoChangeSong}
+                            onAutoChangeSongChange={setAutoChangeSong}
                         />
                     </div>
             </main>

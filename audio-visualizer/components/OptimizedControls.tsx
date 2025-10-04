@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat } from '../types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, FilterEffectType, ControlCardStyle } from '../types';
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
 import CollapsibleControlSection from './CollapsibleControlSection';
@@ -256,6 +256,32 @@ interface OptimizedControlsProps {
     onZCustomScaleChange?: (scale: number) => void;
     zCustomPosition?: { x: number; y: number };
     onZCustomPositionUpdate?: (position: { x: number; y: number }) => void;
+    // Filter Effects props
+    filterEffectType?: FilterEffectType;
+    onFilterEffectTypeChange?: (type: FilterEffectType) => void;
+    filterEffectIntensity?: number;
+    onFilterEffectIntensityChange?: (intensity: number) => void;
+    filterEffectOpacity?: number;
+    onFilterEffectOpacityChange?: (opacity: number) => void;
+    filterEffectSpeed?: number;
+    onFilterEffectSpeedChange?: (speed: number) => void;
+    filterEffectEnabled?: boolean;
+    onFilterEffectEnabledChange?: (enabled: boolean) => void;
+    // Control Card props
+    controlCardEnabled?: boolean;
+    onControlCardEnabledChange?: (enabled: boolean) => void;
+    controlCardFontSize?: number;
+    onControlCardFontSizeChange?: (size: number) => void;
+    controlCardStyle?: ControlCardStyle;
+    onControlCardStyleChange?: (style: ControlCardStyle) => void;
+    controlCardColor?: string;
+    onControlCardColorChange?: (color: string) => void;
+    controlCardBackgroundColor?: string;
+    onControlCardBackgroundColorChange?: (color: string) => void;
+    songNameList?: string[];
+    onSongNameListChange?: (list: string[]) => void;
+    autoChangeSong?: boolean;
+    onAutoChangeSongChange?: (enabled: boolean) => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
@@ -1428,7 +1454,145 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         </div>
                                     )}
                                 </div>
-                                
+
+                                {/* 控制卡設置 */}
+                                <div className="space-y-4 border-t border-gray-600 pt-4">
+                                    <h4 className="text-sm font-medium text-cyan-400">控制卡設置</h4>
+                                    
+                                    {/* 控制卡開關 */}
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-gray-300">
+                                            顯示控制卡
+                                        </label>
+                                        <button
+                                            onClick={() => props.onControlCardEnabledChange?.(!props.controlCardEnabled)}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                                props.controlCardEnabled ? 'bg-cyan-500' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <span
+                                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                                    props.controlCardEnabled ? 'translate-x-6' : 'translate-x-1'
+                                                }`}
+                                            />
+                                        </button>
+                                    </div>
+
+                                    {props.controlCardEnabled && (
+                                        <>
+                                            {/* 字體大小 */}
+                                            <SliderControl
+                                                label="字體大小"
+                                                value={props.controlCardFontSize || 24}
+                                                onChange={props.onControlCardFontSizeChange || (() => {})}
+                                                min={24}
+                                                max={100}
+                                                step={1}
+                                                unit="px"
+                                            />
+
+                                            {/* 控制卡樣式 */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                                    控制卡樣式
+                                                </label>
+                                                <select
+                                                    value={props.controlCardStyle}
+                                                    onChange={(e) => props.onControlCardStyleChange?.(e.target.value as ControlCardStyle)}
+                                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                                >
+                                                    <option value={ControlCardStyle.FILLED}>🎨 填充模式</option>
+                                                    <option value={ControlCardStyle.OUTLINE}>📦 外框模式</option>
+                                                    <option value={ControlCardStyle.TRANSPARENT}>👻 透明模式</option>
+                                                </select>
+                                            </div>
+
+                                            {/* 文字顏色 */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                                    文字顏色
+                                                </label>
+                                                <div className="flex space-x-2">
+                                                    <input
+                                                        type="color"
+                                                        value={props.controlCardColor || '#ffffff'}
+                                                        onChange={(e) => props.onControlCardColorChange?.(e.target.value)}
+                                                        className="w-12 h-8 rounded border border-gray-600 cursor-pointer"
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        value={props.controlCardColor || '#ffffff'}
+                                                        onChange={(e) => props.onControlCardColorChange?.(e.target.value)}
+                                                        className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
+                                                        placeholder="#ffffff"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* 背景顏色 (僅填充模式) */}
+                                            {props.controlCardStyle === ControlCardStyle.FILLED && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                                        背景顏色
+                                                    </label>
+                                                    <div className="flex space-x-2">
+                                                        <input
+                                                            type="color"
+                                                            value={props.controlCardBackgroundColor || 'rgba(100, 120, 100, 0.9)'}
+                                                            onChange={(e) => props.onControlCardBackgroundColorChange?.(e.target.value)}
+                                                            className="w-12 h-8 rounded border border-gray-600 cursor-pointer"
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            value={props.controlCardBackgroundColor || 'rgba(100, 120, 100, 0.9)'}
+                                                            onChange={(e) => props.onControlCardBackgroundColorChange?.(e.target.value)}
+                                                            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
+                                                            placeholder="rgba(100, 120, 100, 0.9)"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* 自動切換歌曲 */}
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-sm font-medium text-gray-300">
+                                                    自動切換歌曲
+                                                </label>
+                                                <button
+                                                    onClick={() => props.onAutoChangeSongChange?.(!props.autoChangeSong)}
+                                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                                        props.autoChangeSong ? 'bg-cyan-500' : 'bg-gray-600'
+                                                    }`}
+                                                >
+                                                    <span
+                                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                                            props.autoChangeSong ? 'translate-x-6' : 'translate-x-1'
+                                                        }`}
+                                                    />
+                                                </button>
+                                            </div>
+
+                                            {/* 歌名列表 */}
+                                            {props.songNameList && props.songNameList.length > 0 && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                                        歌名列表 ({props.songNameList.length} 首)
+                                                    </label>
+                                                    <div className="bg-gray-800 rounded-lg p-3 max-h-32 overflow-y-auto">
+                                                        {props.songNameList.map((song, index) => (
+                                                            <div key={index} className="text-xs text-gray-300 py-1">
+                                                                {index + 1}. {song}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <p className="text-xs text-gray-400 mt-1">
+                                                        歌名會從字幕中自動提取，播放到 95% 時自動切換到下一首
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
 
                             </div>
                         </CollapsibleControlSection>
@@ -1543,6 +1707,95 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             currentSettings={getCurrentSettings()}
                         />
                     </CollapsibleControlSection>
+
+                    {/* 全畫面濾鏡特效控制 */}
+                    <CollapsibleControlSection
+                        title="全畫面濾鏡特效"
+                        icon="✨"
+                        priority="medium"
+                        defaultExpanded={false}
+                        badge={props.filterEffectEnabled ? "開啟" : "關閉"}
+                    >
+                        <div className="space-y-4">
+                            {/* 濾鏡特效開關 */}
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-medium text-gray-300">
+                                    啟用濾鏡特效
+                                </label>
+                                <button
+                                    onClick={() => props.onFilterEffectEnabledChange?.(!props.filterEffectEnabled)}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                        props.filterEffectEnabled ? 'bg-cyan-500' : 'bg-gray-600'
+                                    }`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                            props.filterEffectEnabled ? 'translate-x-6' : 'translate-x-1'
+                                        }`}
+                                    />
+                                </button>
+                            </div>
+
+                            {props.filterEffectEnabled && (
+                                <>
+                                    {/* 濾鏡特效類型選擇 */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            特效類型
+                                        </label>
+                                        <select
+                                            value={props.filterEffectType}
+                                            onChange={(e) => props.onFilterEffectTypeChange?.(e.target.value as FilterEffectType)}
+                                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                        >
+                                            <option value={FilterEffectType.SNOW}>❄️ 雪花飄落</option>
+                                            <option value={FilterEffectType.PARTICLES}>✨ 光點飄落</option>
+                                            <option value={FilterEffectType.STARS}>⭐ 星空閃爍</option>
+                                            <option value={FilterEffectType.RAIN}>🌧️ 雨滴效果</option>
+                                            <option value={FilterEffectType.CHERRY_BLOSSOM}>🌸 櫻花飄落</option>
+                                        </select>
+                                    </div>
+
+                                    {/* 濾鏡特效強度 */}
+                                    <SliderControl
+                                        label="特效強度"
+                                        value={props.filterEffectIntensity || 0.5}
+                                        onChange={props.onFilterEffectIntensityChange || (() => {})}
+                                        min={0}
+                                        max={1}
+                                        step={0.1}
+                                        unit="%"
+                                        transform={(v) => Math.round(v * 100)}
+                                    />
+
+                                    {/* 濾鏡特效透明度 */}
+                                    <SliderControl
+                                        label="透明度"
+                                        value={props.filterEffectOpacity || 0.6}
+                                        onChange={props.onFilterEffectOpacityChange || (() => {})}
+                                        min={0}
+                                        max={1}
+                                        step={0.1}
+                                        unit="%"
+                                        transform={(v) => Math.round(v * 100)}
+                                    />
+
+                                    {/* 濾鏡特效速度 */}
+                                    <SliderControl
+                                        label="特效速度"
+                                        value={props.filterEffectSpeed || 1.0}
+                                        onChange={props.onFilterEffectSpeedChange || (() => {})}
+                                        min={0.5}
+                                        max={2}
+                                        step={0.1}
+                                        unit="x"
+                                        transform={(v) => v.toFixed(1)}
+                                    />
+                                </>
+                            )}
+                        </div>
+                    </CollapsibleControlSection>
+
                 </div>
             </div>
         </div>

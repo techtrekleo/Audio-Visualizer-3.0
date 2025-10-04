@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, forwardRef, useCallback } from 'react';
-import { VisualizationType, Palette, GraphicEffectType, ColorPaletteType, WatermarkPosition, FontType, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType } from '../types';
+import { VisualizationType, Palette, GraphicEffectType, ColorPaletteType, WatermarkPosition, FontType, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, FilterEffectType, ControlCardStyle } from '../types';
 import ImageBasedVisualizer from './ImageBasedVisualizer';
 
 // 字體映射表
@@ -91,6 +91,18 @@ interface AudioVisualizerProps {
     zCustomScale?: number;
     zCustomPosition?: { x: number; y: number };
     onZCustomPositionUpdate?: (position: { x: number; y: number }) => void;
+    // Filter Effects props
+    filterEffectType?: FilterEffectType;
+    filterEffectIntensity?: number;
+    filterEffectOpacity?: number;
+    filterEffectSpeed?: number;
+    filterEffectEnabled?: boolean;
+    // Control Card props
+    controlCardEnabled?: boolean;
+    controlCardFontSize?: number;
+    controlCardStyle?: ControlCardStyle;
+    controlCardColor?: string;
+    controlCardBackgroundColor?: string;
 }
 
 /**
@@ -2721,7 +2733,7 @@ const drawAudioLandscape = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array
 };
 
 // 可夜特別訂製版可視化
-const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[], geometricFrameImage?: HTMLImageElement | null, geometricSemicircleImage?: HTMLImageElement | null, props?: any) => {
+const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[], geometricFrameImage?: HTMLImageElement | null, geometricSemicircleImage?: HTMLImageElement | null, props?: any, controlCardEnabled?: boolean, controlCardFontSize?: number, controlCardStyle?: ControlCardStyle, controlCardColor?: string, controlCardBackgroundColor?: string) => {
     if (!dataArray) return;
     ctx.save();
     
@@ -2911,39 +2923,134 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         ctx.restore();
     }
     
-    // 5. 底部假播放器 (卡片風格 + 持續抖動 + 真實秒數)
-    const playerWidth = frameSize; // 與中央方塊同寬
-    const playerHeight = height * 0.15;
-    const playerX = centerX - playerWidth / 2;
-    const playerY = height * 0.7; // 上移播放器，減少下方留白
-    
-    // 持續的小抖動
-    const baseShake = Math.sin(frame * 0.1) * 1.5;
-    const shakeX = baseShake + Math.sin(frame * 0.07) * 0.8;
-    const shakeY = Math.cos(frame * 0.13) * 1.2;
-    
-    // 卡片背景 (灰綠色)
-    ctx.fillStyle = 'rgba(100, 120, 100, 0.9)';
-    ctx.beginPath();
-    const cornerRadius = 16 + Math.sin(frame * 0.05) * 1;
-    ctx.moveTo(playerX + cornerRadius + shakeX, playerY + shakeY);
-    ctx.lineTo(playerX + playerWidth - cornerRadius + shakeX, playerY + shakeY);
-    ctx.quadraticCurveTo(playerX + playerWidth + shakeX, playerY + shakeY, playerX + playerWidth + shakeX, playerY + cornerRadius + shakeY);
-    ctx.lineTo(playerX + playerWidth + shakeX, playerY + playerHeight - cornerRadius + shakeY);
-    ctx.quadraticCurveTo(playerX + playerWidth + shakeX, playerY + playerHeight + shakeY, playerX + playerWidth - cornerRadius + shakeX, playerY + playerHeight + shakeY);
-    ctx.lineTo(playerX + cornerRadius + shakeX, playerY + playerHeight + shakeY);
-    ctx.quadraticCurveTo(playerX + shakeX, playerY + playerHeight + shakeY, playerX + shakeX, playerY + playerHeight - cornerRadius + shakeY);
-    ctx.lineTo(playerX + shakeX, playerY + cornerRadius + shakeY);
-    ctx.quadraticCurveTo(playerX + shakeX, playerY + shakeY, playerX + cornerRadius + shakeX, playerY + shakeY);
-    ctx.fill();
+    // 5. 底部假播放器 (卡片風格 + 持續抖動 + 真實秒數) - 可選顯示
+    if (controlCardEnabled !== false) {
+        const playerWidth = frameSize; // 與中央方塊同寬
+        // 動態調整控制卡高度，根據字體大小調整
+        const baseHeight = height * 0.15;
+        const cardFontSize = controlCardFontSize || 24;
+        // 限制字體大小的影響，避免控制卡過大
+        const maxFontSize = 100;
+        const clampedFontSize = Math.min(cardFontSize, maxFontSize);
+        const heightMultiplier = Math.max(1, clampedFontSize / 24); // 字體越大，高度越大
+        const playerHeight = Math.min(baseHeight * heightMultiplier, height * 0.3); // 最大不超過30%高度
+        const playerX = centerX - playerWidth / 2;
+        // 動態調整Y位置，字體越大越往上移
+        const baseY = height * 0.75;
+        const yOffset = (clampedFontSize - 24) * 0.2; // 進一步減少偏移量
+        let playerY = Math.max(height * 0.6, Math.min(baseY - yOffset, height * 0.85)); // 最低60%，最高85%
+        
+        // 檢查控制卡是否超出畫布邊界
+        if (playerY + playerHeight > height - 10) {
+            const adjustedPlayerY = height - playerHeight - 10;
+            if (adjustedPlayerY < height * 0.6) {
+                // 如果調整後位置太低，則縮小控制卡高度
+                const maxAllowedHeight = height * 0.25;
+                const finalPlayerHeight = Math.min(playerHeight, maxAllowedHeight);
+                playerY = height - finalPlayerHeight - 10;
+                playerHeight = finalPlayerHeight;
+            } else {
+                playerY = adjustedPlayerY;
+            }
+        }
+        
+        // 持續的小抖動
+        const baseShake = Math.sin(frame * 0.1) * 1.5;
+        const shakeX = baseShake + Math.sin(frame * 0.07) * 0.8;
+        const shakeY = Math.cos(frame * 0.13) * 1.2;
+        
+        // 卡片背景 - 根據樣式決定
+        const cardStyle = controlCardStyle || ControlCardStyle.FILLED;
+        const cardBgColor = controlCardBackgroundColor || 'rgba(100, 120, 100, 0.9)';
+        const cardColor = controlCardColor || '#ffffff';
+        
+        if (cardStyle === ControlCardStyle.FILLED || cardStyle === ControlCardStyle.OUTLINE) {
+            if (cardStyle === ControlCardStyle.FILLED) {
+                ctx.fillStyle = cardBgColor;
+            } else {
+                ctx.strokeStyle = cardColor;
+                ctx.lineWidth = 2;
+            }
+            
+            ctx.beginPath();
+            const cornerRadius = 16 + Math.sin(frame * 0.05) * 1;
+            ctx.moveTo(playerX + cornerRadius + shakeX, playerY + shakeY);
+            ctx.lineTo(playerX + playerWidth - cornerRadius + shakeX, playerY + shakeY);
+            ctx.quadraticCurveTo(playerX + playerWidth + shakeX, playerY + shakeY, playerX + playerWidth + shakeX, playerY + cornerRadius + shakeY);
+            ctx.lineTo(playerX + playerWidth + shakeX, playerY + playerHeight - cornerRadius + shakeY);
+            ctx.quadraticCurveTo(playerX + playerWidth + shakeX, playerY + playerHeight + shakeY, playerX + playerWidth - cornerRadius + shakeX, playerY + playerHeight + shakeY);
+            ctx.lineTo(playerX + cornerRadius + shakeX, playerY + playerHeight + shakeY);
+            ctx.quadraticCurveTo(playerX + shakeX, playerY + playerHeight + shakeY, playerX + shakeX, playerY + playerHeight - cornerRadius + shakeY);
+            ctx.lineTo(playerX + shakeX, playerY + cornerRadius + shakeY);
+            ctx.quadraticCurveTo(playerX + shakeX, playerY + shakeY, playerX + cornerRadius + shakeX, playerY + shakeY);
+            
+            if (cardStyle === ControlCardStyle.FILLED) {
+                ctx.fill();
+            } else {
+                ctx.stroke();
+            }
+        }
     
     // 專輯封面 (左上角)
     const albumSize = playerHeight * 0.6;
     const albumX = playerX + 20 + shakeX;
     const albumY = playerY + 20 + shakeY;
     
-    // 專輯封面背景
-    ctx.fillStyle = 'rgba(80, 100, 80, 0.8)';
+    // 專輯封面背景 - 使用控制卡顏色和透明度
+    // (cardStyle, cardBgColor, cardColor 已在上面定義，重複使用)
+    
+    // 根據控制卡樣式調整專輯封面透明度
+    let albumOpacity = 0.6;
+    if (cardStyle === ControlCardStyle.OUTLINE) {
+        albumOpacity = 0.3; // 外框模式：更透明
+    } else if (cardStyle === ControlCardStyle.TRANSPARENT) {
+        albumOpacity = 0.4; // 透明模式：中等透明度
+    }
+    
+    // 使用控制卡背景顏色，但調整透明度和色調變化
+    let albumBgColor;
+    if (cardBgColor.startsWith('rgba')) {
+        // 提取 rgba 值並調整色調
+        const rgbaMatch = cardBgColor.match(/rgba?\(([^)]+)\)/);
+        if (rgbaMatch) {
+            const values = rgbaMatch[1].split(',').map(v => parseFloat(v.trim()));
+            const [r, g, b] = values;
+            // 增加色調變化：稍微調整 RGB 值創造落差
+            const adjustedR = Math.max(0, Math.min(255, r * 0.8 + 20));
+            const adjustedG = Math.max(0, Math.min(255, g * 0.8 + 20));
+            const adjustedB = Math.max(0, Math.min(255, b * 0.8 + 20));
+            albumBgColor = `rgba(${adjustedR}, ${adjustedG}, ${adjustedB}, ${albumOpacity})`;
+        } else {
+            albumBgColor = cardBgColor.replace(/[\d\.]+\)$/g, `${albumOpacity})`);
+        }
+    } else if (cardBgColor.startsWith('rgb')) {
+        // 提取 rgb 值並調整色調
+        const rgbMatch = cardBgColor.match(/rgb\(([^)]+)\)/);
+        if (rgbMatch) {
+            const values = rgbMatch[1].split(',').map(v => parseInt(v.trim()));
+            const [r, g, b] = values;
+            // 增加色調變化
+            const adjustedR = Math.max(0, Math.min(255, Math.floor(r * 0.8 + 20)));
+            const adjustedG = Math.max(0, Math.min(255, Math.floor(g * 0.8 + 20)));
+            const adjustedB = Math.max(0, Math.min(255, Math.floor(b * 0.8 + 20)));
+            albumBgColor = `rgba(${adjustedR}, ${adjustedG}, ${adjustedB}, ${albumOpacity})`;
+        } else {
+            albumBgColor = cardBgColor.replace('rgb(', 'rgba(').replace(')', `, ${albumOpacity})`);
+        }
+    } else {
+        // 如果是十六進制顏色，轉換為rgba並調整色調
+        const hex = cardBgColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        // 增加色調變化
+        const adjustedR = Math.max(0, Math.min(255, Math.floor(r * 0.8 + 20)));
+        const adjustedG = Math.max(0, Math.min(255, Math.floor(g * 0.8 + 20)));
+        const adjustedB = Math.max(0, Math.min(255, Math.floor(b * 0.8 + 20)));
+        albumBgColor = `rgba(${adjustedR}, ${adjustedG}, ${adjustedB}, ${albumOpacity})`;
+    }
+    
+    ctx.fillStyle = albumBgColor;
     ctx.beginPath();
     const albumRadius = 8 + Math.sin(frame * 0.03) * 0.5;
     ctx.moveTo(albumX + albumRadius, albumY);
@@ -2957,8 +3064,10 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
     ctx.quadraticCurveTo(albumX, albumY, albumX + albumRadius, albumY);
     ctx.fill();
     
-    // 專輯封面裝飾 (抽象圖案)
-    ctx.fillStyle = 'rgba(120, 140, 120, 0.6)';
+    // 專輯封面裝飾 (抽象圖案) - 使用控制卡文字顏色
+    ctx.fillStyle = cardColor;
+    ctx.strokeStyle = cardColor;
+    
     // 波浪線
     ctx.beginPath();
     for (let i = 0; i < albumSize; i += 2) {
@@ -2979,106 +3088,139 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         ctx.fill();
     }
     
-    // 歌曲資訊 (右側)
-    const infoX = albumX + albumSize + 20;
-    const infoY = albumY + 10;
+        // 歌曲資訊 (右側) - 動態調整間距
+        const infoX = albumX + albumSize + 20;
+        const infoY = playerY + Math.max(30, clampedFontSize * 0.8); // 從控制卡頂部開始，根據字體大小調整，最小30px
+        const dynamicSpacing = Math.max(25, Math.min(clampedFontSize * 1.2, 120)); // 根據字體大小調整行距，最大120px
+        
+        // 歌曲名稱
+        ctx.fillStyle = cardColor;
+        ctx.font = `bold ${Math.min(clampedFontSize + 2, 60)}px Arial`;
+        ctx.textAlign = 'left';
+        const songName = props.geometricSongName || 'Name of the song';
+        const songNameY = infoY + Math.cos(frame * 0.03) * 0.3;
+        
+        // 確保歌曲名稱在控制卡內，不超出頂部邊界
+        const songNameHeight = Math.min(clampedFontSize + 2, 60);
+        const minSongNameY = playerY + songNameHeight + 15; // 控制卡頂部 + 字體高度 + 15px間距
+        const adjustedSongNameY = Math.max(songNameY, minSongNameY);
+        
+        ctx.fillText(songName, infoX + Math.sin(frame * 0.02) * 0.5, adjustedSongNameY);
+        
+        // 歌手名稱 - 使用動態間距
+        ctx.font = `${Math.min(clampedFontSize, 55)}px Arial`;
+        ctx.fillStyle = cardStyle === ControlCardStyle.OUTLINE ? cardColor : 'rgba(255, 255, 255, 0.8)';
+        const artistName = props.geometricArtistName || 'Artist';
+        const artistNameY = adjustedSongNameY + dynamicSpacing + Math.cos(frame * 0.035) * 0.2;
+        
+        // 確保歌手名稱在控制卡內，不超出頂部邊界
+        const artistNameHeight = Math.min(clampedFontSize, 55);
+        const minArtistNameY = playerY + songNameHeight + artistNameHeight + 25; // 控制卡頂部 + 歌名高度 + 歌手高度 + 25px間距
+        const adjustedArtistNameY = Math.max(artistNameY, minArtistNameY);
+        
+        ctx.fillText(artistName, infoX + Math.sin(frame * 0.025) * 0.3, adjustedArtistNameY);
     
-    // 歌曲名稱
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 16px Arial';
-    ctx.textAlign = 'left';
-    const songName = props.geometricSongName || 'Name of the song';
-    ctx.fillText(songName, infoX + Math.sin(frame * 0.02) * 0.5, infoY + Math.cos(frame * 0.03) * 0.3);
+        // 右上角圖標 - 調整位置避免與文字重疊
+        const iconSpacing = Math.max(80, clampedFontSize * 1.5); // 根據字體大小調整右邊距，最小80px
+        const iconX = playerX + playerWidth - iconSpacing + shakeX;
+        const iconY = Math.max(adjustedSongNameY, albumY + 10) + shakeY;
+        
+        // 檢查文字寬度，避免與圖標重疊
+        const songNameText = props.geometricSongName || 'Name of the song';
+        const songNameWidth = ctx.measureText(songNameText).width;
+        const maxTextWidth = iconX - infoX - 20; // 留出20px間距
+        
+        // 如果文字太長，調整圖標位置
+        const adjustedIconX = songNameWidth > maxTextWidth ? infoX + songNameWidth + 30 : iconX;
+        
+        // 耳機圖標
+        ctx.fillStyle = cardColor;
+        ctx.font = `${Math.min(clampedFontSize + 4, 70)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('🎧', adjustedIconX + Math.sin(frame * 0.04) * 0.3, iconY + Math.cos(frame * 0.05) * 0.2);
+        
+        // 三點菜單 - 增加間距避免與耳機重疊
+        const threeDotsSpacing = Math.max(40, clampedFontSize * 0.8); // 根據字體大小調整間距，最小40px
+        ctx.fillText('⋯', adjustedIconX + threeDotsSpacing + Math.sin(frame * 0.06) * 0.2, iconY + Math.cos(frame * 0.04) * 0.2);
     
-    // 歌手名稱
-    ctx.font = '14px Arial';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    const artistName = props.geometricArtistName || 'Artist';
-    ctx.fillText(artistName, infoX + Math.sin(frame * 0.025) * 0.3, infoY + 25 + Math.cos(frame * 0.035) * 0.2);
+        // 進度條 - 動態調整位置
+        const progressBarWidth = playerWidth - 40;
+        const progressBarHeight = Math.max(4, Math.min(clampedFontSize * 0.15, 15)); // 根據字體大小調整進度條高度
+        const progressBarX = playerX + 20 + shakeX;
+        const progressBarOffset = Math.max(60, Math.min(clampedFontSize * 2.5, 180)); // 根據字體大小調整進度條位置，最大180px
+        const progressBarY = playerY + playerHeight - progressBarOffset + shakeY;
+        
+        // 進度條背景
+        ctx.fillStyle = cardStyle === ControlCardStyle.OUTLINE ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.3)';
+        ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
+        
+        // 進度條 (真實秒數控制)
+        const currentTime = props.audioRef?.current?.currentTime || 0;
+        const totalSeconds = props.audioRef?.current?.duration || 240; // 使用實際音頻長度
+        const progress = totalSeconds > 0 ? Math.min(currentTime / totalSeconds, 1) : 0;
+        const currentProgressWidth = progressBarWidth * progress;
+        
+        ctx.fillStyle = cardColor;
+        ctx.fillRect(progressBarX, progressBarY, currentProgressWidth, progressBarHeight);
+        
+        // 時間顯示 - 動態調整字體和位置
+        ctx.fillStyle = cardColor;
+        const timeFontSize = Math.max(Math.min(clampedFontSize * 0.7, 70), 12); // 時間字體不低於12px，不超過70px
+        ctx.font = `${timeFontSize}px Arial`;
+        const timeOffset = Math.max(8, Math.min(clampedFontSize * 0.4, 40)); // 根據字體大小調整時間顯示位置
+        ctx.textAlign = 'left';
+        const currentMinutes = Math.floor(currentTime / 60);
+        const currentSecs = Math.floor(currentTime % 60);
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        const totalSecs = Math.floor(totalSeconds % 60);
+        ctx.fillText(`${currentMinutes}:${currentSecs.toString().padStart(2, '0')}`, progressBarX + Math.sin(frame * 0.02) * 0.3, progressBarY - timeOffset + Math.cos(frame * 0.03) * 0.2);
+        
+        ctx.textAlign = 'right';
+        ctx.fillText(`${totalMinutes}:${totalSecs.toString().padStart(2, '0')}`, progressBarX + progressBarWidth + Math.sin(frame * 0.025) * 0.3, progressBarY - timeOffset + Math.cos(frame * 0.035) * 0.2);
     
-    // 右上角圖標
-    const iconX = playerX + playerWidth - 60 + shakeX;
-    const iconY = albumY + 10 + shakeY;
-    
-    // 耳機圖標
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '18px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('🎧', iconX + Math.sin(frame * 0.04) * 0.3, iconY + Math.cos(frame * 0.05) * 0.2);
-    
-    // 三點菜單
-    ctx.fillText('⋯', iconX + 25 + Math.sin(frame * 0.06) * 0.2, iconY + Math.cos(frame * 0.04) * 0.2);
-    
-    // 進度條
-    const progressBarWidth = playerWidth - 40;
-    const progressBarHeight = 4;
-    const progressBarX = playerX + 20 + shakeX;
-    const progressBarY = playerY + playerHeight - 60 + shakeY;
-    
-    // 進度條背景
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
-    
-    // 進度條 (真實秒數控制)
-    const currentTime = props.audioRef?.current?.currentTime || 0;
-    const totalSeconds = props.audioRef?.current?.duration || 240; // 使用實際音頻長度
-    const progress = totalSeconds > 0 ? Math.min(currentTime / totalSeconds, 1) : 0;
-    const currentProgressWidth = progressBarWidth * progress;
-    
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(progressBarX, progressBarY, currentProgressWidth, progressBarHeight);
-    
-    // 時間顯示
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'left';
-    const currentMinutes = Math.floor(currentTime / 60);
-    const currentSecs = Math.floor(currentTime % 60);
-    const totalMinutes = Math.floor(totalSeconds / 60);
-    const totalSecs = Math.floor(totalSeconds % 60);
-    ctx.fillText(`${currentMinutes}:${currentSecs.toString().padStart(2, '0')}`, progressBarX + Math.sin(frame * 0.02) * 0.3, progressBarY - 8 + Math.cos(frame * 0.03) * 0.2);
-    
-    ctx.textAlign = 'right';
-    ctx.fillText(`${totalMinutes}:${totalSecs.toString().padStart(2, '0')}`, progressBarX + progressBarWidth + Math.sin(frame * 0.025) * 0.3, progressBarY - 8 + Math.cos(frame * 0.035) * 0.2);
-    
-    // 控制按鈕區域
-    const buttonY = playerY + playerHeight - 25 + shakeY;
-    const buttonSpacing = 40;
-    const startX = playerX + playerWidth / 2 - (buttonSpacing * 2) + shakeX;
-    
-    // 隨機播放按鈕
-    const shuffleX = startX;
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '16px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('🔀', shuffleX + Math.sin(frame * 0.03) * 0.3, buttonY + Math.cos(frame * 0.04) * 0.2);
-    
-    // 前一首按鈕
-    const prevX = startX + buttonSpacing;
-    ctx.fillText('⏮', prevX + Math.sin(frame * 0.035) * 0.2, buttonY + Math.cos(frame * 0.045) * 0.2);
-    
-    // 播放/暫停按鈕 (中央大按鈕)
-    const playX = startX + buttonSpacing * 2;
-    const playRadius = 20 + Math.sin(frame * 0.08) * 1;
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(playX, buttonY, playRadius, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // 暫停圖標 (兩條豎線)
-    ctx.fillStyle = 'rgba(100, 120, 100, 0.9)';
-    ctx.fillRect(playX - 6, buttonY - 8, 3, 16);
-    ctx.fillRect(playX + 3, buttonY - 8, 3, 16);
-    
-    // 下一首按鈕
-    const nextX = startX + buttonSpacing * 3;
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '16px Arial';
-    ctx.fillText('⏭', nextX + Math.sin(frame * 0.04) * 0.2, buttonY + Math.cos(frame * 0.05) * 0.2);
-    
-    // 重複播放按鈕
-    const repeatX = startX + buttonSpacing * 4;
-    ctx.fillText('🔁', repeatX + Math.sin(frame * 0.045) * 0.3, buttonY + Math.cos(frame * 0.055) * 0.2);
+        // 控制按鈕區域 - 動態調整位置和間距
+        const buttonOffset = Math.max(25, Math.min(clampedFontSize * 1.2, 80)); // 根據字體大小調整按鈕位置，最大80px
+        const buttonY = playerY + playerHeight - buttonOffset + shakeY;
+        const buttonSpacing = Math.max(40, Math.min(clampedFontSize * 1.8, 120)); // 根據字體大小調整按鈕間距，最大120px
+        const startX = playerX + playerWidth / 2 - (buttonSpacing * 2) + shakeX;
+        
+        // 隨機播放按鈕
+        const shuffleX = startX;
+        ctx.fillStyle = cardColor;
+        ctx.font = `${Math.min(clampedFontSize + 2, 60)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('🔀', shuffleX + Math.sin(frame * 0.03) * 0.3, buttonY + Math.cos(frame * 0.04) * 0.2);
+        
+        // 前一首按鈕
+        const prevX = startX + buttonSpacing;
+        ctx.fillText('⏮', prevX + Math.sin(frame * 0.035) * 0.2, buttonY + Math.cos(frame * 0.045) * 0.2);
+        
+        // 播放/暫停按鈕 (中央大按鈕) - 動態調整大小
+        const playX = startX + buttonSpacing * 2;
+        const baseRadius = Math.max(20, Math.min(clampedFontSize * 0.8, 80)); // 根據字體大小調整按鈕半徑
+        const playRadius = baseRadius + Math.sin(frame * 0.08) * 1;
+        ctx.fillStyle = cardColor;
+        ctx.beginPath();
+        ctx.arc(playX, buttonY, playRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 暫停圖標 (兩條豎線) - 動態調整大小
+        const iconSize = Math.max(3, Math.min(clampedFontSize * 0.15, 15)); // 根據字體大小調整圖標大小
+        const iconHeight = Math.max(16, Math.min(clampedFontSize * 0.7, 70));
+        ctx.fillStyle = cardStyle === ControlCardStyle.OUTLINE ? cardColor : cardBgColor;
+        ctx.fillRect(playX - iconSize * 2, buttonY - iconHeight / 2, iconSize, iconHeight);
+        ctx.fillRect(playX + iconSize, buttonY - iconHeight / 2, iconSize, iconHeight);
+        
+        // 下一首按鈕
+        const nextX = startX + buttonSpacing * 3;
+        ctx.fillStyle = cardColor;
+        ctx.font = `${Math.min(clampedFontSize + 2, 60)}px Arial`;
+        ctx.fillText('⏭', nextX + Math.sin(frame * 0.04) * 0.2, buttonY + Math.cos(frame * 0.05) * 0.2);
+        
+        // 重複播放按鈕
+        const repeatX = startX + buttonSpacing * 4;
+        ctx.fillText('🔁', repeatX + Math.sin(frame * 0.045) * 0.3, buttonY + Math.cos(frame * 0.055) * 0.2);
+    }
     
     // 7. 動態效果
     // 正方形內的掃描線
@@ -4001,6 +4143,10 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         }
     }, [props.geometricSemicircleImage]);
 
+    // 濾鏡特效粒子系統狀態
+    const filterParticlesRef = useRef<FilterParticle[]>([]);
+    const lastFilterTypeRef = useRef<FilterEffectType | null>(null);
+
     const renderFrame = useCallback(() => {
         const {
             visualizationType, customText, textColor, fontFamily, graphicEffect, 
@@ -4008,7 +4154,9 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             sensitivity, smoothing, equalization, backgroundColor, colors, watermarkPosition, 
             waveformStroke, isTransitioning, transitionType, backgroundImages, currentImageIndex,
             subtitles, showSubtitles, subtitleFontSize, subtitleFontFamily, 
-            subtitleColor, subtitleBgStyle, effectScale, effectOffsetX, effectOffsetY
+            subtitleColor, subtitleBgStyle, effectScale, effectOffsetX, effectOffsetY,
+            filterEffectType, filterEffectIntensity, filterEffectOpacity, filterEffectSpeed, filterEffectEnabled,
+            controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor
         } = propsRef.current;
 
         const canvas = (ref as React.RefObject<HTMLCanvasElement>).current;
@@ -4122,13 +4270,13 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             }
             if (visualizationType === VisualizationType.GEOMETRIC_BARS) {
                 // 可夜特別訂製版需要特殊處理，傳遞額外參數
-                drawGeometricBars(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, propsRef.current);
+                drawGeometricBars(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, propsRef.current, controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor);
             } else if (visualizationType === VisualizationType.Z_CUSTOM) {
                 // Z總訂製款需要特殊處理，傳遞額外參數
                 const currentFrame = typeof frame.current === 'number' ? frame.current : 0;
                 drawZCustomVisualization(ctx, width, height, propsRef.current.zCustomCenterImage, propsRef, currentFrame);
             } else {
-                drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
+            drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
             }
             
             if (shouldTransform) {
@@ -4179,6 +4327,46 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
 
         // Z總訂製款可視化已在主要繪製循環中處理，無需重複繪製
 
+        // 濾鏡特效處理
+        if (filterEffectEnabled && filterEffectType) {
+            // 檢查濾鏡類型是否改變，如果改變則重新初始化粒子
+            if (lastFilterTypeRef.current !== filterEffectType) {
+                filterParticlesRef.current = [];
+                lastFilterTypeRef.current = filterEffectType;
+            }
+            
+            // 添加新粒子（根據強度控制數量）
+            const particleCount = Math.floor((filterEffectIntensity || 0.5) * 50);
+            while (filterParticlesRef.current.length < particleCount) {
+                const newParticle = createFilterParticle(filterEffectType, width, height);
+                filterParticlesRef.current.push(newParticle);
+            }
+            
+            // 移除超出邊界的粒子
+            filterParticlesRef.current = filterParticlesRef.current.filter(particle => {
+                // 檢查粒子是否超出邊界
+                if (particle.y > height + 20 || 
+                    particle.x < -20 || 
+                    particle.x > width + 20) {
+                    return false;
+                }
+                return true;
+            });
+            
+            // 繪製濾鏡特效（在所有其他內容之上）
+            drawFilterEffects(
+                ctx, 
+                width, 
+                height, 
+                filterEffectType, 
+                filterEffectIntensity || 0.5, 
+                filterEffectOpacity || 0.6, 
+                filterEffectSpeed || 1.0, 
+                filterParticlesRef.current, 
+                frame
+            );
+        }
+
         // 字幕和自定義文字最後繪製，確保在最上層
         const currentTime = audioRef.current?.currentTime ?? 0;
         let currentSubtitle: Subtitle | undefined = undefined;
@@ -4189,7 +4377,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                     // 檢查結束時間
                     if (!subtitle.endTime || currentTime <= subtitle.endTime) {
                         currentSubtitle = subtitle;
-                        break;
+                    break;
                     }
                 }
             }
@@ -5244,6 +5432,234 @@ const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, 
     }
     ctx.stroke();
     
+    ctx.restore();
+};
+
+// 濾鏡特效粒子系統
+interface FilterParticle {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    size: number;
+    opacity: number;
+    rotation: number;
+    rotationSpeed: number;
+    color: string;
+    life: number;
+    maxLife: number;
+}
+
+const createFilterParticle = (type: FilterEffectType, width: number, height: number): FilterParticle => {
+    const baseSpeed = 1.0;
+    const baseSize = 3;
+
+    switch (type) {
+        case FilterEffectType.SNOW:
+            return {
+                x: Math.random() * width,
+                y: -10,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: baseSpeed * 0.8 + Math.random() * baseSpeed * 0.4,
+                size: baseSize * 0.8,
+                opacity: 0.4 + Math.random() * 0.3,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.01,
+                color: '#ffffff',
+                life: 1,
+                maxLife: 1
+            };
+
+        case FilterEffectType.PARTICLES:
+            return {
+                x: Math.random() * width,
+                y: height + 10,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: -(baseSpeed * 0.5 + Math.random() * baseSpeed * 0.5),
+                size: baseSize * 0.5 + Math.random() * baseSize * 0.5,
+                opacity: 0.6 + Math.random() * 0.4,
+                rotation: 0,
+                rotationSpeed: 0,
+                color: `hsl(${Math.random() * 60 + 180}, 70%, ${60 + Math.random() * 20}%)`,
+                life: 1,
+                maxLife: 1
+            };
+
+        case FilterEffectType.STARS:
+            return {
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: 0,
+                vy: 0,
+                size: 1 + Math.random() * 2,
+                opacity: 0.3 + Math.random() * 0.7,
+                rotation: 0,
+                rotationSpeed: 0,
+                color: '#ffffff',
+                life: Math.random() * 3 + 1,
+                maxLife: Math.random() * 3 + 1
+            };
+
+        case FilterEffectType.RAIN:
+            return {
+                x: Math.random() * width,
+                y: -10,
+                vx: 0,
+                vy: baseSpeed * 2 + Math.random() * baseSpeed,
+                size: 1 + Math.random() * 2,
+                opacity: 0.3 + Math.random() * 0.4,
+                rotation: 0,
+                rotationSpeed: 0,
+                color: '#87CEEB',
+                life: 1,
+                maxLife: 1
+            };
+
+        case FilterEffectType.CHERRY_BLOSSOM:
+            return {
+                x: Math.random() * width,
+                y: -10,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: baseSpeed * 0.5 + Math.random() * baseSpeed * 0.3,
+                size: baseSize * 0.6 + Math.random() * baseSize * 0.4,
+                opacity: 0.5 + Math.random() * 0.3,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.02,
+                color: '#FFB6C1',
+                life: 1,
+                maxLife: 1
+            };
+
+        default:
+            return {
+                x: 0, y: 0, vx: 0, vy: 0, size: 1, opacity: 1,
+                rotation: 0, rotationSpeed: 0, color: '#ffffff', life: 1, maxLife: 1
+            };
+    }
+};
+
+const drawFilterParticle = (ctx: CanvasRenderingContext2D, particle: FilterParticle, type: FilterEffectType) => {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation);
+    ctx.globalAlpha = particle.opacity;
+
+    switch (type) {
+        case FilterEffectType.SNOW:
+            // 繪製雪花
+            ctx.strokeStyle = particle.color;
+            ctx.lineWidth = 1;
+            const size = particle.size;
+            for (let i = 0; i < 6; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, size);
+                ctx.stroke();
+                ctx.rotate(Math.PI / 3);
+            }
+            break;
+
+        case FilterEffectType.PARTICLES:
+            // 繪製發光粒子
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, particle.size);
+            gradient.addColorStop(0, particle.color);
+            gradient.addColorStop(0.7, particle.color + 'CC');
+            gradient.addColorStop(1, particle.color + '00');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+
+        case FilterEffectType.STARS:
+            // 繪製閃爍星星
+            ctx.fillStyle = particle.color;
+            ctx.beginPath();
+            ctx.moveTo(0, -particle.size);
+            ctx.lineTo(particle.size * 0.3, -particle.size * 0.3);
+            ctx.lineTo(particle.size, 0);
+            ctx.lineTo(particle.size * 0.3, particle.size * 0.3);
+            ctx.lineTo(0, particle.size);
+            ctx.lineTo(-particle.size * 0.3, particle.size * 0.3);
+            ctx.lineTo(-particle.size, 0);
+            ctx.lineTo(-particle.size * 0.3, -particle.size * 0.3);
+            ctx.closePath();
+            ctx.fill();
+            break;
+
+        case FilterEffectType.RAIN:
+            // 繪製雨滴
+            ctx.strokeStyle = particle.color;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, particle.size * 3);
+            ctx.stroke();
+            break;
+
+        case FilterEffectType.CHERRY_BLOSSOM:
+            // 繪製櫻花瓣
+            ctx.fillStyle = particle.color;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, particle.size, particle.size * 0.6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+    }
+
+    ctx.restore();
+};
+
+const drawFilterEffects = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    type: FilterEffectType,
+    intensity: number,
+    opacity: number,
+    speed: number,
+    particles: FilterParticle[],
+    frame: number
+) => {
+    if (!particles || particles.length === 0) return;
+
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.globalCompositeOperation = 'screen';
+
+    // 更新和繪製粒子
+    particles.forEach((particle, index) => {
+        // 更新位置
+        particle.x += particle.vx * speed;
+        particle.y += particle.vy * speed;
+        particle.rotation += particle.rotationSpeed * speed;
+
+        // 檢查邊界和生命週期
+        let shouldRemove = false;
+
+        if (type === FilterEffectType.STARS) {
+            // 星星閃爍效果
+            particle.life -= 0.02 * speed;
+            if (particle.life <= 0) {
+                particle.x = Math.random() * width;
+                particle.y = Math.random() * height;
+                particle.life = particle.maxLife;
+                particle.opacity = 0.3 + Math.random() * 0.7;
+            }
+        } else {
+            // 其他粒子檢查邊界
+            if (particle.y > height + 20 || 
+                particle.x < -20 || 
+                particle.x > width + 20) {
+                shouldRemove = true;
+            }
+        }
+
+        if (!shouldRemove) {
+            // 繪製粒子
+            drawFilterParticle(ctx, particle, type);
+        }
+    });
+
     ctx.restore();
 };
 

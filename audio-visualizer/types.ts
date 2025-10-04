@@ -42,6 +42,22 @@ export interface EffectInfo {
     tags: string[];
 }
 
+// 全畫面濾鏡特效類型
+export enum FilterEffectType {
+    SNOW = 'snow',
+    PARTICLES = 'particles', 
+    STARS = 'stars',
+    RAIN = 'rain',
+    CHERRY_BLOSSOM = 'cherry-blossom'
+}
+
+// 可夜訂製版控制卡樣式類型
+export enum ControlCardStyle {
+    FILLED = 'filled',      // 填充模式
+    OUTLINE = 'outline',    // 外框模式
+    TRANSPARENT = 'transparent' // 透明模式
+}
+
 export enum FontType {
     POPPINS = 'Poppins',
     ORBITRON = 'Orbitron',
