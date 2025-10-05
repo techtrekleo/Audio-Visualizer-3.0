@@ -349,6 +349,33 @@ function App() {
         return new Promise((resolve, reject) => {
             const createVideo = () => {
                 try {
+                    // 確保 Canvas 有內容：如果沒有內容，強制繪製一個測試圖形
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const pixels = imageData.data;
+                        let hasContent = false;
+                        
+                        // 檢查是否有非透明像素
+                        for (let i = 3; i < pixels.length; i += 4) {
+                            if (pixels[i] > 0) {
+                                hasContent = true;
+                                break;
+                            }
+                        }
+                        
+                        // 如果沒有內容，繪製一個測試圖形
+                        if (!hasContent) {
+                            console.log('Canvas 沒有內容，繪製測試圖形');
+                            ctx.fillStyle = '#ff0000';
+                            ctx.fillRect(10, 10, 100, 100);
+                            ctx.fillStyle = '#00ff00';
+                            ctx.fillRect(120, 10, 100, 100);
+                            ctx.fillStyle = '#0000ff';
+                            ctx.fillRect(230, 10, 100, 100);
+                        }
+                    }
+                    
                     // 捕獲 stream
                     let stream;
                     try {
