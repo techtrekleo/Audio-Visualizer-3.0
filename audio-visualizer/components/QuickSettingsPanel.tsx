@@ -96,7 +96,7 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                 </div>
 
                 {/* Picture-in-Picture 控制 */}
-                {isPipSupported && (
+                <div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                             <span className="text-lg">📺</span>
@@ -130,11 +130,13 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                         <p className="text-xs text-gray-400 leading-relaxed">
                             {isPipActive 
                                 ? '✅ 可視化已顯示在子母畫面中，可以拖拽調整位置' 
-                                : '💡 將可視化畫面固定在螢幕角落。請確保音樂正在播放且可視化已開啟。'
+                                : isPipSupported 
+                                    ? '💡 將可視化畫面固定在螢幕角落。請確保音樂正在播放且可視化已開啟。'
+                                    : '⚠️ 您的瀏覽器可能不支援子母畫面功能。建議使用 Chrome、Edge 或 Safari 最新版本。'
                             }
                         </p>
                     </div>
-                )}
+                </div>
 
                 {/* 進階控制選項 */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

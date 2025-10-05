@@ -148,9 +148,23 @@ function App() {
     // Picture-in-Picture 功能
     useEffect(() => {
         // 檢測 Picture-in-Picture API 支援
-        if ('pictureInPictureEnabled' in document) {
-            setIsPipSupported(true);
-        }
+        const checkPipSupport = () => {
+            const hasPipSupport = 
+                'pictureInPictureEnabled' in document ||
+                document.pictureInPictureEnabled ||
+                ('requestPictureInPicture' in HTMLVideoElement.prototype);
+            
+            console.log('Picture-in-Picture 支援檢測:', {
+                'pictureInPictureEnabled' in document,
+                document.pictureInPictureEnabled,
+                'requestPictureInPicture' in HTMLVideoElement.prototype,
+                hasPipSupport
+            });
+            
+            setIsPipSupported(hasPipSupport);
+        };
+        
+        checkPipSupport();
     }, []);
     
     
