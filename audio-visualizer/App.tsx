@@ -316,8 +316,8 @@ function App() {
         const contentRatio = totalPixels > 0 ? (nonBlackPixels / totalPixels) : 0;
         console.log(`Canvas 內容統計: ${nonBlackPixels}/${totalPixels} 非黑色像素 (${(contentRatio * 100).toFixed(2)}%)`);
         
-        // 更嚴格的內容檢測：需要至少 8% 的非黑色像素
-        const hasAnyContent = contentRatio > 0.08; // 8% 的閾值
+        // 合理的內容檢測：需要至少 1% 的非黑色像素
+        const hasAnyContent = contentRatio > 0.01; // 1% 的閾值
         console.log('Canvas 內容檢查結果:', hasAnyContent ? '有內容' : '內容不足');
         
         if (!hasAnyContent) {
@@ -331,7 +331,7 @@ function App() {
             console.log('- Canvas 內容樣式:', getComputedStyle(canvas).getPropertyValue('background-color'));
             
             // 如果內容太少，建議用戶等待
-            alert(`🎨 Canvas 內容不足 (${(contentRatio * 100).toFixed(2)}%)\n\n當前可視化內容較少，建議：\n1. 等待音頻播放產生更多可視化效果\n2. 確保音頻有足夠的音量\n3. 調整靈敏度設定\n4. 嘗試不同的可視化類型\n\n需要至少 8% 的非黑色像素才能啟動子母畫面。`);
+            alert(`🎨 Canvas 內容不足 (${(contentRatio * 100).toFixed(2)}%)\n\n當前可視化內容較少，建議：\n1. 等待音頻播放產生更多可視化效果\n2. 確保音頻有足夠的音量\n3. 調整靈敏度設定\n4. 嘗試不同的可視化類型\n\n需要至少 1% 的非黑色像素才能啟動子母畫面。`);
             return null;
         }
 
@@ -415,16 +415,12 @@ function App() {
             return;
         }
         
-        // 添加延遲等待，讓可視化有時間產生內容
-        console.log('等待可視化內容生成...');
+        // 立即創建子母畫面，保持用戶手勢有效性
+        console.log('開始創建子母畫面...');
         
-        // 等待 2 秒讓可視化內容充分渲染
-        setTimeout(() => {
-            console.log('開始創建子母畫面...');
-            
-            try {
-                // 等待 video metadata 載入後再調用 PiP
-                createVideoFromCanvasSync().then((video) => {
+        try {
+            // 立即調用，保持用戶手勢上下文
+            createVideoFromCanvasSync().then((video) => {
                 if (!video) return;
                 
                 setPipVideo(video as HTMLVideoElement);
@@ -449,11 +445,10 @@ function App() {
                     alert(`🎥 視訊元素創建失敗\n\n錯誤：${error.message}\n\n請確保：\n1. 可視化效果正在顯示\n2. 音樂正在播放\n3. 瀏覽器支援 Canvas 捕獲功能`);
                 });
                 
-            } catch (error) {
-                console.error('子母畫面初始化失敗:', error);
-                alert(`⚙️ 子母畫面初始化失敗\n\n錯誤：${error.message}\n\n請重新載入頁面後再試。`);
-            }
-        }, 2000); // 等待 2 秒
+        } catch (error) {
+            console.error('子母畫面初始化失敗:', error);
+            alert(`⚙️ 子母畫面初始化失敗\n\n錯誤：${error.message}\n\n請重新載入頁面後再試。`);
+        }
     }, [isPipSupported, audioUrl, isPlaying, showVisualizer]);
     
     const exitPictureInPicture = useCallback(async () => {
