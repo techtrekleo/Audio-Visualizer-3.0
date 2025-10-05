@@ -15,7 +15,7 @@ COPY . .
 
 # 建置音頻可視化器
 WORKDIR /app/audio-visualizer
-RUN npm ci
+RUN npm install
 RUN npm run build
 
 # 回到根目錄
