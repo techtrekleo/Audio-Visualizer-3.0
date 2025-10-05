@@ -304,14 +304,24 @@ function App() {
             const b = pixels[i + 2];
             const alpha = pixels[i + 3];
             
-            // 降低閾值，但增加更嚴格的內容檢測
-            if (alpha > 10 && (r > 3 || g > 3 || b > 3)) {
+            // 更寬鬆的檢測條件，適應不同環境
+            if (alpha > 1 && (r > 1 || g > 1 || b > 1)) {
                 nonBlackPixels++;
                 if (!hasContent) {
                     hasContent = true;
                 }
             }
         }
+        
+        // 額外的調試信息
+        console.log('Canvas 調試信息:');
+        console.log('- 可視化顯示:', showVisualizer);
+        console.log('- 音頻播放:', isPlaying);
+        console.log('- 可視化類型:', visualizationType);
+        console.log('- Canvas 背景色:', canvas.style.backgroundColor);
+        console.log('- Canvas 計算樣式:', getComputedStyle(canvas).getPropertyValue('background-color'));
+        console.log('- Canvas 尺寸樣式:', canvas.style.width, 'x', canvas.style.height);
+        console.log('- Canvas 實際尺寸:', canvas.width, 'x', canvas.height);
         
         const contentRatio = totalPixels > 0 ? (nonBlackPixels / totalPixels) : 0;
         console.log(`Canvas 內容統計: ${nonBlackPixels}/${totalPixels} 非黑色像素 (${(contentRatio * 100).toFixed(2)}%)`);
@@ -335,11 +345,10 @@ function App() {
             return null;
         }
 
-        // 使用 requestAnimationFrame 確保渲染完成，避免阻塞主線程
+        // 使用多重 requestAnimationFrame 確保渲染完成
         return new Promise((resolve, reject) => {
             const createVideo = () => {
                 try {
-
                     // 捕獲 stream
                     let stream;
                     try {
@@ -386,9 +395,11 @@ function App() {
                 }
             };
 
-            // 使用 requestAnimationFrame 確保渲染完成
+            // 使用三重 requestAnimationFrame 確保渲染完成
             requestAnimationFrame(() => {
-                requestAnimationFrame(createVideo);
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(createVideo);
+                });
             });
         });
     }, [showVisualizer, isPlaying, audioUrl, visualizationType]);
