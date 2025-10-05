@@ -155,9 +155,9 @@ function App() {
                 ('requestPictureInPicture' in HTMLVideoElement.prototype);
             
             console.log('Picture-in-Picture 支援檢測:', {
-                'pictureInPictureEnabled' in document,
-                document.pictureInPictureEnabled,
-                'requestPictureInPicture' in HTMLVideoElement.prototype,
+                pictureInPictureEnabledInDocument: 'pictureInPictureEnabled' in document,
+                documentPictureInPictureEnabled: document.pictureInPictureEnabled,
+                requestPictureInPictureInPrototype: 'requestPictureInPicture' in HTMLVideoElement.prototype,
                 hasPipSupport
             });
             
