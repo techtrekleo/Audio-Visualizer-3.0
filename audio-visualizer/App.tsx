@@ -423,6 +423,12 @@ function App() {
                     
                     video.addEventListener('canplay', () => {
                         console.log('Video canplay 事件觸發');
+                        // 明確調用 play() 確保內容在子母畫面中顯示
+                        video.play().then(() => {
+                            console.log('Video play() 成功');
+                        }).catch((error) => {
+                            console.error('Video play() 失敗:', error);
+                        });
                     });
                     
                     video.addEventListener('playing', () => {
@@ -444,6 +450,12 @@ function App() {
                     // 等待 metadata 載入
                     video.onloadedmetadata = () => {
                         console.log('Video metadata 載入完成');
+                        // 確保 video 開始播放
+                        video.play().then(() => {
+                            console.log('Video metadata 載入後 play() 成功');
+                        }).catch((error) => {
+                            console.warn('Video metadata 載入後 play() 失敗:', error);
+                        });
                         resolve(video);
                     };
                     
