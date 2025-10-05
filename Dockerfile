@@ -13,6 +13,14 @@ RUN npm ci --only=production
 # 複製所有文件
 COPY . .
 
+# 建置音頻可視化器
+WORKDIR /app/audio-visualizer
+RUN npm ci
+RUN npm run build
+
+# 回到根目錄
+WORKDIR /app
+
 # 暴露端口
 EXPOSE 3000
 
