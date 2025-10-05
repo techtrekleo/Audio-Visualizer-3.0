@@ -379,7 +379,21 @@ function App() {
                     // 捕獲 stream
                     let stream;
                     try {
+                        // 強制重繪 Canvas 確保內容是最新的
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            // 觸發一次重繪
+                            ctx.save();
+                            ctx.restore();
+                        }
+                        
                         stream = canvas.captureStream(30);
+                        console.log('Stream 捕獲成功:', {
+                            videoTracks: stream.getVideoTracks().length,
+                            audioTracks: stream.getAudioTracks().length,
+                            canvasWidth: canvas.width,
+                            canvasHeight: canvas.height
+                        });
                     } catch (error) {
                         console.warn('captureStream 失敗，嘗試其他方法:', error);
                         try {
@@ -401,6 +415,31 @@ function App() {
 
                     console.log('Video 元素創建成功:', video);
                     console.log('Stream tracks:', stream.getTracks().length);
+                    
+                    // 添加 video 狀態監聽
+                    video.addEventListener('loadeddata', () => {
+                        console.log('Video loadeddata 事件觸發');
+                    });
+                    
+                    video.addEventListener('canplay', () => {
+                        console.log('Video canplay 事件觸發');
+                    });
+                    
+                    video.addEventListener('playing', () => {
+                        console.log('Video playing 事件觸發');
+                    });
+                    
+                    // 檢查 video 是否真的在播放
+                    setTimeout(() => {
+                        console.log('Video 狀態檢查:', {
+                            readyState: video.readyState,
+                            paused: video.paused,
+                            currentTime: video.currentTime,
+                            duration: video.duration,
+                            videoWidth: video.videoWidth,
+                            videoHeight: video.videoHeight
+                        });
+                    }, 1000);
 
                     // 等待 metadata 載入
                     video.onloadedmetadata = () => {
