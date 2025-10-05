@@ -13,6 +13,11 @@ RUN npm ci --only=production
 # 複製所有文件
 COPY . .
 
+# 先建置 shared-components
+WORKDIR /app/shared-components
+RUN npm install
+RUN npm run build
+
 # 建置音頻可視化器
 WORKDIR /app/audio-visualizer
 RUN npm install
