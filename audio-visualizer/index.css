@@ -1,9 +1,9 @@
+/* 響應式設計優化 */
+@import './responsive.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* 響應式設計優化 */
-@import './responsive.css';
 
 /* Base styles for the entire application */
 html, body, #root {

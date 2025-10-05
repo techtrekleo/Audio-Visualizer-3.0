@@ -133,12 +133,328 @@ function App() {
     const audioRef = useRef<HTMLAudioElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     
+    // Picture-in-Picture 相關狀態
+    const [isPipSupported, setIsPipSupported] = useState<boolean>(false);
+    const [isPipActive, setIsPipActive] = useState<boolean>(false);
+    const [pipVideo, setPipVideo] = useState<HTMLVideoElement | null>(null);
+    
     const canvasBgColors: Record<BackgroundColorType, string> = {
         [BackgroundColorType.BLACK]: 'rgba(0, 0, 0, 1)',
         [BackgroundColorType.GREEN]: 'rgba(0, 255, 0, 1)',
         [BackgroundColorType.WHITE]: 'rgba(255, 255, 255, 1)',
         [BackgroundColorType.TRANSPARENT]: 'transparent',
     };
+    
+    // Picture-in-Picture 功能
+    useEffect(() => {
+        // 檢測 Picture-in-Picture API 支援
+        if ('pictureInPictureEnabled' in document) {
+            setIsPipSupported(true);
+        }
+    }, []);
+    
+    
+    const createVideoFromCanvas = useCallback(() => {
+        if (!canvasRef.current) return null;
+        
+        const canvas = canvasRef.current;
+        
+        // 檢查 Canvas 是否有內容
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return null;
+        
+        // 檢查 Canvas 尺寸
+        if (canvas.width === 0 || canvas.height === 0) {
+            console.warn('Canvas 尺寸為 0，無法創建 Picture-in-Picture');
+            alert('Canvas 尺寸異常，請重新載入頁面');
+            return null;
+        }
+        
+        console.log('Canvas 尺寸:', canvas.width, 'x', canvas.height);
+        
+        // 檢查 Canvas 內容 - 改進檢測邏輯
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = imageData.data;
+        let hasContent = false;
+        let nonBlackPixels = 0;
+        let totalPixels = 0;
+        
+        // 檢查是否有非黑色像素 - 降低閾值並計算比例
+        for (let i = 0; i < pixels.length; i += 4) {
+            totalPixels++;
+            const r = pixels[i];
+            const g = pixels[i + 1];
+            const b = pixels[i + 2];
+            const alpha = pixels[i + 3];
+            
+            // 降低閾值到 5，並檢查透明度
+            if (alpha > 0 && (r > 5 || g > 5 || b > 5)) {
+                nonBlackPixels++;
+                if (!hasContent) {
+                    hasContent = true;
+                }
+            }
+        }
+        
+        const contentRatio = totalPixels > 0 ? (nonBlackPixels / totalPixels) : 0;
+        console.log(`Canvas 內容統計: ${nonBlackPixels}/${totalPixels} 非黑色像素 (${(contentRatio * 100).toFixed(2)}%)`);
+        
+        console.log('Canvas 內容檢查結果:', hasContent ? '有內容' : '空內容');
+        
+        if (!hasContent) {
+            console.warn('Canvas 是空的，但繼續嘗試創建 Picture-in-Picture');
+            console.log('Canvas 狀態檢查:');
+            console.log('- 可視化顯示:', showVisualizer);
+            console.log('- 音頻播放:', isPlaying);
+            console.log('- 音頻URL:', audioUrl ? '有' : '無');
+            console.log('- 可視化類型:', visualizationType);
+            console.log('- Canvas 背景色:', canvas.style.backgroundColor);
+            console.log('- Canvas 內容樣式:', getComputedStyle(canvas).getPropertyValue('background-color'));
+            // 不阻止，讓用戶試試看
+        }
+        
+        // 嘗試不同的捕獲策略
+        let stream;
+        try {
+            stream = canvas.captureStream(30); // 降低到 30fps
+        } catch (error) {
+            console.warn('captureStream 失敗，嘗試其他方法:', error);
+            try {
+                stream = canvas.captureStream(); // 使用預設幀率
+            } catch (error2) {
+                console.error('所有 captureStream 方法都失敗:', error2);
+                return null;
+            }
+        }
+        
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.autoplay = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.style.width = '100%';
+        video.style.height = '100%';
+        
+        // 添加調試信息
+        console.log('Video 元素創建成功:', video);
+        console.log('Stream tracks:', stream.getTracks().length);
+        stream.getTracks().forEach((track, index) => {
+            console.log(`Track ${index}:`, track.kind, track.label, track.enabled);
+        });
+        
+        // 等待 video metadata 載入
+        return new Promise((resolve, reject) => {
+            video.onloadedmetadata = () => {
+                console.log('Video metadata 載入完成');
+                resolve(video);
+            };
+            
+            video.onerror = (error) => {
+                console.error('Video 載入錯誤:', error);
+                reject(error);
+            };
+            
+            // 設置超時
+            setTimeout(() => {
+                reject(new Error('Video metadata 載入超時'));
+            }, 3000);
+        });
+    }, []);
+    
+    const createVideoFromCanvasSync = useCallback(() => {
+        if (!canvasRef.current) return null;
+
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return null;
+
+        if (canvas.width === 0 || canvas.height === 0) {
+            console.warn('Canvas 尺寸為 0，無法創建 Picture-in-Picture');
+            return null;
+        }
+
+        console.log('Canvas 尺寸:', canvas.width, 'x', canvas.height);
+
+        // 檢查 Canvas 內容 - 改進檢測邏輯
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = imageData.data;
+        let hasContent = false;
+        let nonBlackPixels = 0;
+        let totalPixels = 0;
+        
+        // 採樣檢測：每10個像素檢測一次，提高性能
+        for (let i = 0; i < pixels.length; i += 40) { // 每10個像素檢測一次
+            totalPixels++;
+            const r = pixels[i];
+            const g = pixels[i + 1];
+            const b = pixels[i + 2];
+            const alpha = pixels[i + 3];
+            
+            // 降低閾值，但增加更嚴格的內容檢測
+            if (alpha > 10 && (r > 3 || g > 3 || b > 3)) {
+                nonBlackPixels++;
+                if (!hasContent) {
+                    hasContent = true;
+                }
+            }
+        }
+        
+        const contentRatio = totalPixels > 0 ? (nonBlackPixels / totalPixels) : 0;
+        console.log(`Canvas 內容統計: ${nonBlackPixels}/${totalPixels} 非黑色像素 (${(contentRatio * 100).toFixed(2)}%)`);
+        
+        // 更寬鬆的內容檢測：如果有任何非黑色像素就認為有內容
+        const hasAnyContent = contentRatio > 0.001; // 0.1% 的閾值
+        console.log('Canvas 內容檢查結果:', hasAnyContent ? '有內容' : '空內容');
+        
+        if (!hasAnyContent) {
+            console.warn('Canvas 內容很少，但繼續嘗試創建子母畫面');
+            console.log('Canvas 狀態檢查:');
+            console.log('- 可視化顯示:', showVisualizer);
+            console.log('- 音頻播放:', isPlaying);
+            console.log('- 音頻URL:', audioUrl ? '有' : '無');
+            console.log('- 可視化類型:', visualizationType);
+            console.log('- Canvas 背景色:', canvas.style.backgroundColor);
+            console.log('- Canvas 內容樣式:', getComputedStyle(canvas).getPropertyValue('background-color'));
+        }
+
+        // 使用 requestAnimationFrame 確保渲染完成，避免阻塞主線程
+        return new Promise((resolve, reject) => {
+            const createVideo = () => {
+                try {
+
+                    // 捕獲 stream
+                    let stream;
+                    try {
+                        stream = canvas.captureStream(30);
+                    } catch (error) {
+                        console.warn('captureStream 失敗，嘗試其他方法:', error);
+                        try {
+                            stream = canvas.captureStream();
+                        } catch (error2) {
+                            console.error('所有 captureStream 方法都失敗:', error2);
+                            reject(new Error('無法捕獲 Canvas 內容'));
+                            return;
+                        }
+                    }
+
+                    const video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.autoplay = true;
+                    video.muted = true;
+                    video.playsInline = true;
+                    video.style.width = '100%';
+                    video.style.height = '100%';
+
+                    console.log('Video 元素創建成功:', video);
+                    console.log('Stream tracks:', stream.getTracks().length);
+
+                    // 等待 metadata 載入
+                    video.onloadedmetadata = () => {
+                        console.log('Video metadata 載入完成');
+                        resolve(video);
+                    };
+                    
+                    video.onerror = (error) => {
+                        console.error('Video 載入錯誤:', error);
+                        reject(error);
+                    };
+                    
+                    // 設置超時
+                    setTimeout(() => {
+                        reject(new Error('Video metadata 載入超時'));
+                    }, 3000);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+
+            // 使用 requestAnimationFrame 確保渲染完成
+            requestAnimationFrame(() => {
+                requestAnimationFrame(createVideo);
+            });
+        });
+    }, [showVisualizer, isPlaying, audioUrl, visualizationType]);
+    
+    const enterPictureInPicture = useCallback(() => {
+        if (!isPipSupported) {
+            alert('❌ 子母畫面功能不支援\n\n您的瀏覽器不支援子母畫面功能。\n請使用 Chrome、Edge 或 Safari 最新版本。');
+            return;
+        }
+        
+        if (!audioUrl) {
+            alert('🎵 請先上傳音樂\n\n子母畫面需要音樂才能顯示可視化效果。\n請先選擇一個音頻檔案。');
+            return;
+        }
+        
+        if (!isPlaying) {
+            alert('▶️ 請先播放音樂\n\n子母畫面需要正在播放的音樂才能顯示動畫。\n請點擊播放按鈕開始播放。');
+            return;
+        }
+        
+        // 檢查可視化是否正在顯示
+        if (!showVisualizer) {
+            alert('🎨 請開啟可視化\n\n子母畫面需要顯示可視化效果。\n請確保「顯示可視化」開關已開啟。');
+            return;
+        }
+        
+        try {
+            // 等待 video metadata 載入後再調用 PiP
+            createVideoFromCanvasSync().then((video) => {
+                if (!video) return;
+                
+                setPipVideo(video as HTMLVideoElement);
+                
+                console.log('正在進入子母畫面...');
+                // 現在可以安全調用 PiP
+                (video as HTMLVideoElement).requestPictureInPicture().then(() => {
+                    setIsPipActive(true);
+                    console.log('子母畫面啟動成功');
+                    
+                    // 監聽 PiP 關閉事件
+                    (video as HTMLVideoElement).addEventListener('leavepictureinpicture', () => {
+                        setIsPipActive(false);
+                        setPipVideo(null);
+                    });
+                }).catch((error) => {
+                    console.error('進入子母畫面失敗:', error);
+                    alert(`🚫 子母畫面啟動失敗\n\n錯誤：${error.message}\n\n請檢查：\n1. 音樂正在播放\n2. 可視化效果已開啟\n3. 瀏覽器支援子母畫面功能\n\n如果問題持續，請重新載入頁面再試。`);
+                });
+            }).catch((error) => {
+                console.error('創建 Video 元素失敗:', error);
+                alert(`🎥 視訊元素創建失敗\n\n錯誤：${error.message}\n\n請確保：\n1. 可視化效果正在顯示\n2. 音樂正在播放\n3. 瀏覽器支援 Canvas 捕獲功能`);
+            });
+            
+        } catch (error) {
+            console.error('子母畫面初始化失敗:', error);
+            alert(`⚙️ 子母畫面初始化失敗\n\n錯誤：${error.message}\n\n請重新載入頁面後再試。`);
+        }
+    }, [isPipSupported, audioUrl, isPlaying, showVisualizer]);
+    
+    const exitPictureInPicture = useCallback(async () => {
+        if (pipVideo && document.pictureInPictureElement) {
+            try {
+                await document.exitPictureInPicture();
+                setIsPipActive(false);
+                setPipVideo(null);
+                console.log('子母畫面已關閉');
+            } catch (error) {
+                console.error('退出子母畫面失敗:', error);
+                // 嘗試強制關閉
+                try {
+                    if (pipVideo) {
+                        pipVideo.remove();
+                        setPipVideo(null);
+                        setIsPipActive(false);
+                    }
+                } catch (cleanupError) {
+                    console.error('強制清理失敗:', cleanupError);
+                }
+            }
+        }
+    }, [pipVideo]);
+    
+    // 滾動檢測自動觸發 Picture-in-Picture (已移除 - 瀏覽器安全限制)
+    // 注意：瀏覽器要求 PiP 必須由用戶手勢觸發，不能自動觸發
     
     useEffect(() => {
         const lines = subtitlesRawText.split('\n');
@@ -988,6 +1304,11 @@ function App() {
                             onSongNameListChange={setSongNameList}
                             autoChangeSong={autoChangeSong}
                             onAutoChangeSongChange={setAutoChangeSong}
+                            // Picture-in-Picture props
+                            isPipSupported={isPipSupported}
+                            isPipActive={isPipActive}
+                            onEnterPictureInPicture={enterPictureInPicture}
+                            onExitPictureInPicture={exitPictureInPicture}
                         />
                     </div>
             </main>

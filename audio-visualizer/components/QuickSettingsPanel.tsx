@@ -24,6 +24,11 @@ interface QuickSettingsPanelProps {
     onSmoothingChange: (value: number) => void;
     equalization: number;
     onEqualizationChange: (value: number) => void;
+    // Picture-in-Picture 相關 props
+    isPipSupported: boolean;
+    isPipActive: boolean;
+    onEnterPictureInPicture: () => void;
+    onExitPictureInPicture: () => void;
 }
 
 const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
@@ -46,6 +51,10 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
     onSmoothingChange,
     equalization,
     onEqualizationChange,
+    isPipSupported,
+    isPipActive,
+    onEnterPictureInPicture,
+    onExitPictureInPicture,
 }) => {
     return (
         <div className="quick-settings-panel bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-sm rounded-xl p-4 border border-cyan-400/30">
@@ -85,6 +94,47 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                         <option value={ColorPaletteType.RAINBOW}>彩虹</option>
                     </select>
                 </div>
+
+                {/* Picture-in-Picture 控制 */}
+                {isPipSupported && (
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                            <span className="text-lg">📺</span>
+                            子母畫面
+                        </label>
+                        <button
+                            onClick={isPipActive ? onExitPictureInPicture : onEnterPictureInPicture}
+                            disabled={isRecording}
+                            type="button"
+                            className={`w-full py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                isPipActive 
+                                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-lg shadow-cyan-500/25' 
+                                    : 'bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white'
+                            }`}
+                            title={isPipActive ? '退出子母畫面' : '開啟子母畫面 (需要播放音頻)'}
+                        >
+                            <span className="flex items-center justify-center gap-2">
+                                {isPipActive ? (
+                                    <>
+                                        <span className="text-base">📺</span>
+                                        退出子母畫面
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="text-base">🖼️</span>
+                                        開啟子母畫面
+                                    </>
+                                )}
+                            </span>
+                        </button>
+                        <p className="text-xs text-gray-400 leading-relaxed">
+                            {isPipActive 
+                                ? '✅ 可視化已顯示在子母畫面中，可以拖拽調整位置' 
+                                : '💡 將可視化畫面固定在螢幕角落。請確保音樂正在播放且可視化已開啟。'
+                            }
+                        </p>
+                    </div>
+                )}
 
                 {/* 進階控制選項 */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

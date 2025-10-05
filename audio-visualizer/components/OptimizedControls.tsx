@@ -282,6 +282,11 @@ interface OptimizedControlsProps {
     onSongNameListChange?: (list: string[]) => void;
     autoChangeSong?: boolean;
     onAutoChangeSongChange?: (enabled: boolean) => void;
+    // Picture-in-Picture props
+    isPipSupported?: boolean;
+    isPipActive?: boolean;
+    onEnterPictureInPicture?: () => void;
+    onExitPictureInPicture?: () => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
@@ -608,6 +613,10 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         onSmoothingChange={props.onSmoothingChange}
                         equalization={props.equalization}
                         onEqualizationChange={props.onEqualizationChange}
+                        isPipSupported={props.isPipSupported}
+                        isPipActive={props.isPipActive}
+                        onEnterPictureInPicture={props.onEnterPictureInPicture}
+                        onExitPictureInPicture={props.onExitPictureInPicture}
                     />
                 </div>
             )}
