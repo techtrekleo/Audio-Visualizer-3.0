@@ -17,7 +17,7 @@ import { UnifiedFooter, ModalProvider } from '../shared-components/dist';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
 import { useMediaRecorder } from './hooks/useMediaRecorder';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, FilterEffectType, ControlCardStyle } from './types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, FilterEffectType, ControlCardStyle } from './types';
 import { ICON_PATHS, COLOR_PALETTES, RESOLUTION_MAP } from './constants';
 
 function App() {
@@ -73,6 +73,7 @@ function App() {
     const [subtitleBgStyle, setSubtitleBgStyle] = useState<SubtitleBgStyle>(SubtitleBgStyle.TRANSPARENT);
     const [subtitleDisplayMode, setSubtitleDisplayMode] = useState<SubtitleDisplayMode>(SubtitleDisplayMode.CLASSIC);
     const [subtitleFormat, setSubtitleFormat] = useState<SubtitleFormat>(SubtitleFormat.BRACKET);
+    const [subtitleLanguage, setSubtitleLanguage] = useState<SubtitleLanguage>(SubtitleLanguage.CHINESE);
     
     // Lyrics Display State (測試中)
     const [showLyricsDisplay, setShowLyricsDisplay] = useState<boolean>(false);
@@ -832,8 +833,11 @@ function App() {
                 },
             };
 
-            const textPart = {
-                text: `你是一位專業的音訊轉錄和歌詞同步專家，專門處理繁體中文內容。
+            // 根據選擇的語言生成相應的 AI 提示詞
+            const getLanguagePrompt = (language: SubtitleLanguage): string => {
+                switch (language) {
+                    case SubtitleLanguage.CHINESE:
+                        return `你是一位專業的音訊轉錄和歌詞同步專家，專門處理繁體中文內容。
 
 **重要要求：**
 1. **語言限制**：所有轉錄內容必須使用繁體中文，絕對不能使用簡體中文
@@ -841,7 +845,7 @@ function App() {
 3. **標點符號**：使用繁體中文標點符號，如「，」「。」「？」「！」等
 
 **任務說明：**
-- 轉錄提供的音訊檔案內容
+- 轉錄提供的音訊檔案內容為繁體中文
 - 將內容格式化為標準的 LRC 檔案格式
 - 每一行都必須有時間戳 \`[mm:ss.xx]\`
 - 時間戳必須準確，並在音訊的整個長度內邏輯分佈
@@ -850,7 +854,75 @@ function App() {
 
 **音訊總長度：** ${audioDuration.toFixed(2)} 秒
 
-**回應格式：** 僅回應 LRC 格式的文字，不要添加任何介紹性文字、摘要或說明。`
+**回應格式：** 僅回應 LRC 格式的文字，不要添加任何介紹性文字、摘要或說明。`;
+
+                    case SubtitleLanguage.ENGLISH:
+                        return `You are a professional audio transcription and lyrics synchronization expert, specializing in English content.
+
+**Important Requirements:**
+1. **Language**: All transcription content must be in English
+2. **Format**: Use standard English punctuation and grammar
+3. **Style**: Maintain natural English flow and rhythm
+
+**Task Description:**
+- Transcribe the provided audio file content in English
+- Format the content as standard LRC file format
+- Each line must have a timestamp \`[mm:ss.xx]\`
+- Timestamps must be accurate and logically distributed throughout the audio length
+- Transcription should be clear with proper punctuation
+- The last line's timestamp must not exceed the total audio length
+
+**Audio Duration:** ${audioDuration.toFixed(2)} seconds
+
+**Response Format:** Only respond with LRC format text, do not add any introductory text, summaries, or explanations.`;
+
+                    case SubtitleLanguage.KOREAN:
+                        return `당신은 한국어 콘텐츠 전문 오디오 전사 및 가사 동기화 전문가입니다.
+
+**중요 요구사항:**
+1. **언어**: 모든 전사 내용은 한국어로 작성해야 합니다
+2. **형식**: 표준 한국어 문장부호와 문법을 사용하세요
+3. **스타일**: 자연스러운 한국어 흐름과 리듬을 유지하세요
+
+**작업 설명:**
+- 제공된 오디오 파일 내용을 한국어로 전사하세요
+- 내용을 표준 LRC 파일 형식으로 포맷하세요
+- 각 줄에는 타임스탬프 \`[mm:ss.xx]\`가 있어야 합니다
+- 타임스탬프는 정확해야 하며 오디오 길이 전체에 걸쳐 논리적으로 분포되어야 합니다
+- 전사 내용은 명확하고 적절한 문장부호를 사용해야 합니다
+- 마지막 줄의 타임스탬프는 총 오디오 길이를 초과하지 않아야 합니다
+
+**오디오 길이:** ${audioDuration.toFixed(2)}초
+
+**응답 형식:** LRC 형식의 텍스트만 응답하고, 소개 텍스트, 요약 또는 설명을 추가하지 마세요.`;
+
+                    case SubtitleLanguage.JAPANESE:
+                        return `あなたは日本語コンテンツ専門の音声転写・歌詞同期の専門家です。
+
+**重要な要件：**
+1. **言語**: すべての転写内容は日本語で記述する必要があります
+2. **形式**: 標準的な日本語の句読点と文法を使用してください
+3. **スタイル**: 自然な日本語の流れとリズムを維持してください
+
+**タスク説明：**
+- 提供された音声ファイルの内容を日本語で転写してください
+- 内容を標準的なLRCファイル形式でフォーマットしてください
+- 各行にはタイムスタンプ \`[mm:ss.xx]\` が必要です
+- タイムスタンプは正確で、音声の全長にわたって論理的に分布されている必要があります
+- 転写内容は明確で、適切な句読点を使用してください
+- 最後の行のタイムスタンプは総音声長を超えてはいけません
+
+**音声長:** ${audioDuration.toFixed(2)}秒
+
+**応答形式:** LRC形式のテキストのみを応答し、紹介テキスト、要約、または説明を追加しないでください。`;
+
+                    default:
+                        return getLanguagePrompt(SubtitleLanguage.CHINESE);
+                }
+            };
+
+            const textPart = {
+                text: getLanguagePrompt(subtitleLanguage)
             };
             
             const model = ai.getGenerativeModel({ model: 'gemini-2.5-flash' });
@@ -1343,6 +1415,8 @@ function App() {
                             onSubtitleBgStyleChange={setSubtitleBgStyle}
                             subtitleFormat={subtitleFormat}
                             onSubtitleFormatChange={setSubtitleFormat}
+                            subtitleLanguage={subtitleLanguage}
+                            onSubtitleLanguageChange={setSubtitleLanguage}
                             effectScale={effectScale}
                             onEffectScaleChange={setEffectScale}
                             effectOffsetX={effectOffsetX}

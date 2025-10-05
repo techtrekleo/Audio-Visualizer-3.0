@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, FilterEffectType, ControlCardStyle } from '../types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, FilterEffectType, ControlCardStyle } from '../types';
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
 import CollapsibleControlSection from './CollapsibleControlSection';
@@ -197,6 +197,8 @@ interface OptimizedControlsProps {
     onSubtitleBgStyleChange: (style: SubtitleBgStyle) => void;
     subtitleFormat: SubtitleFormat;
     onSubtitleFormatChange: (format: SubtitleFormat) => void;
+    subtitleLanguage: SubtitleLanguage;
+    onSubtitleLanguageChange: (language: SubtitleLanguage) => void;
     effectScale: number;
     onEffectScaleChange: (value: number) => void;
     effectOffsetX: number;
@@ -1091,6 +1093,27 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         { value: SubtitleFormat.SRT, label: 'SRT格式 00:00:14,676 --> 00:00:19,347' }
                                     ]}
                                 />
+                            </div>
+
+                            {/* 字幕語言選擇 */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                                    <span className="text-lg">🌐</span>
+                                    字幕語言
+                                </label>
+                                <SelectControl
+                                    value={props.subtitleLanguage}
+                                    onChange={(value) => props.onSubtitleLanguageChange(value as SubtitleLanguage)}
+                                    options={[
+                                        { value: SubtitleLanguage.CHINESE, label: '🇹🇼 繁體中文' },
+                                        { value: SubtitleLanguage.ENGLISH, label: '🇺🇸 English' },
+                                        { value: SubtitleLanguage.KOREAN, label: '🇰🇷 한국어' },
+                                        { value: SubtitleLanguage.JAPANESE, label: '🇯🇵 日本語' }
+                                    ]}
+                                />
+                                <p className="text-xs text-gray-400 leading-relaxed">
+                                    💡 選擇 AI 產生字幕時使用的語言。確保音訊內容與選擇的語言匹配以獲得最佳效果。
+                                </p>
                             </div>
                             
                             <div className="space-y-2">

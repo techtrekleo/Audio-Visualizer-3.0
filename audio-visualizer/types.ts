@@ -137,6 +137,13 @@ export enum SubtitleFormat {
     SRT = 'SRT格式 00:00:14,676 --> 00:00:19,347',
 }
 
+export enum SubtitleLanguage {
+    CHINESE = '繁體中文',
+    ENGLISH = 'English',
+    KOREAN = '한국어',
+    JAPANESE = '日本語',
+}
+
 export enum TransitionType {
     TV_STATIC = '電視雜訊',
     FADE = '淡入淡出',
