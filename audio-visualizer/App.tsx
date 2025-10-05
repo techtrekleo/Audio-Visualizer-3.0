@@ -151,12 +151,12 @@ function App() {
         const checkPipSupport = () => {
             const hasPipSupport = 
                 'pictureInPictureEnabled' in document ||
-                document.pictureInPictureEnabled ||
+                (document as any).pictureInPictureEnabled ||
                 ('requestPictureInPicture' in HTMLVideoElement.prototype);
             
             console.log('Picture-in-Picture 支援檢測:', {
                 pictureInPictureEnabledInDocument: 'pictureInPictureEnabled' in document,
-                documentPictureInPictureEnabled: document.pictureInPictureEnabled,
+                documentPictureInPictureEnabled: (document as any).pictureInPictureEnabled,
                 requestPictureInPictureInPrototype: 'requestPictureInPicture' in HTMLVideoElement.prototype,
                 hasPipSupport
             });
@@ -316,12 +316,12 @@ function App() {
         const contentRatio = totalPixels > 0 ? (nonBlackPixels / totalPixels) : 0;
         console.log(`Canvas 內容統計: ${nonBlackPixels}/${totalPixels} 非黑色像素 (${(contentRatio * 100).toFixed(2)}%)`);
         
-        // 更寬鬆的內容檢測：如果有任何非黑色像素就認為有內容
-        const hasAnyContent = contentRatio > 0.001; // 0.1% 的閾值
-        console.log('Canvas 內容檢查結果:', hasAnyContent ? '有內容' : '空內容');
+        // 更嚴格的內容檢測：需要至少 2% 的非黑色像素
+        const hasAnyContent = contentRatio > 0.02; // 2% 的閾值
+        console.log('Canvas 內容檢查結果:', hasAnyContent ? '有內容' : '內容不足');
         
         if (!hasAnyContent) {
-            console.warn('Canvas 內容很少，但繼續嘗試創建子母畫面');
+            console.warn('Canvas 內容不足，建議等待更多可視化內容');
             console.log('Canvas 狀態檢查:');
             console.log('- 可視化顯示:', showVisualizer);
             console.log('- 音頻播放:', isPlaying);
@@ -329,6 +329,10 @@ function App() {
             console.log('- 可視化類型:', visualizationType);
             console.log('- Canvas 背景色:', canvas.style.backgroundColor);
             console.log('- Canvas 內容樣式:', getComputedStyle(canvas).getPropertyValue('background-color'));
+            
+            // 如果內容太少，建議用戶等待
+            alert('🎨 Canvas 內容不足\n\n當前可視化內容較少，建議：\n1. 等待音頻播放產生更多可視化效果\n2. 確保音頻有足夠的音量\n3. 調整靈敏度設定\n\n稍後再試子母畫面功能。');
+            return null;
         }
 
         // 使用 requestAnimationFrame 確保渲染完成，避免阻塞主線程
@@ -410,6 +414,12 @@ function App() {
             alert('🎨 請開啟可視化\n\n子母畫面需要顯示可視化效果。\n請確保「顯示可視化」開關已開啟。');
             return;
         }
+        
+        // 添加延遲等待，讓可視化有時間產生內容
+        console.log('等待可視化內容生成...');
+        setTimeout(() => {
+            console.log('開始創建子母畫面...');
+        }, 1000);
         
         try {
             // 等待 video metadata 載入後再調用 PiP
