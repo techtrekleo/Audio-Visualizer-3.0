@@ -509,14 +509,18 @@ function App() {
         
         try {
             // 立即調用，保持用戶手勢上下文
-            createVideoFromCanvasSync().then((video) => {
-                if (!video) return;
-                
-                setPipVideo(video as HTMLVideoElement);
-                
-                console.log('正在進入子母畫面...');
-                // 現在可以安全調用 PiP
-                (video as HTMLVideoElement).requestPictureInPicture().then(() => {
+            // 使用 async/await 保持用戶手勢上下文
+            (async () => {
+                try {
+                    const video = await createVideoFromCanvasSync();
+                    if (!video) return;
+                    
+                    setPipVideo(video as HTMLVideoElement);
+                    
+                    console.log('正在進入子母畫面...');
+                    
+                    // 立即進入子母畫面，不等待任何其他 Promise
+                    await (video as HTMLVideoElement).requestPictureInPicture();
                     setIsPipActive(true);
                     console.log('子母畫面啟動成功');
                     
@@ -525,14 +529,17 @@ function App() {
                         setIsPipActive(false);
                         setPipVideo(null);
                     });
-                }).catch((error) => {
-                    console.error('進入子母畫面失敗:', error);
-                    alert(`🚫 子母畫面啟動失敗\n\n錯誤：${error.message}\n\n請檢查：\n1. 音樂正在播放\n2. 可視化效果已開啟\n3. 瀏覽器支援子母畫面功能\n\n如果問題持續，請重新載入頁面再試。`);
-                });
-                }).catch((error) => {
-                    console.error('創建 Video 元素失敗:', error);
-                    alert(`🎥 視訊元素創建失敗\n\n錯誤：${error.message}\n\n請確保：\n1. 可視化效果正在顯示\n2. 音樂正在播放\n3. 瀏覽器支援 Canvas 捕獲功能`);
-                });
+                } catch (error) {
+                    console.error('子母畫面操作失敗:', error);
+                    if (error.message.includes('user gesture')) {
+                        alert(`🚫 子母畫面啟動失敗\n\n錯誤：用戶手勢已失效\n\n請重新點擊「開啟子母畫面」按鈕。`);
+                    } else if (error.message.includes('Video')) {
+                        alert(`🎥 視訊元素創建失敗\n\n錯誤：${error.message}\n\n請確保：\n1. 可視化效果正在顯示\n2. 音樂正在播放\n3. 瀏覽器支援 Canvas 捕獲功能`);
+                    } else {
+                        alert(`🚫 子母畫面啟動失敗\n\n錯誤：${error.message}\n\n請檢查：\n1. 音樂正在播放\n2. 可視化效果已開啟\n3. 瀏覽器支援子母畫面功能\n\n如果問題持續，請重新載入頁面再試。`);
+                    }
+                }
+            })();
                 
         } catch (error) {
             console.error('子母畫面初始化失敗:', error);
