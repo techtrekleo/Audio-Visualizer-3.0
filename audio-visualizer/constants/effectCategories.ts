@@ -90,7 +90,7 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
     {
         type: VisualizationType.VINYL_RECORD,
         category: EffectCategory.EXPERIMENTAL,
-        description: '旋轉唱片 + 控制卡疊加',
+        description: '唱片加控制卡：旋轉黑膠 + 控制卡',
         difficulty: 'medium',
         performance: 'medium',
         tags: ['唱片', '旋轉', '控制卡', '實驗']

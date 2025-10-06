@@ -103,7 +103,14 @@ interface AudioVisualizerProps {
     controlCardStyle?: ControlCardStyle;
     controlCardColor?: string;
     controlCardBackgroundColor?: string;
+    // Vinyl Record props
+    vinylImage?: string | null;
 }
+
+// 讓繪圖函式能取得當前屬性（不改動所有函式簽名）
+let latestPropsRef: AudioVisualizerProps | null = null;
+// 平滑拖曳/縮放狀態，避免跳動
+let transformState = { cx: 0, cy: 0, scale: 1, initialized: false };
 
 /**
  * Applies an alpha value to a given color string (hex or hsl).
@@ -523,7 +530,6 @@ const drawNebulaWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | n
     
     ctx.restore();
 };
-
 const drawSolarSystem = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -726,7 +732,6 @@ const drawSolarSystem = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | 
     
     ctx.restore();
 };
-
 const drawTechWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -933,7 +938,6 @@ const drawTechWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | nul
     
     ctx.restore();
 };
-
 const drawStellarCore = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -1331,7 +1335,6 @@ const drawRadialBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | n
 
     ctx.restore();
 };
-
 const drawParticleGalaxy = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -1553,7 +1556,6 @@ const drawParticleGalaxy = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array
 
     ctx.restore();
 };
-
 const drawLiquidMetal = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -2007,7 +2009,6 @@ const dataMoshState: { imageData: ImageData | null, framesLeft: number } = {
     imageData: null,
     framesLeft: 0,
 };
-
 const drawDataMosh = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -2540,7 +2541,6 @@ const drawPixelSort = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | nu
     
     ctx.restore();
 };
-
 const drawRepulsorField = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[]) => {
     if (!dataArray) return;
     ctx.save();
@@ -2731,7 +2731,6 @@ const drawAudioLandscape = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array
     
     ctx.restore();
 };
-
 // 可夜特別訂製版可視化
 const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[], geometricFrameImage?: HTMLImageElement | null, geometricSemicircleImage?: HTMLImageElement | null, props?: any, controlCardEnabled?: boolean, controlCardFontSize?: number, controlCardStyle?: ControlCardStyle, controlCardColor?: string, controlCardBackgroundColor?: string) => {
     if (!dataArray) return;
@@ -3123,7 +3122,6 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         ctx.arc(dotX, dotY, 3, 0, Math.PI * 2);
         ctx.fill();
     }
-    
         // 歌曲資訊 (右側) - 動態調整間距
         const infoX = albumX + albumSize + 20;
         const infoY = playerY + Math.max(30, clampedFontSize * 0.8); // 從控制卡頂部開始，根據字體大小調整，最小30px
@@ -3478,7 +3476,6 @@ const drawSubtitles = (
     
     ctx.restore();
 };
-
 // 逐字顯示字幕函數（打字機風格）
 const drawWordByWordSubtitles = (
     ctx: CanvasRenderingContext2D,
@@ -3747,7 +3744,6 @@ const drawLyricsDisplay = (
     
     ctx.restore();
 };
-
 // 電視雜訊過場動畫
 const drawTVStaticTransition = (
     ctx: CanvasRenderingContext2D,
@@ -4017,7 +4013,6 @@ type DrawFunction = (
     geometricFrameImage?: HTMLImageElement | null,
     geometricSemicircleImage?: HTMLImageElement | null,
 ) => void;
-
 // 實驗款：Vinyl Record 旋轉唱片 + 控制卡
 const drawVinylRecord: DrawFunction = (
     ctx,
@@ -4030,50 +4025,127 @@ const drawVinylRecord: DrawFunction = (
     graphicEffect,
     isBeat
 ) => {
-    const centerX = width * 0.28;
-    const centerY = height * 0.45;
-    const discRadius = Math.min(width, height) * 0.22;
-    const ringRadius = discRadius * 0.75;
+    // 不在此重置或覆寫矩陣，讓外層全域 transform（effectScale/effectOffsetX/Y + visualizationTransform）生效
+ 
+     // 支援快速設置中的特效大小與拖曳位置
+     const activeProps: any = (latestPropsRef as any)?.current ?? {};
+     // Use only quick-setting scale for now (effectScale from QuickSettingsPanel)
+     const quickScale = typeof activeProps?.effectScale === 'number' ? activeProps.effectScale : 1.0;
+     const transform = activeProps?.visualizationTransform || { x: 0, y: 0, scale: 1.0 };
+     // 夾住安全範圍，避免被拖曳/縮放到畫面之外導致整體看似消失
+     const scale = Math.max(0.1, Math.min(3.0, quickScale));
+     const rawX = typeof transform.x === 'number' && !isNaN(transform.x) ? transform.x : 0;
+     const rawY = typeof transform.y === 'number' && !isNaN(transform.y) ? transform.y : 0;
+     // 自動偵測像素/百分比：若值大於 50 視為像素，轉為百分比
+     const xPercent = Math.abs(rawX) > 50 ? (rawX / width) * 100 : rawX;
+     const yPercent = Math.abs(rawY) > 50 ? (rawY / height) * 100 : rawY;
+     const offsetXPercent = Math.max(-40, Math.min(40, xPercent));
+     const offsetYPercent = Math.max(-40, Math.min(40, yPercent));
+     // Also apply quick-setting pixel offsets (effectOffsetX/Y)
+     const quickOffsetX = typeof activeProps?.effectOffsetX === 'number' ? activeProps.effectOffsetX : 0;
+     const quickOffsetY = typeof activeProps?.effectOffsetY === 'number' ? activeProps.effectOffsetY : 0;
+     const targetCX = width / 2 + quickOffsetX + (offsetXPercent / 100) * width;
+     const targetCY = height / 2 + quickOffsetY + (offsetYPercent / 100) * height;
+     // 初始化或平滑靠攏
+     const lerp = (a:number, b:number, t:number) => a + (b - a) * t;
+     if (!transformState.initialized) {
+         transformState = { cx: targetCX, cy: targetCY, scale, initialized: true };
+     } else {
+         // 放慢插值係數，拖曳更順不突兀
+         transformState.cx = lerp(transformState.cx, targetCX, 0.15);
+         transformState.cy = lerp(transformState.cy, targetCY, 0.15);
+         transformState.scale = lerp(transformState.scale, scale, 0.15);
+     }
+     const centerX = width / 2; // 讓外層 transform 控制位置
+     const centerY = height / 2;
+     const smoothScale = 1;     // 讓外層 transform 控制縮放
+     // 由全局 transform 控制縮放，基準大小不再乘以 scale，避免雙重縮放
+     const baseRadius = Math.min(width, height) * 0.22;
+     const discRadius = baseRadius;
+     // 調整中圈比例：加大內徑，讓黑膠圈更窄
+     const ringRadius = discRadius * 0.82;
+ 
+     // 背景柔霧
+     const bg = ctx.createRadialGradient(centerX, centerY, discRadius * 0.2, centerX, centerY, discRadius * 1.6);
+     bg.addColorStop(0, 'rgba(0,0,0,0.35)');
+     bg.addColorStop(1, 'rgba(0,0,0,0)');
+     ctx.fillStyle = bg;
+     ctx.fillRect(0, 0, width, height);
+ 
+     // 旋轉角（依唱片轉速計算，放慢至 20 RPM；每幀≈60fps）
+     const RPM = 20;
+     const anglePerFrame = (RPM / 60) * (Math.PI * 2) / 60; // 每幀角度增量
+     const angle = frame * anglePerFrame + (isBeat ? 0.002 : 0);
+ 
+     ctx.save();
+     ctx.translate(centerX, centerY);
+     ctx.rotate(angle);
 
-    // 背景柔霧
-    const bg = ctx.createRadialGradient(centerX, centerY, discRadius * 0.2, centerX, centerY, discRadius * 1.6);
-    bg.addColorStop(0, 'rgba(0,0,0,0.35)');
-    bg.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, width, height);
-
-    // 旋轉角 (根據節拍微抖)
-    const rpm = 33.3 / 60; // 每幀旋轉量
-    const angle = frame * rpm * Math.PI * 2 + (isBeat ? 0.02 : 0);
-
-    ctx.save();
-    ctx.translate(centerX, centerY);
-    ctx.rotate(angle);
-
-    // 外圈黑膠
-    ctx.fillStyle = '#101015';
+    // 外圈黑膠（黑灰色）
+    ctx.fillStyle = '#181b21';
     ctx.beginPath();
     ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    // 唱片紋路
-    for (let i = 0; i < 30; i++) {
-        const r = ringRadius + i * ((discRadius - ringRadius) / 30);
-        ctx.strokeStyle = i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)';
+    // 唱片紋路（限制在中圈：從內到外的同心條紋，黑/灰交錯）
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
+    ctx.arc(0, 0, ringRadius * 0.96, 0, Math.PI * 2, true);
+    ctx.clip('evenodd');
+    for (let i = 0; i <= 48; i++) {
+        const r = ringRadius * 0.96 + i * ((discRadius - ringRadius * 0.96) / 48);
         ctx.lineWidth = 1;
+        ctx.strokeStyle = i % 2 === 0 ? '#2a2f36' : '#1f2329';
         ctx.beginPath();
         ctx.arc(0, 0, r, 0, Math.PI * 2);
         ctx.stroke();
     }
-
-    // 中心貼紙
-    const labelGradient = ctx.createLinearGradient(-ringRadius, 0, ringRadius, 0);
-    labelGradient.addColorStop(0, colors.primary || '#60a5fa');
-    labelGradient.addColorStop(1, colors.accent || '#a78bfa');
-    ctx.fillStyle = labelGradient;
+    ctx.restore();
+    // 斜向高光帶
+    const gloss = ctx.createLinearGradient(-discRadius, -discRadius, discRadius, discRadius);
+    gloss.addColorStop(0, 'rgba(255,255,255,0)');
+    gloss.addColorStop(0.5, 'rgba(255,255,255,0.06)');
+    gloss.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gloss;
     ctx.beginPath();
-    ctx.arc(0, 0, ringRadius * 0.82, 0, Math.PI * 2);
+    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
     ctx.fill();
+
+    // 三圈結構：
+    // 1) 內圈：原圖
+    // 2) 中圈：黑膠唱片遮罩
+    // 3) 外圈：半透明遮罩（原圖暗化）
+    // 中心貼紙（若有圖片，使用圖片）
+    // 從最新屬性讀取圖片（避免引用組件內部的 refs 導致作用域錯誤）
+    const vinylImage = ((latestPropsRef as any)?.vinylImage ?? null) as string | null;
+    if (vinylImage) {
+        const img = getOrCreateCachedImage('vinylImage', vinylImage);
+        if (img && img.complete) {
+            const innerR = ringRadius * 0.92; // 讓內圈更大，黑膠圈變窄
+            const size = innerR * 2; // 以內圈大小鋪滿
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(0, 0, innerR, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.drawImage(img, -size / 2, -size / 2, size, size);
+            ctx.restore();
+        } else {
+            // 首次尚未載入完成時，畫一個漸層佔位
+            ctx.fillStyle = '#1f2937';
+            ctx.beginPath();
+            ctx.arc(0, 0, ringRadius * 0.92, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    } else {
+        const labelGradient = ctx.createLinearGradient(-ringRadius, 0, ringRadius, 0);
+        labelGradient.addColorStop(0, colors.primary || '#60a5fa');
+        labelGradient.addColorStop(1, colors.accent || '#a78bfa');
+        ctx.fillStyle = labelGradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, ringRadius * 0.9, 0, Math.PI * 2);
+        ctx.fill();
+    }
 
     // 中心孔
     ctx.fillStyle = '#e5e7eb';
@@ -4081,91 +4153,375 @@ const drawVinylRecord: DrawFunction = (
     ctx.arc(0, 0, ringRadius * 0.06, 0, Math.PI * 2);
     ctx.fill();
 
+    // 中圈：黑膠唱片遮罩（深灰色，不是純黑）
+    ctx.fillStyle = '#1c1f24';
+    ctx.beginPath();
+    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
+    ctx.arc(0, 0, ringRadius * 0.96, 0, Math.PI * 2, true);
+    ctx.fill('evenodd');
+
+    // 外圈：半透明遮罩（同圖暗化，跟著旋轉）
+    if (vinylImage) {
+        const img2 = getOrCreateCachedImage('vinylImageOuter', vinylImage);
+        const outerR = discRadius * 1.08;
+        if (img2 && img2.complete) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(0, 0, outerR, 0, Math.PI * 2);
+            ctx.arc(0, 0, discRadius * 0.92, 0, Math.PI * 2, true);
+            ctx.clip('evenodd');
+            const size2 = outerR * 2;
+            ctx.globalAlpha = 0.6;
+            ctx.drawImage(img2, -size2 / 2, -size2 / 2, size2, size2);
+            ctx.globalAlpha = 1;
+            ctx.restore();
+        } else {
+            ctx.save();
+            ctx.globalAlpha = 0.2;
+            ctx.beginPath();
+            ctx.arc(0, 0, outerR, 0, Math.PI * 2);
+            ctx.arc(0, 0, discRadius * 0.92, 0, Math.PI * 2, true);
+            ctx.fillStyle = '#000';
+            ctx.fill('evenodd');
+            ctx.restore();
+        }
+    }
+
     ctx.restore();
 
-    // 唱臂 (固定角度裝飾)
-    const armBaseX = centerX - discRadius * 0.9;
-    const armBaseY = centerY - discRadius * 0.9;
-    ctx.strokeStyle = '#d1d5db';
-    ctx.lineWidth = 6;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(armBaseX, armBaseY);
-    ctx.lineTo(centerX - discRadius * 0.3, centerY - discRadius * 0.3);
-    ctx.stroke();
+    // 唱臂與唱針（縮短、左上接觸，含折角）
+    {
+        const baseX = centerX - discRadius * 0.92;
+        const baseY = centerY - discRadius * 0.92;
+        // 基座
+        ctx.fillStyle = 'rgba(30,32,36,0.9)';
+        ctx.beginPath();
+        ctx.arc(baseX, baseY, 16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#9aa3ac';
+        ctx.beginPath();
+        ctx.arc(baseX, baseY, 8, 0, Math.PI * 2);
+        ctx.fill();
+        // 兩段式唱臂：基座 -> 肘節 -> 接觸點
+        const contactAngle = -Math.PI * 0.72; // 左上
+        const contactX = centerX + Math.cos(contactAngle) * ringRadius * 1.0;
+        const contactY = centerY + Math.sin(contactAngle) * ringRadius * 1.0;
+        const elbowX = baseX + (contactX - baseX) * 0.58 + 10;
+        const elbowY = baseY + (contactY - baseY) * 0.58 - 6;
+        const armGrad = ctx.createLinearGradient(baseX, baseY, contactX, contactY);
+        armGrad.addColorStop(0, '#ffffff'); // 純白
+        armGrad.addColorStop(1, '#e5e7eb'); // 白色
+        ctx.strokeStyle = armGrad;
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        // 段1：基座 -> 肘
+        ctx.beginPath();
+        ctx.moveTo(baseX, baseY);
+        ctx.lineTo(elbowX, elbowY);
+        ctx.stroke();
+        // 段2：肘 -> 接觸點（細一點）
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(elbowX, elbowY);
+        ctx.lineTo(contactX, contactY);
+        ctx.stroke();
+        // 唱頭（矩形，短一些，停在中圈）
+        const headLen = 14;
+        const headWide = 8;
+        const dirX = (contactX - elbowX);
+        const dirY = (contactY - elbowY);
+        const len = Math.hypot(dirX, dirY) || 1;
+        const nx = dirX / len, ny = dirY / len;
+        const px = -ny, py = nx;
+        const hx = contactX - nx * (headLen * 0.2);
+        const hy = contactY - ny * (headLen * 0.2);
+        ctx.fillStyle = '#f3f4f6'; // 近白色唱頭
+        ctx.beginPath();
+        ctx.moveTo(hx + px * headWide, hy + py * headWide);
+        ctx.lineTo(hx - px * headWide, hy - py * headWide);
+        ctx.lineTo(hx - px * headWide + nx * headLen, hy - py * headWide + ny * headLen);
+        ctx.lineTo(hx + px * headWide + nx * headLen, hy + py * headWide + ny * headLen);
+        ctx.closePath();
+        ctx.fill();
+        // 針尖（小三角形，落在中圈，不進入內圈）
+        ctx.fillStyle = '#ffffff'; // 針尖純白
+        ctx.beginPath();
+        const tipX = contactX;
+        const tipY = contactY;
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(tipX - nx * 6 + px * 3, tipY - ny * 6 + py * 3);
+        ctx.lineTo(tipX - nx * 6 - px * 3, tipY - ny * 6 - py * 3);
+        ctx.closePath();
+        ctx.fill();
+        // 針尖陰影
+        ctx.globalAlpha = 0.25;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, ringRadius * 0.95, Math.atan2(hy-centerY, hx-centerX) - 0.02, Math.atan2(hy-centerY, hx-centerX) + 0.02);
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 8;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+    }
+    // 控制卡 (右側) - 短一些、厚一些的樣式
+    const cardW = width * 0.21; // 長度改為目前的 70%
+    const cardH = 300; // 高度固定為 300px
+    const cardEnabled = (latestPropsRef as any)?.controlCardEnabled !== false; // 預設顯示
+    const layoutMode = (latestPropsRef as any)?.vinylLayoutMode || 'horizontal';
+    
+    // 根據配置模式調整控制卡位置
+    let cardX, cardY;
+    if (layoutMode === 'vertical') {
+        // 上下排列：控制卡在唱片下方
+        cardX = centerX - cardW * 0.5;
+        cardY = centerY + discRadius * 1.25;
+    } else {
+        // 左右排列：控制卡在唱片右側（預設）
+        cardX = centerX + discRadius * 1.25;
+        cardY = centerY - cardH * 0.5;
+    }
+    
+    if (cardEnabled) {
+        const style = (latestPropsRef as any)?.controlCardStyle as any;
+        const color = (latestPropsRef as any)?.controlCardColor || '#111827';
+        const bg = (latestPropsRef as any)?.controlCardBackgroundColor || 'rgba(240, 244, 248, 0.92)';
 
-    // 控制卡 (右側)
-    const cardW = width * 0.46;
-    const cardH = Math.min(110, height * 0.23);
-    const cardX = centerX + discRadius * 0.65;
-    const cardY = centerY - cardH * 0.5;
+        // 卡片底
+        if (style !== 'transparent') {
+            ctx.fillStyle = bg;
+        } else {
+            ctx.fillStyle = 'rgba(0,0,0,0)';
+        }
+        ctx.strokeStyle = style === 'outline' ? color : 'rgba(0,0,0,0.07)';
+        ctx.lineWidth = 2;
+        const r = 14;
+        ctx.beginPath();
+        ctx.moveTo(cardX + r, cardY);
+        ctx.lineTo(cardX + cardW - r, cardY);
+        ctx.quadraticCurveTo(cardX + cardW, cardY, cardX + cardW, cardY + r);
+        ctx.lineTo(cardX + cardW, cardY + cardH - r);
+        ctx.quadraticCurveTo(cardX + cardW, cardY + cardH, cardX + cardW - r, cardY + cardH);
+        ctx.lineTo(cardX + r, cardY + cardH);
+        ctx.quadraticCurveTo(cardX, cardY + cardH, cardX, cardY + cardH - r);
+        ctx.lineTo(cardX, cardY + r);
+        ctx.quadraticCurveTo(cardX, cardY, cardX + r, cardY);
+        ctx.closePath();
+        if (style !== 'transparent') ctx.fill();
+        if (style === 'outline') ctx.stroke();
 
-    // 卡片底
-    ctx.fillStyle = 'rgba(240, 244, 248, 0.92)';
-    ctx.strokeStyle = 'rgba(0,0,0,0.07)';
-    ctx.lineWidth = 1;
-    const r = 14;
-    ctx.beginPath();
-    ctx.moveTo(cardX + r, cardY);
-    ctx.lineTo(cardX + cardW - r, cardY);
-    ctx.quadraticCurveTo(cardX + cardW, cardY, cardX + cardW, cardY + r);
-    ctx.lineTo(cardX + cardW, cardY + cardH - r);
-    ctx.quadraticCurveTo(cardX + cardW, cardY + cardH, cardX + cardW - r, cardY + cardH);
-    ctx.lineTo(cardX + r, cardY + cardH);
-    ctx.quadraticCurveTo(cardX, cardY + cardH, cardX, cardY + cardH - r);
-    ctx.lineTo(cardX, cardY + r);
-    ctx.quadraticCurveTo(cardX, cardY, cardX + r, cardY);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+        // 進度條和時間（放到底部一起顯示）
+        const barMargin = 22;
+        const barX = cardX + barMargin;
+        const barW = cardW - barMargin * 2;
+        // 時間文字（左/右）
+        const timeToMMSS = (t: number) => {
+            const m = Math.floor(t / 60);
+            const s = Math.floor(t % 60);
+            return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        };
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px Poppins, sans-serif';
+        ctx.textBaseline = 'middle';
+        // 將時間與進度條一起上移，避免貼底
+        const barY = cardY + cardH - 140; // 從底部往上 140px
+        const timerY = barY + 24; // 置於進度條下方一點
+        const bgStroke = 6;
+        const fgStroke = 6;
+        // 自訂樣式：膠囊形狀 + 漸層 + 刻度 + 斜紋填充
+        const drawRoundedRect = (x:number, y:number, w:number, h:number, r:number) => {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        };
+        const trackH = 10;
+        const trackY = barY - trackH/2;
+        // 背景膠囊
+        const trackGrad = ctx.createLinearGradient(barX, trackY, barX + barW, trackY);
+        trackGrad.addColorStop(0, 'rgba(255,255,255,0.08)');
+        trackGrad.addColorStop(1, 'rgba(0,0,0,0.18)');
+        ctx.fillStyle = trackGrad;
+        drawRoundedRect(barX, trackY, barW, trackH, trackH/2);
+        ctx.fill();
+        // 內陰影
+        ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+        ctx.lineWidth = 1;
+        drawRoundedRect(barX+0.5, trackY+0.5, barW-1, trackH-1, trackH/2-1);
+        ctx.stroke();
+        // 刻度（10%）
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 2;
+        for (let i=0;i<=10;i++) {
+            const tx = barX + (barW * i/10);
+            ctx.beginPath();
+            ctx.moveTo(tx, trackY + trackH + 3);
+            ctx.lineTo(tx, trackY + trackH + 7);
+            ctx.stroke();
+        }
+        // 進度值（膠囊填充 + 斜紋）
+        const audio = (latestPropsRef as any)?.audioRef?.current as HTMLAudioElement | undefined;
+        const duration = audio?.duration || 0;
+        const curTime = audio?.currentTime || 0;
+        const progress = duration > 0 ? (curTime / duration) : 0.0;
+        const fillW = Math.max(0, Math.min(barW, barW * progress));
+        const fillGrad = ctx.createLinearGradient(barX, trackY, barX + fillW, trackY);
+        fillGrad.addColorStop(0, color);
+        fillGrad.addColorStop(1, 'rgba(255,255,255,0.85)');
+        ctx.fillStyle = fillGrad;
+        drawRoundedRect(barX, trackY, fillW, trackH, trackH/2);
+        ctx.fill();
+        // 斜紋動畫
+        const stripeW = 8;
+        const offset = ((typeof frame === 'number' ? frame : 0) % stripeW);
+        ctx.save();
+        ctx.beginPath();
+        drawRoundedRect(barX, trackY, fillW, trackH, trackH/2);
+        ctx.clip();
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+        ctx.lineWidth = 3;
+        for (let x = barX - stripeW + offset; x < barX + fillW; x += stripeW) {
+            ctx.beginPath();
+            ctx.moveTo(x, trackY);
+            ctx.lineTo(x + 6, trackY + trackH);
+            ctx.stroke();
+        }
+        ctx.restore();
+        // 節點
+        ctx.fillStyle = '#ffffff';
+        const knobX = barX + barW * progress;
+        ctx.beginPath();
+        ctx.arc(knobX, barY, 9, 0, Math.PI * 2);
+        ctx.fill();
+        // 左右時間文字與進度條同列
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px Poppins, sans-serif';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(timeToMMSS(curTime), barX + 2, timerY);
+        if (duration > 0) ctx.fillText(timeToMMSS(duration), barX + barW - 48, timerY);
 
-    // 進度條
-    const barMargin = 20;
-    const barX = cardX + barMargin;
-    const barY = cardY + 30;
-    const barW = cardW - barMargin * 2;
-    const barH = 6;
-    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-    ctx.fillRect(barX, barY, barW, barH);
-    const progress = dataArray ? (dataArray[0] / 255) : 0.3;
-    ctx.fillStyle = '#111827';
-    ctx.fillRect(barX, barY, barW * progress, barH);
-    // 圓形節點
-    ctx.fillStyle = '#ffffff';
-    const knobX = barX + barW * progress;
-    ctx.beginPath();
-    ctx.arc(knobX, barY + barH / 2, 7, 0, Math.PI * 2);
-    ctx.fill();
+        // 細長波形（貼近參考樣式）
+        // 波形區域（左右縮短，預留左右 20px padding）
+        const wavePadding = 20;
+        const waveX = barX + wavePadding;
+        const waveW = barW - wavePadding * 2;
+        // 將波形再上移，預留更大底部空間
+        const waveBaseline = cardY + 100;
+        const samples = 64;
+        const getSample = (t: number, bandStart: number, bandEnd: number) => {
+            if (!dataArray) return 0.5;
+            const len = dataArray.length;
+            const s = Math.max(0, Math.min(len - 1, Math.floor(bandStart * len)));
+            const e = Math.max(s + 1, Math.min(len, Math.floor(bandEnd * len)));
+            const idx = s + Math.floor(t * (e - s - 1));
+            return dataArray[idx] / 255;
+        };
+        // 線條波狀圖（白色，取中頻）- 先不繪製，最後覆蓋在山形圖上層
+        // 提高線條振幅（x10）
+        const waveHeight1 = 1300;
+        const drawMidLine = () => {
+            ctx.beginPath();
+            for (let i = 0; i <= samples; i++) {
+                const t = i / samples;
+                const v = getSample(t, 0.25, 0.6);
+                // 非線性增益，讓峰更高
+                const amp = Math.max(0, v - 0.4);
+                const y = waveBaseline - Math.pow(amp, 1.25) * waveHeight1;
+                const x = waveX + t * waveW;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        };
+        // 山形圖（黃綠，高頻，振幅明顯）：以折線形成的鋸齒/山峰並向下填滿
+        // 條狀聲波圖（黃綠）：與白色線條共用同一條基準線與相同 X 取樣點
+        const barCount = samples + 1; // 與線條同樣的取樣點數
+        const barWidth = Math.max(2, (waveW / barCount) * 0.6); // 以取樣間距為基礎寬度
+        for (let i = 0; i < barCount; i++) {
+            const t = i / (barCount - 1);
+            // 取低頻到中低頻，讓能量更有起伏
+            const v = getSample(t, 0.05, 0.35);
+            // 放大振幅，柱形更高
+            const amp = Math.max(0, v - 0.28);
+            const h = Math.pow(amp, 1.35) * 900; // x10 放大柱狀高度
+            const xCenter = waveX + t * waveW;
+            const x = xCenter - barWidth / 2; // 讓柱中心對齊線條的取樣 X
+            const y = waveBaseline - h;
+            const grad = ctx.createLinearGradient(0, y, 0, waveBaseline);
+            grad.addColorStop(0, 'rgba(210,230,110,0.85)');
+            grad.addColorStop(1, 'rgba(210,230,110,0.15)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, barWidth, h);
+            // 頂部高光
+            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.fillRect(x, y, barWidth, 2);
+        }
+        // 最後繪製白色中頻線條，與山形圖同基準線疊加
+        drawMidLine();
 
-    // 控制按鈕 (上一首/播放/下一首)
-    const iconY = cardY + cardH * 0.66;
-    const gap = 56;
-    const playX = cardX + cardW * 0.5;
-    const prevX = playX - gap;
-    const nextX = playX + gap;
-
-    // Prev (triangle left)
-    ctx.fillStyle = '#111827';
-    ctx.beginPath();
-    ctx.moveTo(prevX + 14, iconY - 12);
-    ctx.lineTo(prevX - 6, iconY);
-    ctx.lineTo(prevX + 14, iconY + 12);
-    ctx.closePath();
-    ctx.fill();
-
-    // Play/Pause (pause bars)
-    ctx.fillStyle = '#111827';
-    ctx.fillRect(playX - 10, iconY - 12, 8, 24);
-    ctx.fillRect(playX + 2, iconY - 12, 8, 24);
-
-    // Next (triangle right)
-    ctx.beginPath();
-    ctx.moveTo(nextX - 14, iconY - 12);
-    ctx.lineTo(nextX + 6, iconY);
-    ctx.lineTo(nextX - 14, iconY + 12);
-    ctx.closePath();
-    ctx.fill();
+        // 控制按鈕 (上一首/播放/下一首) 隨進度條整體上移，並與其保持距離
+        const iconY = barY + 80;
+        const gap = 100;
+        const playX = cardX + cardW * 0.5;
+        const prevX = playX - gap;
+        const nextX = playX + gap;
+        // 三個圓形按鈕（僅此一組）
+        const drawCircle = (x: number, y: number) => {
+            ctx.fillStyle = 'rgba(0,0,0,0.25)';
+            ctx.beginPath();
+            ctx.arc(x, y, 28, 0, Math.PI * 2);
+            ctx.fill();
+        };
+        drawCircle(prevX, iconY);
+        drawCircle(playX, iconY);
+        drawCircle(nextX, iconY);
+        // Prev ▶◀
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(prevX + 10, iconY - 10);
+        ctx.lineTo(prevX - 6, iconY);
+        ctx.lineTo(prevX + 10, iconY + 10);
+        ctx.closePath();
+        ctx.fill();
+        // Pause ||
+        ctx.fillRect(playX - 8, iconY - 12, 6, 24);
+        ctx.fillRect(playX + 2, iconY - 12, 6, 24);
+        // Next ◀▶
+        ctx.beginPath();
+        ctx.moveTo(nextX - 10, iconY - 10);
+        ctx.lineTo(nextX + 6, iconY);
+        ctx.lineTo(nextX - 10, iconY + 10);
+        ctx.closePath();
+        ctx.fill();
+    }
 };
+
+// 圖片快取，避免每幀重建
+const imageCache: Record<string, HTMLImageElement> = {};
+function getOrCreateCachedImage(key: string, src: string): HTMLImageElement | null {
+    const cached = imageCache[key];
+    if (cached && cached.src === src) return cached;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = src;
+    img.onload = () => {
+        // 圖片載入後，下一幀即可繪製出來
+        // 這裡不需要做任何事，主渲染迴圈會自動更新
+        // 僅供除錯
+        console.log('[Vinyl] image loaded', key);
+    };
+    img.onerror = (e) => {
+        console.warn('[Vinyl] image failed to load', key, src, e);
+    };
+    imageCache[key] = img;
+    return img;
+}
 
 const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.MONSTERCAT]: drawMonstercat,
@@ -4226,8 +4582,6 @@ type Shockwave = {
     opacity: number;
     lineWidth: number;
 };
-
-
 const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((props, ref) => {
     const { analyser, audioRef, isPlaying, disableVisualizer } = props;
     const animationFrameId = useRef<number>(0);
@@ -4257,6 +4611,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
 
     useEffect(() => {
         propsRef.current = props;
+        latestPropsRef = props;
     });
 
     useEffect(() => {
@@ -4430,6 +4785,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             drawTransitionEffect(ctx, width, height, transitionType, transitionProgress);
         }
 
+        // 調試覆蓋層已移除
+
         const drawFunction = VISUALIZATION_MAP[visualizationType];
         if (drawFunction && !isVisualizerDisabled) {
             const shouldTransform = !IGNORE_TRANSFORM_VISUALIZATIONS.has(visualizationType);
@@ -4551,7 +4908,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 filterEffectOpacity || 0.6, 
                 filterEffectSpeed || 1.0, 
                 filterParticlesRef.current, 
-                frame
+                frame.current
             );
         }
 
@@ -4838,7 +5195,6 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         
         return null;
     };
-
     // 更新元素位置
     const updateElementPosition = (element: string, offset: { x: number; y: number }) => {
         const { width, height } = (ref as React.RefObject<HTMLCanvasElement>).current || { width: 0, height: 0 };
@@ -4877,9 +5233,6 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             }
         }
     };
-
-
-
     // 繪製 CTA 動畫
     const drawCtaAnimation = (ctx: CanvasRenderingContext2D, width: number, height: number, channelName: string, position: { x: number; y: number }) => {
         const currentTime = Date.now();
@@ -5455,7 +5808,6 @@ const drawRandomPixels = (ctx: CanvasRenderingContext2D, width: number, height: 
         ctx.fillRect(x, y, 2, 2);
     }
 };
-
 // Z總訂製款 - 黑膠唱片旋轉效果
 const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, height: number, centerImage: string | null, propsRef: React.MutableRefObject<AudioVisualizerProps>, frame: number | null) => {
     // 獲取 Z總訂製款的控制參數
@@ -5637,7 +5989,6 @@ interface FilterParticle {
     life: number;
     maxLife: number;
 }
-
 const createFilterParticle = (type: FilterEffectType, width: number, height: number): FilterParticle => {
     const baseSpeed = 1.0;
     const baseSize = 3;

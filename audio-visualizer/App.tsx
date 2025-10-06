@@ -1,5 +1,3 @@
-
-
 declare const chrome: any;
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
@@ -74,6 +72,9 @@ function App() {
     const [subtitleDisplayMode, setSubtitleDisplayMode] = useState<SubtitleDisplayMode>(SubtitleDisplayMode.CLASSIC);
     const [subtitleFormat, setSubtitleFormat] = useState<SubtitleFormat>(SubtitleFormat.BRACKET);
     const [subtitleLanguage, setSubtitleLanguage] = useState<SubtitleLanguage>(SubtitleLanguage.CHINESE);
+    // Vinyl Record 圖片
+    const [vinylImage, setVinylImage] = useState<string | null>(null);
+    const [vinylLayoutMode, setVinylLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
     
     // Lyrics Display State (測試中)
     const [showLyricsDisplay, setShowLyricsDisplay] = useState<boolean>(false);
@@ -1055,6 +1056,20 @@ function App() {
         setZCustomCenterImage(null);
     };
 
+    // Vinyl Record 圖片處理函數
+    const handleVinylImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        if (vinylImage) URL.revokeObjectURL(vinylImage);
+        setVinylImage(url);
+    };
+
+    const clearVinylImage = () => {
+        if (vinylImage) URL.revokeObjectURL(vinylImage);
+        setVinylImage(null);
+    };
+
     const handleRecordingComplete = useCallback((url: string, extension: string) => {
         setVideoUrl(url);
         setVideoExtension(extension);
@@ -1203,6 +1218,54 @@ function App() {
     const checkerboardSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect width="10" height="10" x="0" y="0" fill="#888" /><rect width="10" height="10" x="10" y="10" fill="#888" /><rect width="10" height="10" x="10" y="0" fill="#444" /><rect width="10" height="10" x="0" y="10" fill="#444" /></svg>`;
     const checkerboardUrl = `url("data:image/svg+xml,${encodeURIComponent(checkerboardSvg)}")`;
 
+    // ===== Dragging & Scaling (Effect Transform) =====
+    const isDraggingRef = useRef<boolean>(false);
+    const lastPointerPosRef = useRef<{ x: number; y: number } | null>(null);
+    const dragStartRef = useRef<{ pointerX: number; pointerY: number; startX: number; startY: number } | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
+
+    const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (e.button !== 0) return;
+        (e.currentTarget as HTMLDivElement).setPointerCapture?.(e.pointerId);
+        isDraggingRef.current = true;
+        lastPointerPosRef.current = { x: e.clientX, y: e.clientY };
+        dragStartRef.current = {
+            pointerX: e.clientX,
+            pointerY: e.clientY,
+            startX: (visualizationTransform?.x || 0),
+            startY: (visualizationTransform?.y || 0)
+        };
+        if (e.cancelable) e.preventDefault();
+    };
+
+    const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (!isDraggingRef.current || !lastPointerPosRef.current) return;
+        lastPointerPosRef.current = { x: e.clientX, y: e.clientY };
+        const start = dragStartRef.current;
+        const damp = 0.5; // sensitivity
+        if (start) {
+            const dx = (e.clientX - start.pointerX) * damp;
+            const dy = (e.clientY - start.pointerY) * damp;
+            const nextX = start.startX + dx;
+            const nextY = start.startY + dy;
+            setVisualizationTransform(prevTransform => ({
+                x: nextX,
+                y: nextY,
+                scale: prevTransform?.scale ?? 1.0,
+            }));
+        }
+        if (e.cancelable) e.preventDefault();
+    };
+
+    const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+        isDraggingRef.current = false;
+        lastPointerPosRef.current = null;
+        dragStartRef.current = null;
+        (e.currentTarget as HTMLDivElement).releasePointerCapture?.(e.pointerId);
+        if (e.cancelable) e.preventDefault();
+    };
 
     return (
         <ModalProvider>
@@ -1241,10 +1304,17 @@ function App() {
                     </div>
                         <div style={wrapperStyle} className="flex items-center justify-center bg-black rounded-lg border border-gray-700 overflow-hidden">
                             <div 
+                                ref={containerRef}
+                                onPointerDown={handlePointerDown}
+                                onPointerMove={handlePointerMove}
+                                onPointerUp={handlePointerUp}
+                                onPointerCancel={handlePointerUp}
                                 style={{
                                     ...visualizerContainerStyle,
                                     backgroundImage: isTransparentBg ? checkerboardUrl : 'none',
                                     backgroundSize: '20px 20px',
+                                    touchAction: 'none',
+                                    cursor: isDraggingRef.current ? 'grabbing' : 'grab'
                                 }} 
                                 className="relative shadow-2xl shadow-cyan-500/10"
                             >
@@ -1307,6 +1377,8 @@ function App() {
                                     zCustomScale={zCustomScale}
                                     zCustomPosition={zCustomPosition}
                                     onZCustomPositionUpdate={setZCustomPosition}
+                                    vinylImage={vinylImage}
+                                    vinylLayoutMode={vinylLayoutMode}
                                     geometricFrameImage={geometricFrameImage}
                                     geometricSemicircleImage={geometricSemicircleImage}
                                     geometricSongName={geometricSongName}
@@ -1350,6 +1422,12 @@ function App() {
                             isLoading={isLoading}
                             visualizationType={visualizationType}
                             onVisualizationChange={handleSetVisualization}
+                            // Vinyl Record controls
+                            vinylImage={vinylImage}
+                            onVinylImageUpload={handleVinylImageUpload}
+                            onClearVinylImage={clearVinylImage}
+                            vinylLayoutMode={vinylLayoutMode}
+                            onVinylLayoutModeChange={setVinylLayoutMode}
                             customText={customText}
                             onTextChange={handleTextChange}
                             textColor={textColor}

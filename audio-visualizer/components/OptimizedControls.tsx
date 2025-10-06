@@ -258,6 +258,22 @@ interface OptimizedControlsProps {
     onZCustomScaleChange?: (scale: number) => void;
     zCustomPosition?: { x: number; y: number };
     onZCustomPositionUpdate?: (position: { x: number; y: number }) => void;
+    // Vinyl Record
+    vinylImage?: string | null;
+    onVinylImageUpload?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onClearVinylImage?: () => void;
+    // Vinyl layout mode
+    vinylLayoutMode?: 'horizontal' | 'vertical';
+    onVinylLayoutModeChange?: (mode: 'horizontal' | 'vertical') => void;
+    // 控制卡設定（Vinyl）
+    controlCardEnabled?: boolean;
+    onControlCardEnabledChange?: (v: boolean) => void;
+    controlCardStyle?: ControlCardStyle;
+    onControlCardStyleChange?: (s: ControlCardStyle) => void;
+    controlCardColor?: string;
+    onControlCardColorChange?: (c: string) => void;
+    controlCardBackgroundColor?: string;
+    onControlCardBackgroundColorChange?: (c: string) => void;
     // Filter Effects props
     filterEffectType?: FilterEffectType;
     onFilterEffectTypeChange?: (type: FilterEffectType) => void;
@@ -269,21 +285,6 @@ interface OptimizedControlsProps {
     onFilterEffectSpeedChange?: (speed: number) => void;
     filterEffectEnabled?: boolean;
     onFilterEffectEnabledChange?: (enabled: boolean) => void;
-    // Control Card props
-    controlCardEnabled?: boolean;
-    onControlCardEnabledChange?: (enabled: boolean) => void;
-    controlCardFontSize?: number;
-    onControlCardFontSizeChange?: (size: number) => void;
-    controlCardStyle?: ControlCardStyle;
-    onControlCardStyleChange?: (style: ControlCardStyle) => void;
-    controlCardColor?: string;
-    onControlCardColorChange?: (color: string) => void;
-    controlCardBackgroundColor?: string;
-    onControlCardBackgroundColorChange?: (color: string) => void;
-    songNameList?: string[];
-    onSongNameListChange?: (list: string[]) => void;
-    autoChangeSong?: boolean;
-    onAutoChangeSongChange?: (enabled: boolean) => void;
     // Picture-in-Picture props
     isPipSupported?: boolean;
     isPipActive?: boolean;
@@ -1726,6 +1727,160 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         </CollapsibleControlSection>
                     )}
 
+                    {/* 唱片加控制卡 - 專用控制面板 */}
+                    {props.visualizationType === VisualizationType.VINYL_RECORD && (
+                        <CollapsibleControlSection
+                            title="唱片加控制卡"
+                            icon={ICON_PATHS.SETTINGS}
+                            priority="high"
+                            defaultExpanded={true}
+                            badge="實驗款"
+                        >
+                            <div className="space-y-4">
+                                {/* 圖片上傳 */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                                        <span className="text-lg">🖼️</span>
+                                        唱片圖片（內外層覆蓋）
+                                    </label>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            id="vinyl-image-input"
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={props.onVinylImageUpload}
+                                        />
+                                        <label htmlFor="vinyl-image-input" className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-100 rounded cursor-pointer text-sm">
+                                            選擇圖片
+                                        </label>
+                                        {props.vinylImage && (
+                                            <button onClick={props.onClearVinylImage} className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-100 rounded text-sm">
+                                                清除
+                                            </button>
+                                        )}
+                                    </div>
+                                    {props.vinylImage && (
+                                        <img src={props.vinylImage} alt="Vinyl 預覽" className="w-24 h-24 object-cover rounded border" />
+                                    )}
+                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                        會將此圖片用於唱片內層與外層；中層會覆蓋黑膠紋理與顏色。
+                                    </p>
+                                </div>
+
+                                {/* 控制卡設定 */}
+                                <div className="space-y-4 border-t border-gray-600 pt-4">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-gray-300">顯示控制卡</label>
+                                        <button
+                                            onClick={() => props.onControlCardEnabledChange?.(!props.controlCardEnabled)}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                                props.controlCardEnabled ? 'bg-cyan-500' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.controlCardEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
+
+                                    {props.controlCardEnabled && (
+                                        <>
+                                            {/* 配置模式切換 */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">配置模式</label>
+                                                <select
+                                                    value={props.vinylLayoutMode || 'horizontal'}
+                                                    onChange={(e) => props.onVinylLayoutModeChange?.(e.target.value as 'horizontal' | 'vertical')}
+                                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                                >
+                                                    <option value="horizontal">↔️ 左右排列</option>
+                                                    <option value="vertical">↕️ 上下排列</option>
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">控制卡樣式</label>
+                                                <select
+                                                    value={props.controlCardStyle}
+                                                    onChange={(e) => props.onControlCardStyleChange?.(e.target.value as ControlCardStyle)}
+                                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                                >
+                                                    <option value={ControlCardStyle.FILLED}>🎨 填充</option>
+                                                    <option value={ControlCardStyle.OUTLINE}>📦 外框</option>
+                                                    <option value={ControlCardStyle.TRANSPARENT}>👻 無色</option>
+                                                </select>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-1">文字/圖示顏色</label>
+                                                    <input type="color" value={props.controlCardColor || '#111827'} onChange={(e) => props.onControlCardColorChange?.(e.target.value)} className="w-12 h-8 rounded border border-gray-600 cursor-pointer" />
+                                                </div>
+                                                {props.controlCardStyle !== ControlCardStyle.TRANSPARENT && (
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-300 mb-1">背景顏色</label>
+                                                        <div className="flex items-center gap-3">
+                                                            {/* 顏色選擇器 */}
+                                                            <input
+                                                                type="color"
+                                                                value={(() => {
+                                                                    const c = props.controlCardBackgroundColor || 'rgba(240,244,248,0.92)';
+                                                                    const m = c.match(/rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([0-9.]+))?\)/);
+                                                                    if (m) {
+                                                                        const r = Number(m[1]).toString(16).padStart(2,'0');
+                                                                        const g = Number(m[2]).toString(16).padStart(2,'0');
+                                                                        const b = Number(m[3]).toString(16).padStart(2,'0');
+                                                                        return `#${r}${g}${b}`;
+                                                                    }
+                                                                    return c.startsWith('#') ? c : '#f0f4f8';
+                                                                })()}
+                                                                onChange={(e) => {
+            const hex = e.target.value;
+            const alphaEl = document.getElementById('vinyl-card-bg-alpha') as HTMLInputElement | null;
+            const a = alphaEl ? Number(alphaEl.value || '0.92') : 0.92;
+            const r = parseInt(hex.slice(1,3),16);
+            const g = parseInt(hex.slice(3,5),16);
+            const b = parseInt(hex.slice(5,7),16);
+            props.onControlCardBackgroundColorChange?.(`rgba(${r},${g},${b},${a})`);
+                                                                }}
+                                                                className="w-12 h-8 rounded border border-gray-600 cursor-pointer"
+                                                            />
+                                                            {/* 透明度滑桿 */}
+                                                            <input
+                                                                id="vinyl-card-bg-alpha"
+                                                                type="range"
+                                                                min="0"
+                                                                max="1"
+                                                                step="0.01"
+                                                                defaultValue={(() => {
+                                                                    const c = props.controlCardBackgroundColor || 'rgba(240,244,248,0.92)';
+                                                                    const m = c.match(/rgba\(\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*([0-9.]+)\)/);
+                                                                    return m ? m[1] : '0.92';
+                                                                })()}
+                                                                onChange={(e) => {
+            const c = props.controlCardBackgroundColor || 'rgba(240,244,248,0.92)';
+            const m = c.match(/rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+            if (m) {
+              const r = Number(m[1]);
+              const g = Number(m[2]);
+              const b = Number(m[3]);
+              props.onControlCardBackgroundColorChange?.(`rgba(${r},${g},${b},${e.target.value})`);
+            }
+                                                                }}
+                                                                className="flex-1"
+                                                            />
+                                                            <span className="text-xs text-gray-400 w-10 text-right">透明</span>
+                                                        </div>
+                                                        <p className="text-xs text-gray-400 mt-1">用色盤選色，右側滑桿調整透明度</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </CollapsibleControlSection>
+                    )}
+
                     {/* 設置管理 */}
                     <CollapsibleControlSection
                         title="設置管理"
@@ -1768,6 +1923,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 </button>
                             </div>
 
+                            
                             {props.filterEffectEnabled && (
                                 <>
                                     {/* 濾鏡特效類型選擇 */}

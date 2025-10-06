@@ -23,7 +23,7 @@ export enum VisualizationType {
     PIANO_VIRTUOSO = '鋼琴演奏家',
     GEOMETRIC_BARS = '可夜特別訂製版',
     Z_CUSTOM = 'Z總訂製款',
-    VINYL_RECORD = 'Vinyl Record',
+    VINYL_RECORD = '唱片加控制卡',
 }
 
 // 特效分類系統
@@ -237,6 +237,9 @@ export interface AudioVisualizerProps {
     zCustomScale?: number;
     zCustomPosition?: { x: number; y: number };
     onZCustomPositionUpdate?: (position: { x: number; y: number }) => void;
+    // Vinyl Record 實驗款
+    vinylImage?: string | null;
+    vinylLayoutMode?: 'horizontal' | 'vertical';
 }
 
 export type Palette = {
