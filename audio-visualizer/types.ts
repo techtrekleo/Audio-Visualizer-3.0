@@ -23,6 +23,7 @@ export enum VisualizationType {
     PIANO_VIRTUOSO = '鋼琴演奏家',
     GEOMETRIC_BARS = '可夜特別訂製版',
     Z_CUSTOM = 'Z總訂製款',
+    VINYL_RECORD = 'Vinyl Record',
 }
 
 // 特效分類系統

@@ -4018,6 +4018,155 @@ type DrawFunction = (
     geometricSemicircleImage?: HTMLImageElement | null,
 ) => void;
 
+// 實驗款：Vinyl Record 旋轉唱片 + 控制卡
+const drawVinylRecord: DrawFunction = (
+    ctx,
+    dataArray,
+    width,
+    height,
+    frame,
+    sensitivity,
+    colors,
+    graphicEffect,
+    isBeat
+) => {
+    const centerX = width * 0.28;
+    const centerY = height * 0.45;
+    const discRadius = Math.min(width, height) * 0.22;
+    const ringRadius = discRadius * 0.75;
+
+    // 背景柔霧
+    const bg = ctx.createRadialGradient(centerX, centerY, discRadius * 0.2, centerX, centerY, discRadius * 1.6);
+    bg.addColorStop(0, 'rgba(0,0,0,0.35)');
+    bg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, width, height);
+
+    // 旋轉角 (根據節拍微抖)
+    const rpm = 33.3 / 60; // 每幀旋轉量
+    const angle = frame * rpm * Math.PI * 2 + (isBeat ? 0.02 : 0);
+
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(angle);
+
+    // 外圈黑膠
+    ctx.fillStyle = '#101015';
+    ctx.beginPath();
+    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 唱片紋路
+    for (let i = 0; i < 30; i++) {
+        const r = ringRadius + i * ((discRadius - ringRadius) / 30);
+        ctx.strokeStyle = i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    // 中心貼紙
+    const labelGradient = ctx.createLinearGradient(-ringRadius, 0, ringRadius, 0);
+    labelGradient.addColorStop(0, colors.primary || '#60a5fa');
+    labelGradient.addColorStop(1, colors.accent || '#a78bfa');
+    ctx.fillStyle = labelGradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, ringRadius * 0.82, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 中心孔
+    ctx.fillStyle = '#e5e7eb';
+    ctx.beginPath();
+    ctx.arc(0, 0, ringRadius * 0.06, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+
+    // 唱臂 (固定角度裝飾)
+    const armBaseX = centerX - discRadius * 0.9;
+    const armBaseY = centerY - discRadius * 0.9;
+    ctx.strokeStyle = '#d1d5db';
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(armBaseX, armBaseY);
+    ctx.lineTo(centerX - discRadius * 0.3, centerY - discRadius * 0.3);
+    ctx.stroke();
+
+    // 控制卡 (右側)
+    const cardW = width * 0.46;
+    const cardH = Math.min(110, height * 0.23);
+    const cardX = centerX + discRadius * 0.65;
+    const cardY = centerY - cardH * 0.5;
+
+    // 卡片底
+    ctx.fillStyle = 'rgba(240, 244, 248, 0.92)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.07)';
+    ctx.lineWidth = 1;
+    const r = 14;
+    ctx.beginPath();
+    ctx.moveTo(cardX + r, cardY);
+    ctx.lineTo(cardX + cardW - r, cardY);
+    ctx.quadraticCurveTo(cardX + cardW, cardY, cardX + cardW, cardY + r);
+    ctx.lineTo(cardX + cardW, cardY + cardH - r);
+    ctx.quadraticCurveTo(cardX + cardW, cardY + cardH, cardX + cardW - r, cardY + cardH);
+    ctx.lineTo(cardX + r, cardY + cardH);
+    ctx.quadraticCurveTo(cardX, cardY + cardH, cardX, cardY + cardH - r);
+    ctx.lineTo(cardX, cardY + r);
+    ctx.quadraticCurveTo(cardX, cardY, cardX + r, cardY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 進度條
+    const barMargin = 20;
+    const barX = cardX + barMargin;
+    const barY = cardY + 30;
+    const barW = cardW - barMargin * 2;
+    const barH = 6;
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.fillRect(barX, barY, barW, barH);
+    const progress = dataArray ? (dataArray[0] / 255) : 0.3;
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(barX, barY, barW * progress, barH);
+    // 圓形節點
+    ctx.fillStyle = '#ffffff';
+    const knobX = barX + barW * progress;
+    ctx.beginPath();
+    ctx.arc(knobX, barY + barH / 2, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 控制按鈕 (上一首/播放/下一首)
+    const iconY = cardY + cardH * 0.66;
+    const gap = 56;
+    const playX = cardX + cardW * 0.5;
+    const prevX = playX - gap;
+    const nextX = playX + gap;
+
+    // Prev (triangle left)
+    ctx.fillStyle = '#111827';
+    ctx.beginPath();
+    ctx.moveTo(prevX + 14, iconY - 12);
+    ctx.lineTo(prevX - 6, iconY);
+    ctx.lineTo(prevX + 14, iconY + 12);
+    ctx.closePath();
+    ctx.fill();
+
+    // Play/Pause (pause bars)
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(playX - 10, iconY - 12, 8, 24);
+    ctx.fillRect(playX + 2, iconY - 12, 8, 24);
+
+    // Next (triangle right)
+    ctx.beginPath();
+    ctx.moveTo(nextX - 14, iconY - 12);
+    ctx.lineTo(nextX + 6, iconY);
+    ctx.lineTo(nextX - 14, iconY + 12);
+    ctx.closePath();
+    ctx.fill();
+};
+
 const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.MONSTERCAT]: drawMonstercat,
     [VisualizationType.MONSTERCAT_V2]: drawMonstercatV2,
@@ -4041,6 +4190,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.PIANO_VIRTUOSO]: drawPianoVirtuoso,
     [VisualizationType.GEOMETRIC_BARS]: drawGeometricBars,
     [VisualizationType.Z_CUSTOM]: drawGeometricBars, // 暫時使用 drawGeometricBars，稍後會替換
+    [VisualizationType.VINYL_RECORD]: drawVinylRecord,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
@@ -4311,6 +4461,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 // Z總訂製款需要特殊處理，傳遞額外參數
                 const currentFrame = typeof frame.current === 'number' ? frame.current : 0;
                 drawZCustomVisualization(ctx, width, height, propsRef.current.zCustomCenterImage, propsRef, currentFrame);
+        } else if (visualizationType === VisualizationType.VINYL_RECORD) {
+            drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
             } else {
             drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
             }

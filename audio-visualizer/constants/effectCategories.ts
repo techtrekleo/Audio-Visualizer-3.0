@@ -88,6 +88,14 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         tags: ['數位', '熔接', '衝擊', '高性能需求']
     },
     {
+        type: VisualizationType.VINYL_RECORD,
+        category: EffectCategory.EXPERIMENTAL,
+        description: '旋轉唱片 + 控制卡疊加',
+        difficulty: 'medium',
+        performance: 'medium',
+        tags: ['唱片', '旋轉', '控制卡', '實驗']
+    },
+    {
         type: VisualizationType.PIXEL_SORT,
         category: EffectCategory.EXPERIMENTAL,
         description: '像素排序風暴，抽象藝術風格',
