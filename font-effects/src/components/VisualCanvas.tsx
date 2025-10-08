@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import type { TextBlock } from '../types';
-import { fonts } from '../constants';
+import { renderComposition } from '../utils/canvas';
 
 interface VisualCanvasProps {
   textBlocks: TextBlock[];
@@ -10,6 +10,10 @@ interface VisualCanvasProps {
   selectedTextBlockId: string | null;
   onTextBlockClick: (textBlockId: string) => void;
   onTextBlockUpdate: (updatedTextBlock: TextBlock) => void;
+  chineseFrameId?: string;
+  frameSize?: { width: number; height: number };
+  framePosition?: { x: number; y: number };
+  onFramePositionChange?: (position: { x: number; y: number }) => void;
 }
 
 export const VisualCanvas: React.FC<VisualCanvasProps> = ({
@@ -19,20 +23,25 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
   canvasHeight,
   selectedTextBlockId,
   onTextBlockClick,
-  onTextBlockUpdate
+  onTextBlockUpdate,
+  chineseFrameId = 'none',
+  frameSize = { width: 0.7, height: 0.5 },
+  framePosition = { x: 0.15, y: 0.25 },
+  onFramePositionChange
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [draggedTextBlockId, setDraggedTextBlockId] = useState<string | null>(null);
-  const [dragMode, setDragMode] = useState<'move' | 'resize'>('move');
+  const [dragMode, setDragMode] = useState<'move' | 'resize' | 'frame'>('move');
   const [initialFontSize, setInitialFontSize] = useState(0);
   const [animationFrameId, setAnimationFrameId] = useState<number | null>(null);
   const [alignmentGuides, setAlignmentGuides] = useState<{
     vertical: number[];
     horizontal: number[];
   }>({ vertical: [], horizontal: [] });
-
+  const [isDraggingFrame, setIsDraggingFrame] = useState(false);
+  const drawCanvasTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 使用 useRef 來緩存背景圖片，避免重複載入
   const backgroundImageRef = useRef<HTMLImageElement | null>(null);
@@ -56,7 +65,7 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
   }, [backgroundImage]);
 
   // 繪製 canvas 內容
-  const drawCanvas = useCallback(() => {
+  const drawCanvas = useCallback(async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -66,65 +75,82 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
     // 清除畫布
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 繪製背景圖片（如果有的話）
-    if (backgroundImageRef.current && backgroundImageLoadedRef.current) {
-      const img = backgroundImageRef.current;
-      const canvasAspect = canvas.width / canvas.height;
-      const imageAspect = img.width / img.height;
-      let sx, sy, sWidth, sHeight;
-
-      if (imageAspect > canvasAspect) {
-        sHeight = img.height;
-        sWidth = sHeight * canvasAspect;
-        sx = (img.width - sWidth) / 2;
-        sy = 0;
-      } else {
-        sWidth = img.width;
-        sHeight = sWidth / canvasAspect;
-        sx = 0;
-        sy = (img.height - sHeight) / 2;
-      }
-      ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+    // 使用 renderComposition 生成完整的圖片（包含邊框和直式文字）
+    try {
+      const dataUrl = await renderComposition(
+        backgroundImage,
+        textBlocks,
+        canvasWidth,
+        canvasHeight,
+        chineseFrameId,
+        frameSize,
+        framePosition
+      );
+      
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // 繪製對齊線（在拖動時）
+        if (isDragging && alignmentGuides) {
+          ctx.save();
+          ctx.strokeStyle = '#00ff00'; // 綠色對齊線
+          ctx.lineWidth = 1;
+          ctx.setLineDash([5, 5]); // 虛線樣式
+          
+          // 繪製垂直對齊線
+          alignmentGuides.vertical.forEach(x => {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+          });
+          
+          // 繪製水平對齊線
+          alignmentGuides.horizontal.forEach(y => {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+          });
+          
+          ctx.restore();
+        }
+      };
+      img.src = dataUrl;
+    } catch (error) {
+      console.error('繪製 canvas 時發生錯誤:', error);
     }
+  }, [textBlocks, canvasWidth, canvasHeight, backgroundImage, chineseFrameId, frameSize, framePosition, isDragging, alignmentGuides]);
 
-    // 繪製對齊線（在拖動時）
-    if (isDragging && alignmentGuides) {
-      ctx.save();
-      ctx.strokeStyle = '#00ff00'; // 綠色對齊線
-      ctx.lineWidth = 1;
-      ctx.setLineDash([5, 5]); // 虛線樣式
-      
-      // 繪製垂直對齊線
-      alignmentGuides.vertical.forEach(x => {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
-      });
-      
-      // 繪製水平對齊線
-      alignmentGuides.horizontal.forEach(y => {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
-      });
-      
-      ctx.restore();
-    }
-
-    // 繪製所有文字
-    textBlocks.forEach(textBlock => {
-      drawTextWithEffects(ctx, textBlock);
-    });
-  }, [textBlocks, canvasWidth, canvasHeight, isDragging, alignmentGuides]);
-
-  // 當文字區塊或畫布尺寸改變時重新繪製
+  // 當文字區塊或畫布尺寸改變時重新繪製（使用 debounce 避免頻繁渲染）
   useEffect(() => {
     if (backgroundImageLoadedRef.current) {
-      drawCanvas();
+      // 清除之前的計時器
+      if (drawCanvasTimeoutRef.current) {
+        clearTimeout(drawCanvasTimeoutRef.current);
+      }
+      
+      // 如果正在拖動邊框，立即渲染以保持即時反饋；否則使用延遲
+      const delay = isDraggingFrame ? 0 : 100;
+      
+      // 設定新的計時器
+      if (delay === 0) {
+        drawCanvas();
+      } else {
+        drawCanvasTimeoutRef.current = setTimeout(() => {
+          drawCanvas();
+        }, delay);
+      }
+      
+      // 清理函數
+      return () => {
+        if (drawCanvasTimeoutRef.current) {
+          clearTimeout(drawCanvasTimeoutRef.current);
+        }
+      };
     }
-  }, [drawCanvas]);
+  }, [drawCanvas, isDraggingFrame]);
 
   // 計算文字實際寬度
   const getTextWidth = (text: string, fontSize: number): number => {
@@ -139,113 +165,6 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
     return metrics.width;
   };
 
-  // 根據 TextBlock 設定繪製文字
-  const drawTextWithEffects = (ctx: CanvasRenderingContext2D, textBlock: TextBlock) => {
-    if (!textBlock.text.trim()) return;
-    
-    const { text, fontId, effectIds, color1, color2, fontSize, x, y } = textBlock;
-    
-    // 獲取字體設定
-    const font = fonts.find(f => f.id === fontId);
-    const fontFamily = font ? font.family : 'Arial';
-    const fontWeight = font ? font.weight : 400;
-    
-    // 設定字體
-    ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}"`;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    
-    // 應用特效 - 支援組合使用
-    ctx.save();
-    
-    // 1. 粗體效果
-    if (effectIds.includes('bold')) {
-      ctx.font = `bold ${fontSize}px "${fontFamily}"`;
-    }
-    
-    // 2. 3D效果
-    if (effectIds.includes('faux-3d')) {
-      // 3D效果：多層陰影
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 3;
-      ctx.shadowOffsetY = 3;
-      ctx.fillStyle = color1;
-      ctx.fillText(text, x, y);
-      
-      ctx.shadowOffsetX = 6;
-      ctx.shadowOffsetY = 6;
-      ctx.fillText(text, x, y);
-      
-      ctx.shadowOffsetX = 9;
-      ctx.shadowOffsetY = 9;
-      ctx.fillText(text, x, y);
-    }
-    
-    // 3. 描邊效果
-    if (effectIds.includes('outline')) {
-      ctx.strokeStyle = color2;
-      ctx.lineWidth = 4;
-      ctx.lineJoin = 'round';
-      ctx.lineCap = 'round';
-      
-      // 多方向描邊
-      ctx.strokeText(text, x - 1, y - 1);
-      ctx.strokeText(text, x + 1, y - 1);
-      ctx.strokeText(text, x - 1, y + 1);
-      ctx.strokeText(text, x + 1, y + 1);
-    }
-    
-    // 4. 設定填充樣式
-    ctx.fillStyle = color1;
-    
-    // 5. 陰影效果
-    if (effectIds.includes('shadow')) {
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
-    }
-    
-    // 6. 霓虹光效果
-    if (effectIds.includes('neon')) {
-      ctx.shadowColor = color1;
-      ctx.shadowBlur = 10;
-    }
-    
-    // 7. 故障感效果 - 改進版本
-    if (effectIds.includes('glitch')) {
-      // 故障感：更明顯的效果
-      const glitchIntensity = 8; // 增加偏移強度
-      const glitchOffsetX = (Math.random() - 0.5) * glitchIntensity;
-      const glitchOffsetY = (Math.random() - 0.5) * glitchIntensity;
-      
-      // 繪製多層故障效果
-      ctx.save();
-      
-      // 紅色故障層
-      ctx.fillStyle = '#ff0000';
-      ctx.fillText(text, x + glitchOffsetX, y + glitchOffsetY);
-      
-      // 藍色故障層
-      ctx.fillStyle = '#0000ff';
-      ctx.fillText(text, x - glitchOffsetX, y - glitchOffsetY);
-      
-      // 綠色故障層
-      ctx.fillStyle = '#00ff00';
-      ctx.fillText(text, x + glitchOffsetX * 0.5, y - glitchOffsetY * 0.5);
-      
-      ctx.restore();
-      
-      // 最後繪製正常文字
-      ctx.fillText(text, x, y);
-    } else {
-      // 繪製文字
-      ctx.fillText(text, x, y);
-    }
-    
-    ctx.restore();
-  };
 
   // 計算對齊線
   const calculateAlignmentGuides = (draggedBlock: TextBlock, otherBlocks: TextBlock[]) => {
@@ -253,9 +172,13 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
     const verticalGuides: number[] = [];
     const horizontalGuides: number[] = [];
     
-    // 獲取拖動區塊的邊界
-    const draggedWidth = getTextWidth(draggedBlock.text, draggedBlock.fontSize);
-    const draggedHeight = draggedBlock.fontSize;
+    // 獲取拖動區塊的邊界 - 考慮直式文字
+    const draggedWidth = draggedBlock.orientation === 'vertical' 
+      ? draggedBlock.fontSize * 0.8
+      : getTextWidth(draggedBlock.text, draggedBlock.fontSize);
+    const draggedHeight = draggedBlock.orientation === 'vertical'
+      ? draggedBlock.text.length * draggedBlock.fontSize * 1.2
+      : draggedBlock.fontSize;
     const draggedLeft = draggedBlock.x;
     const draggedRight = draggedBlock.x + draggedWidth;
     const draggedTop = draggedBlock.y;
@@ -267,8 +190,12 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
     otherBlocks.forEach(block => {
       if (block.id === draggedBlock.id || !block.text.trim()) return;
       
-      const blockWidth = getTextWidth(block.text, block.fontSize);
-      const blockHeight = block.fontSize;
+      const blockWidth = block.orientation === 'vertical' 
+        ? block.fontSize * 0.8
+        : getTextWidth(block.text, block.fontSize);
+      const blockHeight = block.orientation === 'vertical'
+        ? block.text.length * block.fontSize * 1.2
+        : block.fontSize;
       const blockLeft = block.x;
       const blockRight = block.x + blockWidth;
       const blockTop = block.y;
@@ -348,19 +275,43 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
     return result;
   };
 
+  const isPointInFrame = (x: number, y: number): boolean => {
+    if (chineseFrameId === 'none' || !frameSize || !framePosition) return false;
+    
+    const frameWidth = canvasWidth * frameSize.width;
+    const frameHeight = canvasHeight * frameSize.height;
+    const frameX = canvasWidth * framePosition.x;
+    const frameY = canvasHeight * framePosition.y;
+    
+    return x >= frameX && x <= frameX + frameWidth && y >= frameY && y <= frameY + frameHeight;
+  };
+
   const findTextBlockAtPosition = (x: number, y: number): { textBlock: TextBlock; mode: 'move' | 'resize' } | null => {
     // 從後往前檢查，優先選擇最上層的文字區塊
     for (let i = textBlocks.length - 1; i >= 0; i--) {
       const textBlock = textBlocks[i];
       if (!textBlock.text.trim()) continue;
       
-      const textWidth = getTextWidth(textBlock.text, textBlock.fontSize);
-      const textHeight = textBlock.fontSize;
+      // 根據文字方向計算寬度和高度
+      const textWidth = textBlock.orientation === 'vertical' 
+        ? textBlock.fontSize * 0.8  // 直式文字寬度調整為字體大小的80%
+        : getTextWidth(textBlock.text, textBlock.fontSize);
+      const textHeight = textBlock.orientation === 'vertical'
+        ? textBlock.text.length * textBlock.fontSize * 1.2
+        : textBlock.fontSize;
+      
+      // 對於直式文字，調整邊界框的位置以匹配文字偏移
+      const adjustedX = textBlock.orientation === 'vertical' 
+        ? textBlock.x - textBlock.fontSize * 0.7  // 邊界框往左偏移70%
+        : textBlock.x;
+      const adjustedY = textBlock.orientation === 'vertical'
+        ? textBlock.y - textBlock.fontSize * 0.9  // 邊界框再高一點（90%）
+        : textBlock.y;
       
       // 檢查是否在調整大小的控制點上（右下角）
       const resizeHandleSize = 16; // 控制點大小
-      const resizeHandleX = textBlock.x + textWidth - resizeHandleSize;
-      const resizeHandleY = textBlock.y + textHeight - resizeHandleSize;
+      const resizeHandleX = adjustedX + textWidth - resizeHandleSize;
+      const resizeHandleY = adjustedY + textHeight - resizeHandleSize;
       
       if (x >= resizeHandleX && x <= resizeHandleX + resizeHandleSize &&
           y >= resizeHandleY && y <= resizeHandleY + resizeHandleSize) {
@@ -368,8 +319,8 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
       }
       
       // 檢查是否在文字區域內（移動模式）
-      if (x >= textBlock.x && x <= textBlock.x + textWidth &&
-          y >= textBlock.y && y <= textBlock.y + textHeight) {
+      if (x >= adjustedX && x <= adjustedX + textWidth &&
+          y >= adjustedY && y <= adjustedY + textHeight) {
         return { textBlock, mode: 'move' };
       }
     }
@@ -381,6 +332,18 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
     if (!canvas) return;
 
     const coords = getCanvasCoordinates(e.clientX, e.clientY);
+    
+    // 首先檢查是否點擊了邊框
+    if (isPointInFrame(coords.x, coords.y) && onFramePositionChange) {
+      setIsDraggingFrame(true);
+      setDragOffset({
+        x: coords.x - (canvasWidth * framePosition.x),
+        y: coords.y - (canvasHeight * framePosition.y)
+      });
+      return;
+    }
+    
+    // 然後檢查是否點擊了文字區塊
     const clickedResult = findTextBlockAtPosition(coords.x, coords.y);
     
     if (clickedResult) {
@@ -407,6 +370,30 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
   };
 
   const handleMouseMove = (e: MouseEvent) => {
+    // 處理邊框拖動
+    if (isDraggingFrame && onFramePositionChange) {
+      // 取消之前的動畫幀
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      
+      // 使用 requestAnimationFrame 來優化性能，確保流暢的視覺反饋
+      const frameId = requestAnimationFrame(() => {
+        const coords = getCanvasCoordinates(e.clientX, e.clientY);
+        const newX = (coords.x - dragOffset.x) / canvasWidth;
+        const newY = (coords.y - dragOffset.y) / canvasHeight;
+        
+        // 限制在合理範圍內
+        const constrainedX = Math.max(0, Math.min(0.8, newX));
+        const constrainedY = Math.max(0, Math.min(0.9, newY));
+        
+        onFramePositionChange({ x: constrainedX, y: constrainedY });
+      });
+      
+      setAnimationFrameId(frameId);
+      return;
+    }
+    
     if (!isDragging || !draggedTextBlockId) return;
     
     // 取消之前的動畫幀
@@ -449,12 +436,24 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
         const newX = coords.x - dragOffset.x;
         const newY = coords.y - dragOffset.y;
         
-        // 限制在畫布範圍內
-        const textWidth = getTextWidth(textBlock.text, textBlock.fontSize);
-        const textHeight = textBlock.fontSize;
+        // 限制在畫布範圍內 - 根據文字方向計算正確的寬度和高度
+        const textWidth = textBlock.orientation === 'vertical' 
+          ? textBlock.fontSize * 0.8  // 直式文字寬度調整為字體大小的80%
+          : getTextWidth(textBlock.text, textBlock.fontSize);
+        const textHeight = textBlock.orientation === 'vertical'
+          ? textBlock.text.length * textBlock.fontSize * 1.2
+          : textBlock.fontSize;
         
-        const constrainedX = Math.max(0, Math.min(newX, canvasWidth - textWidth));
-        const constrainedY = Math.max(0, Math.min(newY, canvasHeight - textHeight));
+        // 對於直式文字，減少約束範圍以允許更大的拖動空間
+        const adjustedTextWidth = textBlock.orientation === 'vertical' 
+          ? textWidth - textBlock.fontSize * 0.7  // 減少約束範圍
+          : textWidth;
+        const adjustedTextHeight = textBlock.orientation === 'vertical'
+          ? textHeight - textBlock.fontSize * 0.9  // 減少約束範圍
+          : textHeight;
+        
+        const constrainedX = Math.max(0, Math.min(newX, canvasWidth - adjustedTextWidth));
+        const constrainedY = Math.max(0, Math.min(newY, canvasHeight - adjustedTextHeight));
         
         // 創建臨時文字區塊來計算對齊線
         const tempTextBlock = {
@@ -487,6 +486,7 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
     }
     
     setIsDragging(false);
+    setIsDraggingFrame(false);
     setDraggedTextBlockId(null);
     setDragMode('move');
     setInitialFontSize(0);
@@ -495,7 +495,7 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
   };
 
   useEffect(() => {
-    if (isDragging) {
+    if (isDragging || isDraggingFrame) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
       return () => {
@@ -503,7 +503,7 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, dragOffset, draggedTextBlockId, dragMode, initialFontSize, textBlocks, canvasWidth, canvasHeight, onTextBlockUpdate]);
+  }, [isDragging, isDraggingFrame, dragOffset, draggedTextBlockId, dragMode, initialFontSize, textBlocks, canvasWidth, canvasHeight, onTextBlockUpdate, onFramePositionChange]);
 
   // 清理動畫幀
   useEffect(() => {
@@ -547,10 +547,18 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
               isSelected ? 'border-cyan-400 bg-cyan-400/10' : 'border-transparent'
             } ${isDragged ? 'border-yellow-400 bg-yellow-400/20' : ''}`}
             style={{
-              left: `${(textBlock.x / canvasWidth) * 100}%`,
-              top: `${(textBlock.y / canvasHeight) * 100}%`,
-              width: `${Math.max(100, getTextWidth(textBlock.text, textBlock.fontSize)) / canvasWidth * 100}%`,
-              height: `${textBlock.fontSize / canvasHeight * 100}%`,
+              left: textBlock.orientation === 'vertical' 
+                ? `${((textBlock.x - textBlock.fontSize * 0.7) / canvasWidth) * 100}%`
+                : `${(textBlock.x / canvasWidth) * 100}%`,
+              top: textBlock.orientation === 'vertical'
+                ? `${((textBlock.y - textBlock.fontSize * 0.9) / canvasHeight) * 100}%`
+                : `${(textBlock.y / canvasHeight) * 100}%`,
+              width: textBlock.orientation === 'vertical' 
+                ? `${(textBlock.fontSize * 0.8) / canvasWidth * 100}%`
+                : `${Math.max(100, getTextWidth(textBlock.text, textBlock.fontSize)) / canvasWidth * 100}%`,
+              height: textBlock.orientation === 'vertical'
+                ? `${(textBlock.text.length * textBlock.fontSize * 1.2) / canvasHeight * 100}%`
+                : `${textBlock.fontSize / canvasHeight * 100}%`,
               minWidth: '20px',
               minHeight: '20px'
             }}
@@ -562,6 +570,9 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
               {textBlock.type === 'main' ? '主標題' : textBlock.type === 'sub1' ? '副標題一' : '副標題二'}
               {isDragged && (isResizing ? ' (調整大小中)' : ' (拖動中)')}
             </div>
+            
+            {/* 調試標記 - 邊界框左上角 */}
+            <div className="absolute -top-2 -left-2 w-2 h-2 bg-red-500 rounded-full"></div>
             
             {/* 調整大小的控制點 */}
             {isSelected && (
@@ -600,12 +611,14 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
       })}
       
       {/* 拖動提示 */}
-      {isDragging && (
+      {(isDragging || isDraggingFrame) && (
         <div className="absolute top-4 left-4 bg-yellow-500/90 text-black px-3 py-2 rounded-lg text-sm font-semibold">
-          {dragMode === 'resize' ? (
+          {isDraggingFrame ? (
+            <>🖼️ 拖動邊框中... 放開滑鼠完成移動</>
+          ) : dragMode === 'resize' ? (
             <>🔧 調整字體大小中... 放開滑鼠完成調整</>
           ) : (
-            <>🖱️ 拖動中... 放開滑鼠完成移動</>
+            <>🖱️ 拖動文字中... 放開滑鼠完成移動</>
           )}
         </div>
       )}

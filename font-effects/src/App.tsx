@@ -6,14 +6,17 @@ import { PresetManager } from './components/PresetManager';
 import { UnifiedHeader } from './components/UnifiedLayout';
 import { UnifiedFooter, ModalProvider } from '../../shared-components/dist';
 import { renderComposition, getRandomItem, getRandomHexColor } from './utils/canvas';
-import { fonts, effects, canvasSizes, DEFAULT_COLOR_1, DEFAULT_COLOR_2 } from './constants';
-import type { TextBlock, CanvasSizeId, EffectId, SavedPreset } from './types';
+import { fonts, effects, canvasSizes, chineseFrames, DEFAULT_COLOR_1, DEFAULT_COLOR_2 } from './constants';
+import type { TextBlock, CanvasSizeId, EffectId, SavedPreset, ChineseFrameId } from './types';
 
 const App: React.FC = () => {
   const [canvasSizeId, setCanvasSizeId] = useState<CanvasSizeId>('youtube_thumb');
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [selectedTextBlockId, setSelectedTextBlockId] = useState<string | null>('main');
+  const [chineseFrameId, setChineseFrameId] = useState<ChineseFrameId>('none');
+  const [frameSize, setFrameSize] = useState({ width: 0.7, height: 0.5 }); // 邊框大小比例
+  const [framePosition, setFramePosition] = useState({ x: 0.15, y: 0.25 }); // 邊框位置比例
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const renderRef = useRef(0);
@@ -33,6 +36,7 @@ const App: React.FC = () => {
       fontSize: 120,
       x: activeCanvasSize.width * 0.5 - 200, // 16:9 居中位置
       y: activeCanvasSize.height * 0.4 - 60, // 16:9 上中位置
+      orientation: 'horizontal',
     },
     {
       id: 'sub1',
@@ -45,6 +49,7 @@ const App: React.FC = () => {
       fontSize: 60,
       x: activeCanvasSize.width * 0.1,
       y: activeCanvasSize.height * 0.6,
+      orientation: 'horizontal',
     },
     {
       id: 'sub2',
@@ -57,23 +62,41 @@ const App: React.FC = () => {
       fontSize: 40,
       x: activeCanvasSize.width * 0.1,
       y: activeCanvasSize.height * 0.8,
+      orientation: 'horizontal',
     },
   ];
 
   const [textBlocks, setTextBlocks] = useState<TextBlock[]>(initialTextBlocks);
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const updateImage = useCallback(async () => {
     const renderId = ++renderRef.current;
     
-    const dataUrl = await renderComposition(backgroundImage, textBlocks, activeCanvasSize.width, activeCanvasSize.height);
+    const dataUrl = await renderComposition(backgroundImage, textBlocks, activeCanvasSize.width, activeCanvasSize.height, chineseFrameId, frameSize, framePosition);
     
     if (renderId === renderRef.current) {
         setOutputImage(dataUrl);
     }
-  }, [backgroundImage, textBlocks, activeCanvasSize]);
+  }, [backgroundImage, textBlocks, activeCanvasSize, chineseFrameId, frameSize, framePosition]);
 
+  // 使用 debounce 來減少拖動時的重新渲染頻率
   useEffect(() => {
-    updateImage();
+    // 清除之前的計時器
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+    
+    // 設定新的計時器，延遲更新
+    updateTimeoutRef.current = setTimeout(() => {
+      updateImage();
+    }, 50); // 50ms 延遲
+    
+    // 清理函數
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
   }, [updateImage]);
   
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,6 +118,7 @@ const App: React.FC = () => {
     setBackgroundImage(null);
     setCanvasSizeId('square');
     setSelectedTextBlockId('main');
+    setChineseFrameId('none');
   };
   
   const handleClearImage = () => {
@@ -115,6 +139,10 @@ const App: React.FC = () => {
     setTextBlocks(prev => prev.map(tb => 
       tb.id === updatedTextBlock.id ? updatedTextBlock : tb
     ));
+  };
+
+  const handleFramePositionChange = (position: { x: number; y: number }) => {
+    setFramePosition(position);
   };
 
   const handleInspiration = () => {
@@ -150,14 +178,22 @@ const App: React.FC = () => {
   const handleLoadPreset = (preset: SavedPreset) => {
     setCanvasSizeId(preset.canvasSizeId);
     setBackgroundImage(preset.backgroundImage);
-    setTextBlocks(preset.textBlocks);
     setSelectedTextBlockId(preset.selectedTextBlockId);
+    setChineseFrameId(preset.chineseFrameId || 'none');
+    
+    // 確保所有文字區塊都有 orientation 屬性
+    const updatedTextBlocks = preset.textBlocks.map(block => ({
+      ...block,
+      orientation: block.orientation || 'horizontal'
+    }));
+    setTextBlocks(updatedTextBlocks);
   };
 
   const isPristine = 
     JSON.stringify(textBlocks) === JSON.stringify(initialTextBlocks) &&
     backgroundImage === null &&
-    canvasSizeId === 'square';
+    canvasSizeId === 'square' &&
+    chineseFrameId === 'none';
 
   return (
     <ModalProvider>
@@ -180,6 +216,10 @@ const App: React.FC = () => {
               selectedTextBlockId={selectedTextBlockId}
               onTextBlockClick={setSelectedTextBlockId}
               onTextBlockUpdate={handleTextBlockUpdate}
+              chineseFrameId={chineseFrameId}
+              frameSize={frameSize}
+              framePosition={framePosition}
+              onFramePositionChange={handleFramePositionChange}
             />
           </div>
         </div>
@@ -190,21 +230,101 @@ const App: React.FC = () => {
           <div className="space-y-6">
             {/* 基礎設置 */}
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
-              <div className="flex flex-col gap-3">
-                <label className="block text-lg text-gray-300">選擇畫布尺寸</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {canvasSizes.map(size => (
-                    <button
-                      key={size.id}
-                      onClick={() => setCanvasSizeId(size.id)}
-                      className={`py-2 px-3 rounded-lg text-center transition-all duration-200 border-2 text-sm truncate ${
-                        canvasSizeId === size.id ? 'bg-cyan-600 border-cyan-400' : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
-                      }`}
-                      title={`${size.name} (${size.width}x${size.height})`}
-                    >
-                      {size.name}
-                    </button>
-                  ))}
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
+                  <label className="block text-lg text-gray-300">選擇畫布尺寸</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {canvasSizes.map(size => (
+                      <button
+                        key={size.id}
+                        onClick={() => setCanvasSizeId(size.id)}
+                        className={`py-2 px-3 rounded-lg text-center transition-all duration-200 border-2 text-sm truncate ${
+                          canvasSizeId === size.id ? 'bg-cyan-600 border-cyan-400' : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
+                        }`}
+                        title={`${size.name} (${size.width}x${size.height})`}
+                      >
+                        {size.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <label className="block text-lg text-gray-300">中國風邊框</label>
+                  <select
+                    value={chineseFrameId}
+                    onChange={(e) => {
+                      console.log('邊框選擇變更:', e.target.value);
+                      setChineseFrameId(e.target.value as ChineseFrameId);
+                    }}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  >
+                    {chineseFrames.map(frame => (
+                      <option key={frame.id} value={frame.id}>
+                        {frame.name}
+                      </option>
+                    ))}
+                  </select>
+                  
+                  {chineseFrameId !== 'none' && (
+                    <div className="space-y-4 mt-4">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm text-gray-400">邊框寬度</label>
+                        <input
+                          type="range"
+                          min="0.05"
+                          max="0.95"
+                          step="0.05"
+                          value={frameSize.width}
+                          onChange={(e) => setFrameSize(prev => ({ ...prev, width: parseFloat(e.target.value) }))}
+                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                        />
+                        <span className="text-xs text-gray-500">{Math.round(frameSize.width * 100)}%</span>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm text-gray-400">邊框高度</label>
+                        <input
+                          type="range"
+                          min="0.05"
+                          max="0.95"
+                          step="0.05"
+                          value={frameSize.height}
+                          onChange={(e) => setFrameSize(prev => ({ ...prev, height: parseFloat(e.target.value) }))}
+                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                        />
+                        <span className="text-xs text-gray-500">{Math.round(frameSize.height * 100)}%</span>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm text-gray-400">水平位置</label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="0.8"
+                          step="0.05"
+                          value={framePosition.x}
+                          onChange={(e) => setFramePosition(prev => ({ ...prev, x: parseFloat(e.target.value) }))}
+                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                        />
+                        <span className="text-xs text-gray-500">{Math.round(framePosition.x * 100)}%</span>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm text-gray-400">垂直位置</label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="0.9"
+                          step="0.05"
+                          value={framePosition.y}
+                          onChange={(e) => setFramePosition(prev => ({ ...prev, y: parseFloat(e.target.value) }))}
+                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                        />
+                        <span className="text-xs text-gray-500">{Math.round(framePosition.y * 100)}%</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -255,6 +375,7 @@ const App: React.FC = () => {
                   backgroundImage={backgroundImage}
                   canvasSizeId={canvasSizeId}
                   selectedTextBlockId={selectedTextBlockId}
+                  chineseFrameId={chineseFrameId}
                   onLoadPreset={handleLoadPreset}
                 />
               </div>

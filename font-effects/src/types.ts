@@ -1,9 +1,10 @@
-import type { fonts, effects, canvasSizes } from './constants';
+import type { fonts, effects, canvasSizes, chineseFrames } from './constants';
 
 export type Font = typeof fonts[number];
 export type FontId = Font['id'];
 export type EffectId = typeof effects[number]['id'];
 export type CanvasSizeId = typeof canvasSizes[number]['id'];
+export type ChineseFrameId = typeof chineseFrames[number]['id'];
 
 export interface TextBlock {
     text: string;
@@ -16,6 +17,7 @@ export interface TextBlock {
     y: number; // 新增：Y 座標
     id: string; // 新增：唯一識別碼
     type: 'main' | 'sub1' | 'sub2'; // 新增：文字區塊類型
+    orientation: 'horizontal' | 'vertical'; // 新增：文字方向
 }
 
 export interface SavedPreset {
@@ -26,4 +28,5 @@ export interface SavedPreset {
     backgroundImage: string | null;
     textBlocks: TextBlock[];
     selectedTextBlockId: string | null;
+    chineseFrameId: ChineseFrameId;
 }

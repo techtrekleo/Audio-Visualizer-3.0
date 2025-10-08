@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import type { SavedPreset, TextBlock, CanvasSizeId } from '../types';
+import type { SavedPreset, TextBlock, CanvasSizeId, ChineseFrameId } from '../types';
 
 interface PresetManagerProps {
   textBlocks: TextBlock[];
   backgroundImage: string | null;
   canvasSizeId: CanvasSizeId;
   selectedTextBlockId: string | null;
+  chineseFrameId: ChineseFrameId;
   onLoadPreset: (preset: SavedPreset) => void;
 }
 
@@ -14,6 +15,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
   backgroundImage,
   canvasSizeId,
   selectedTextBlockId,
+  chineseFrameId,
   onLoadPreset
 }) => {
   const [presets, setPresets] = useState<SavedPreset[]>([]);
@@ -53,7 +55,8 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       canvasSizeId,
       backgroundImage,
       textBlocks: [...textBlocks],
-      selectedTextBlockId
+      selectedTextBlockId,
+      chineseFrameId
     };
 
     const updatedPresets = [...presets, newPreset];
@@ -98,8 +101,8 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
       {/* 保存對話框 */}
       {showSaveDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4 relative">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[99999]" style={{ zIndex: 99999 }}>
+          <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4 relative" style={{ zIndex: 99999 }}>
             <h3 className="text-xl font-bold text-white mb-4">保存預設</h3>
             <div className="space-y-4">
               <div>
@@ -139,8 +142,8 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
       {/* 載入對話框 */}
       {showLoadDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden relative">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[99999]" style={{ zIndex: 99999 }}>
+          <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden relative" style={{ zIndex: 99999 }}>
             <h3 className="text-xl font-bold text-white mb-4">載入預設</h3>
             
             {presets.length === 0 ? (

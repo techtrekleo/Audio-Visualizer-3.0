@@ -110,6 +110,28 @@ export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
       </div>
 
       <div className="space-y-3">
+        <label className="block text-sm font-semibold text-gray-300">文字方向</label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => onUpdate({ ...textBlock, orientation: 'horizontal' })}
+            className={`py-2 px-3 rounded-lg text-center font-semibold transition-all duration-200 border text-sm ${
+              textBlock.orientation === 'horizontal' ? 'bg-cyan-600 border-cyan-400' : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
+            }`}
+          >
+            ↔️ 橫式
+          </button>
+          <button
+            onClick={() => onUpdate({ ...textBlock, orientation: 'vertical' })}
+            className={`py-2 px-3 rounded-lg text-center font-semibold transition-all duration-200 border text-sm ${
+              textBlock.orientation === 'vertical' ? 'bg-cyan-600 border-cyan-400' : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
+            }`}
+          >
+            ↕️ 直式
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-3">
         <label className="block text-sm font-semibold text-gray-300">特效 (可複選)</label>
         <div className="grid grid-cols-3 gap-2">
           {effects.map(effect => {

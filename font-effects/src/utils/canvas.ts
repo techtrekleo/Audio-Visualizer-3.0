@@ -25,7 +25,7 @@ const drawImageToCanvas = (ctx: CanvasRenderingContext2D, image: HTMLImageElemen
 const drawText = (ctx: CanvasRenderingContext2D, config: TextBlock, position?: 'center' | 'corner') => {
     if (!config.text.trim()) return;
 
-    const { text, fontId, effectIds, color1, color2, fontSize, x, y } = config;
+    const { text, fontId, effectIds, color1, color2, fontSize, x, y, orientation } = config;
     const fontObject = fonts.find(f => f.id === fontId);
     if (!fontObject) return;
 
@@ -61,6 +61,13 @@ const drawText = (ctx: CanvasRenderingContext2D, config: TextBlock, position?: '
         textY = ctx.canvas.height - PADDING_Y;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'bottom';
+    }
+
+    // 處理直式文字
+    if (orientation === 'vertical') {
+        console.log('繪製直式文字:', { text, textX, textY, orientation });
+        drawVerticalText(ctx, text, textX, textY, fontObject, fontWeight as string, fontSize, color1, color2, effects);
+        return;
     }
 
     // --- Rendering Pipeline ---
@@ -139,11 +146,677 @@ const drawText = (ctx: CanvasRenderingContext2D, config: TextBlock, position?: '
     ctx.shadowOffsetY = 0;
 };
 
+// 繪製中國風邊框 - 可調整大小和位置
+const drawChineseFrame = (
+    ctx: CanvasRenderingContext2D, 
+    frameId: string, 
+    canvasWidth: number, 
+    canvasHeight: number,
+    frameSize?: { width: number; height: number },
+    framePosition?: { x: number; y: number }
+) => {
+    if (frameId === 'none') {
+        console.log('邊框設定為 none，跳過繪製');
+        return;
+    }
+    
+    console.log('drawChineseFrame 被調用:', frameId);
+    ctx.save();
+    
+    // 計算邊框尺寸和位置（可調整）
+    const size = frameSize || { width: 0.7, height: 0.5 };
+    const position = framePosition || { x: 0.15, y: 0.25 };
+    
+    const frameWidth = canvasWidth * size.width;
+    const frameHeight = canvasHeight * size.height;
+    const frameX = canvasWidth * position.x;
+    const frameY = canvasHeight * position.y;
+    
+    console.log('邊框計算結果:', {
+        canvasWidth, canvasHeight,
+        frameWidth, frameHeight,
+        frameX, frameY,
+        size, position
+    });
+    
+    // 根據邊框類型設定樣式
+    switch (frameId) {
+        case 'classic':
+            drawClassicFrame(ctx, frameX, frameY, frameWidth, frameHeight);
+            break;
+        case 'royal':
+            drawRoyalFrame(ctx, frameX, frameY, frameWidth, frameHeight);
+            break;
+        case 'minimal':
+            drawMinimalFrame(ctx, frameX, frameY, frameWidth, frameHeight);
+            break;
+        case 'elegant':
+            drawElegantFrame(ctx, frameX, frameY, frameWidth, frameHeight);
+            break;
+    }
+    
+    ctx.restore();
+};
+
+// 古典邊框 - 可調整大小和位置
+const drawClassicFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+    console.log('繪製古典邊框:', { x, y, width, height });
+    
+    // 保存當前狀態
+    ctx.save();
+    
+    // 外框 - 深藍色，較粗
+    ctx.strokeStyle = '#2C3E50'; // 深藍色
+    ctx.lineWidth = 10;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.strokeRect(x, y, width, height);
+    
+    // 中框 - 藍灰色，中等粗細
+    ctx.strokeStyle = '#5D6D7E'; // 藍灰色
+    ctx.lineWidth = 5;
+    ctx.strokeRect(x + 15, y + 15, width - 30, height - 30);
+    
+    // 內框 - 淺藍色，較細
+    ctx.strokeStyle = '#85C1E9'; // 淺藍色
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x + 25, y + 25, width - 50, height - 50);
+    
+    // 繪製現代化角落裝飾
+    drawModernCornerDecorations(ctx, x, y, width, height);
+    
+    console.log('邊框已繪製在位置:', x, y, '尺寸:', width, height);
+    
+    // 恢復狀態
+    ctx.restore();
+};
+
+// 皇家邊框 - 可調整大小和位置
+const drawRoyalFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+    // 保存當前狀態
+    ctx.save();
+    
+    // 外框 - 深紫色，較粗
+    ctx.strokeStyle = '#4A148C'; // 深紫色
+    ctx.lineWidth = 10;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.strokeRect(x, y, width, height);
+    
+    // 中框 - 紫色，中等粗細
+    ctx.strokeStyle = '#7B1FA2'; // 紫色
+    ctx.lineWidth = 5;
+    ctx.strokeRect(x + 15, y + 15, width - 30, height - 30);
+    
+    // 內框 - 淺紫色，較細
+    ctx.strokeStyle = '#BA68C8'; // 淺紫色
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x + 25, y + 25, width - 50, height - 50);
+    
+    // 繪製奢華角落裝飾
+    drawLuxuryCornerDecorations(ctx, x, y, width, height);
+    
+    // 恢復狀態
+    ctx.restore();
+};
+
+// 簡約邊框 - 可調整大小和位置
+const drawMinimalFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+    // 保存當前狀態
+    ctx.save();
+    
+    // 外框 - 深灰色，較粗
+    ctx.strokeStyle = '#2F4F4F'; // 深石板灰
+    ctx.lineWidth = Math.max(6, width * 0.025);
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.strokeRect(x, y, width, height);
+    
+    // 中框 - 石板灰，中等粗細
+    ctx.strokeStyle = '#708090'; // 石板灰
+    ctx.lineWidth = Math.max(3, width * 0.015);
+    const padding1 = Math.max(12, width * 0.04);
+    ctx.strokeRect(x + padding1, y + padding1, width - padding1 * 2, height - padding1 * 2);
+    
+    // 內框 - 淺灰色，較細
+    ctx.strokeStyle = '#A9A9A9'; // 深灰色
+    ctx.lineWidth = Math.max(1, width * 0.008);
+    const padding2 = Math.max(20, width * 0.06);
+    ctx.strokeRect(x + padding2, y + padding2, width - padding2 * 2, height - padding2 * 2);
+    
+    // 恢復狀態
+    ctx.restore();
+};
+
+// 優雅邊框 - 模仿圖片中的捲曲裝飾
+const drawElegantFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+    // 保存當前狀態
+    ctx.save();
+    
+    // 外框 - 淺灰色，較粗
+    ctx.strokeStyle = '#E8E8E8'; // 淺灰色
+    ctx.lineWidth = 12;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.strokeRect(x, y, width, height);
+    
+    // 中框 - 深灰色，中等粗細
+    ctx.strokeStyle = '#A0A0A0'; // 深灰色
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x + 8, y + 8, width - 16, height - 16);
+    
+    // 內框 - 淺灰色，較細
+    ctx.strokeStyle = '#E8E8E8'; // 淺灰色
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x + 12, y + 12, width - 24, height - 24);
+    
+    // 繪製內凹角落美化
+    drawInsetCornerDecorations(ctx, x, y, width, height);
+    
+    // 恢復狀態
+    ctx.restore();
+};
+
+// 優雅角落裝飾 - 捲曲裝飾 (未使用)
+// // const drawElegantCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+//     const decorationSize = Math.max(20, Math.min(width, height) * 0.08);
+//     
+//     // 保存當前狀態
+//     ctx.save();
+//     
+//     // 設定裝飾樣式
+//     ctx.fillStyle = '#E8E8E8'; // 淺灰色
+//     ctx.strokeStyle = '#A0A0A0'; // 深灰色邊框
+//     ctx.lineWidth = 1;
+//     
+//     // 繪製捲曲裝飾
+//     const drawScrollDecoration = (centerX: number, centerY: number, size: number, rotation: number = 0) => {
+//         ctx.save();
+//         ctx.translate(centerX, centerY);
+//         ctx.rotate(rotation);
+//         
+//         // 主捲曲部分
+//         ctx.beginPath();
+//         ctx.arc(0, 0, size * 0.8, 0, Math.PI * 1.5);
+//         ctx.arc(size * 0.4, size * 0.4, size * 0.6, Math.PI * 1.5, Math.PI * 2);
+//         ctx.arc(size * 0.8, 0, size * 0.4, Math.PI, Math.PI * 2);
+//         ctx.closePath();
+//         ctx.fill();
+//         ctx.stroke();
+//         
+//         // 內部細節
+//         ctx.beginPath();
+//         ctx.arc(size * 0.2, size * 0.2, size * 0.2, 0, Math.PI * 2);
+//         ctx.fill();
+//         
+//         ctx.restore();
+//     };
+//     
+//     // 四個角落的捲曲裝飾
+//     // 左上角
+//     drawScrollDecoration(x + decorationSize, y + decorationSize, decorationSize, 0);
+//     
+//     // 右上角
+//     drawScrollDecoration(x + width - decorationSize, y + decorationSize, decorationSize, Math.PI / 2);
+//     
+//     // 左下角
+//     drawScrollDecoration(x + decorationSize, y + height - decorationSize, decorationSize, -Math.PI / 2);
+//     
+//     // 右下角
+//     drawScrollDecoration(x + width - decorationSize, y + height - decorationSize, decorationSize, Math.PI);
+//     
+//     // 恢復狀態
+//     ctx.restore();
+// };
+
+// 內凹角落美化
+const drawInsetCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+    const insetSize = Math.max(15, Math.min(width, height) * 0.06);
+    const insetDepth = Math.max(8, Math.min(width, height) * 0.03);
+    
+    // 保存當前狀態
+    ctx.save();
+    
+    // 繪製內凹效果
+    const drawInsetCorner = (cornerX: number, cornerY: number, size: number, depth: number, rotation: number = 0) => {
+        ctx.save();
+        ctx.translate(cornerX, cornerY);
+        ctx.rotate(rotation);
+        
+        // 外層陰影（深色）
+        ctx.fillStyle = '#D0D0D0';
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(size, 0);
+        ctx.lineTo(0, size);
+        ctx.closePath();
+        ctx.fill();
+        
+        // 內層高光（淺色）
+        ctx.fillStyle = '#F0F0F0';
+        ctx.beginPath();
+        ctx.moveTo(depth, depth);
+        ctx.lineTo(size - depth, depth);
+        ctx.lineTo(depth, size - depth);
+        ctx.closePath();
+        ctx.fill();
+        
+        // 中間層次
+        ctx.fillStyle = '#E0E0E0';
+        ctx.beginPath();
+        ctx.moveTo(depth * 0.5, depth * 0.5);
+        ctx.lineTo(size - depth * 0.5, depth * 0.5);
+        ctx.lineTo(depth * 0.5, size - depth * 0.5);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.restore();
+    };
+    
+    // 四個角落的內凹效果
+    // 左上角
+    drawInsetCorner(x + 15, y + 15, insetSize, insetDepth, 0);
+    
+    // 右上角
+    drawInsetCorner(x + width - 15, y + 15, insetSize, insetDepth, Math.PI / 2);
+    
+    // 左下角
+    drawInsetCorner(x + 15, y + height - 15, insetSize, insetDepth, -Math.PI / 2);
+    
+    // 右下角
+    drawInsetCorner(x + width - 15, y + height - 15, insetSize, insetDepth, Math.PI);
+    
+    // 恢復狀態
+    ctx.restore();
+};
+
+// 現代化角落裝飾
+const drawModernCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+    const cornerSize = Math.max(20, Math.min(width, height) * 0.08);
+    
+    // 保存當前狀態
+    ctx.save();
+    
+    // 設定裝飾樣式
+    ctx.fillStyle = '#85C1E9'; // 淺藍色
+    ctx.strokeStyle = '#2C3E50'; // 深藍色邊框
+    ctx.lineWidth = 2;
+    
+    // 繪製現代化幾何裝飾
+    const drawModernCorner = (cornerX: number, cornerY: number, size: number, rotation: number = 0) => {
+        ctx.save();
+        ctx.translate(cornerX, cornerY);
+        ctx.rotate(rotation);
+        
+        // 外層菱形
+        ctx.beginPath();
+        ctx.moveTo(0, -size);
+        ctx.lineTo(size, 0);
+        ctx.lineTo(0, size);
+        ctx.lineTo(-size, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // 內層圓形
+        ctx.fillStyle = '#2C3E50';
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+    };
+    
+    // 四個角落的現代化裝飾
+    // 左上角
+    drawModernCorner(x + cornerSize, y + cornerSize, cornerSize * 0.8, 0);
+    
+    // 右上角
+    drawModernCorner(x + width - cornerSize, y + cornerSize, cornerSize * 0.8, Math.PI / 2);
+    
+    // 左下角
+    drawModernCorner(x + cornerSize, y + height - cornerSize, cornerSize * 0.8, -Math.PI / 2);
+    
+    // 右下角
+    drawModernCorner(x + width - cornerSize, y + height - cornerSize, cornerSize * 0.8, Math.PI);
+    
+    // 恢復狀態
+    ctx.restore();
+};
+
+// 奢華角落裝飾
+const drawLuxuryCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+    const cornerSize = Math.max(20, Math.min(width, height) * 0.08);
+    
+    // 保存當前狀態
+    ctx.save();
+    
+    // 設定裝飾樣式
+    ctx.fillStyle = '#BA68C8'; // 淺紫色
+    ctx.strokeStyle = '#4A148C'; // 深紫色邊框
+    ctx.lineWidth = 2;
+    
+    // 繪製奢華裝飾
+    const drawLuxuryCorner = (cornerX: number, cornerY: number, size: number, rotation: number = 0) => {
+        ctx.save();
+        ctx.translate(cornerX, cornerY);
+        ctx.rotate(rotation);
+        
+        // 外層花瓣形
+        for (let i = 0; i < 6; i++) {
+            ctx.save();
+            ctx.rotate((i * Math.PI * 2) / 6);
+            
+            ctx.beginPath();
+            ctx.ellipse(0, -size * 0.8, size * 0.2, size * 0.6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+        
+        // 中心寶石
+        ctx.fillStyle = '#FFD700'; // 金色
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+    };
+    
+    // 四個角落的奢華裝飾
+    // 左上角
+    drawLuxuryCorner(x + cornerSize, y + cornerSize, cornerSize * 0.8, 0);
+    
+    // 右上角
+    drawLuxuryCorner(x + width - cornerSize, y + cornerSize, cornerSize * 0.8, Math.PI / 2);
+    
+    // 左下角
+    drawLuxuryCorner(x + cornerSize, y + height - cornerSize, cornerSize * 0.8, -Math.PI / 2);
+    
+    // 右下角
+    drawLuxuryCorner(x + width - cornerSize, y + height - cornerSize, cornerSize * 0.8, Math.PI);
+    
+    // 恢復狀態
+    ctx.restore();
+};
+
+// 角落裝飾 - 根據邊框大小調整
+// const drawCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+//     const cornerSize = Math.max(15, Math.min(width, height) * 0.06); // 根據邊框大小調整裝飾大小
+//     
+//     // 保存當前狀態
+//     ctx.save();
+//     
+//     // 設定裝飾樣式
+//     ctx.fillStyle = '#CD7F32'; // 古銅色
+//     ctx.strokeStyle = '#654321'; // 深棕色邊框
+//     ctx.lineWidth = 2;
+//     
+//     // 左上角 - 更精緻的設計
+//     ctx.beginPath();
+//     ctx.moveTo(x, y + cornerSize);
+//     ctx.lineTo(x + cornerSize * 0.3, y + cornerSize * 0.3);
+//     ctx.lineTo(x + cornerSize, y);
+//     ctx.lineTo(x + cornerSize * 0.7, y + cornerSize * 0.3);
+//     ctx.lineTo(x + cornerSize * 0.3, y + cornerSize * 0.7);
+//     ctx.closePath();
+//     ctx.fill();
+//     ctx.stroke();
+//     
+//     // 右上角
+//     ctx.beginPath();
+//     ctx.moveTo(x + width - cornerSize, y);
+//     ctx.lineTo(x + width - cornerSize * 0.3, y + cornerSize * 0.3);
+//     ctx.lineTo(x + width, y + cornerSize);
+//     ctx.lineTo(x + width - cornerSize * 0.3, y + cornerSize * 0.7);
+//     ctx.lineTo(x + width - cornerSize * 0.7, y + cornerSize * 0.3);
+//     ctx.closePath();
+//     ctx.fill();
+//     ctx.stroke();
+//     
+//     // 左下角
+//     ctx.beginPath();
+//     ctx.moveTo(x, y + height - cornerSize);
+//     ctx.lineTo(x + cornerSize * 0.3, y + height - cornerSize * 0.3);
+//     ctx.lineTo(x + cornerSize, y + height);
+//     ctx.lineTo(x + cornerSize * 0.7, y + height - cornerSize * 0.3);
+//     ctx.lineTo(x + cornerSize * 0.3, y + height - cornerSize * 0.7);
+//     ctx.closePath();
+//     ctx.fill();
+//     ctx.stroke();
+//     
+//     // 右下角
+//     ctx.beginPath();
+//     ctx.moveTo(x + width - cornerSize, y + height);
+//     ctx.lineTo(x + width - cornerSize * 0.3, y + height - cornerSize * 0.3);
+//     ctx.lineTo(x + width, y + height - cornerSize);
+//     ctx.lineTo(x + width - cornerSize * 0.3, y + height - cornerSize * 0.7);
+//     ctx.lineTo(x + width - cornerSize * 0.7, y + height - cornerSize * 0.3);
+//     ctx.closePath();
+//     ctx.fill();
+//     ctx.stroke();
+//     
+//     // 恢復狀態
+//     ctx.restore();
+// };
+// 
+// // 龍紋裝飾 - 根據邊框大小調整
+// const drawDragonDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+//     // 簡化的龍紋圖案（雲朵狀）
+//     ctx.fillStyle = '#CD7F32'; // 古銅色
+//     ctx.globalAlpha = 0.7;
+//     
+//     // 根據邊框大小調整雲朵大小
+//     const cloudSize = Math.max(8, Math.min(width, height) * 0.03);
+//     const padding = Math.max(5, Math.min(width, height) * 0.02);
+//     
+//     // 四個角落的雲朵裝飾
+//     // 左上
+//     drawCloud(ctx, x + padding, y + padding, cloudSize);
+//     // 右上
+//     drawCloud(ctx, x + width - padding - cloudSize, y + padding, cloudSize);
+//     // 左下
+//     drawCloud(ctx, x + padding, y + height - padding - cloudSize, cloudSize);
+//     // 右下
+//     drawCloud(ctx, x + width - padding - cloudSize, y + height - padding - cloudSize, cloudSize);
+//     
+//     ctx.globalAlpha = 1;
+// };
+// 
+// // 繪製雲朵
+// const drawCloud = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number) => {
+//     ctx.beginPath();
+//     ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+//     ctx.arc(x + size * 0.5, y, size * 0.7, 0, Math.PI * 2);
+//     ctx.arc(x + size, y, size * 0.5, 0, Math.PI * 2);
+//     ctx.arc(x + size * 0.5, y - size * 0.3, size * 0.4, 0, Math.PI * 2);
+//     ctx.fill();
+// };
+// 
+// // 繪製雲紋裝飾（多個雲紋）
+// const drawCloudDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+//     ctx.fillStyle = '#CD7F32'; // 古銅色雲紋
+//     
+//     // 上邊雲紋
+//     const cloudSize = Math.min(width, height) * 0.04;
+//     const cloudSpacing = width / 8;
+//     for (let i = 1; i < 7; i++) {
+//         drawCloud(ctx, x + i * cloudSpacing, y + cloudSize, cloudSize);
+//     }
+//     
+//     // 下邊雲紋
+//     for (let i = 1; i < 7; i++) {
+//         drawCloud(ctx, x + i * cloudSpacing, y + height - cloudSize, cloudSize);
+//     }
+//     
+//     // 左邊雲紋
+//     const leftCloudSpacing = height / 8;
+//     for (let i = 1; i < 7; i++) {
+//         drawCloud(ctx, x + cloudSize, y + i * leftCloudSpacing, cloudSize);
+//     }
+//     
+//     // 右邊雲紋
+//     for (let i = 1; i < 7; i++) {
+//         drawCloud(ctx, x + width - cloudSize, y + i * leftCloudSpacing, cloudSize);
+//     }
+// };
+// 
+// // 繪製花紋裝飾
+// const drawFlowerPatterns = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+//     ctx.save();
+//     
+//     // 設定花紋樣式
+//     ctx.fillStyle = '#8B4513'; // 深棕色
+//     ctx.strokeStyle = '#654321'; // 深棕色邊框
+//     ctx.lineWidth = 1;
+//     
+//     const flowerSize = Math.min(width, height) * 0.03;
+//     const spacing = Math.min(width, height) * 0.08;
+//     
+//     // 繪製梅花圖案
+//     const drawPlumBlossom = (centerX: number, centerY: number, size: number) => {
+//         ctx.save();
+//         ctx.translate(centerX, centerY);
+//         
+//         // 繪製5個花瓣
+//         for (let i = 0; i < 5; i++) {
+//             ctx.save();
+//             ctx.rotate((i * Math.PI * 2) / 5);
+//             
+//             // 花瓣形狀
+//             ctx.beginPath();
+//             ctx.ellipse(0, -size * 0.6, size * 0.3, size * 0.6, 0, 0, Math.PI * 2);
+//             ctx.fill();
+//             ctx.stroke();
+//             
+//             ctx.restore();
+//         }
+//         
+//         // 花心
+//         ctx.fillStyle = '#D2691E'; // 橙色花心
+//         ctx.beginPath();
+//         ctx.arc(0, 0, size * 0.2, 0, Math.PI * 2);
+//         ctx.fill();
+//         
+//         ctx.restore();
+//     };
+//     
+//     // 在邊框四周繪製梅花
+//     // 上邊
+//     for (let i = 2; i < 6; i++) {
+//         drawPlumBlossom(x + i * spacing, y + spacing, flowerSize);
+//     }
+//     
+//     // 下邊
+//     for (let i = 2; i < 6; i++) {
+//         drawPlumBlossom(x + i * spacing, y + height - spacing, flowerSize);
+//     }
+//     
+//     // 左邊
+//     for (let i = 2; i < 6; i++) {
+//         drawPlumBlossom(x + spacing, y + i * spacing, flowerSize);
+//     }
+//     
+//    // 右邊
+//    for (let i = 2; i < 6; i++) {
+//        drawPlumBlossom(x + width - spacing, y + i * spacing, flowerSize);
+//    }
+//    
+//    ctx.restore();
+// };
+
+// 繪製直式文字 - 簡化版本
+const drawVerticalText = (
+    ctx: CanvasRenderingContext2D, 
+    text: string, 
+    startX: number, 
+    startY: number, 
+    fontObject: any, 
+    fontWeight: string, 
+    fontSize: number, 
+    color1: string, 
+    color2: string, 
+    effects: Set<string>
+) => {
+    console.log('開始繪製直式文字:', text, '起始位置:', startX, startY, '顏色:', color1);
+    
+    // 設定字體
+    ctx.font = `${fontWeight} ${fontSize}px "${fontObject.family}"`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // 計算字元間距
+    const charSpacing = fontSize * 1.2;
+    
+    // 分割文字為單個字元
+    const characters = text.split('');
+    
+    // 調整位置：往左邊和往上一點
+    characters.forEach((char, index) => {
+        const charX = startX - fontSize * 0.25; // 往右邊一點（減少左偏移）
+        const charY = startY + (index * charSpacing) - fontSize * 0.35; // 往上一點（減少上偏移）
+        
+        // 調試：繪製文字位置標記
+        if (index === 0) {
+            ctx.save();
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(charX, charY, 5, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        // 應用特效
+        if (effects.has('faux-3d')) {
+            const depth = Math.max(1, Math.floor(fontSize / 30));
+            ctx.fillStyle = color2;
+            for (let i = 1; i <= depth; i++) {
+                ctx.fillText(char, charX + i, charY + i);
+            }
+        }
+        
+        // 設定填充樣式
+        if (effects.has('neon')) {
+            ctx.fillStyle = '#FFFFFF';
+        } else {
+            ctx.fillStyle = color1; // 使用用戶選擇的顏色
+        }
+        
+        // 設定陰影
+        if (effects.has('neon')) {
+            ctx.shadowColor = color1;
+            ctx.shadowBlur = 15;
+        } else if (effects.has('shadow')) {
+            ctx.shadowColor = color2;
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 5;
+            ctx.shadowOffsetY = 5;
+        }
+        
+        // 繪製文字
+        ctx.fillText(char, charX, charY);
+        
+        // 繪製邊框
+        if (effects.has('outline')) {
+            ctx.strokeStyle = color2;
+            ctx.lineWidth = Math.max(0.5, fontSize / 40); // 調細描邊
+            ctx.strokeText(char, charX, charY);
+        }
+        
+        console.log('繪製字元:', char, '在位置:', charX, charY, '顏色:', ctx.fillStyle);
+    });
+};
+
 export const renderComposition = (
     backgroundImage: string | null,
     textBlocks: TextBlock[],
     width: number,
-    height: number
+    height: number,
+    chineseFrameId: string = 'none',
+    frameSize?: { width: number; height: number },
+    framePosition?: { x: number; y: number }
 ): Promise<string> => {
     return new Promise(async (resolve) => {
         await document.fonts.ready;
@@ -156,6 +829,10 @@ export const renderComposition = (
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const drawAllText = () => {
+            // 先繪製中國風邊框
+            console.log('drawAllText - 繪製邊框:', { chineseFrameId, width, height, frameSize, framePosition });
+            drawChineseFrame(ctx, chineseFrameId, width, height, frameSize, framePosition);
+            // 再繪製文字
             textBlocks.forEach(textBlock => {
                 drawText(ctx, textBlock);
             });
@@ -166,7 +843,15 @@ export const renderComposition = (
             const img = new Image();
             img.onload = () => {
                 drawImageToCanvas(ctx, img);
-                drawAllText();
+                // 先繪製邊框（在背景圖片之上）
+                console.log('有背景圖片 - 繪製邊框:', { chineseFrameId, width, height, frameSize, framePosition });
+                drawChineseFrame(ctx, chineseFrameId, width, height, frameSize, framePosition);
+                // 再繪製文字（在最上層）
+                textBlocks.forEach(textBlock => {
+                    console.log('繪製文字區塊:', textBlock.text, '方向:', textBlock.orientation);
+                    drawText(ctx, textBlock);
+                });
+                resolve(canvas.toDataURL('image/png'));
             };
             img.onerror = () => {
                 // if image fails to load, draw text on a transparent background

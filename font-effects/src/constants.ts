@@ -30,6 +30,17 @@ export const fonts = [
   { id: 'nunito', name: 'Nunito (寬體)', family: 'Nunito', weight: 400 },
   { id: 'quicksand', name: 'Quicksand (寬體)', family: 'Quicksand', weight: 400 },
   { id: 'rubik', name: 'Rubik (寬體)', family: 'Rubik', weight: 400 },
+  // 書法體字體
+  { id: 'noto-serif-tc', name: '思源宋體', family: 'Noto Serif TC', weight: 400 },
+  { id: 'noto-serif-tc-bold', name: '思源宋體 (粗)', family: 'Noto Serif TC', weight: 700 },
+  { id: 'ma-shan-zheng', name: '馬善政楷書', family: 'Ma Shan Zheng', weight: 400 },
+  { id: 'zhi-mang-xing', name: '志忙星楷書', family: 'Zhi Mang Xing', weight: 400 },
+  { id: 'long-cang', name: '龍藏手書', family: 'Long Cang', weight: 400 },
+  { id: 'zcool-kuai-le', name: '站酷快樂體', family: 'ZCOOL KuaiLe', weight: 400 },
+  { id: 'zcool-qing-ke-huang-you', name: '站酷慶科黃油體', family: 'ZCOOL QingKe HuangYou', weight: 400 },
+  { id: 'liu-jian-mao-cao', name: '劉建毛草書', family: 'Liu Jian Mao Cao', weight: 400 },
+  { id: 'zcool-xiao-wei', name: '站酷小薇LOGO體', family: 'ZCOOL XiaoWei', weight: 400 },
+  { id: 'bakudai-font', name: '莫大毛筆字體', family: 'Bakudai', weight: 400 },
 ] as const;
 
 
@@ -51,6 +62,17 @@ export const canvasSizes = [
   { id: 'youtube_thumb', name: 'YT縮圖 (16:9)', width: 1280, height: 720 },
   { id: 'youtube_short', name: 'YT Short (9:16)', width: 1080, height: 1920 },
 ] as const;
+
+// --- 中國風邊框設定 ---
+export const chineseFrames = [
+  { id: 'none', name: '無邊框' },
+  { id: 'classic', name: '古典框' },
+  { id: 'royal', name: '皇家框' },
+  { id: 'minimal', name: '簡約框' },
+  { id: 'elegant', name: '優雅框' },
+] as const;
+
+export type ChineseFrameId = typeof chineseFrames[number]['id'];
 
 // --- 預設顏色 ---
 export const DEFAULT_COLOR_1 = '#FFFFFF';
