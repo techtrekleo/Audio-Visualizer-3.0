@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, FilterEffectType, ControlCardStyle } from '../types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle } from '../types';
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
 import CollapsibleControlSection from './CollapsibleControlSection';
@@ -199,6 +199,8 @@ interface OptimizedControlsProps {
     onSubtitleFormatChange: (format: SubtitleFormat) => void;
     subtitleLanguage: SubtitleLanguage;
     onSubtitleLanguageChange: (language: SubtitleLanguage) => void;
+    subtitleOrientation: SubtitleOrientation;
+    onSubtitleOrientationChange: (orientation: SubtitleOrientation) => void;
     effectScale: number;
     onEffectScaleChange: (value: number) => void;
     effectOffsetX: number;
@@ -1229,6 +1231,37 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 <span className="flex items-center space-x-2">
                                                     <span>✨</span>
                                                     <span>逐字顯示</span>
+                                                </span>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            {/* 字幕方向選擇器 */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-300">字幕方向</label>
+                                <div className="flex space-x-2">
+                                    {Object.values(SubtitleOrientation).map((orientation) => (
+                                        <button
+                                            key={orientation}
+                                            onClick={() => props.onSubtitleOrientationChange(orientation)}
+                                            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                props.subtitleOrientation === orientation
+                                                    ? 'bg-cyan-600 text-white'
+                                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                            }`}
+                                        >
+                                            {orientation === SubtitleOrientation.HORIZONTAL && (
+                                                <span className="flex items-center justify-center space-x-2">
+                                                    <span>↔️</span>
+                                                    <span>橫式</span>
+                                                </span>
+                                            )}
+                                            {orientation === SubtitleOrientation.VERTICAL && (
+                                                <span className="flex items-center justify-center space-x-2">
+                                                    <span>↕️</span>
+                                                    <span>直式</span>
                                                 </span>
                                             )}
                                         </button>

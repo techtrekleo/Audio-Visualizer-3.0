@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, forwardRef, useCallback } from 'react';
-import { VisualizationType, Palette, GraphicEffectType, ColorPaletteType, WatermarkPosition, FontType, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, FilterEffectType, ControlCardStyle } from '../types';
+import { VisualizationType, Palette, GraphicEffectType, ColorPaletteType, WatermarkPosition, FontType, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, FilterEffectType, ControlCardStyle, SubtitleOrientation } from '../types';
 import ImageBasedVisualizer from './ImageBasedVisualizer';
 
 // 字體映射表
@@ -64,6 +64,7 @@ interface AudioVisualizerProps {
     lyricsPositionX: number;
     lyricsPositionY: number;
     subtitleDisplayMode: SubtitleDisplayMode;
+    subtitleOrientation: SubtitleOrientation;
     // When true, skip drawing visualizer effects but keep background and subtitles
     disableVisualizer?: boolean;
     // 幾何圖形可視化參數
@@ -3393,12 +3394,97 @@ const drawPianoVirtuoso = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
     ctx.restore();
 };
 
+// 繪製直式字幕
+const drawVerticalSubtitle = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    text: string,
+    fontSize: number,
+    fontName: string,
+    color: string,
+    effect: GraphicEffectType,
+    bgStyle: SubtitleBgStyle,
+    isBeat: boolean | undefined,
+    dragOffset: { x: number; y: number }
+) => {
+    const characters = text.split('');
+    const charSpacing = fontSize * 1.2; // 字元間距
+    const totalHeight = charSpacing * characters.length;
+    
+    // 起始位置：畫面右側，垂直居中
+    const startX = width - (width * 0.1) + dragOffset.x; // 距離右邊 10%
+    const startY = (height - totalHeight) / 2 + dragOffset.y; // 垂直居中
+    
+    ctx.save();
+    ctx.font = `bold ${fontSize}px "${fontName}", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // 繪製背景（如果需要）
+    if (bgStyle !== SubtitleBgStyle.NONE) {
+        const bgPaddingX = fontSize * 0.6;
+        const bgPaddingY = fontSize * 0.4;
+        const bgWidth = fontSize + bgPaddingX * 2;
+        const bgHeight = totalHeight + bgPaddingY * 2;
+        const bgX = startX - bgWidth / 2;
+        const bgY = startY - bgPaddingY;
+        
+        ctx.fillStyle = bgStyle === SubtitleBgStyle.BLACK ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.5)';
+        createRoundedRectPath(ctx, bgX, bgY, bgWidth, bgHeight, 5);
+        ctx.fill();
+    }
+    
+    // 設定特效
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = fontSize * 0.1;
+    
+    switch (effect) {
+        case GraphicEffectType.GLOW:
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 15;
+            break;
+    }
+    
+    ctx.fillStyle = color;
+    
+    // 逐字繪製
+    characters.forEach((char, index) => {
+        const charY = startY + (index * charSpacing) + charSpacing / 2;
+        
+        // 處理 Glitch 效果
+        if (effect === GraphicEffectType.GLITCH && isBeat) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            const glitchAmount = fontSize * 0.1;
+            ctx.fillStyle = 'rgba(255, 0, 100, 0.7)';
+            ctx.fillText(char, startX + (Math.random() - 0.5) * glitchAmount, charY + (Math.random() - 0.5) * glitchAmount);
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
+            ctx.fillText(char, startX + (Math.random() - 0.5) * glitchAmount, charY + (Math.random() - 0.5) * glitchAmount);
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.restore();
+        }
+        
+        // 繪製主要文字
+        ctx.fillStyle = color;
+        ctx.fillText(char, startX, charY);
+        
+        // 描邊效果
+        if (effect === GraphicEffectType.STROKE) {
+            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+            ctx.strokeText(char, startX, charY);
+        }
+    });
+    
+    ctx.restore();
+};
+
 const drawSubtitles = (
     ctx: CanvasRenderingContext2D,
     width: number,
     height: number,
     currentSubtitle: Subtitle | undefined,
-    { fontSizeVw, fontFamily, color, effect, bgStyle, isBeat, dragOffset = { x: 0, y: 0 } }: {
+    { fontSizeVw, fontFamily, color, effect, bgStyle, isBeat, dragOffset = { x: 0, y: 0 }, orientation = SubtitleOrientation.HORIZONTAL }: {
         fontSizeVw: number;
         fontFamily: FontType;
         color: string;
@@ -3406,6 +3492,7 @@ const drawSubtitles = (
         bgStyle: SubtitleBgStyle;
         isBeat?: boolean;
         dragOffset?: { x: number; y: number };
+        orientation?: SubtitleOrientation;
     }
 ) => {
     if (!currentSubtitle || !currentSubtitle.text) return;
@@ -3417,6 +3504,15 @@ const drawSubtitles = (
     const fontSize = (fontSizeVw / 100) * width;
     const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
     ctx.font = `bold ${fontSize}px "${actualFontName}", sans-serif`;
+    
+    // 直式顯示
+    if (orientation === SubtitleOrientation.VERTICAL) {
+        drawVerticalSubtitle(ctx, width, height, text, fontSize, actualFontName, color, effect, bgStyle, isBeat, dragOffset);
+        ctx.restore();
+        return;
+    }
+    
+    // 橫式顯示（原有邏輯）
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     
@@ -4962,7 +5058,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 effect: GraphicEffectType.NONE, 
                 bgStyle: subtitleBgStyle, 
                 isBeat,
-                dragOffset
+                dragOffset,
+                orientation: propsRef.current.subtitleOrientation
             });
         }
         // 無字幕模式：不顯示任何字幕

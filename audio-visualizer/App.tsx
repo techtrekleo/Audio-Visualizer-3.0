@@ -15,7 +15,7 @@ import { UnifiedFooter, ModalProvider } from '../shared-components/dist';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
 import { useMediaRecorder } from './hooks/useMediaRecorder';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, FilterEffectType, ControlCardStyle } from './types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle } from './types';
 import { ICON_PATHS, COLOR_PALETTES, RESOLUTION_MAP } from './constants';
 
 function App() {
@@ -72,6 +72,7 @@ function App() {
     const [subtitleDisplayMode, setSubtitleDisplayMode] = useState<SubtitleDisplayMode>(SubtitleDisplayMode.CLASSIC);
     const [subtitleFormat, setSubtitleFormat] = useState<SubtitleFormat>(SubtitleFormat.BRACKET);
     const [subtitleLanguage, setSubtitleLanguage] = useState<SubtitleLanguage>(SubtitleLanguage.CHINESE);
+    const [subtitleOrientation, setSubtitleOrientation] = useState<SubtitleOrientation>(SubtitleOrientation.HORIZONTAL);
     // Vinyl Record 圖片
     const [vinylImage, setVinylImage] = useState<string | null>(null);
     const [vinylLayoutMode, setVinylLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
@@ -1360,6 +1361,7 @@ function App() {
                                     lyricsPositionX={lyricsPositionX}
                                     lyricsPositionY={lyricsPositionY}
                                     subtitleDisplayMode={subtitleDisplayMode}
+                                    subtitleOrientation={subtitleOrientation}
                                     disableVisualizer={!showVisualizer}
                                     subtitleDragOffset={subtitleDragOffset}
                                     lyricsDragOffset={lyricsDragOffset}
@@ -1495,6 +1497,8 @@ function App() {
                             onSubtitleFormatChange={setSubtitleFormat}
                             subtitleLanguage={subtitleLanguage}
                             onSubtitleLanguageChange={setSubtitleLanguage}
+                            subtitleOrientation={subtitleOrientation}
+                            onSubtitleOrientationChange={setSubtitleOrientation}
                             effectScale={effectScale}
                             onEffectScaleChange={setEffectScale}
                             effectOffsetX={effectOffsetX}

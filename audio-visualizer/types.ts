@@ -145,6 +145,11 @@ export enum SubtitleLanguage {
     JAPANESE = '日本語',
 }
 
+export enum SubtitleOrientation {
+    HORIZONTAL = '橫式',
+    VERTICAL = '直式',
+}
+
 export enum TransitionType {
     TV_STATIC = '電視雜訊',
     FADE = '淡入淡出',
