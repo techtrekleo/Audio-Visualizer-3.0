@@ -5312,12 +5312,28 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                     return 'lyrics';
                 }
             } else {
-                // 傳統字幕和逐字顯示模式 - 擴大底部檢測區域
-                const subtitleY = height - (height * 0.08);
-                const subtitleHeight = height * 0.25; // 從0.15擴大到0.25
+                // 傳統字幕和逐字顯示模式 - 根據方向設定檢測區域
+                const orientation = propsRef.current.subtitleOrientation;
                 
-                if (pos.y >= subtitleY - subtitleHeight && pos.y <= subtitleY + subtitleHeight) {
-                    return 'subtitle';
+                if (orientation === SubtitleOrientation.VERTICAL) {
+                    // 直式字幕 - 檢測右側區域
+                    const subtitleX = width - (width * 0.1); // 距離右邊 10%
+                    const subtitleWidth = width * 0.15; // 檢測寬度
+                    const centerY = height / 2;
+                    const subtitleHeight = height * 0.6; // 檢測高度
+                    
+                    if (pos.x >= subtitleX - subtitleWidth && pos.x <= subtitleX + subtitleWidth &&
+                        pos.y >= centerY - subtitleHeight / 2 && pos.y <= centerY + subtitleHeight / 2) {
+                        return 'subtitle';
+                    }
+                } else {
+                    // 橫式字幕 - 檢測底部區域
+                    const subtitleY = height - (height * 0.08);
+                    const subtitleHeight = height * 0.25;
+                    
+                    if (pos.y >= subtitleY - subtitleHeight && pos.y <= subtitleY + subtitleHeight) {
+                        return 'subtitle';
+                    }
                 }
             }
         }
