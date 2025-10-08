@@ -1286,11 +1286,24 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     options={[
                                         // 中文字體
                                         { value: FontType.NOTO_SANS_TC, label: '思源黑體' },
+                                        { value: FontType.NOTO_SERIF_TC, label: '思源宋體' },
+                                        { value: FontType.TAIPEI_SANS, label: '台北黑體' },
                                         { value: FontType.SOURCE_HAN_SANS, label: '思源黑體 (TC)' },
                                         { value: FontType.CW_TEX_KAI, label: 'cwTeXKai' },
                                         { value: FontType.KLEE_ONE, label: 'Klee One' },
+                                        { value: FontType.M_PLUS_ROUNDED, label: '圓體' },
+                                        { value: FontType.HINA_MINCHO, label: '日式明朝' },
                                         { value: FontType.QINGSONG_1, label: '清松手寫體1' },
                                         { value: FontType.QINGSONG_2, label: '清松手寫體2' },
+                                        // 書法體
+                                        { value: FontType.MA_SHAN_ZHENG, label: '馬善政楷書' },
+                                        { value: FontType.ZHI_MANG_XING, label: '志忙星楷書' },
+                                        { value: FontType.LONG_CANG, label: '龍藏手書' },
+                                        { value: FontType.ZCOOL_KUAI_LE, label: '站酷快樂體' },
+                                        { value: FontType.ZCOOL_QING_KE, label: '站酷慶科黃油體' },
+                                        { value: FontType.LIU_JIAN_MAO_CAO, label: '劉建毛草書' },
+                                        { value: FontType.ZCOOL_XIAO_WEI, label: '站酷小薇LOGO體' },
+                                        { value: FontType.BAKUDAI, label: '莫大毛筆字體' },
                                         // 英文字體
                                         { value: FontType.POPPINS, label: '現代 (Poppins)' },
                                         { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
@@ -1301,7 +1314,25 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         { value: FontType.PRESS_START_2P, label: 'Press Start 2P' },
                                         { value: FontType.ROCKNROLL_ONE, label: '搖滾圓體 (RocknRoll One)' },
                                         { value: FontType.REGGAE_ONE, label: 'Reggae One' },
-                                        { value: FontType.VT323, label: 'VT323' }
+                                        { value: FontType.RAMPART_ONE, label: '立體裝甲' },
+                                        { value: FontType.VT323, label: 'VT323' },
+                                        { value: FontType.ROBOTO_MONO, label: 'Roboto Mono' },
+                                        { value: FontType.OPEN_SANS, label: 'Open Sans' },
+                                        { value: FontType.LATO, label: 'Lato' },
+                                        { value: FontType.MONTSERRAT, label: 'Montserrat' },
+                                        { value: FontType.SOURCE_SANS_PRO, label: 'Source Sans Pro' },
+                                        { value: FontType.RALEWAY, label: 'Raleway' },
+                                        { value: FontType.UBUNTU, label: 'Ubuntu' },
+                                        { value: FontType.PLAYFAIR_DISPLAY, label: 'Playfair Display' },
+                                        { value: FontType.MERRIWEATHER, label: 'Merriweather' },
+                                        { value: FontType.OSWALD, label: 'Oswald' },
+                                        { value: FontType.CAVEAT, label: 'Caveat (手寫體)' },
+                                        { value: FontType.KALAM, label: 'Kalam (手寫體)' },
+                                        { value: FontType.COMFORTAA, label: 'Comfortaa (圓體)' },
+                                        { value: FontType.FREDOKA_ONE, label: 'Fredoka One (寬體)' },
+                                        { value: FontType.NUNITO, label: 'Nunito (寬體)' },
+                                        { value: FontType.QUICKSAND, label: 'Quicksand (寬體)' },
+                                        { value: FontType.RUBIK, label: 'Rubik (寬體)' }
                                     ]}
                                 />
                                 

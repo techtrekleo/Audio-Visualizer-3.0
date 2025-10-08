@@ -60,6 +60,7 @@ export enum ControlCardStyle {
 }
 
 export enum FontType {
+    // 原有字體
     POPPINS = 'Poppins',
     ORBITRON = 'Orbitron',
     LOBSTER = 'Lobster',
@@ -76,6 +77,37 @@ export enum FontType {
     KLEE_ONE = 'Klee One',
     QINGSONG_1 = 'QingSong 1',
     QINGSONG_2 = 'QingSong 2',
+    // 新增字體（來自封面產生器）
+    TAIPEI_SANS = 'Taipei Sans TC Beta',
+    M_PLUS_ROUNDED = 'M PLUS Rounded 1c',
+    HINA_MINCHO = 'Hina Mincho',
+    RAMPART_ONE = 'Rampart One',
+    ROBOTO_MONO = 'Roboto Mono',
+    OPEN_SANS = 'Open Sans',
+    LATO = 'Lato',
+    MONTSERRAT = 'Montserrat',
+    SOURCE_SANS_PRO = 'Source Sans Pro',
+    RALEWAY = 'Raleway',
+    UBUNTU = 'Ubuntu',
+    PLAYFAIR_DISPLAY = 'Playfair Display',
+    MERRIWEATHER = 'Merriweather',
+    OSWALD = 'Oswald',
+    CAVEAT = 'Caveat',
+    KALAM = 'Kalam',
+    COMFORTAA = 'Comfortaa',
+    FREDOKA_ONE = 'Fredoka One',
+    NUNITO = 'Nunito',
+    QUICKSAND = 'Quicksand',
+    RUBIK = 'Rubik',
+    NOTO_SERIF_TC = 'Noto Serif TC',
+    MA_SHAN_ZHENG = 'Ma Shan Zheng',
+    ZHI_MANG_XING = 'Zhi Mang Xing',
+    LONG_CANG = 'Long Cang',
+    ZCOOL_KUAI_LE = 'ZCOOL KuaiLe',
+    ZCOOL_QING_KE = 'ZCOOL QingKe HuangYou',
+    LIU_JIAN_MAO_CAO = 'Liu Jian Mao Cao',
+    ZCOOL_XIAO_WEI = 'ZCOOL XiaoWei',
+    BAKUDAI = 'Bakudai',
 }
 
 export enum BackgroundColorType {

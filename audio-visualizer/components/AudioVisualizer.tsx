@@ -4,6 +4,7 @@ import ImageBasedVisualizer from './ImageBasedVisualizer';
 
 // 字體映射表
 const FONT_MAP: Record<FontType, string> = {
+    // 原有字體
     [FontType.POPPINS]: 'Poppins',
     [FontType.ORBITRON]: 'Orbitron',
     [FontType.LOBSTER]: 'Lobster',
@@ -20,6 +21,37 @@ const FONT_MAP: Record<FontType, string> = {
     [FontType.KLEE_ONE]: 'Klee One',
     [FontType.QINGSONG_1]: 'Jason Handwriting 1',
     [FontType.QINGSONG_2]: 'Jason Handwriting 2',
+    // 新增字體
+    [FontType.TAIPEI_SANS]: 'Taipei Sans TC Beta',
+    [FontType.M_PLUS_ROUNDED]: 'M PLUS Rounded 1c',
+    [FontType.HINA_MINCHO]: 'Hina Mincho',
+    [FontType.RAMPART_ONE]: 'Rampart One',
+    [FontType.ROBOTO_MONO]: 'Roboto Mono',
+    [FontType.OPEN_SANS]: 'Open Sans',
+    [FontType.LATO]: 'Lato',
+    [FontType.MONTSERRAT]: 'Montserrat',
+    [FontType.SOURCE_SANS_PRO]: 'Source Sans Pro',
+    [FontType.RALEWAY]: 'Raleway',
+    [FontType.UBUNTU]: 'Ubuntu',
+    [FontType.PLAYFAIR_DISPLAY]: 'Playfair Display',
+    [FontType.MERRIWEATHER]: 'Merriweather',
+    [FontType.OSWALD]: 'Oswald',
+    [FontType.CAVEAT]: 'Caveat',
+    [FontType.KALAM]: 'Kalam',
+    [FontType.COMFORTAA]: 'Comfortaa',
+    [FontType.FREDOKA_ONE]: 'Fredoka One',
+    [FontType.NUNITO]: 'Nunito',
+    [FontType.QUICKSAND]: 'Quicksand',
+    [FontType.RUBIK]: 'Rubik',
+    [FontType.NOTO_SERIF_TC]: 'Noto Serif TC',
+    [FontType.MA_SHAN_ZHENG]: 'Ma Shan Zheng',
+    [FontType.ZHI_MANG_XING]: 'Zhi Mang Xing',
+    [FontType.LONG_CANG]: 'Long Cang',
+    [FontType.ZCOOL_KUAI_LE]: 'ZCOOL KuaiLe',
+    [FontType.ZCOOL_QING_KE]: 'ZCOOL QingKe HuangYou',
+    [FontType.LIU_JIAN_MAO_CAO]: 'Liu Jian Mao Cao',
+    [FontType.ZCOOL_XIAO_WEI]: 'ZCOOL XiaoWei',
+    [FontType.BAKUDAI]: 'Bakudai',
 };
 
 interface AudioVisualizerProps {
