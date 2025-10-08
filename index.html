@@ -518,6 +518,113 @@
             box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
         }
         
+        /* 更新日誌區域 */
+        .changelog-section {
+            padding: 6rem 0;
+            background: rgba(20, 20, 20, 0.3);
+        }
+        
+        .changelog-timeline {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .changelog-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #4ecdc4, #45b7d1);
+        }
+        
+        .changelog-item {
+            position: relative;
+            margin-bottom: 3rem;
+            padding-left: 2.5rem;
+            background: rgba(45, 45, 45, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .changelog-item:hover {
+            transform: translateX(10px);
+            border-color: rgba(78, 205, 196, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .changelog-item::before {
+            content: '';
+            position: absolute;
+            left: -2.25rem;
+            top: 2rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.8);
+        }
+        
+        .changelog-date {
+            color: #4ecdc4;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .changelog-date i {
+            font-size: 0.9rem;
+        }
+        
+        .changelog-tool {
+            color: #45b7d1;
+            font-weight: 500;
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+            display: inline-block;
+            background: rgba(69, 183, 209, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid rgba(69, 183, 209, 0.3);
+        }
+        
+        .changelog-changes {
+            list-style: none;
+            margin-top: 1rem;
+        }
+        
+        .changelog-changes li {
+            color: #d1d5db;
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+            line-height: 1.6;
+        }
+        
+        .changelog-changes li::before {
+            content: '✨';
+            position: absolute;
+            left: 0;
+            font-size: 0.9rem;
+        }
+        
+        .changelog-changes li.fix::before {
+            content: '🔧';
+        }
+        
+        .changelog-changes li.improve::before {
+            content: '⚡';
+        }
+        
         /* 頻道介紹區域 */
         .channel-section {
             padding: 6rem 0;
@@ -1368,6 +1475,9 @@
                             <li>捲軸字幕錄製</li>
                             <li>高品質渲染輸出</li>
                             <li>自定義顏色主題</li>
+                            <li>🆕 直式/橫式字幕顯示</li>
+                            <li>🆕 豐富字體選擇（含手寫體）</li>
+                            <li>🆕 優化拖曳操作精準度</li>
                         </ul>
                         <a href="audio-visualizer/" class="tool-link" target="_blank">
                             <i class="fas fa-external-link-alt"></i>
@@ -1413,11 +1523,77 @@
                             <li>豐富字體選擇</li>
                             <li>即時預覽</li>
                             <li>高解析度輸出</li>
+                            <li>🆕 中國風邊框（可自訂顏色/透明度）</li>
+                            <li>🆕 直式/橫式文字排版</li>
+                            <li>🆕 拖曳式邊框與文字定位</li>
+                            <li>🆕 預設管理功能</li>
                         </ul>
                         <a href="font-effects/" class="tool-link" target="_blank">
                             <i class="fas fa-external-link-alt"></i>
                             立即使用
                         </a>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
+        
+        <!-- 更新日誌區域 -->
+        <section id="changelog" class="changelog-section">
+            <div class="container">
+                <h2 class="section-title fade-in">📝 更新日誌</h2>
+                <div class="changelog-timeline fade-in">
+                    
+                    <!-- 2025-10-08 更新 -->
+                    <div class="changelog-item">
+                        <div class="changelog-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            2025年10月8日
+                        </div>
+                        <span class="changelog-tool">🎵 音頻可視化器</span>
+                        <ul class="changelog-changes">
+                            <li>新增直式/橫式字幕顯示切換功能</li>
+                            <li>整合字體效果生成器的所有字體選項（含手寫體）</li>
+                            <li class="fix">修復清松手寫體1和2字體無法正常顯示的問題</li>
+                            <li class="improve">優化可視化器拖曳抓取範圍（從60%縮小到30%），提升操作精準度</li>
+                            <li class="improve">為直式字幕添加專門的檢測區域，支援拖曳移動</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 字體效果生成器更新 -->
+                    <div class="changelog-item">
+                        <div class="changelog-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            2025年10月7日
+                        </div>
+                        <span class="changelog-tool">✍️ 字體效果生成器</span>
+                        <ul class="changelog-changes">
+                            <li>新增中國風邊框功能，支援多種樣式（Classic、Royal、Minimal、Elegant）</li>
+                            <li>新增邊框顏色和透明度自訂控制器</li>
+                            <li>新增拖曳式邊框定位功能</li>
+                            <li>新增直式/橫式文字排版切換</li>
+                            <li>新增預設管理功能（儲存/載入/刪除預設）</li>
+                            <li class="fix">修復直式文字與藍色框框位置對齊問題</li>
+                            <li class="fix">修復邊框拖曳時畫面閃爍的問題</li>
+                            <li class="improve">優化苗邊特效強度，改為更細緻的效果</li>
+                            <li class="improve">邊框尺寸控制範圍擴大至 5%-95%</li>
+                            <li class="improve">提升預設管理對話框的 z-index，避免被其他元素遮擋</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 初始發布 -->
+                    <div class="changelog-item">
+                        <div class="changelog-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            2025年9月25日
+                        </div>
+                        <span class="changelog-tool">🎉 平台發布</span>
+                        <ul class="changelog-changes">
+                            <li>🎵 音頻可視化器 Pro 正式上線</li>
+                            <li>📺 YouTube SEO 優化器正式上線</li>
+                            <li>✍️ 字體效果生成器正式上線</li>
+                            <li>🌐 音樂脈動-Sonic Pulse 官方網站上線</li>
+                        </ul>
                     </div>
                     
                 </div>
@@ -1462,6 +1638,38 @@
         </section>
     </main>
     
+    <!-- 頁腳 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <!-- Buy Me a Coffee 大按鈕 -->
+            <div style="margin-bottom: 3rem; text-align: center;">
+                <h3 style="color: #4ecdc4; margin-bottom: 1.5rem; font-size: 1.8rem;">☕ 給我靈感</h3>
+                <p style="color: #b8b8b8; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    如果這些工具對你有幫助，歡迎請我喝杯咖啡！你的支持是我持續創作的動力 ❤️
+                </p>
+                <a href="https://www.paypal.com/paypalme/TechTrekLeo" target="_blank" class="btn-coffee btn-coffee-large">
+                    <img src="assets/cat-avatar.png" alt="口袋裡的貓" class="coffee-cat-icon">
+                    <div class="coffee-text">
+                        <span class="coffee-main">請我喝咖啡</span>
+                        <span class="coffee-sub">支持創作・分享愛</span>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="footer-links">
+                <a href="#home">首頁</a>
+                <a href="#tools">工具</a>
+                <a href="#changelog">更新日誌</a>
+                <a href="#channel">頻道</a>
+                <a href="#" onclick="openContactModal(); return false;">聯繫我們</a>
+                <a href="#" onclick="openPrivacyModal(); return false;">隱私政策</a>
+                <a href="#" onclick="openTermsModal(); return false;">使用條款</a>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear">2025</span> 音樂脈動-Sonic Pulse 🐱 口袋裡的貓. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
     
     <!-- 手機轉帳詳細指南彈出視窗 -->
     <div id="mobileTransferModal" class="modal" style="display: none;">
