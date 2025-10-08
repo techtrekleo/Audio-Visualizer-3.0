@@ -17,6 +17,8 @@ const App: React.FC = () => {
   const [chineseFrameId, setChineseFrameId] = useState<ChineseFrameId>('none');
   const [frameSize, setFrameSize] = useState({ width: 0.7, height: 0.5 }); // 邊框大小比例
   const [framePosition, setFramePosition] = useState({ x: 0.15, y: 0.25 }); // 邊框位置比例
+  const [frameColor, setFrameColor] = useState('#2C3E50'); // 邊框主色
+  const [frameOpacity, setFrameOpacity] = useState(1.0); // 邊框透明度
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const renderRef = useRef(0);
@@ -72,12 +74,12 @@ const App: React.FC = () => {
   const updateImage = useCallback(async () => {
     const renderId = ++renderRef.current;
     
-    const dataUrl = await renderComposition(backgroundImage, textBlocks, activeCanvasSize.width, activeCanvasSize.height, chineseFrameId, frameSize, framePosition);
+    const dataUrl = await renderComposition(backgroundImage, textBlocks, activeCanvasSize.width, activeCanvasSize.height, chineseFrameId, frameSize, framePosition, frameColor, frameOpacity);
     
     if (renderId === renderRef.current) {
         setOutputImage(dataUrl);
     }
-  }, [backgroundImage, textBlocks, activeCanvasSize, chineseFrameId, frameSize, framePosition]);
+  }, [backgroundImage, textBlocks, activeCanvasSize, chineseFrameId, frameSize, framePosition, frameColor, frameOpacity]);
 
   // 使用 debounce 來減少拖動時的重新渲染頻率
   useEffect(() => {
@@ -220,6 +222,8 @@ const App: React.FC = () => {
               frameSize={frameSize}
               framePosition={framePosition}
               onFramePositionChange={handleFramePositionChange}
+              frameColor={frameColor}
+              frameOpacity={frameOpacity}
             />
           </div>
         </div>
@@ -322,6 +326,39 @@ const App: React.FC = () => {
                           className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
                         />
                         <span className="text-xs text-gray-500">{Math.round(framePosition.y * 100)}%</span>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm text-gray-400">邊框顏色</label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="color"
+                            value={frameColor}
+                            onChange={(e) => setFrameColor(e.target.value)}
+                            className="w-16 h-10 bg-gray-700 border border-gray-600 rounded cursor-pointer"
+                          />
+                          <input
+                            type="text"
+                            value={frameColor}
+                            onChange={(e) => setFrameColor(e.target.value)}
+                            className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            placeholder="#2C3E50"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm text-gray-400">邊框透明度</label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.05"
+                          value={frameOpacity}
+                          onChange={(e) => setFrameOpacity(parseFloat(e.target.value))}
+                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                        />
+                        <span className="text-xs text-gray-500">{Math.round(frameOpacity * 100)}%</span>
                       </div>
                     </div>
                   )}

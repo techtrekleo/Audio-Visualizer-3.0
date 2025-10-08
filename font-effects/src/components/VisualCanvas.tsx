@@ -14,6 +14,8 @@ interface VisualCanvasProps {
   frameSize?: { width: number; height: number };
   framePosition?: { x: number; y: number };
   onFramePositionChange?: (position: { x: number; y: number }) => void;
+  frameColor?: string;
+  frameOpacity?: number;
 }
 
 export const VisualCanvas: React.FC<VisualCanvasProps> = ({
@@ -27,7 +29,9 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
   chineseFrameId = 'none',
   frameSize = { width: 0.7, height: 0.5 },
   framePosition = { x: 0.15, y: 0.25 },
-  onFramePositionChange
+  onFramePositionChange,
+  frameColor = '#2C3E50',
+  frameOpacity = 1.0
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -84,7 +88,9 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
         canvasHeight,
         chineseFrameId,
         frameSize,
-        framePosition
+        framePosition,
+        frameColor,
+        frameOpacity
       );
       
       const img = new Image();
@@ -121,7 +127,7 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
     } catch (error) {
       console.error('繪製 canvas 時發生錯誤:', error);
     }
-  }, [textBlocks, canvasWidth, canvasHeight, backgroundImage, chineseFrameId, frameSize, framePosition, isDragging, alignmentGuides]);
+  }, [textBlocks, canvasWidth, canvasHeight, backgroundImage, chineseFrameId, frameSize, framePosition, frameColor, frameOpacity, isDragging, alignmentGuides]);
 
   // 當文字區塊或畫布尺寸改變時重新繪製（使用 debounce 避免頻繁渲染）
   useEffect(() => {

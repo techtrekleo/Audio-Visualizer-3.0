@@ -153,7 +153,9 @@ const drawChineseFrame = (
     canvasWidth: number, 
     canvasHeight: number,
     frameSize?: { width: number; height: number },
-    framePosition?: { x: number; y: number }
+    framePosition?: { x: number; y: number },
+    frameColor: string = '#2C3E50',
+    frameOpacity: number = 1.0
 ) => {
     if (frameId === 'none') {
         console.log('邊框設定為 none，跳過繪製');
@@ -179,51 +181,78 @@ const drawChineseFrame = (
         size, position
     });
     
+    // 設定全局透明度
+    ctx.globalAlpha = frameOpacity;
+    
     // 根據邊框類型設定樣式
     switch (frameId) {
         case 'classic':
-            drawClassicFrame(ctx, frameX, frameY, frameWidth, frameHeight);
+            drawClassicFrame(ctx, frameX, frameY, frameWidth, frameHeight, frameColor);
             break;
         case 'royal':
-            drawRoyalFrame(ctx, frameX, frameY, frameWidth, frameHeight);
+            drawRoyalFrame(ctx, frameX, frameY, frameWidth, frameHeight, frameColor);
             break;
         case 'minimal':
-            drawMinimalFrame(ctx, frameX, frameY, frameWidth, frameHeight);
+            drawMinimalFrame(ctx, frameX, frameY, frameWidth, frameHeight, frameColor);
             break;
         case 'elegant':
-            drawElegantFrame(ctx, frameX, frameY, frameWidth, frameHeight);
+            drawElegantFrame(ctx, frameX, frameY, frameWidth, frameHeight, frameColor);
             break;
     }
     
     ctx.restore();
 };
 
+// 輔助函數：調整顏色亮度
+const adjustBrightness = (hex: string, percent: number): string => {
+    // 移除 # 符號
+    hex = hex.replace(/^#/, '');
+    
+    // 轉換為 RGB
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    // 調整亮度
+    const newR = Math.min(255, Math.max(0, Math.round(r * (1 + percent))));
+    const newG = Math.min(255, Math.max(0, Math.round(g * (1 + percent))));
+    const newB = Math.min(255, Math.max(0, Math.round(b * (1 + percent))));
+    
+    // 轉回十六進位
+    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+};
+
 // 古典邊框 - 可調整大小和位置
-const drawClassicFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
-    console.log('繪製古典邊框:', { x, y, width, height });
+const drawClassicFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, baseColor: string = '#2C3E50') => {
+    console.log('繪製古典邊框:', { x, y, width, height, baseColor });
     
     // 保存當前狀態
     ctx.save();
     
-    // 外框 - 深藍色，較粗
-    ctx.strokeStyle = '#2C3E50'; // 深藍色
+    // 生成三種深淺色調
+    const darkColor = baseColor; // 使用基礎色作為深色
+    const midColor = adjustBrightness(baseColor, 0.3); // 亮30%
+    const lightColor = adjustBrightness(baseColor, 0.6); // 亮60%
+    
+    // 外框 - 基礎色，較粗
+    ctx.strokeStyle = darkColor;
     ctx.lineWidth = 10;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.strokeRect(x, y, width, height);
     
-    // 中框 - 藍灰色，中等粗細
-    ctx.strokeStyle = '#5D6D7E'; // 藍灰色
+    // 中框 - 中間色調，中等粗細
+    ctx.strokeStyle = midColor;
     ctx.lineWidth = 5;
     ctx.strokeRect(x + 15, y + 15, width - 30, height - 30);
     
-    // 內框 - 淺藍色，較細
-    ctx.strokeStyle = '#85C1E9'; // 淺藍色
+    // 內框 - 淺色調，較細
+    ctx.strokeStyle = lightColor;
     ctx.lineWidth = 2;
     ctx.strokeRect(x + 25, y + 25, width - 50, height - 50);
     
     // 繪製現代化角落裝飾
-    drawModernCornerDecorations(ctx, x, y, width, height);
+    drawModernCornerDecorations(ctx, x, y, width, height, lightColor, darkColor);
     
     console.log('邊框已繪製在位置:', x, y, '尺寸:', width, height);
     
@@ -232,54 +261,64 @@ const drawClassicFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, w
 };
 
 // 皇家邊框 - 可調整大小和位置
-const drawRoyalFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+const drawRoyalFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, baseColor: string = '#4A148C') => {
     // 保存當前狀態
     ctx.save();
     
-    // 外框 - 深紫色，較粗
-    ctx.strokeStyle = '#4A148C'; // 深紫色
+    // 生成三種深淺色調
+    const darkColor = baseColor;
+    const midColor = adjustBrightness(baseColor, 0.3);
+    const lightColor = adjustBrightness(baseColor, 0.6);
+    
+    // 外框 - 基礎色，較粗
+    ctx.strokeStyle = darkColor;
     ctx.lineWidth = 10;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.strokeRect(x, y, width, height);
     
-    // 中框 - 紫色，中等粗細
-    ctx.strokeStyle = '#7B1FA2'; // 紫色
+    // 中框 - 中間色調，中等粗細
+    ctx.strokeStyle = midColor;
     ctx.lineWidth = 5;
     ctx.strokeRect(x + 15, y + 15, width - 30, height - 30);
     
-    // 內框 - 淺紫色，較細
-    ctx.strokeStyle = '#BA68C8'; // 淺紫色
+    // 內框 - 淺色調，較細
+    ctx.strokeStyle = lightColor;
     ctx.lineWidth = 2;
     ctx.strokeRect(x + 25, y + 25, width - 50, height - 50);
     
     // 繪製奢華角落裝飾
-    drawLuxuryCornerDecorations(ctx, x, y, width, height);
+    drawLuxuryCornerDecorations(ctx, x, y, width, height, lightColor, darkColor);
     
     // 恢復狀態
     ctx.restore();
 };
 
 // 簡約邊框 - 可調整大小和位置
-const drawMinimalFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+const drawMinimalFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, baseColor: string = '#2F4F4F') => {
     // 保存當前狀態
     ctx.save();
     
-    // 外框 - 深灰色，較粗
-    ctx.strokeStyle = '#2F4F4F'; // 深石板灰
+    // 生成三種深淺色調
+    const darkColor = baseColor;
+    const midColor = adjustBrightness(baseColor, 0.3);
+    const lightColor = adjustBrightness(baseColor, 0.6);
+    
+    // 外框 - 基礎色，較粗
+    ctx.strokeStyle = darkColor;
     ctx.lineWidth = Math.max(6, width * 0.025);
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.strokeRect(x, y, width, height);
     
-    // 中框 - 石板灰，中等粗細
-    ctx.strokeStyle = '#708090'; // 石板灰
+    // 中框 - 中間色調，中等粗細
+    ctx.strokeStyle = midColor;
     ctx.lineWidth = Math.max(3, width * 0.015);
     const padding1 = Math.max(12, width * 0.04);
     ctx.strokeRect(x + padding1, y + padding1, width - padding1 * 2, height - padding1 * 2);
     
-    // 內框 - 淺灰色，較細
-    ctx.strokeStyle = '#A9A9A9'; // 深灰色
+    // 內框 - 淺色調，較細
+    ctx.strokeStyle = lightColor;
     ctx.lineWidth = Math.max(1, width * 0.008);
     const padding2 = Math.max(20, width * 0.06);
     ctx.strokeRect(x + padding2, y + padding2, width - padding2 * 2, height - padding2 * 2);
@@ -289,29 +328,34 @@ const drawMinimalFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, w
 };
 
 // 優雅邊框 - 模仿圖片中的捲曲裝飾
-const drawElegantFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+const drawElegantFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, baseColor: string = '#A0A0A0') => {
     // 保存當前狀態
     ctx.save();
     
-    // 外框 - 淺灰色，較粗
-    ctx.strokeStyle = '#E8E8E8'; // 淺灰色
+    // 生成三種深淺色調
+    const darkColor = baseColor;
+    const midColor = adjustBrightness(baseColor, 0.3);
+    const lightColor = adjustBrightness(baseColor, 0.6);
+    
+    // 外框 - 淺色調，較粗
+    ctx.strokeStyle = lightColor;
     ctx.lineWidth = 12;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.strokeRect(x, y, width, height);
     
-    // 中框 - 深灰色，中等粗細
-    ctx.strokeStyle = '#A0A0A0'; // 深灰色
+    // 中框 - 基礎色，中等粗細
+    ctx.strokeStyle = darkColor;
     ctx.lineWidth = 2;
     ctx.strokeRect(x + 8, y + 8, width - 16, height - 16);
     
-    // 內框 - 淺灰色，較細
-    ctx.strokeStyle = '#E8E8E8'; // 淺灰色
+    // 內框 - 淺色調，較細
+    ctx.strokeStyle = lightColor;
     ctx.lineWidth = 2;
     ctx.strokeRect(x + 12, y + 12, width - 24, height - 24);
     
     // 繪製內凹角落美化
-    drawInsetCornerDecorations(ctx, x, y, width, height);
+    drawInsetCornerDecorations(ctx, x, y, width, height, lightColor, midColor, darkColor);
     
     // 恢復狀態
     ctx.restore();
@@ -370,7 +414,7 @@ const drawElegantFrame = (ctx: CanvasRenderingContext2D, x: number, y: number, w
 // };
 
 // 內凹角落美化
-const drawInsetCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+const drawInsetCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, lightColor: string = '#F0F0F0', midColor: string = '#E0E0E0', darkColor: string = '#D0D0D0') => {
     const insetSize = Math.max(15, Math.min(width, height) * 0.06);
     const insetDepth = Math.max(8, Math.min(width, height) * 0.03);
     
@@ -384,7 +428,7 @@ const drawInsetCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y:
         ctx.rotate(rotation);
         
         // 外層陰影（深色）
-        ctx.fillStyle = '#D0D0D0';
+        ctx.fillStyle = darkColor;
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.lineTo(size, 0);
@@ -393,7 +437,7 @@ const drawInsetCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y:
         ctx.fill();
         
         // 內層高光（淺色）
-        ctx.fillStyle = '#F0F0F0';
+        ctx.fillStyle = lightColor;
         ctx.beginPath();
         ctx.moveTo(depth, depth);
         ctx.lineTo(size - depth, depth);
@@ -402,7 +446,7 @@ const drawInsetCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y:
         ctx.fill();
         
         // 中間層次
-        ctx.fillStyle = '#E0E0E0';
+        ctx.fillStyle = midColor;
         ctx.beginPath();
         ctx.moveTo(depth * 0.5, depth * 0.5);
         ctx.lineTo(size - depth * 0.5, depth * 0.5);
@@ -431,15 +475,15 @@ const drawInsetCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y:
 };
 
 // 現代化角落裝飾
-const drawModernCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+const drawModernCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, lightColor: string = '#85C1E9', darkColor: string = '#2C3E50') => {
     const cornerSize = Math.max(20, Math.min(width, height) * 0.08);
     
     // 保存當前狀態
     ctx.save();
     
     // 設定裝飾樣式
-    ctx.fillStyle = '#85C1E9'; // 淺藍色
-    ctx.strokeStyle = '#2C3E50'; // 深藍色邊框
+    ctx.fillStyle = lightColor;
+    ctx.strokeStyle = darkColor;
     ctx.lineWidth = 2;
     
     // 繪製現代化幾何裝飾
@@ -459,7 +503,7 @@ const drawModernCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y
         ctx.stroke();
         
         // 內層圓形
-        ctx.fillStyle = '#2C3E50';
+        ctx.fillStyle = darkColor;
         ctx.beginPath();
         ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2);
         ctx.fill();
@@ -485,15 +529,15 @@ const drawModernCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y
 };
 
 // 奢華角落裝飾
-const drawLuxuryCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) => {
+const drawLuxuryCornerDecorations = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, lightColor: string = '#BA68C8', darkColor: string = '#4A148C') => {
     const cornerSize = Math.max(20, Math.min(width, height) * 0.08);
     
     // 保存當前狀態
     ctx.save();
     
     // 設定裝飾樣式
-    ctx.fillStyle = '#BA68C8'; // 淺紫色
-    ctx.strokeStyle = '#4A148C'; // 深紫色邊框
+    ctx.fillStyle = lightColor;
+    ctx.strokeStyle = darkColor;
     ctx.lineWidth = 2;
     
     // 繪製奢華裝飾
@@ -816,7 +860,9 @@ export const renderComposition = (
     height: number,
     chineseFrameId: string = 'none',
     frameSize?: { width: number; height: number },
-    framePosition?: { x: number; y: number }
+    framePosition?: { x: number; y: number },
+    frameColor: string = '#2C3E50',
+    frameOpacity: number = 1.0
 ): Promise<string> => {
     return new Promise(async (resolve) => {
         await document.fonts.ready;
@@ -830,8 +876,8 @@ export const renderComposition = (
 
         const drawAllText = () => {
             // 先繪製中國風邊框
-            console.log('drawAllText - 繪製邊框:', { chineseFrameId, width, height, frameSize, framePosition });
-            drawChineseFrame(ctx, chineseFrameId, width, height, frameSize, framePosition);
+            console.log('drawAllText - 繪製邊框:', { chineseFrameId, width, height, frameSize, framePosition, frameColor, frameOpacity });
+            drawChineseFrame(ctx, chineseFrameId, width, height, frameSize, framePosition, frameColor, frameOpacity);
             // 再繪製文字
             textBlocks.forEach(textBlock => {
                 drawText(ctx, textBlock);
