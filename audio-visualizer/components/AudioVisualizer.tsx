@@ -5287,8 +5287,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             // 其他可視化類型 - 縮小中央區域
             const centerX = width / 2;
             const centerY = height / 2;
-            const vizWidth = width * 0.6; // 從0.8縮小到0.6
-            const vizHeight = height * 0.6; // 從0.8縮小到0.6
+            const vizWidth = width * 0.3; // 縮小到30%
+            const vizHeight = height * 0.3; // 縮小到30%
             
             if (pos.x >= centerX - vizWidth / 2 && pos.x <= centerX + vizWidth / 2 &&
                 pos.y >= centerY - vizHeight / 2 && pos.y <= centerY + vizHeight / 2) {
