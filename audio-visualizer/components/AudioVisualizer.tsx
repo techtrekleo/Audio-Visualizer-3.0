@@ -138,6 +138,8 @@ interface AudioVisualizerProps {
     controlCardBackgroundColor?: string;
     // Vinyl Record props
     vinylImage?: string | null;
+    // Piano opacity
+    pianoOpacity?: number;
 }
 
 // 讓繪圖函式能取得當前屬性（不改動所有函式簽名）
@@ -3332,99 +3334,6 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
     ctx.restore();
 };
 
-const drawPianoVirtuoso = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[]) => {
-    if (!dataArray) return;
-    ctx.save();
-
-    const keyboardHeight = height * 0.25; // Made keyboard slightly taller
-    const keyboardY = height - keyboardHeight;
-
-    // --- Keyboard Glow on Beat ---
-    if (isBeat) {
-        ctx.shadowColor = colors.accent;
-        ctx.shadowBlur = 40; // Increased glow
-    }
-
-    // --- Data Mapping ---
-    const numWhiteKeys = 28;
-    const whiteKeyWidth = width / numWhiteKeys;
-    const blackKeyWidth = whiteKeyWidth * 0.6;
-    const blackKeyHeight = keyboardHeight * 0.6;
-    const keyDataPoints = Math.floor(dataArray.length * 0.7 / numWhiteKeys);
-
-    const whiteKeyPresses = new Array(numWhiteKeys).fill(0);
-
-    // --- Draw White Keys ---
-    for (let i = 0; i < numWhiteKeys; i++) {
-        let pressAmount = 0;
-        const dataStart = i * keyDataPoints;
-        const dataEnd = dataStart + keyDataPoints;
-        for (let j = dataStart; j < dataEnd; j++) {
-            pressAmount += dataArray[j] || 0;
-        }
-        pressAmount /= (keyDataPoints * 255); // Normalize
-        whiteKeyPresses[i] = pressAmount;
-
-        const isPressed = (Math.pow(pressAmount, 2) * sensitivity) > 0.1;
-        
-        const keyX = i * whiteKeyWidth;
-        const keyYOffset = isPressed ? 2 : 0; // Key press down animation
-        
-        // Add gradient for 3D effect
-        const whiteKeyGradient = ctx.createLinearGradient(keyX, keyboardY, keyX, keyboardY + keyboardHeight);
-        whiteKeyGradient.addColorStop(0, isPressed ? '#bbb' : '#fff');
-        whiteKeyGradient.addColorStop(1, isPressed ? '#999' : '#e0e0e0');
-
-        ctx.fillStyle = whiteKeyGradient;
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 1;
-        ctx.fillRect(keyX, keyboardY + keyYOffset, whiteKeyWidth, keyboardHeight);
-        ctx.strokeRect(keyX, keyboardY + keyYOffset, whiteKeyWidth, keyboardHeight);
-    }
-
-    // Reset shadow for subsequent drawings
-    ctx.shadowBlur = 0;
-
-    // --- Draw Black Keys ---
-    const blackKeyPattern = [1, 1, 0, 1, 1, 1, 0]; // C#, D#, F#, G#, A#
-    for (let i = 0; i < numWhiteKeys - 1; i++) {
-         const patternIndex = i % 7;
-         if (blackKeyPattern[patternIndex] === 1) {
-            const pressAmount = (whiteKeyPresses[i] + whiteKeyPresses[i+1]) / 2;
-            const isPressed = (Math.pow(pressAmount, 2) * sensitivity) > 0.15;
-
-            const keyX = (i + 1) * whiteKeyWidth - (blackKeyWidth / 2);
-            const keyYOffset = isPressed ? 2 : 0;
-
-            const blackKeyGradient = ctx.createLinearGradient(keyX, keyboardY, keyX, keyboardY + blackKeyHeight);
-            blackKeyGradient.addColorStop(0, isPressed ? '#555' : '#333');
-            blackKeyGradient.addColorStop(1, isPressed ? '#333' : '#000');
-
-            ctx.fillStyle = blackKeyGradient;
-            ctx.fillRect(keyX, keyboardY + keyYOffset, blackKeyWidth, blackKeyHeight);
-         }
-    }
-
-    // --- Draw Particles (Musical Notes) ---
-    if (particles) {
-        particles.forEach(p => {
-            const noteSymbols = ['♪', '♫', '♬', '♭', '♯'];
-            const symbol = noteSymbols[Math.floor(p.angle * noteSymbols.length)];
-
-            ctx.font = `bold ${p.radius}px "Arial"`;
-            ctx.fillStyle = applyAlphaToColor(p.color, p.opacity);
-            ctx.textAlign = 'center';
-            
-            // Add glow to particles
-            ctx.shadowColor = applyAlphaToColor(p.color, p.opacity * 0.8);
-            ctx.shadowBlur = 15;
-
-            ctx.fillText(symbol, p.x, p.y);
-        });
-    }
-
-    ctx.restore();
-};
 
 // 繪製直式字幕
 const drawVerticalSubtitle = (
@@ -4184,8 +4093,10 @@ const drawVinylRecord: DrawFunction = (
          transformState.cy = lerp(transformState.cy, targetCY, 0.15);
          transformState.scale = lerp(transformState.scale, scale, 0.15);
      }
-     const centerX = width / 2; // 讓外層 transform 控制位置
-     const centerY = height / 2;
+    const centerX = width / 2; // 讓外層 transform 控制位置
+    // 直式佈局時讓唱片往上移，給控制卡留空間
+    const vinylLayoutMode = (latestPropsRef as any)?.vinylLayoutMode || 'horizontal';
+    const centerY = vinylLayoutMode === 'vertical' ? height * 0.35 : height / 2;
      const smoothScale = 1;     // 讓外層 transform 控制縮放
      // 由全局 transform 控制縮放，基準大小不再乘以 scale，避免雙重縮放
      const baseRadius = Math.min(width, height) * 0.22;
@@ -4200,23 +4111,40 @@ const drawVinylRecord: DrawFunction = (
      ctx.fillStyle = bg;
      ctx.fillRect(0, 0, width, height);
  
-     // 旋轉角（依唱片轉速計算，放慢至 20 RPM；每幀≈60fps）
-     const RPM = 20;
-     const anglePerFrame = (RPM / 60) * (Math.PI * 2) / 60; // 每幀角度增量
-     const angle = frame * anglePerFrame + (isBeat ? 0.002 : 0);
- 
-     ctx.save();
-     ctx.translate(centerX, centerY);
-     ctx.rotate(angle);
+    // 旋轉角（依唱片轉速計算，放慢至 20 RPM；每幀≈60fps）
+    const RPM = 20;
+    const anglePerFrame = (RPM / 60) * (Math.PI * 2) / 60; // 每幀角度增量
+    const angle = frame * anglePerFrame + (isBeat ? 0.002 : 0);
+    
+    // 檢查是否開啟中心照片固定模式
+    const vinylCenterFixed = (latestPropsRef as any)?.vinylCenterFixed || false;
+
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    
+    // 整體旋轉邏輯：固定模式下不旋轉整體，讓各層獨立控制
+    if (!vinylCenterFixed) {
+        ctx.rotate(angle);
+    }
 
     // 外圈黑膠（黑灰色）
+    ctx.save();
+    // 如果開啟中心固定模式，黑膠遮罩需要旋轉
+    if (vinylCenterFixed) {
+        ctx.rotate(angle);
+    }
     ctx.fillStyle = '#181b21';
     ctx.beginPath();
     ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
 
     // 唱片紋路（限制在中圈：從內到外的同心條紋，黑/灰交錯）
     ctx.save();
+    // 如果開啟中心固定模式，唱片紋路需要旋轉
+    if (vinylCenterFixed) {
+        ctx.rotate(angle);
+    }
     ctx.beginPath();
     ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
     ctx.arc(0, 0, ringRadius * 0.96, 0, Math.PI * 2, true);
@@ -4247,31 +4175,51 @@ const drawVinylRecord: DrawFunction = (
     // 中心貼紙（若有圖片，使用圖片）
     // 從最新屬性讀取圖片（避免引用組件內部的 refs 導致作用域錯誤）
     const vinylImage = ((latestPropsRef as any)?.vinylImage ?? null) as string | null;
-    if (vinylImage) {
-        const img = getOrCreateCachedImage('vinylImage', vinylImage);
-        if (img && img.complete) {
-            const innerR = ringRadius * 0.92; // 讓內圈更大，黑膠圈變窄
-            const size = innerR * 2; // 以內圈大小鋪滿
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(0, 0, innerR, 0, Math.PI * 2);
-            ctx.clip();
-            ctx.drawImage(img, -size / 2, -size / 2, size, size);
-            ctx.restore();
-        } else {
-            // 首次尚未載入完成時，畫一個漸層佔位
-            ctx.fillStyle = '#1f2937';
-            ctx.beginPath();
-            ctx.arc(0, 0, ringRadius * 0.92, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    } else {
-        const labelGradient = ctx.createLinearGradient(-ringRadius, 0, ringRadius, 0);
-        labelGradient.addColorStop(0, colors.primary || '#60a5fa');
-        labelGradient.addColorStop(1, colors.accent || '#a78bfa');
-        ctx.fillStyle = labelGradient;
+    
+    // 預設黑膠唱片圖片（base64編碼 - 純黑膠紋理）
+    const defaultVinylImage = 'data:image/svg+xml;base64,' + btoa(`
+        <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="vinylGradient" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" style="stop-color:#181b21;stop-opacity:1" />
+                    <stop offset="70%" style="stop-color:#181b21;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#0f1419;stop-opacity:1" />
+                </radialGradient>
+            </defs>
+            <circle cx="200" cy="200" r="200" fill="url(#vinylGradient)"/>
+            <circle cx="200" cy="200" r="180" fill="none" stroke="#2a2f36" stroke-width="1"/>
+            <circle cx="200" cy="200" r="160" fill="none" stroke="#1f2329" stroke-width="1"/>
+            <circle cx="200" cy="200" r="140" fill="none" stroke="#2a2f36" stroke-width="1"/>
+            <circle cx="200" cy="200" r="120" fill="none" stroke="#1f2329" stroke-width="1"/>
+            <circle cx="200" cy="200" r="100" fill="none" stroke="#2a2f36" stroke-width="1"/>
+            <circle cx="200" cy="200" r="80" fill="none" stroke="#1f2329" stroke-width="1"/>
+            <circle cx="200" cy="200" r="60" fill="none" stroke="#2a2f36" stroke-width="1"/>
+            <circle cx="200" cy="200" r="40" fill="none" stroke="#1f2329" stroke-width="1"/>
+            <circle cx="200" cy="200" r="25" fill="none" stroke="#2a2f36" stroke-width="1"/>
+            <circle cx="200" cy="200" r="10" fill="none" stroke="#1f2329" stroke-width="1"/>
+        </svg>
+    `);
+    // 使用上傳的圖片或預設圖片
+    const imageToUse = vinylImage || defaultVinylImage;
+    const img = getOrCreateCachedImage('vinylImage', imageToUse);
+    
+    if (img && img.complete) {
+        const innerR = ringRadius * 0.92; // 讓內圈更大，黑膠圈變窄
+        const size = innerR * 2; // 以內圈大小鋪滿
+        ctx.save();
         ctx.beginPath();
-        ctx.arc(0, 0, ringRadius * 0.9, 0, Math.PI * 2);
+        ctx.arc(0, 0, innerR, 0, Math.PI * 2);
+        ctx.clip();
+        
+        // 中心照片在固定模式下保持不動（不需要任何旋轉）
+        
+        ctx.drawImage(img, -size / 2, -size / 2, size, size);
+        ctx.restore();
+    } else {
+        // 首次尚未載入完成時，畫一個漸層佔位
+        ctx.fillStyle = '#1f2937';
+        ctx.beginPath();
+        ctx.arc(0, 0, ringRadius * 0.92, 0, Math.PI * 2);
         ctx.fill();
     }
 
@@ -4289,30 +4237,32 @@ const drawVinylRecord: DrawFunction = (
     ctx.fill('evenodd');
 
     // 外圈：半透明遮罩（同圖暗化，跟著旋轉）
-    if (vinylImage) {
-        const img2 = getOrCreateCachedImage('vinylImageOuter', vinylImage);
-        const outerR = discRadius * 1.08;
-        if (img2 && img2.complete) {
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(0, 0, outerR, 0, Math.PI * 2);
-            ctx.arc(0, 0, discRadius * 0.92, 0, Math.PI * 2, true);
-            ctx.clip('evenodd');
-            const size2 = outerR * 2;
-            ctx.globalAlpha = 0.6;
-            ctx.drawImage(img2, -size2 / 2, -size2 / 2, size2, size2);
-            ctx.globalAlpha = 1;
-            ctx.restore();
-        } else {
-            ctx.save();
-            ctx.globalAlpha = 0.2;
-            ctx.beginPath();
-            ctx.arc(0, 0, outerR, 0, Math.PI * 2);
-            ctx.arc(0, 0, discRadius * 0.92, 0, Math.PI * 2, true);
-            ctx.fillStyle = '#000';
-            ctx.fill('evenodd');
-            ctx.restore();
-        }
+    const img2 = getOrCreateCachedImage('vinylImageOuter', imageToUse);
+    const outerR = discRadius * 1.08;
+    if (img2 && img2.complete) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, outerR, 0, Math.PI * 2);
+        ctx.arc(0, 0, discRadius * 0.92, 0, Math.PI * 2, true);
+        ctx.clip('evenodd');
+        
+        // 外圈半透明遮罩繼續旋轉
+        ctx.rotate(angle);
+        
+        const size2 = outerR * 2;
+        ctx.globalAlpha = 0.6;
+        ctx.drawImage(img2, -size2 / 2, -size2 / 2, size2, size2);
+        ctx.globalAlpha = 1;
+        ctx.restore();
+    } else {
+        ctx.save();
+        ctx.globalAlpha = 0.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, outerR, 0, Math.PI * 2);
+        ctx.arc(0, 0, discRadius * 0.92, 0, Math.PI * 2, true);
+        ctx.fillStyle = '#000';
+        ctx.fill('evenodd');
+        ctx.restore();
     }
 
     ctx.restore();
@@ -4394,21 +4344,39 @@ const drawVinylRecord: DrawFunction = (
     const cardW = width * 0.21; // 長度改為目前的 70%
     const cardH = 300; // 高度固定為 300px
     const cardEnabled = (latestPropsRef as any)?.controlCardEnabled !== false; // 預設顯示
-    const layoutMode = (latestPropsRef as any)?.vinylLayoutMode || 'horizontal';
     
     // 根據配置模式調整控制卡位置
     let cardX, cardY;
+    const layoutMode = (latestPropsRef as any)?.vinylLayoutMode || 'horizontal';
     if (layoutMode === 'vertical') {
-        // 上下排列：控制卡在唱片下方
+        // 上下排列：控制卡在唱片下方，確保不重疊
         cardX = centerX - cardW * 0.5;
-        cardY = centerY + discRadius * 1.25;
+        // 直接設定控制卡在唱片下方80像素處
+        cardY = centerY + discRadius + 80;
+        
+        // 如果會超出畫布底部，則調整到安全位置
+        if (cardY + cardH > height - 10) {
+            cardY = height - cardH - 10;
+        }
+        
+        // 確保控制卡不會超出左邊界
+        cardX = Math.max(10, cardX);
+        // 確保控制卡不會超出右邊界
+        cardX = Math.min(cardX, width - cardW - 10);
     } else {
         // 左右排列：控制卡在唱片右側（預設）
         cardX = centerX + discRadius * 1.25;
         cardY = centerY - cardH * 0.5;
+        // 確保控制卡不會超出右邊界
+        if (cardX + cardW > width - 10) {
+            cardX = width - cardW - 10;
+        }
+        // 確保控制卡不會超出上下邊界
+        cardY = Math.max(10, Math.min(cardY, height - cardH - 10));
     }
     
     if (cardEnabled) {
+
         const style = (latestPropsRef as any)?.controlCardStyle as any;
         const color = (latestPropsRef as any)?.controlCardColor || '#111827';
         const bg = (latestPropsRef as any)?.controlCardBackgroundColor || 'rgba(240, 244, 248, 0.92)';
@@ -4651,6 +4619,87 @@ function getOrCreateCachedImage(key: string, src: string): HTMLImageElement | nu
     return img;
 }
 
+// 鋼琴演奏家效果（只繪製鋼琴，音符在主要循環中處理）
+const drawPianoVirtuoso: DrawFunction = (
+    ctx,
+    dataArray,
+    width,
+    height,
+    frame,
+    sensitivity,
+    colors,
+    graphicEffect,
+    isBeat
+) => {
+    if (!dataArray) return;
+    
+    // 獲取鋼琴透明度設定
+    const pianoOpacity = (latestPropsRef as any)?.pianoOpacity ?? 1.0;
+    
+    const keyboardHeight = height * 0.25;
+    const numWhiteKeys = 28;
+    const whiteKeyWidth = width / numWhiteKeys;
+    const blackKeyWidth = whiteKeyWidth * 0.6;
+    const blackKeyHeight = keyboardHeight * 0.6;
+    
+    // 只對鋼琴鍵盤應用透明度
+    ctx.save();
+    ctx.globalAlpha = pianoOpacity;
+    
+    // 繪製白鍵
+    for (let i = 0; i < numWhiteKeys; i++) {
+        const x = i * whiteKeyWidth;
+        const keyDataPoints = Math.floor(dataArray.length * 0.7 / numWhiteKeys);
+        const dataStart = i * keyDataPoints;
+        const dataEnd = dataStart + keyDataPoints;
+        
+        let pressAmount = 0;
+        for (let j = dataStart; j < dataEnd; j++) {
+            pressAmount += dataArray[j] || 0;
+        }
+        pressAmount = pressAmount / (keyDataPoints * 255);
+        
+        const isPressed = (Math.pow(pressAmount, 2) * sensitivity) > 0.1;
+        
+        // 白鍵背景
+        ctx.fillStyle = isPressed ? colors.accent : '#f8f9fa';
+        ctx.strokeStyle = '#dee2e6';
+        ctx.lineWidth = 1;
+        
+        ctx.fillRect(x, height - keyboardHeight, whiteKeyWidth - 1, keyboardHeight);
+        ctx.strokeRect(x, height - keyboardHeight, whiteKeyWidth - 1, keyboardHeight);
+        
+        // 白鍵文字
+        ctx.fillStyle = isPressed ? '#ffffff' : '#6c757d';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(String.fromCharCode(65 + (i % 7)), x + whiteKeyWidth / 2, height - 10);
+    }
+    
+    // 繪製黑鍵
+    const blackKeyPattern = [1, 1, 0, 1, 1, 1, 0];
+    for (let i = 0; i < numWhiteKeys - 1; i++) {
+        const patternIndex = i % 7;
+        if (blackKeyPattern[patternIndex] === 1) {
+            const x = (i + 1) * whiteKeyWidth - blackKeyWidth / 2;
+            const pressAmount = ((dataArray[Math.floor(i * dataArray.length * 0.7 / numWhiteKeys)] || 0) + 
+                               (dataArray[Math.floor((i + 1) * dataArray.length * 0.7 / numWhiteKeys)] || 0)) / 2 / 255;
+            
+            const isPressed = (Math.pow(pressAmount, 2) * sensitivity) > 0.15;
+            
+            ctx.fillStyle = isPressed ? colors.secondary : '#343a40';
+            ctx.fillRect(x, height - keyboardHeight, blackKeyWidth, blackKeyHeight);
+            
+            // 黑鍵高光
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(x, height - keyboardHeight, blackKeyWidth, 5);
+        }
+    }
+    
+    // 恢復透明度設定，讓音符正常顯示
+    ctx.restore();
+};
+
 const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.MONSTERCAT]: drawMonstercat,
     [VisualizationType.MONSTERCAT_V2]: drawMonstercatV2,
@@ -4740,7 +4789,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
     useEffect(() => {
         propsRef.current = props;
         latestPropsRef = props;
-    });
+    }, [props]);
 
     useEffect(() => {
         // Clear dynamic elements when visualization changes to prevent artifacts
@@ -4996,6 +5045,26 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             p.vy += 0.08;
             p.opacity -= 0.015;
         });
+        
+        // 繪製音符粒子
+        particlesRef.current.forEach(p => {
+            const noteSymbols = ['♪', '♫', '♬', '♭', '♯'];
+            const symbol = noteSymbols[Math.floor(p.angle * noteSymbols.length)];
+            
+            ctx.save();
+            ctx.font = `bold ${p.radius}px "Arial"`;
+            ctx.fillStyle = applyAlphaToColor(p.color, p.opacity);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // 添加發光效果
+            ctx.shadowColor = applyAlphaToColor(p.color, p.opacity * 0.8);
+            ctx.shadowBlur = 15;
+            
+            ctx.fillText(symbol, p.x, p.y);
+            ctx.restore();
+        });
+        
         particlesRef.current = particlesRef.current.filter(p => p.opacity > 0 && p.y < height + 100);
 
         // Z總訂製款可視化已在主要繪製循環中處理，無需重複繪製
@@ -5008,9 +5077,12 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 lastFilterTypeRef.current = filterEffectType;
             }
             
-            // 添加新粒子（根據強度控制數量）
-            const particleCount = Math.floor((filterEffectIntensity || 0.5) * 50);
-            while (filterParticlesRef.current.length < particleCount) {
+            // 添加新粒子（增加隨機性，不要一次性創建太多）
+            const resolutionScale = Math.max(width / 1920, height / 1080) * 1.5;
+            const maxParticleCount = Math.floor((filterEffectIntensity || 0.5) * 80 * resolutionScale);
+            
+            // 隨機添加新粒子，避免整齊的批次
+            if (filterParticlesRef.current.length < maxParticleCount && Math.random() < 0.15) {
                 const newParticle = createFilterParticle(filterEffectType, width, height);
                 filterParticlesRef.current.push(newParticle);
             }
@@ -6136,19 +6208,21 @@ interface FilterParticle {
 }
 const createFilterParticle = (type: FilterEffectType, width: number, height: number): FilterParticle => {
     const baseSpeed = 1.0;
-    const baseSize = 3;
+    // 根據畫布解析度調整粒子大小
+    const resolutionScale = Math.max(width / 1920, height / 1080) * 2;
+    const baseSize = 8 * resolutionScale;
 
     switch (type) {
         case FilterEffectType.SNOW:
             return {
                 x: Math.random() * width,
-                y: -10,
-                vx: (Math.random() - 0.5) * 0.3,
-                vy: baseSpeed * 0.8 + Math.random() * baseSpeed * 0.4,
-                size: baseSize * 0.8,
-                opacity: 0.4 + Math.random() * 0.3,
+                y: -10 - Math.random() * 50, // 從不同高度開始
+                vx: (Math.random() - 0.5) * 0.8, // 增加水平擺動
+                vy: baseSpeed * 0.5 + Math.random() * baseSpeed * 0.8, // 增加速度變化
+                size: baseSize * (0.6 + Math.random() * 0.8), // 增加大小變化
+                opacity: 0.3 + Math.random() * 0.5,
                 rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.01,
+                rotationSpeed: (Math.random() - 0.5) * 0.02,
                 color: '#ffffff',
                 life: 1,
                 maxLife: 1
@@ -6157,14 +6231,14 @@ const createFilterParticle = (type: FilterEffectType, width: number, height: num
         case FilterEffectType.PARTICLES:
             return {
                 x: Math.random() * width,
-                y: height + 10,
-                vx: (Math.random() - 0.5) * 0.5,
-                vy: -(baseSpeed * 0.5 + Math.random() * baseSpeed * 0.5),
-                size: baseSize * 0.5 + Math.random() * baseSize * 0.5,
-                opacity: 0.6 + Math.random() * 0.4,
-                rotation: 0,
-                rotationSpeed: 0,
-                color: `hsl(${Math.random() * 60 + 180}, 70%, ${60 + Math.random() * 20}%)`,
+                y: height + 10 + Math.random() * 30, // 從不同高度開始
+                vx: (Math.random() - 0.5) * 1.2, // 增加水平擺動
+                vy: -(baseSpeed * 0.3 + Math.random() * baseSpeed * 0.9), // 增加速度變化
+                size: baseSize * (0.4 + Math.random() * 1.2), // 增加大小變化
+                opacity: 0.4 + Math.random() * 0.6,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.03,
+                color: `hsl(${Math.random() * 80 + 160}, 80%, ${50 + Math.random() * 30}%)`,
                 life: 1,
                 maxLife: 1
             };
@@ -6175,8 +6249,8 @@ const createFilterParticle = (type: FilterEffectType, width: number, height: num
                 y: Math.random() * height,
                 vx: 0,
                 vy: 0,
-                size: 1 + Math.random() * 2,
-                opacity: 0.3 + Math.random() * 0.7,
+                size: (3 + Math.random() * 6) * resolutionScale, // 大幅增加星星大小
+                opacity: 0.4 + Math.random() * 0.6,
                 rotation: 0,
                 rotationSpeed: 0,
                 color: '#ffffff',
@@ -6230,63 +6304,302 @@ const drawFilterParticle = (ctx: CanvasRenderingContext2D, particle: FilterParti
 
     switch (type) {
         case FilterEffectType.SNOW:
-            // 繪製雪花
-            ctx.strokeStyle = particle.color;
-            ctx.lineWidth = 1;
+            // 繪製精緻雪花
             const size = particle.size;
+            const glowSize = size * 2;
+            
+            // 外層光暈
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.3;
+            const glowGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, glowSize);
+            glowGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+            glowGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
+            glowGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = glowGradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, glowSize, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 雪花主體 - 六角星形
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = Math.max(1, size * 0.1);
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+            ctx.shadowBlur = size * 0.3;
+            
+            // 主軸線
             for (let i = 0; i < 6; i++) {
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.lineTo(0, size);
                 ctx.stroke();
+                
+                // 側枝
+                ctx.beginPath();
+                ctx.moveTo(size * 0.3, 0);
+                ctx.lineTo(size * 0.6, 0);
+                ctx.stroke();
+                
                 ctx.rotate(Math.PI / 3);
             }
+            
+            // 中心圓點
+            ctx.beginPath();
+            ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 重置陰影
+            ctx.shadowBlur = 0;
             break;
 
         case FilterEffectType.PARTICLES:
-            // 繪製發光粒子
-            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, particle.size);
-            gradient.addColorStop(0, particle.color);
-            gradient.addColorStop(0.7, particle.color + 'CC');
-            gradient.addColorStop(1, particle.color + '00');
-            ctx.fillStyle = gradient;
+            // 繪製精緻發光粒子
+            const particleSize = particle.size;
+            
+            // 外層大光暈
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.2;
+            const outerGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, particleSize * 3);
+            outerGlow.addColorStop(0, particle.color);
+            outerGlow.addColorStop(0.3, particle.color.replace(')', ', 0.3)').replace('hsl', 'hsla'));
+            outerGlow.addColorStop(1, particle.color.replace(')', ', 0)').replace('hsl', 'hsla'));
+            ctx.fillStyle = outerGlow;
             ctx.beginPath();
-            ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
+            ctx.arc(0, 0, particleSize * 3, 0, Math.PI * 2);
             ctx.fill();
+            ctx.restore();
+            
+            // 中層光暈
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.6;
+            const middleGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, particleSize * 1.5);
+            middleGlow.addColorStop(0, particle.color);
+            middleGlow.addColorStop(0.5, particle.color.replace(')', ', 0.7)').replace('hsl', 'hsla'));
+            middleGlow.addColorStop(1, particle.color.replace(')', ', 0)').replace('hsl', 'hsla'));
+            ctx.fillStyle = middleGlow;
+            ctx.beginPath();
+            ctx.arc(0, 0, particleSize * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 核心發光
+            ctx.globalAlpha = particle.opacity;
+            const coreGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, particleSize);
+            coreGradient.addColorStop(0, '#ffffff');
+            coreGradient.addColorStop(0.3, particle.color);
+            coreGradient.addColorStop(0.8, particle.color.replace(')', ', 0.8)').replace('hsl', 'hsla'));
+            coreGradient.addColorStop(1, particle.color.replace(')', ', 0)').replace('hsl', 'hsla'));
+            ctx.fillStyle = coreGradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, particleSize, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 拖尾效果（如果粒子有速度）
+            if (Math.abs(particle.vx) > 0.1 || Math.abs(particle.vy) > 0.1) {
+                ctx.save();
+                ctx.globalAlpha = particle.opacity * 0.4;
+                const trailGradient = ctx.createLinearGradient(-particle.vx * 5, -particle.vy * 5, 0, 0);
+                trailGradient.addColorStop(0, particle.color.replace(')', ', 0)').replace('hsl', 'hsla'));
+                trailGradient.addColorStop(1, particle.color);
+                ctx.fillStyle = trailGradient;
+                ctx.beginPath();
+                ctx.ellipse(-particle.vx * 3, -particle.vy * 3, particleSize * 0.8, particleSize * 0.3, Math.atan2(particle.vy, particle.vx), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
             break;
 
         case FilterEffectType.STARS:
-            // 繪製閃爍星星
-            ctx.fillStyle = particle.color;
+            // 繪製精緻閃爍星星
+            const starSize = particle.size;
+            const twinkleIntensity = Math.sin(Date.now() * 0.005 + particle.x * 0.01 + particle.y * 0.01) * 0.5 + 0.5;
+            const currentAlpha = particle.opacity * (0.3 + twinkleIntensity * 0.7);
+            
+            // 外層大光暈
+            ctx.save();
+            ctx.globalAlpha = currentAlpha * 0.15;
+            const starGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, starSize * 4);
+            starGlow.addColorStop(0, '#ffffff');
+            starGlow.addColorStop(0.3, '#ffffff');
+            starGlow.addColorStop(0.7, '#ffffff');
+            starGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = starGlow;
             ctx.beginPath();
-            ctx.moveTo(0, -particle.size);
-            ctx.lineTo(particle.size * 0.3, -particle.size * 0.3);
-            ctx.lineTo(particle.size, 0);
-            ctx.lineTo(particle.size * 0.3, particle.size * 0.3);
-            ctx.lineTo(0, particle.size);
-            ctx.lineTo(-particle.size * 0.3, particle.size * 0.3);
-            ctx.lineTo(-particle.size, 0);
-            ctx.lineTo(-particle.size * 0.3, -particle.size * 0.3);
+            ctx.arc(0, 0, starSize * 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 十字光線
+            ctx.save();
+            ctx.globalAlpha = currentAlpha * 0.6;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = Math.max(1, starSize * 0.15);
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = starSize * 0.5;
+            
+            // 水平線
+            ctx.beginPath();
+            ctx.moveTo(-starSize * 2, 0);
+            ctx.lineTo(starSize * 2, 0);
+            ctx.stroke();
+            
+            // 垂直線
+            ctx.beginPath();
+            ctx.moveTo(0, -starSize * 2);
+            ctx.lineTo(0, starSize * 2);
+            ctx.stroke();
+            
+            ctx.restore();
+            
+            // 星星主體
+            ctx.globalAlpha = currentAlpha;
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+            ctx.shadowBlur = starSize * 0.8;
+            
+            ctx.beginPath();
+            // 五角星形狀
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * 4 * Math.PI) / 5;
+                const x = Math.cos(angle) * starSize;
+                const y = Math.sin(angle) * starSize;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                
+                // 內角點
+                const innerAngle = ((i * 4 + 2) * Math.PI) / 5;
+                const innerX = Math.cos(innerAngle) * starSize * 0.4;
+                const innerY = Math.sin(innerAngle) * starSize * 0.4;
+                ctx.lineTo(innerX, innerY);
+            }
             ctx.closePath();
             ctx.fill();
+            
+            // 中心亮點
+            ctx.beginPath();
+            ctx.arc(0, 0, starSize * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 重置陰影
+            ctx.shadowBlur = 0;
             break;
 
         case FilterEffectType.RAIN:
-            // 繪製雨滴
+            // 繪製精緻雨滴
+            const rainLength = particle.size * 4;
+            
+            // 速度線效果
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.3;
             ctx.strokeStyle = particle.color;
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 2;
+            ctx.shadowColor = particle.color;
+            ctx.shadowBlur = particle.size * 2;
+            ctx.beginPath();
+            ctx.moveTo(-particle.vx * 8, -particle.vy * 8);
+            ctx.lineTo(0, 0);
+            ctx.stroke();
+            ctx.restore();
+            
+            // 雨滴主體
+            ctx.strokeStyle = particle.color;
+            ctx.lineWidth = Math.max(1, particle.size * 0.3);
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+            ctx.shadowBlur = particle.size * 1.5;
+            
+            // 雨滴形狀（上細下粗）
+            const gradient = ctx.createLinearGradient(0, 0, 0, rainLength);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+            gradient.addColorStop(0.3, particle.color);
+            gradient.addColorStop(1, particle.color.replace(')', ', 0.8)').replace('hsl', 'hsla'));
+            
+            ctx.strokeStyle = gradient;
             ctx.beginPath();
             ctx.moveTo(0, 0);
-            ctx.lineTo(0, particle.size * 3);
+            ctx.lineTo(0, rainLength);
             ctx.stroke();
+            
+            // 雨滴尖端
+            ctx.beginPath();
+            ctx.arc(0, rainLength, particle.size * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 重置陰影
+            ctx.shadowBlur = 0;
             break;
 
         case FilterEffectType.CHERRY_BLOSSOM:
-            // 繪製櫻花瓣
-            ctx.fillStyle = particle.color;
+            // 繪製精緻櫻花瓣
+            const petalSize = particle.size;
+            
+            // 花瓣陰影
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.3;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
             ctx.beginPath();
-            ctx.ellipse(0, 0, particle.size, particle.size * 0.6, 0, 0, Math.PI * 2);
+            ctx.ellipse(petalSize * 0.1, petalSize * 0.1, petalSize, petalSize * 0.6, particle.rotation, 0, Math.PI * 2);
             ctx.fill();
+            ctx.restore();
+            
+            // 花瓣主體
+            ctx.globalAlpha = particle.opacity;
+            const petalGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, petalSize);
+            petalGradient.addColorStop(0, '#ffb3d9'); // 淺粉色中心
+            petalGradient.addColorStop(0.7, particle.color);
+            petalGradient.addColorStop(1, particle.color.replace(')', ', 0.7)').replace('hsl', 'hsla'));
+            
+            ctx.fillStyle = petalGradient;
+            ctx.beginPath();
+            
+            // 櫻花瓣形狀（心形輪廓）
+            const heartShape = (t: number) => {
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+                return { x: x * petalSize * 0.1, y: y * petalSize * 0.1 };
+            };
+            
+            // 繪製心形花瓣
+            ctx.beginPath();
+            for (let t = 0; t <= Math.PI * 2; t += 0.1) {
+                const { x, y } = heartShape(t);
+                if (t === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.fill();
+            
+            // 花瓣紋理
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.6;
+            ctx.strokeStyle = '#ff8cc8';
+            ctx.lineWidth = Math.max(1, petalSize * 0.08);
+            ctx.beginPath();
+            // 從中心向外輻射的線條
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * Math.PI * 2) / 5;
+                const endX = Math.cos(angle) * petalSize * 0.7;
+                const endY = Math.sin(angle) * petalSize * 0.7;
+                ctx.moveTo(0, 0);
+                ctx.lineTo(endX, endY);
+            }
+            ctx.stroke();
+            ctx.restore();
+            
+            // 花瓣高光
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.8;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.ellipse(-petalSize * 0.2, -petalSize * 0.2, petalSize * 0.3, petalSize * 0.2, particle.rotation, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
             break;
     }
 
@@ -6312,8 +6625,12 @@ const drawFilterEffects = (
 
     // 更新和繪製粒子
     particles.forEach((particle, index) => {
+        // 增加隨機擺動，讓粒子軌跡更自然
+        const windEffect = (Math.random() - 0.5) * 0.3;
+        const turbulence = Math.sin(frame * 0.01 + index * 0.1) * 0.2;
+        
         // 更新位置
-        particle.x += particle.vx * speed;
+        particle.x += (particle.vx + windEffect + turbulence) * speed;
         particle.y += particle.vy * speed;
         particle.rotation += particle.rotationSpeed * speed;
 

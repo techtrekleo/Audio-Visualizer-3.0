@@ -267,6 +267,12 @@ interface OptimizedControlsProps {
     // Vinyl layout mode
     vinylLayoutMode?: 'horizontal' | 'vertical';
     onVinylLayoutModeChange?: (mode: 'horizontal' | 'vertical') => void;
+    // Vinyl center fixed
+    vinylCenterFixed?: boolean;
+    onVinylCenterFixedChange?: (fixed: boolean) => void;
+    // Piano opacity
+    pianoOpacity?: number;
+    onPianoOpacityChange?: (opacity: number) => void;
     // 控制卡設定（Vinyl）
     controlCardEnabled?: boolean;
     onControlCardEnabledChange?: (v: boolean) => void;
@@ -1585,7 +1591,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 min={24}
                                                 max={100}
                                                 step={1}
-                                                unit="px"
                                             />
 
                                             {/* 控制卡樣式 */}
@@ -1752,7 +1757,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     min={0.1}
                                     max={3.0}
                                     step={0.1}
-                                    unit="倍"
                                 />
                                 
                                 {/* 位置控制 */}
@@ -1771,7 +1775,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             min={-100}
                                             max={100}
                                             step={1}
-                                            unit="%"
                                         />
                                         <SliderControl
                                             label="垂直位置"
@@ -1783,7 +1786,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             min={-100}
                                             max={100}
                                             step={1}
-                                            unit="%"
                                         />
                                     </div>
                                 </div>
@@ -1829,6 +1831,28 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     )}
                                     <p className="text-xs text-gray-400 leading-relaxed">
                                         會將此圖片用於唱片內層與外層；中層會覆蓋黑膠紋理與顏色。
+                                    </p>
+                                </div>
+
+                                {/* 旋轉控制 */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                                        <span className="text-lg">🔄</span>
+                                        旋轉控制
+                                    </label>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-400">中心照片固定</span>
+                                        <button
+                                            onClick={() => props.onVinylCenterFixedChange?.(!props.vinylCenterFixed)}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                                props.vinylCenterFixed ? 'bg-cyan-500' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.vinylCenterFixed ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                        開啟後，中心照片保持固定，黑膠遮罩和外圈半透明遮罩繼續旋轉。
                                     </p>
                                 </div>
 
@@ -1959,6 +1983,32 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         />
                     </CollapsibleControlSection>
 
+                    {/* 鋼琴演奏家專用控制面板 */}
+                    {props.visualizationType === VisualizationType.PIANO_VIRTUOSO && (
+                        <CollapsibleControlSection
+                            title="鋼琴演奏家"
+                            icon="🎹"
+                            priority="high"
+                            defaultExpanded={true}
+                            badge="特殊款"
+                        >
+                            <div className="space-y-4">
+                                {/* 鋼琴透明度控制 */}
+                                <SliderControl
+                                    label="鋼琴透明度"
+                                    value={props.pianoOpacity ?? 1.0}
+                                    onChange={props.onPianoOpacityChange || (() => {})}
+                                    min={0}
+                                    max={1}
+                                    step={0.01}
+                                />
+                                <p className="text-xs text-gray-400 leading-relaxed">
+                                    調整鋼琴鍵盤的透明度，飄出的音符不會受到影響。
+                                </p>
+                            </div>
+                        </CollapsibleControlSection>
+                    )}
+
                     {/* 全畫面濾鏡特效控制 */}
                     <CollapsibleControlSection
                         title="全畫面濾鏡特效"
@@ -1968,6 +2018,20 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         badge={props.filterEffectEnabled ? "開啟" : "關閉"}
                     >
                         <div className="space-y-4">
+                            {/* 性能警告 */}
+                            <div className="bg-yellow-500/10 border border-yellow-400/30 rounded-lg p-3 mb-4">
+                                <div className="flex items-start space-x-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5">
+                                        <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.74c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" />
+                                    </svg>
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-yellow-200 mb-1">性能提醒</h4>
+                                        <p className="text-xs text-yellow-300 leading-relaxed">
+                                            該選項需要大量運算資源，<strong>有可能導致錄製延遲</strong>。建議在錄製時降低特效強度或關閉特效以確保流暢度。
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                             {/* 濾鏡特效開關 */}
                             <div className="flex items-center justify-between">
                                 <label className="text-sm font-medium text-gray-300">
@@ -2009,16 +2073,22 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     </div>
 
                                     {/* 濾鏡特效強度 */}
-                                    <SliderControl
-                                        label="特效強度"
-                                        value={props.filterEffectIntensity || 0.5}
-                                        onChange={props.onFilterEffectIntensityChange || (() => {})}
-                                        min={0}
-                                        max={1}
-                                        step={0.1}
-                                        unit="%"
-                                        transform={(v) => Math.round(v * 100)}
-                                    />
+                                    <div>
+                                        <SliderControl
+                                            label="特效強度"
+                                            value={props.filterEffectIntensity || 0.5}
+                                            onChange={props.onFilterEffectIntensityChange || (() => {})}
+                                            min={0}
+                                            max={1}
+                                            step={0.1}
+                                        />
+                                        <p className="text-xs text-yellow-400 mt-1 flex items-center space-x-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                                                <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.74c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" />
+                                            </svg>
+                                            <span>高強度會增加運算負擔</span>
+                                        </p>
+                                    </div>
 
                                     {/* 濾鏡特效透明度 */}
                                     <SliderControl
@@ -2028,8 +2098,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         min={0}
                                         max={1}
                                         step={0.1}
-                                        unit="%"
-                                        transform={(v) => Math.round(v * 100)}
                                     />
 
                                     {/* 濾鏡特效速度 */}
@@ -2040,8 +2108,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         min={0.5}
                                         max={2}
                                         step={0.1}
-                                        unit="x"
-                                        transform={(v) => v.toFixed(1)}
                                     />
                                 </>
                             )}

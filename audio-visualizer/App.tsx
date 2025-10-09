@@ -9,6 +9,7 @@ import OptimizedControls from './components/OptimizedControls';
 import Icon from './components/Icon';
 import AdSenseAd from './components/AdSenseAd';
 import LyricsDisplay from './components/LyricsDisplay';
+import ApiKeyModal from './components/ApiKeyModal';
 import { UnifiedHeader } from './components/UnifiedLayout';
 import { UnifiedFooter, ModalProvider } from '../shared-components/dist';
 // import AdManager from './components/AdManager';
@@ -17,8 +18,34 @@ import { useAudioAnalysis } from './hooks/useAudioAnalysis';
 import { useMediaRecorder } from './hooks/useMediaRecorder';
 import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle } from './types';
 import { ICON_PATHS, COLOR_PALETTES, RESOLUTION_MAP } from './constants';
+import FilterEffectsDemo from './src/components/FilterEffectsDemo';
+
+// 測試模式切換 - 在 URL 中加入 ?test=filter 來啟用濾鏡測試
+const isFilterTestMode = window.location.search.includes('test=filter');
 
 function App() {
+    // 如果是濾鏡測試模式，直接顯示濾鏡測試組件
+    if (isFilterTestMode) {
+        return (
+            <div style={{ width: '100vw', height: '100vh' }}>
+                <FilterEffectsDemo />
+                <div style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    background: 'rgba(0, 0, 0, 0.8)',
+                    color: 'white',
+                    padding: '10px',
+                    borderRadius: '5px',
+                    zIndex: 1000
+                }}>
+                    <a href="/audio-visualizer/" style={{ color: '#4ecdc4', textDecoration: 'none' }}>
+                        ← 返回主頁
+                    </a>
+                </div>
+            </div>
+        );
+    }
     const [audioFile, setAudioFile] = useState<File | null>(null);
     const [audioUrl, setAudioUrl] = useState<string>('');
     const [audioDuration, setAudioDuration] = useState<number>(0);
@@ -76,6 +103,7 @@ function App() {
     // Vinyl Record 圖片
     const [vinylImage, setVinylImage] = useState<string | null>(null);
     const [vinylLayoutMode, setVinylLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
+    const [vinylCenterFixed, setVinylCenterFixed] = useState<boolean>(false); // 中心照片固定
     
     // Lyrics Display State (測試中)
     const [showLyricsDisplay, setShowLyricsDisplay] = useState<boolean>(false);
@@ -123,9 +151,17 @@ function App() {
     const [filterEffectSpeed, setFilterEffectSpeed] = useState<number>(1.0); // 濾鏡特效速度 (0.5-2)
     const [filterEffectEnabled, setFilterEffectEnabled] = useState<boolean>(false); // 濾鏡特效開關
     
+    // 鋼琴演奏家透明度
+    const [pianoOpacity, setPianoOpacity] = useState<number>(1.0); // 鋼琴透明度 (0-1)
+    
     // 可夜訂製版控制卡狀態
     const [controlCardEnabled, setControlCardEnabled] = useState<boolean>(true); // 控制卡開關
     const [controlCardFontSize, setControlCardFontSize] = useState<number>(24); // 控制卡字體大小 (24-50px)
+    
+    // API Key 管理狀態
+    const [showApiKeyModal, setShowApiKeyModal] = useState<boolean>(false); // 是否顯示 API Key 彈出視窗
+    const [userApiKey, setUserApiKey] = useState<string>(''); // 用戶自定義 API Key
+    const [apiQuotaExceeded, setApiQuotaExceeded] = useState<boolean>(false); // API 配額是否用完
     const [controlCardStyle, setControlCardStyle] = useState<ControlCardStyle>(ControlCardStyle.FILLED); // 控制卡樣式
     const [controlCardColor, setControlCardColor] = useState<string>('#ffffff'); // 控制卡顏色
     const [controlCardBackgroundColor, setControlCardBackgroundColor] = useState<string>('rgba(100, 120, 100, 0.9)'); // 控制卡背景顏色
@@ -148,6 +184,14 @@ function App() {
         [BackgroundColorType.TRANSPARENT]: 'transparent',
     };
     
+    // 檢查本地存儲的 API Key
+    useEffect(() => {
+        const storedApiKey = localStorage.getItem('user_gemini_api_key');
+        if (storedApiKey) {
+            setUserApiKey(storedApiKey);
+        }
+    }, []);
+
     // Picture-in-Picture 功能
     useEffect(() => {
         // 檢測 Picture-in-Picture API 支援
@@ -794,19 +838,22 @@ function App() {
             return;
         }
         
-        const apiKey = (import.meta as any).env.VITE_API_KEY;
+        // 優先使用用戶自定義的 API Key，否則使用內建的
+        let apiKey = userApiKey || (import.meta as any).env.VITE_API_KEY;
         
         // 調試信息
         console.log("API Key 狀態:", {
-            hasApiKey: !!apiKey,
+            hasUserApiKey: !!userApiKey,
+            hasBuiltInApiKey: !!(import.meta as any).env.VITE_API_KEY,
             apiKeyLength: apiKey ? apiKey.length : 0,
             apiKeyPrefix: apiKey ? apiKey.substring(0, 10) + "..." : "無",
-            envKeys: Object.keys((import.meta as any).env || {})
+            isUsingUserApiKey: !!userApiKey
         });
 
         if (!apiKey) {
-            console.error("API Key is not configured. Please set 'VITE_API_KEY' in your deployment environment variables and redeploy.");
-            alert("API Key 未設定，無法使用 AI 功能。\n\n請確認您已在 Railway 的 Variables 設定中，新增一個名為 VITE_API_KEY 的變數並填入您的金鑰。如果您已設定，請務必重新部署 (redeploy) 專案以讓變更生效。");
+            console.error("No API Key available");
+            setShowApiKeyModal(true);
+            setApiQuotaExceeded(false);
             return;
         }
 
@@ -935,15 +982,47 @@ function App() {
 
             setSubtitlesRawText(text.trim());
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error generating subtitles with AI:", error);
-            alert("AI 字幕生成失敗。請檢查您的 API Key、網路連線或稍後再試。");
-            setSubtitlesRawText(''); // Clear text on failure
+            
+            // 檢查是否是 API 配額用完的錯誤
+            const errorMessage = error?.message || error?.toString() || '';
+            const isQuotaExceeded = errorMessage.includes('quota') || 
+                                  errorMessage.includes('limit') || 
+                                  errorMessage.includes('exceeded') ||
+                                  error?.status === 429 ||
+                                  error?.code === 429;
+            
+            if (isQuotaExceeded && !userApiKey) {
+                // 內建 API Key 配額用完，提示用戶輸入自己的 API Key
+                setShowApiKeyModal(true);
+                setApiQuotaExceeded(true);
+                setSubtitlesRawText('內建的 AI API 配額已用完，請輸入您自己的 API Key 以繼續使用。');
+            } else {
+                // 其他錯誤
+                alert("AI 字幕生成失敗。請檢查您的 API Key、網路連線或稍後再試。");
+                setSubtitlesRawText('');
+            }
         } finally {
             setIsGeneratingSubtitles(false);
         }
     };
 
+    // 處理 API Key 彈出視窗
+    const handleApiKeySave = (apiKey: string) => {
+        setUserApiKey(apiKey);
+        setApiQuotaExceeded(false);
+        console.log('User API Key saved successfully');
+    };
+
+    const handleApiKeySkip = () => {
+        console.log('User skipped API Key input');
+        setSubtitlesRawText('已跳過 API Key 輸入，AI 功能暫時無法使用。');
+    };
+
+    const handleApiKeyModalClose = () => {
+        setShowApiKeyModal(false);
+    };
 
     const handleSetResolution = (newRes: Resolution) => {
         setResolution(newRes);
@@ -1381,6 +1460,8 @@ function App() {
                                     onZCustomPositionUpdate={setZCustomPosition}
                                     vinylImage={vinylImage}
                                     vinylLayoutMode={vinylLayoutMode}
+                                    vinylCenterFixed={vinylCenterFixed}
+                                    pianoOpacity={pianoOpacity}
                                     geometricFrameImage={geometricFrameImage}
                                     geometricSemicircleImage={geometricSemicircleImage}
                                     geometricSongName={geometricSongName}
@@ -1430,6 +1511,10 @@ function App() {
                             onClearVinylImage={clearVinylImage}
                             vinylLayoutMode={vinylLayoutMode}
                             onVinylLayoutModeChange={setVinylLayoutMode}
+                            vinylCenterFixed={vinylCenterFixed}
+                            onVinylCenterFixedChange={setVinylCenterFixed}
+                            pianoOpacity={pianoOpacity}
+                            onPianoOpacityChange={setPianoOpacity}
                             customText={customText}
                             onTextChange={handleTextChange}
                             textColor={textColor}
@@ -1589,6 +1674,19 @@ function App() {
             {/* 統一的 Footer */}
             <UnifiedFooter />
         </div>
+        
+        {/* API Key 輸入彈出視窗 */}
+        <ApiKeyModal
+            isOpen={showApiKeyModal}
+            onClose={handleApiKeyModalClose}
+            onSave={handleApiKeySave}
+            onSkip={handleApiKeySkip}
+            title={apiQuotaExceeded ? "API 配額已用完" : "API Key 設定"}
+            message={apiQuotaExceeded 
+                ? "內建的 Gemini API 配額已用完，請輸入您自己的 API Key 以繼續使用 AI 功能。"
+                : "請輸入您的 Gemini API Key 以使用 AI 字幕生成功能。"
+            }
+        />
     </ModalProvider>
     );
 }

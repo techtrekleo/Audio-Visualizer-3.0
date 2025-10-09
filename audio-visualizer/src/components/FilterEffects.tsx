@@ -57,7 +57,9 @@ const FilterEffects: React.FC<FilterEffectProps> = ({
     if (!canvas) return {} as Particle;
 
     const baseSpeed = 0.5 + speed * 1.5;
-    const baseSize = 2 + Math.random() * 6;
+    // 根據畫布解析度調整粒子大小
+    const resolutionScale = Math.max(canvas.width / 1920, canvas.height / 1080) * 2;
+    const baseSize = (6 + Math.random() * 12) * resolutionScale;
 
     switch (type) {
       case 'snow':
@@ -79,13 +81,13 @@ const FilterEffects: React.FC<FilterEffectProps> = ({
         return {
           x: Math.random() * canvas.width,
           y: -10,
-          vx: (Math.random() - 0.5) * 0.3,
-          vy: baseSpeed * 0.8 + Math.random() * baseSpeed * 0.4,
-          size: baseSize * 0.8,
-          opacity: 0.4 + Math.random() * 0.3,
+          vx: (Math.random() - 0.5) * 0.8,
+          vy: baseSpeed * 0.5 + Math.random() * baseSpeed * 0.7,
+          size: baseSize * 1.2,
+          opacity: 0.7 + Math.random() * 0.3,
           rotation: Math.random() * Math.PI * 2,
-          rotationSpeed: (Math.random() - 0.5) * 0.01,
-          color: `hsl(${Math.random() * 60 + 180}, 70%, ${60 + Math.random() * 20}%)`,
+          rotationSpeed: (Math.random() - 0.5) * 0.03,
+          color: `hsl(${Math.random() * 360}, 90%, ${60 + Math.random() * 25}%)`,
           life: 1,
           maxLife: 1
         };
@@ -96,8 +98,8 @@ const FilterEffects: React.FC<FilterEffectProps> = ({
           y: Math.random() * canvas.height,
           vx: 0,
           vy: 0,
-          size: 1 + Math.random() * 2,
-          opacity: 0.3 + Math.random() * 0.7,
+          size: (3 + Math.random() * 6) * resolutionScale, // 大幅增加星星大小
+          opacity: 0.4 + Math.random() * 0.6,
           rotation: 0,
           rotationSpeed: 0,
           color: '#ffffff',
@@ -164,25 +166,66 @@ const FilterEffects: React.FC<FilterEffectProps> = ({
         break;
 
       case 'particles':
-        // 繪製發光粒子
-        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, particle.size);
-        gradient.addColorStop(0, particle.color);
-        gradient.addColorStop(0.7, particle.color + 'CC');
-        gradient.addColorStop(1, particle.color + '00');
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-
-      case 'stars':
-        // 繪製閃爍星星
-        const twinkle = Math.sin(Date.now() * 0.01 + particle.x + particle.y) * 0.5 + 0.5;
-        ctx.globalAlpha = particle.opacity * opacity * twinkle;
+        // 繪製發光粒子 - 使用更簡單但更明顯的設計
         ctx.fillStyle = particle.color;
         ctx.beginPath();
         ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
         ctx.fill();
+        
+        // 添加外圈發光效果
+        const outerGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, particle.size * 3);
+        outerGradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        outerGradient.addColorStop(0.7, particle.color + '66');
+        outerGradient.addColorStop(1, particle.color + '00');
+        ctx.fillStyle = outerGradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, particle.size * 3, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+
+      case 'stars':
+        // 繪製精緻閃爍星星
+        const twinkle = Math.sin(Date.now() * 0.01 + particle.x + particle.y) * 0.5 + 0.5;
+        const currentAlpha = particle.opacity * opacity * (0.3 + twinkle * 0.7);
+        
+        // 外層光暈
+        ctx.save();
+        ctx.globalAlpha = currentAlpha * 0.2;
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = particle.size * 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, particle.size * 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        
+        // 十字光線
+        ctx.save();
+        ctx.globalAlpha = currentAlpha * 0.8;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = Math.max(1, particle.size * 0.2);
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = particle.size * 1.5;
+        
+        ctx.beginPath();
+        ctx.moveTo(-particle.size * 1.5, 0);
+        ctx.lineTo(particle.size * 1.5, 0);
+        ctx.moveTo(0, -particle.size * 1.5);
+        ctx.lineTo(0, particle.size * 1.5);
+        ctx.stroke();
+        ctx.restore();
+        
+        // 星星主體
+        ctx.globalAlpha = currentAlpha;
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+        ctx.shadowBlur = particle.size * 1.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 重置陰影
+        ctx.shadowBlur = 0;
         break;
 
       case 'rain':
@@ -219,17 +262,22 @@ const FilterEffects: React.FC<FilterEffectProps> = ({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // 更新和繪製粒子
-    const maxParticles = Math.floor(intensity * 100);
+    const resolutionScale = Math.max(canvas.width / 1920, canvas.height / 1080) * 1.5;
+    const maxParticles = Math.floor(intensity * 150 * resolutionScale);
     
-    // 添加新粒子
-    if (particlesRef.current.length < maxParticles && Math.random() < 0.3) {
+    // 添加新粒子（增加隨機性）
+    if (particlesRef.current.length < maxParticles && Math.random() < 0.08) {
       particlesRef.current.push(createParticle());
     }
 
     // 更新現有粒子
     particlesRef.current = particlesRef.current.filter(particle => {
+      // 增加隨機擺動效果
+      const windEffect = (Math.random() - 0.5) * 0.4;
+      const timeEffect = Math.sin(Date.now() * 0.001 + particle.x * 0.01) * 0.15;
+      
       // 更新位置
-      particle.x += particle.vx * speed;
+      particle.x += (particle.vx + windEffect + timeEffect) * speed;
       particle.y += particle.vy * speed;
       particle.rotation += particle.rotationSpeed;
 
@@ -292,7 +340,7 @@ const FilterEffects: React.FC<FilterEffectProps> = ({
         height: '100%',
         pointerEvents: 'none',
         zIndex: 1,
-        mixBlendMode: 'screen'
+        mixBlendMode: type === 'particles' ? 'normal' : 'screen'
       }}
     />
   );
