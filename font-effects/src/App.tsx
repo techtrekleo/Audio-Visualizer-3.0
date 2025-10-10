@@ -19,6 +19,8 @@ const App: React.FC = () => {
   const [framePosition, setFramePosition] = useState({ x: 0.15, y: 0.25 }); // 邊框位置比例
   const [frameColor, setFrameColor] = useState('#2C3E50'); // 邊框主色
   const [frameOpacity, setFrameOpacity] = useState(1.0); // 邊框透明度
+  const [frameColorAnimation, setFrameColorAnimation] = useState(false); // 邊框變色動畫開關
+  const [animatedFrameColor, setAnimatedFrameColor] = useState('#2C3E50'); // 動畫中的邊框顏色
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const renderRef = useRef(0);
@@ -74,12 +76,13 @@ const App: React.FC = () => {
   const updateImage = useCallback(async () => {
     const renderId = ++renderRef.current;
     
-    const dataUrl = await renderComposition(backgroundImage, textBlocks, activeCanvasSize.width, activeCanvasSize.height, chineseFrameId, frameSize, framePosition, frameColor, frameOpacity);
+    const effectiveFrameColor = frameColorAnimation ? animatedFrameColor : frameColor;
+    const dataUrl = await renderComposition(backgroundImage, textBlocks, activeCanvasSize.width, activeCanvasSize.height, chineseFrameId, frameSize, framePosition, effectiveFrameColor, frameOpacity);
     
     if (renderId === renderRef.current) {
         setOutputImage(dataUrl);
     }
-  }, [backgroundImage, textBlocks, activeCanvasSize, chineseFrameId, frameSize, framePosition, frameColor, frameOpacity]);
+  }, [backgroundImage, textBlocks, activeCanvasSize, chineseFrameId, frameSize, framePosition, frameColor, frameOpacity, frameColorAnimation, animatedFrameColor]);
 
   // 使用 debounce 來減少拖動時的重新渲染頻率
   useEffect(() => {
@@ -100,6 +103,33 @@ const App: React.FC = () => {
       }
     };
   }, [updateImage]);
+
+  // 邊框變色動畫
+  useEffect(() => {
+    if (!frameColorAnimation) {
+      setAnimatedFrameColor(frameColor);
+      return;
+    }
+
+    let animationFrameId: number;
+    let startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const hue = (elapsed / 20) % 360; // 每20ms改變1度，完整循環需7.2秒
+      const newColor = `hsl(${hue}, 70%, 50%)`;
+      setAnimatedFrameColor(newColor);
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [frameColorAnimation, frameColor]);
   
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -335,16 +365,35 @@ const App: React.FC = () => {
                             type="color"
                             value={frameColor}
                             onChange={(e) => setFrameColor(e.target.value)}
-                            className="w-16 h-10 bg-gray-700 border border-gray-600 rounded cursor-pointer"
+                            disabled={frameColorAnimation}
+                            className="w-16 h-10 bg-gray-700 border border-gray-600 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           />
                           <input
                             type="text"
                             value={frameColor}
                             onChange={(e) => setFrameColor(e.target.value)}
-                            className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            disabled={frameColorAnimation}
+                            className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             placeholder="#2C3E50"
                           />
                         </div>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm text-gray-400">邊框變色動畫</label>
+                        <button
+                          onClick={() => setFrameColorAnimation(!frameColorAnimation)}
+                          className={`w-full py-2 px-4 rounded-lg font-medium transition-all ${
+                            frameColorAnimation
+                              ? 'bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 text-white'
+                              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          }`}
+                        >
+                          {frameColorAnimation ? '🌈 彩虹變色中' : '啟用邊框變色'}
+                        </button>
+                        <p className="text-xs text-gray-500">
+                          {frameColorAnimation ? '邊框會自動循環彩虹色' : '啟用後邊框會自動變色'}
+                        </p>
                       </div>
                       
                       <div className="flex flex-col gap-2">
