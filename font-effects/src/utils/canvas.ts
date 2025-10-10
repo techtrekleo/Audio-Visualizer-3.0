@@ -162,7 +162,6 @@ const drawChineseFrame = (
         return;
     }
     
-    console.log('drawChineseFrame 被調用:', frameId);
     ctx.save();
     
     // 計算邊框尺寸和位置（可調整）
@@ -174,12 +173,6 @@ const drawChineseFrame = (
     const frameX = canvasWidth * position.x;
     const frameY = canvasHeight * position.y;
     
-    console.log('邊框計算結果:', {
-        canvasWidth, canvasHeight,
-        frameWidth, frameHeight,
-        frameX, frameY,
-        size, position
-    });
     
     // 設定全局透明度
     ctx.globalAlpha = frameOpacity;
@@ -876,7 +869,6 @@ export const renderComposition = (
 
         const drawAllText = () => {
             // 先繪製中國風邊框
-            console.log('drawAllText - 繪製邊框:', { chineseFrameId, width, height, frameSize, framePosition, frameColor, frameOpacity });
             drawChineseFrame(ctx, chineseFrameId, width, height, frameSize, framePosition, frameColor, frameOpacity);
             // 再繪製文字
             textBlocks.forEach(textBlock => {
@@ -890,11 +882,9 @@ export const renderComposition = (
             img.onload = () => {
                 drawImageToCanvas(ctx, img);
                 // 先繪製邊框（在背景圖片之上）
-                console.log('有背景圖片 - 繪製邊框:', { chineseFrameId, width, height, frameSize, framePosition });
-                drawChineseFrame(ctx, chineseFrameId, width, height, frameSize, framePosition);
+                drawChineseFrame(ctx, chineseFrameId, width, height, frameSize, framePosition, frameColor, frameOpacity);
                 // 再繪製文字（在最上層）
                 textBlocks.forEach(textBlock => {
-                    console.log('繪製文字區塊:', textBlock.text, '方向:', textBlock.orientation);
                     drawText(ctx, textBlock);
                 });
                 resolve(canvas.toDataURL('image/png'));
