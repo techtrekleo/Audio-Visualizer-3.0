@@ -23,6 +23,21 @@ WORKDIR /app/audio-visualizer
 RUN npm install
 RUN npm run build
 
+# 建置字體效果生成器
+WORKDIR /app/font-effects
+RUN npm install
+RUN npm run build
+
+# 建置 YouTube SEO 工具
+WORKDIR /app/youtube-seo
+RUN npm install
+RUN npm run build
+
+# 建置 SRT 字幕翻譯系統
+WORKDIR /app/srt-translator
+RUN npm install
+RUN npm run build
+
 # 回到根目錄
 WORKDIR /app
 
