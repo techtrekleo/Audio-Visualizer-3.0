@@ -43,6 +43,11 @@ music-pulse-unified-platform/
 │   ├── dist/                     # 構建輸出
 │   ├── package.json
 │   └── vite.config.ts
+├── srt-translator/              # SRT 字幕翻譯系統
+│   ├── src/                      # 源代碼
+│   ├── dist/                     # 構建輸出
+│   ├── package.json
+│   └── vite.config.ts
 └── docs/                         # 文檔
     ├── README.md
     ├── CHANGELOG.md
@@ -85,6 +90,17 @@ music-pulse-unified-platform/
   - 高解析度輸出
   - 一鍵下載
 
+### 4. 🌍 SRT 字幕翻譯系統 (`srt-translator/`)
+- **功能**：AI 驅動的 SRT 字幕文件多語言翻譯
+- **技術**：React + TypeScript + Gemini 2.5 Pro
+- **特色**：
+  - 支援 20+ 種語言翻譯
+  - 完全保持時間碼不變
+  - 智能批次翻譯策略
+  - 內建免費 API Key 支援
+  - 響應式設計
+  - 批量下載功能
+
 ## 🚀 Railway 部署
 
 ### 環境變數設定
@@ -97,6 +113,9 @@ VITE_API_KEY=your_gemini_api_key_here
 
 # YouTube SEO 工具
 GEMINI_API_KEY=your_gemini_api_key_here
+
+# SRT 翻譯系統（內建免費 API Key）
+VITE_SRT_API_KEY=AIzaSyAxPc3BA9NcFeNkDgPo7bmzAsL_HJ_krQw
 
 # 服務器配置
 PORT=3000
@@ -168,7 +187,15 @@ npm run dev
 # 訪問 http://localhost:5173
 ```
 
-4. **共享組件庫**：
+4. **SRT 字幕翻譯系統**：
+```bash
+cd srt-translator
+npm install
+npm run dev
+# 訪問 http://localhost:5173
+```
+
+5. **共享組件庫**：
 ```bash
 cd shared-components
 npm install

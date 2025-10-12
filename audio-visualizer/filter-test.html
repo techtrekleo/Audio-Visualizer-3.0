@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全畫面濾鏡特效測試 - 音樂脈動</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
+            color: white;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        .test-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 400px;
+        }
+        
+        .test-info h1 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .test-info p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+            color: #b8b8b8;
+        }
+        
+        .status {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .status-item {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .status-label {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        .status-value {
+            color: #ffffff;
+        }
+        
+        .link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        
+        .link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 這裡將載入 React 濾鏡組件 -->
+        <div id="filter-root"></div>
+        
+        <div class="test-info">
+            <h1>🎨 全畫面濾鏡特效測試</h1>
+            <p>這是一個測試頁面，用來展示全畫面濾鏡特效功能。</p>
+            <p>目前支援的效果：</p>
+            <ul style="margin-left: 20px; color: #96ceb4;">
+                <li>❄️ 雪花飄落</li>
+                <li>✨ 光點飄落</li>
+                <li>⭐ 星空閃爍</li>
+                <li>🌧️ 雨滴效果</li>
+                <li>🌸 櫻花飄落</li>
+            </ul>
+            <p>每個效果都可以調整強度、透明度和速度。</p>
+        </div>
+        
+        <div class="status">
+            <div class="status-item">
+                <span class="status-label">狀態:</span>
+                <span class="status-value" id="status">載入中...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">當前效果:</span>
+                <span class="status-value" id="current-effect">無</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">粒子數量:</span>
+                <span class="status-value" id="particle-count">0</span>
+            </div>
+        </div>
+        
+        <a href="/audio-visualizer/" class="link">← 返回主頁</a>
+    </div>
+    
+    <script type="module">
+        // 簡單的狀態更新
+        document.getElementById('status').textContent = '等待 React 組件載入';
+        
+        // 模擬載入狀態
+        setTimeout(() => {
+            document.getElementById('status').textContent = 'React 組件載入中...';
+        }, 1000);
+        
+        setTimeout(() => {
+            document.getElementById('status').textContent = '準備就緒';
+            document.getElementById('current-effect').textContent = '雪花飄落';
+            document.getElementById('particle-count').textContent = '50';
+        }, 2000);
+    </script>
+</body>
+</html>

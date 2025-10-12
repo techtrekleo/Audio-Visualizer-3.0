@@ -4,6 +4,9 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 
+// 免費測試用 Gemini API Key (供沒有 API Key 的用戶使用)
+const FREE_GEMINI_API_KEY = 'AIzaSyAxPc3BA9NcFeNkDgPo7bmzAsL_HJ_krQw';
+
 // 統一頁首頁尾注入函數
 function injectUnifiedLayout(htmlContent, includeFooter = true) {
   // 統一的頁首頁尾樣式
