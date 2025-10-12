@@ -745,6 +745,15 @@ const server = http.createServer((req, res) => {
     if (filePath.endsWith('/') || !path.extname(filePath)) {
       filePath = path.join(filePath, 'index.html');
     }
+  } else if (req.url.startsWith('/srt-translator')) {
+    const distPath = path.join(__dirname, 'srt-translator', 'dist');
+    const relativePath = req.url.replace('/srt-translator', '');
+    filePath = path.join(distPath, relativePath);
+    
+    // 如果是目錄，添加 index.html
+    if (filePath.endsWith('/') || !path.extname(filePath)) {
+      filePath = path.join(filePath, 'index.html');
+    }
   } else if (req.url.startsWith('/assets/') && (req.url.includes('main-') || req.url.includes('cat-avatar'))) {
     // 處理 Audio Visualizer 的 assets 請求 (純 /assets/ 路徑)
     const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
