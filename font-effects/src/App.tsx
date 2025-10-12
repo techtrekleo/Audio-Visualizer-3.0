@@ -69,7 +69,7 @@ const App: React.FC = () => {
   ];
 
   const [textBlocks, setTextBlocks] = useState<TextBlock[]>(initialTextBlocks);
-  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const updateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updateImage = useCallback(async () => {
     const renderId = ++renderRef.current;

@@ -45,7 +45,7 @@ export const VisualCanvas: React.FC<VisualCanvasProps> = ({
     horizontal: number[];
   }>({ vertical: [], horizontal: [] });
   const [isDraggingFrame, setIsDraggingFrame] = useState(false);
-  const drawCanvasTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const drawCanvasTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 使用 useRef 來緩存背景圖片，避免重複載入
   const backgroundImageRef = useRef<HTMLImageElement | null>(null);
