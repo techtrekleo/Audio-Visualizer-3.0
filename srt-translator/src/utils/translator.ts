@@ -11,7 +11,9 @@ async function translateText(text: string, targetLanguage: Language, apiKey: str
   console.log('目標語言:', targetLanguage.name);
   console.log('文本長度:', text.length);
   
-  const prompt = `請將以下日文文本翻譯成${targetLanguage.name}：\n\n${text}`;
+  // 使用原生語言名稱，讓 AI 更好地理解目標語言
+  const targetLanguageName = targetLanguage.nativeName || targetLanguage.name;
+  const prompt = `請將以下文本翻譯成${targetLanguageName}：\n\n${text}`;
   
   console.log('翻譯提示詞:', prompt);
 
@@ -29,7 +31,7 @@ async function translateText(text: string, targetLanguage: Language, apiKey: str
       }],
       systemInstruction: {
         parts: [{
-          text: "你是一個專業的翻譯工具。請直接翻譯給定的文本，不要添加任何解釋、思考過程或其他內容。只返回翻譯結果。"
+          text: "你是一個專業的多語言翻譯工具。請直接翻譯給定的文本到目標語言，保持原始格式和結構。不要添加任何解釋、思考過程、額外內容或標記。只返回純粹的翻譯結果。"
         }]
       },
       generationConfig: {
