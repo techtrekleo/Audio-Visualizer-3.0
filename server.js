@@ -792,7 +792,10 @@ const server = http.createServer((req, res) => {
         '.css': 'text/css',
         '.json': 'application/json',
         '.png': 'image/png',
-        '.jpg': 'image/jpg'
+        '.jpg': 'image/jpg',
+        '.txt': 'text/plain',
+        '.xml': 'application/xml',
+        '.ico': 'image/x-icon'
       }[ext] || 'text/plain';
       
     // 工具頁面現在完全使用 React 組件，不需要注入 HTML

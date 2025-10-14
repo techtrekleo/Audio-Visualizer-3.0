@@ -248,6 +248,8 @@ export interface AudioVisualizerProps {
     lyricsPositionX: number;
     lyricsPositionY: number;
     subtitleDisplayMode: SubtitleDisplayMode;
+    subtitleOrientation?: SubtitleOrientation;
+    verticalSubtitlePosition?: number;
     // When true, skip drawing visualizer effects but keep background and subtitles
     disableVisualizer?: boolean;
     // 幾何圖形可視化參數

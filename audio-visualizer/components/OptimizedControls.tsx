@@ -201,6 +201,8 @@ interface OptimizedControlsProps {
     onSubtitleLanguageChange: (language: SubtitleLanguage) => void;
     subtitleOrientation: SubtitleOrientation;
     onSubtitleOrientationChange: (orientation: SubtitleOrientation) => void;
+    verticalSubtitlePosition: number;
+    onVerticalSubtitlePositionChange: (position: number) => void;
     effectScale: number;
     onEffectScaleChange: (value: number) => void;
     effectOffsetX: number;
@@ -1272,6 +1274,28 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             )}
                                         </button>
                                     ))}
+                                </div>
+                            </div>
+                            
+                            {/* 直式字幕位置控制 - 測試用，暫時始終顯示 */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-300">
+                                    直式字幕位置 {props.subtitleOrientation === SubtitleOrientation.VERTICAL ? '(直式模式)' : '(橫式模式 - 無效)'}
+                                </label>
+                                <div className="space-y-2">
+                                    <SliderControl
+                                        label="水平位置"
+                                        value={props.verticalSubtitlePosition}
+                                        onChange={props.onVerticalSubtitlePositionChange}
+                                        min={0.0}
+                                        max={1.0}
+                                        step={0.05}
+                                    />
+                                    <div className="flex justify-between text-xs text-gray-400">
+                                        <span>← 左側</span>
+                                        <span>置中</span>
+                                        <span>右側 →</span>
+                                    </div>
                                 </div>
                             </div>
                             

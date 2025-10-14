@@ -100,6 +100,8 @@ function App() {
     const [subtitleFormat, setSubtitleFormat] = useState<SubtitleFormat>(SubtitleFormat.BRACKET);
     const [subtitleLanguage, setSubtitleLanguage] = useState<SubtitleLanguage>(SubtitleLanguage.CHINESE);
     const [subtitleOrientation, setSubtitleOrientation] = useState<SubtitleOrientation>(SubtitleOrientation.HORIZONTAL);
+    // 直式字幕位置控制
+    const [verticalSubtitlePosition, setVerticalSubtitlePosition] = useState<number>(0.5); // 0.0 = 左側, 1.0 = 右側
     // Vinyl Record 圖片
     const [vinylImage, setVinylImage] = useState<string | null>(null);
     const [vinylLayoutMode, setVinylLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
@@ -1441,6 +1443,7 @@ function App() {
                                     lyricsPositionY={lyricsPositionY}
                                     subtitleDisplayMode={subtitleDisplayMode}
                                     subtitleOrientation={subtitleOrientation}
+                                    verticalSubtitlePosition={verticalSubtitlePosition}
                                     disableVisualizer={!showVisualizer}
                                     subtitleDragOffset={subtitleDragOffset}
                                     lyricsDragOffset={lyricsDragOffset}
@@ -1584,6 +1587,8 @@ function App() {
                             onSubtitleLanguageChange={setSubtitleLanguage}
                             subtitleOrientation={subtitleOrientation}
                             onSubtitleOrientationChange={setSubtitleOrientation}
+                            verticalSubtitlePosition={verticalSubtitlePosition}
+                            onVerticalSubtitlePositionChange={setVerticalSubtitlePosition}
                             effectScale={effectScale}
                             onEffectScaleChange={setEffectScale}
                             effectOffsetX={effectOffsetX}

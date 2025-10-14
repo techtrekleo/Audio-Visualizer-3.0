@@ -3347,14 +3347,16 @@ const drawVerticalSubtitle = (
     effect: GraphicEffectType,
     bgStyle: SubtitleBgStyle,
     isBeat: boolean | undefined,
-    dragOffset: { x: number; y: number }
+    dragOffset: { x: number; y: number },
+    position: number = 0.5 // 0.0 = 左側, 1.0 = 右側
 ) => {
     const characters = text.split('');
     const charSpacing = fontSize * 1.2; // 字元間距
     const totalHeight = charSpacing * characters.length;
     
-    // 起始位置：畫面右側，垂直居中
-    const startX = width - (width * 0.1) + dragOffset.x; // 距離右邊 10%
+    // 起始位置：根據位置參數計算水平位置，垂直居中
+    const margin = width * 0.1; // 距離邊緣 10%
+    const startX = margin + (width - 2 * margin) * position + dragOffset.x; // 根據位置參數計算
     const startY = (height - totalHeight) / 2 + dragOffset.y; // 垂直居中
     
     ctx.save();
@@ -3448,7 +3450,8 @@ const drawSubtitles = (
     
     // 直式顯示
     if (orientation === SubtitleOrientation.VERTICAL) {
-        drawVerticalSubtitle(ctx, width, height, text, fontSize, actualFontName, color, effect, bgStyle, isBeat, dragOffset);
+        const verticalPosition = (latestPropsRef as any)?.verticalSubtitlePosition ?? 0.5;
+        drawVerticalSubtitle(ctx, width, height, text, fontSize, actualFontName, color, effect, bgStyle, isBeat, dragOffset, verticalPosition);
         ctx.restore();
         return;
     }
