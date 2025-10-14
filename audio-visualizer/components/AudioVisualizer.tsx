@@ -3348,16 +3348,17 @@ const drawVerticalSubtitle = (
     bgStyle: SubtitleBgStyle,
     isBeat: boolean | undefined,
     dragOffset: { x: number; y: number },
-    position: number = 0.5 // 0.0 = 左側, 1.0 = 右側
+    horizontalPosition: number = 0.5, // 0.0 = 左側, 1.0 = 右側
+    verticalPosition: number = 0.5 // 0.0 = 上方, 1.0 = 下方
 ) => {
     const characters = text.split('');
     const charSpacing = fontSize * 1.2; // 字元間距
     const totalHeight = charSpacing * characters.length;
     
-    // 起始位置：根據位置參數計算水平位置，垂直居中
+    // 起始位置：根據位置參數計算水平和垂直位置
     const margin = width * 0.1; // 距離邊緣 10%
-    const startX = margin + (width - 2 * margin) * position + dragOffset.x; // 根據位置參數計算
-    const startY = (height - totalHeight) / 2 + dragOffset.y; // 垂直居中
+    const startX = margin + (width - 2 * margin) * horizontalPosition + dragOffset.x; // 根據水平位置參數計算
+    const startY = margin + (height - 2 * margin - totalHeight) * verticalPosition + dragOffset.y; // 根據垂直位置參數計算
     
     ctx.save();
     ctx.font = `bold ${fontSize}px "${fontName}", sans-serif`;
@@ -3450,8 +3451,9 @@ const drawSubtitles = (
     
     // 直式顯示
     if (orientation === SubtitleOrientation.VERTICAL) {
-        const verticalPosition = (latestPropsRef as any)?.verticalSubtitlePosition ?? 0.5;
-        drawVerticalSubtitle(ctx, width, height, text, fontSize, actualFontName, color, effect, bgStyle, isBeat, dragOffset, verticalPosition);
+        const verticalHorizontalPos = (latestPropsRef as any)?.verticalSubtitlePosition ?? 0.5;
+        const verticalVerticalPos = (latestPropsRef as any)?.verticalSubtitleVerticalPosition ?? 0.5;
+        drawVerticalSubtitle(ctx, width, height, text, fontSize, actualFontName, color, effect, bgStyle, isBeat, dragOffset, verticalHorizontalPos, verticalVerticalPos);
         ctx.restore();
         return;
     }
@@ -3460,8 +3462,13 @@ const drawSubtitles = (
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     
-    const positionX = width / 2 + dragOffset.x;
-    const positionY = height - (height * 0.08) + dragOffset.y;
+    // 使用新的位置控制參數
+    const horizontalPos = (latestPropsRef as any)?.horizontalSubtitlePosition ?? 0.5;
+    const horizontalVerticalPos = (latestPropsRef as any)?.horizontalSubtitleVerticalPosition ?? 0.2;
+    
+    const margin = width * 0.1; // 距離邊緣 10%
+    const positionX = margin + (width - 2 * margin) * horizontalPos + dragOffset.x;
+    const positionY = margin + (height - 2 * margin) * horizontalVerticalPos + dragOffset.y;
 
     const metrics = ctx.measureText(text);
     const textHeight = metrics.fontBoundingBoxAscent ?? fontSize;

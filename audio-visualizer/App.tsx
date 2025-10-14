@@ -100,8 +100,11 @@ function App() {
     const [subtitleFormat, setSubtitleFormat] = useState<SubtitleFormat>(SubtitleFormat.BRACKET);
     const [subtitleLanguage, setSubtitleLanguage] = useState<SubtitleLanguage>(SubtitleLanguage.CHINESE);
     const [subtitleOrientation, setSubtitleOrientation] = useState<SubtitleOrientation>(SubtitleOrientation.HORIZONTAL);
-    // 直式字幕位置控制
-    const [verticalSubtitlePosition, setVerticalSubtitlePosition] = useState<number>(0.5); // 0.0 = 左側, 1.0 = 右側
+    // 字幕位置控制
+    const [verticalSubtitlePosition, setVerticalSubtitlePosition] = useState<number>(0.5); // 直式字幕水平位置 0.0 = 左側, 1.0 = 右側
+    const [horizontalSubtitlePosition, setHorizontalSubtitlePosition] = useState<number>(0.5); // 橫式字幕水平位置 0.0 = 左側, 1.0 = 右側
+    const [verticalSubtitleVerticalPosition, setVerticalSubtitleVerticalPosition] = useState<number>(0.5); // 直式字幕垂直位置 0.0 = 上方, 1.0 = 下方
+    const [horizontalSubtitleVerticalPosition, setHorizontalSubtitleVerticalPosition] = useState<number>(0.2); // 橫式字幕垂直位置 0.0 = 上方, 1.0 = 下方
     // Vinyl Record 圖片
     const [vinylImage, setVinylImage] = useState<string | null>(null);
     const [vinylLayoutMode, setVinylLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
@@ -1444,6 +1447,9 @@ function App() {
                                     subtitleDisplayMode={subtitleDisplayMode}
                                     subtitleOrientation={subtitleOrientation}
                                     verticalSubtitlePosition={verticalSubtitlePosition}
+                                    horizontalSubtitlePosition={horizontalSubtitlePosition}
+                                    verticalSubtitleVerticalPosition={verticalSubtitleVerticalPosition}
+                                    horizontalSubtitleVerticalPosition={horizontalSubtitleVerticalPosition}
                                     disableVisualizer={!showVisualizer}
                                     subtitleDragOffset={subtitleDragOffset}
                                     lyricsDragOffset={lyricsDragOffset}
@@ -1589,6 +1595,12 @@ function App() {
                             onSubtitleOrientationChange={setSubtitleOrientation}
                             verticalSubtitlePosition={verticalSubtitlePosition}
                             onVerticalSubtitlePositionChange={setVerticalSubtitlePosition}
+                            horizontalSubtitlePosition={horizontalSubtitlePosition}
+                            onHorizontalSubtitlePositionChange={setHorizontalSubtitlePosition}
+                            verticalSubtitleVerticalPosition={verticalSubtitleVerticalPosition}
+                            onVerticalSubtitleVerticalPositionChange={setVerticalSubtitleVerticalPosition}
+                            horizontalSubtitleVerticalPosition={horizontalSubtitleVerticalPosition}
+                            onHorizontalSubtitleVerticalPositionChange={setHorizontalSubtitleVerticalPosition}
                             effectScale={effectScale}
                             onEffectScaleChange={setEffectScale}
                             effectOffsetX={effectOffsetX}

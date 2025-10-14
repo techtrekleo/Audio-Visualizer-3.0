@@ -203,6 +203,12 @@ interface OptimizedControlsProps {
     onSubtitleOrientationChange: (orientation: SubtitleOrientation) => void;
     verticalSubtitlePosition: number;
     onVerticalSubtitlePositionChange: (position: number) => void;
+    horizontalSubtitlePosition: number;
+    onHorizontalSubtitlePositionChange: (position: number) => void;
+    verticalSubtitleVerticalPosition: number;
+    onVerticalSubtitleVerticalPositionChange: (position: number) => void;
+    horizontalSubtitleVerticalPosition: number;
+    onHorizontalSubtitleVerticalPositionChange: (position: number) => void;
     effectScale: number;
     onEffectScaleChange: (value: number) => void;
     effectOffsetX: number;
@@ -1277,28 +1283,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 </div>
                             </div>
                             
-                            {/* 直式字幕位置控制 - 測試用，暫時始終顯示 */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-300">
-                                    直式字幕位置 {props.subtitleOrientation === SubtitleOrientation.VERTICAL ? '(直式模式)' : '(橫式模式 - 無效)'}
-                                </label>
-                                <div className="space-y-2">
-                                    <SliderControl
-                                        label="水平位置"
-                                        value={props.verticalSubtitlePosition}
-                                        onChange={props.onVerticalSubtitlePositionChange}
-                                        min={0.0}
-                                        max={1.0}
-                                        step={0.05}
-                                    />
-                                    <div className="flex justify-between text-xs text-gray-400">
-                                        <span>← 左側</span>
-                                        <span>置中</span>
-                                        <span>右側 →</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 <SliderControl
                                     label="字幕字體大小"
@@ -1308,6 +1292,51 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     max={8}
                                     step={0.5}
                                 />
+                                
+                                {/* 位置控制 - 使用統一的 SliderControl 樣式 */}
+                                <div className="col-span-2 space-y-3">
+                                    <div className="text-sm font-medium text-gray-300">
+                                        📍 位置控制 ({props.subtitleOrientation === SubtitleOrientation.VERTICAL ? '直式' : '橫式'})
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <SliderControl
+                                            label="水平位置"
+                                            value={
+                                                props.subtitleOrientation === SubtitleOrientation.VERTICAL 
+                                                    ? (props.verticalSubtitlePosition || 0.5)
+                                                    : (props.horizontalSubtitlePosition || 0.5)
+                                            }
+                                            onChange={(value) => {
+                                                if (props.subtitleOrientation === SubtitleOrientation.VERTICAL) {
+                                                    props.onVerticalSubtitlePositionChange(value);
+                                                } else {
+                                                    props.onHorizontalSubtitlePositionChange(value);
+                                                }
+                                            }}
+                                            min={0}
+                                            max={1}
+                                            step={0.05}
+                                        />
+                                        <SliderControl
+                                            label="垂直位置"
+                                            value={
+                                                props.subtitleOrientation === SubtitleOrientation.VERTICAL 
+                                                    ? (props.verticalSubtitleVerticalPosition || 0.5)
+                                                    : (props.horizontalSubtitleVerticalPosition || 0.2)
+                                            }
+                                            onChange={(value) => {
+                                                if (props.subtitleOrientation === SubtitleOrientation.VERTICAL) {
+                                                    props.onVerticalSubtitleVerticalPositionChange(value);
+                                                } else {
+                                                    props.onHorizontalSubtitleVerticalPositionChange(value);
+                                                }
+                                            }}
+                                            min={0}
+                                            max={1}
+                                            step={0.05}
+                                        />
+                                    </div>
+                                </div>
                                 
                                 <SelectControl
                                     label="字幕字體"
