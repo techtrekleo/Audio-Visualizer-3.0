@@ -49,7 +49,10 @@ export enum FilterEffectType {
     PARTICLES = 'particles', 
     STARS = 'stars',
     RAIN = 'rain',
-    CHERRY_BLOSSOM = 'cherry-blossom'
+    CHERRY_BLOSSOM = 'cherry-blossom',
+    LIGHTNING = 'lightning',
+    GLITCH1 = 'glitch1',
+    GLITCH2 = 'glitch2'
 }
 
 // 可夜訂製版控制卡樣式類型

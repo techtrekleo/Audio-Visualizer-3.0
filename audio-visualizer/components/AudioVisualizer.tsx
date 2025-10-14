@@ -6214,6 +6214,7 @@ const createFilterParticle = (type: FilterEffectType, width: number, height: num
                 maxLife: 1
             };
 
+
         default:
             return {
                 x: 0, y: 0, vx: 0, vy: 0, size: 1, opacity: 1,
@@ -6527,6 +6528,7 @@ const drawFilterParticle = (ctx: CanvasRenderingContext2D, particle: FilterParti
             ctx.fill();
             ctx.restore();
             break;
+
     }
 
     ctx.restore();
@@ -6543,49 +6545,149 @@ const drawFilterEffects = (
     particles: FilterParticle[],
     frame: number
 ) => {
-    if (!particles || particles.length === 0) return;
-
     ctx.save();
     ctx.globalAlpha = opacity;
-    ctx.globalCompositeOperation = 'screen';
 
-    // 更新和繪製粒子
-    particles.forEach((particle, index) => {
-        // 增加隨機擺動，讓粒子軌跡更自然
-        const windEffect = (Math.random() - 0.5) * 0.3;
-        const turbulence = Math.sin(frame * 0.01 + index * 0.1) * 0.2;
+    // 特殊效果 - 直接繪製，不使用粒子系統
+    if (type === FilterEffectType.LIGHTNING) {
+        // 閃電效果 - 跟數位風暴一模一樣
+        ctx.globalCompositeOperation = 'screen';
         
-        // 更新位置
-        particle.x += (particle.vx + windEffect + turbulence) * speed;
-        particle.y += particle.vy * speed;
-        particle.rotation += particle.rotationSpeed * speed;
-
-        // 檢查邊界和生命週期
-        let shouldRemove = false;
-
-        if (type === FilterEffectType.STARS) {
-            // 星星閃爍效果
-            particle.life -= 0.02 * speed;
-            if (particle.life <= 0) {
-                particle.x = Math.random() * width;
-                particle.y = Math.random() * height;
-                particle.life = particle.maxLife;
-                particle.opacity = 0.3 + Math.random() * 0.7;
-            }
-        } else {
-            // 其他粒子檢查邊界
-            if (particle.y > height + 20 || 
-                particle.x < -20 || 
-                particle.x > width + 20) {
-                shouldRemove = true;
+        // 在節拍時觸發閃電
+        if (Math.random() > 0.6) {
+            const numBolts = Math.floor(Math.random() * 3) + 1;
+            for (let i = 0; i < numBolts; i++) {
+                const startX = Math.random() * width;
+                const startY = 0;
+                const endX = startX + (Math.random() - 0.5) * 200;
+                const endY = height;
+                
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 3;
+                ctx.shadowColor = '#00FFFF';
+                ctx.shadowBlur = 20;
+                
+                // Create zigzag lightning
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                
+                let currentX = startX;
+                let currentY = startY;
+                const segments = 8;
+                
+                for (let j = 1; j <= segments; j++) {
+                    const progress = j / segments;
+                    const targetX = startX + (endX - startX) * progress;
+                    const targetY = startY + (endY - startY) * progress;
+                    
+                    const offset = (Math.random() - 0.5) * 40;
+                    currentX = targetX + offset;
+                    currentY = targetY;
+                    
+                    ctx.lineTo(currentX, currentY);
+                }
+                
+                ctx.stroke();
             }
         }
-
-        if (!shouldRemove) {
-            // 繪製粒子
-            drawFilterParticle(ctx, particle, type);
+    } else if (type === FilterEffectType.GLITCH1) {
+        // GLITCH1 - 參考CRT GLITCH的參數，簡化效果
+        ctx.globalCompositeOperation = 'lighter';
+        
+        // 掃描線效果 - 參考CRT GLITCH參數
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+        for (let i = 0; i < height; i += 8) {
+            ctx.fillRect(0, i, width, 1);
         }
-    });
+        
+        // 故障區塊 - 稍微增強一點
+        if (Math.random() > 0.85) { // 15% chance，稍微增加觸發頻率
+            const numBlocks = Math.floor(Math.random() * 2) + 1; // 1-2 blocks
+            for (let i = 0; i < numBlocks; i++) {
+                const sx = Math.random() * width * 0.8;
+                const sy = Math.random() * height * 0.8;
+                const sw = Math.random() * width * 0.18 + 8; // 稍微大一點的區塊
+                const sh = Math.random() * height * 0.07 + 3; // 稍微大一點的區塊
+                const dx = sx + (Math.random() - 0.5) * 25; // 稍微大一點的位移
+                const dy = sy + (Math.random() - 0.5) * 12; // 稍微大一點的位移
+                try {
+                    ctx.drawImage(ctx.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
+                } catch(e) { /* ignore */ }
+            }
+        }
+        
+    } else if (type === FilterEffectType.GLITCH2) {
+        // GLITCH2 - 參考GLITCH WAVE的參數，簡化效果
+        ctx.globalCompositeOperation = 'lighter';
+        
+        // 掃描線效果 - 參考GLITCH WAVE參數
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        for (let i = 0; i < height; i += 12) {
+            ctx.fillRect(0, i, width, 1);
+        }
+        
+        // 橫線雜訊效果 - 更溫和的設定
+        if (Math.random() > 0.85) { // 15% chance，更低的觸發頻率
+            const numSlices = Math.floor(Math.random() * 2) + 1; // 1-2 slices，減少數量
+            for (let i = 0; i < numSlices; i++) {
+                const sy = Math.random() * height;
+                const sh = (Math.random() * height) / 20 + 2; // 更細的橫線
+                const sx = 0;
+                const sw = width;
+                const dx = (Math.random() - 0.5) * 15; // 更小的位移
+                const dy = sy;
+                try {
+                    ctx.drawImage(ctx.canvas, sx, sy, sw, sh, dx, dy, sw, sh);
+                } catch(e) { /* ignored, can happen on cross-origin canvas */ }
+            }
+        }
+    } else {
+        // 原有的粒子系統效果
+        if (!particles || particles.length === 0) {
+            ctx.restore();
+            return;
+        }
+
+        ctx.globalCompositeOperation = 'screen';
+
+        // 更新和繪製粒子
+        particles.forEach((particle, index) => {
+            // 增加隨機擺動，讓粒子軌跡更自然
+            const windEffect = (Math.random() - 0.5) * 0.3;
+            const turbulence = Math.sin(frame * 0.01 + index * 0.1) * 0.2;
+            
+            // 更新位置
+            particle.x += (particle.vx + windEffect + turbulence) * speed;
+            particle.y += particle.vy * speed;
+            particle.rotation += particle.rotationSpeed * speed;
+
+            // 檢查邊界和生命週期
+            let shouldRemove = false;
+
+            if (type === FilterEffectType.STARS) {
+                // 星星閃爍效果
+                particle.life -= 0.02 * speed;
+                if (particle.life <= 0) {
+                    particle.x = Math.random() * width;
+                    particle.y = Math.random() * height;
+                    particle.life = particle.maxLife;
+                    particle.opacity = 0.3 + Math.random() * 0.7;
+                }
+            } else {
+                // 其他粒子檢查邊界
+                if (particle.y > height + 20 || 
+                    particle.x < -20 || 
+                    particle.x > width + 20) {
+                    shouldRemove = true;
+                }
+            }
+
+            if (!shouldRemove) {
+                // 繪製粒子
+                drawFilterParticle(ctx, particle, type);
+            }
+        });
+    }
 
     ctx.restore();
 };

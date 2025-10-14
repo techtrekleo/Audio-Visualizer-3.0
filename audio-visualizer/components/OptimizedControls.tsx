@@ -2151,6 +2151,9 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <option value={FilterEffectType.STARS}>⭐ 星空閃爍</option>
                                             <option value={FilterEffectType.RAIN}>🌧️ 雨滴效果</option>
                                             <option value={FilterEffectType.CHERRY_BLOSSOM}>🌸 櫻花飄落</option>
+                                            <option value={FilterEffectType.LIGHTNING}>⚡ 閃電風暴</option>
+                                            <option value={FilterEffectType.GLITCH1}>🔴 故障效果1</option>
+                                            <option value={FilterEffectType.GLITCH2}>🔵 故障效果2</option>
                                         </select>
                                     </div>
 
