@@ -101,7 +101,7 @@ function App() {
     const [subtitleLanguage, setSubtitleLanguage] = useState<SubtitleLanguage>(SubtitleLanguage.CHINESE);
     const [subtitleOrientation, setSubtitleOrientation] = useState<SubtitleOrientation>(SubtitleOrientation.HORIZONTAL);
     // 字幕位置控制
-    const [verticalSubtitlePosition, setVerticalSubtitlePosition] = useState<number>(1.2); // 直式字幕水平位置 0.0 = 左側, 1.0 = 右側，預設更靠近右邊
+    const [verticalSubtitlePosition, setVerticalSubtitlePosition] = useState<number>(1); // 直式字幕水平位置 0.0 = 左側, 1.0 = 右側，預設更靠近右邊
     const [horizontalSubtitlePosition, setHorizontalSubtitlePosition] = useState<number>(0.5); // 橫式字幕水平位置 0.0 = 左側, 1.0 = 右側
     const [verticalSubtitleVerticalPosition, setVerticalSubtitleVerticalPosition] = useState<number>(0.5); // 直式字幕垂直位置 0.0 = 上方, 1.0 = 下方
     const [horizontalSubtitleVerticalPosition, setHorizontalSubtitleVerticalPosition] = useState<number>(1.2); // 橫式字幕垂直位置 0.0 = 上方, 1.0 = 下方，預設更接近底部

@@ -1313,7 +1313,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             label="水平位置"
                                             value={
                                                 props.subtitleOrientation === SubtitleOrientation.VERTICAL 
-                                                    ? (props.verticalSubtitlePosition || 1.2)
+                                                    ? (props.verticalSubtitlePosition || 1)
                                                     : (props.horizontalSubtitlePosition || 0.5)
                                             }
                                             onChange={(value) => {
