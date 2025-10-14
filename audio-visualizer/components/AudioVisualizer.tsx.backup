@@ -1,9 +1,10 @@
 import React, { useRef, useEffect, forwardRef, useCallback } from 'react';
-import { VisualizationType, Palette, GraphicEffectType, ColorPaletteType, WatermarkPosition, FontType, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType } from '../types';
+import { VisualizationType, Palette, GraphicEffectType, ColorPaletteType, WatermarkPosition, FontType, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, FilterEffectType, ControlCardStyle, SubtitleOrientation } from '../types';
 import ImageBasedVisualizer from './ImageBasedVisualizer';
 
 // 字體映射表
 const FONT_MAP: Record<FontType, string> = {
+    // 原有字體
     [FontType.POPPINS]: 'Poppins',
     [FontType.ORBITRON]: 'Orbitron',
     [FontType.LOBSTER]: 'Lobster',
@@ -18,6 +19,39 @@ const FONT_MAP: Record<FontType, string> = {
     [FontType.SOURCE_HAN_SANS]: 'Source Han Sans TC',
     [FontType.CW_TEX_KAI]: 'cwTeXKai',
     [FontType.KLEE_ONE]: 'Klee One',
+    [FontType.QINGSONG_1]: 'Jason Handwriting 1',
+    [FontType.QINGSONG_2]: 'Jason Handwriting 2',
+    // 新增字體
+    [FontType.TAIPEI_SANS]: 'Taipei Sans TC Beta',
+    [FontType.M_PLUS_ROUNDED]: 'M PLUS Rounded 1c',
+    [FontType.HINA_MINCHO]: 'Hina Mincho',
+    [FontType.RAMPART_ONE]: 'Rampart One',
+    [FontType.ROBOTO_MONO]: 'Roboto Mono',
+    [FontType.OPEN_SANS]: 'Open Sans',
+    [FontType.LATO]: 'Lato',
+    [FontType.MONTSERRAT]: 'Montserrat',
+    [FontType.SOURCE_SANS_PRO]: 'Source Sans Pro',
+    [FontType.RALEWAY]: 'Raleway',
+    [FontType.UBUNTU]: 'Ubuntu',
+    [FontType.PLAYFAIR_DISPLAY]: 'Playfair Display',
+    [FontType.MERRIWEATHER]: 'Merriweather',
+    [FontType.OSWALD]: 'Oswald',
+    [FontType.CAVEAT]: 'Caveat',
+    [FontType.KALAM]: 'Kalam',
+    [FontType.COMFORTAA]: 'Comfortaa',
+    [FontType.FREDOKA_ONE]: 'Fredoka One',
+    [FontType.NUNITO]: 'Nunito',
+    [FontType.QUICKSAND]: 'Quicksand',
+    [FontType.RUBIK]: 'Rubik',
+    [FontType.NOTO_SERIF_TC]: 'Noto Serif TC',
+    [FontType.MA_SHAN_ZHENG]: 'Ma Shan Zheng',
+    [FontType.ZHI_MANG_XING]: 'Zhi Mang Xing',
+    [FontType.LONG_CANG]: 'Long Cang',
+    [FontType.ZCOOL_KUAI_LE]: 'ZCOOL KuaiLe',
+    [FontType.ZCOOL_QING_KE]: 'ZCOOL QingKe HuangYou',
+    [FontType.LIU_JIAN_MAO_CAO]: 'Liu Jian Mao Cao',
+    [FontType.ZCOOL_XIAO_WEI]: 'ZCOOL XiaoWei',
+    [FontType.BAKUDAI]: 'Bakudai',
 };
 
 interface AudioVisualizerProps {
@@ -58,9 +92,11 @@ interface AudioVisualizerProps {
     showLyricsDisplay: boolean;
     currentTime: number;
     lyricsFontSize: number;
+    lyricsFontFamily: FontType;
     lyricsPositionX: number;
     lyricsPositionY: number;
     subtitleDisplayMode: SubtitleDisplayMode;
+    subtitleOrientation: SubtitleOrientation;
     // When true, skip drawing visualizer effects but keep background and subtitles
     disableVisualizer?: boolean;
     // 幾何圖形可視化參數
@@ -77,6 +113,7 @@ interface AudioVisualizerProps {
     visualizationTransform?: { x: number; y: number; scale: number };
     onVisualizationTransformUpdate?: (transform: { x: number; y: number; scale: number }) => void;
     visualizationScale?: number;
+    onVisualizationScaleChange?: (scale: number) => void;
     // CTA 動畫狀態
     showCtaAnimation?: boolean;
     ctaChannelName?: string;
@@ -84,7 +121,32 @@ interface AudioVisualizerProps {
     onCtaPositionUpdate?: (position: { x: number; y: number }) => void;
     // Z總訂製款狀態
     zCustomCenterImage?: string | null;
+    zCustomScale?: number;
+    zCustomPosition?: { x: number; y: number };
+    onZCustomPositionUpdate?: (position: { x: number; y: number }) => void;
+    // Filter Effects props
+    filterEffectType?: FilterEffectType;
+    filterEffectIntensity?: number;
+    filterEffectOpacity?: number;
+    filterEffectSpeed?: number;
+    filterEffectEnabled?: boolean;
+    // Control Card props
+    controlCardEnabled?: boolean;
+    controlCardFontSize?: number;
+    controlCardStyle?: ControlCardStyle;
+    controlCardColor?: string;
+    controlCardBackgroundColor?: string;
+    // Vinyl Record props
+    vinylRecordEnabled?: boolean;
+    vinylImage?: string | null;
+    // Piano opacity
+    pianoOpacity?: number;
 }
+
+// 讓繪圖函式能取得當前屬性（不改動所有函式簽名）
+let latestPropsRef: AudioVisualizerProps | null = null;
+// 平滑拖曳/縮放狀態，避免跳動
+let transformState = { cx: 0, cy: 0, scale: 1, initialized: false };
 
 /**
  * Applies an alpha value to a given color string (hex or hsl).
@@ -504,7 +566,6 @@ const drawNebulaWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | n
     
     ctx.restore();
 };
-
 const drawSolarSystem = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -707,7 +768,6 @@ const drawSolarSystem = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | 
     
     ctx.restore();
 };
-
 const drawTechWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -914,7 +974,6 @@ const drawTechWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | nul
     
     ctx.restore();
 };
-
 const drawStellarCore = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -1312,7 +1371,6 @@ const drawRadialBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | n
 
     ctx.restore();
 };
-
 const drawParticleGalaxy = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -1534,7 +1592,6 @@ const drawParticleGalaxy = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array
 
     ctx.restore();
 };
-
 const drawLiquidMetal = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -1988,7 +2045,6 @@ const dataMoshState: { imageData: ImageData | null, framesLeft: number } = {
     imageData: null,
     framesLeft: 0,
 };
-
 const drawDataMosh = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -2521,7 +2577,6 @@ const drawPixelSort = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | nu
     
     ctx.restore();
 };
-
 const drawRepulsorField = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[]) => {
     if (!dataArray) return;
     ctx.save();
@@ -2712,9 +2767,8 @@ const drawAudioLandscape = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array
     
     ctx.restore();
 };
-
 // 可夜特別訂製版可視化
-const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[], geometricFrameImage?: HTMLImageElement | null, geometricSemicircleImage?: HTMLImageElement | null, props?: any) => {
+const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[], geometricFrameImage?: HTMLImageElement | null, geometricSemicircleImage?: HTMLImageElement | null, props?: any, controlCardEnabled?: boolean, controlCardFontSize?: number, controlCardStyle?: ControlCardStyle, controlCardColor?: string, controlCardBackgroundColor?: string) => {
     if (!dataArray) return;
     ctx.save();
     
@@ -2831,49 +2885,85 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
     ctx.arc(semicircleCenterX, semicircleCenterY, semicircleRadius, -Math.PI/2, Math.PI/2);
     ctx.stroke();
     
-    // 3. 左側聲波橫條 (從正方形左邊向左延伸)
-    const numBars = 20;
-    const barThickness = 8; // 條的厚度（加粗）
-    const maxBarLength = frameSize * 0.8; // 最大條長度
+    // 3. 左側聲波橫條 (從正方形左邊向左延伸) - 新樣式：寬線條、圓角、無空隙
+    const numBars = 18; // 減少條數，讓每條更寬
+    const barThickness = Math.max(12, frameSize / numBars * 0.8); // 動態調整厚度，確保無空隙
+    const maxBarLength = frameSize * 0.9; // 最大條長度
     
     // 聲波條的起始位置（正方形左邊）
     const barStartX = frameX;
     const startY = frameY + frameSize; // 從正方形左下角開始
     const endY = frameY; // 到正方形左上角結束
     
+    // 計算每條的垂直間距，確保無空隙
+    const totalBarHeight = frameSize;
+    const barSpacing = totalBarHeight / numBars;
+    
     for (let i = 0; i < numBars; i++) {
         const dataIndex = Math.floor((i / numBars) * dataArray.length);
         const amplitude = dataArray[dataIndex] / 255;
-        const barLength = Math.pow(amplitude, 1.5) * maxBarLength * sensitivity;
+        const barLength = Math.pow(amplitude, 1.2) * maxBarLength * sensitivity; // 調整振幅曲線
         
-        if (barLength < 2) continue;
+        if (barLength < 3) continue; // 最小長度
         
-        // 計算條的垂直位置（沿著正方形左邊分布）
-        const progress = i / (numBars - 1);
-        const barY = startY - progress * frameSize; // 從下到上
+        // 計算條的垂直位置（確保無空隙）
+        const barY = startY - (i * barSpacing + barSpacing / 2); // 居中對齊
         
-        // 動態顏色
-        const hue = (i / numBars) * 60 + 200; // 藍色到青色範圍
-        const saturation = 80 + amplitude * 20;
-        const lightness = 50 + amplitude * 30;
-        const alpha = 0.7 + amplitude * 0.3;
+        // 使用快速設置的顏色主題
+        let color;
+        if (colors.name === ColorPaletteType.WHITE) {
+            const lightness = 85 + (amplitude * 15);
+            color = `hsla(220, 10%, ${lightness}%, ${0.8 + amplitude * 0.2})`;
+        } else if (colors.name === ColorPaletteType.RAINBOW) {
+            const hue = (i / numBars) * 360; // 全色譜
+            const saturation = 85 + amplitude * 15;
+            const lightness = 55 + amplitude * 25;
+            color = `hsla(${hue}, ${saturation}%, ${lightness}%, ${0.8 + amplitude * 0.2})`;
+        } else {
+            // 使用主題的色調範圍
+            const [startHue, endHue] = colors.hueRange;
+            const hueRangeSpan = endHue - startHue;
+            const hue = startHue + ((i / numBars) * hueRangeSpan);
+            const saturation = 85 + amplitude * 15;
+            const lightness = 55 + amplitude * 25;
+            color = `hsla(${hue}, ${saturation}%, ${lightness}%, ${0.8 + amplitude * 0.2})`;
+        }
         
-        ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
+        ctx.fillStyle = color;
         
         // 繪製橫向條（向左延伸）
         const barX = barStartX - barLength; // 從方框左邊向左延伸
         
-        // 繪製圓角矩形條
-        const radius = Math.min(barThickness * 0.3, barLength * 0.1);
+        // 繪製圓角矩形條 - 更大的圓角
+        const radius = Math.min(barThickness * 0.4, 8); // 增加圓角大小
         createRoundedRectPath(ctx, barX, barY - barThickness / 2, barLength, barThickness, radius);
         ctx.fill();
         
-        // 發光效果
-        if (isBeat && amplitude > 0.7) {
-            ctx.shadowColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-            ctx.shadowBlur = 15;
+        // 發光效果 - 使用主題顏色
+        if (amplitude > 0.5) {
+            // 提取色調用於發光效果
+            const hueMatch = color.match(/hsl\(([^,]+)/);
+            const hue = hueMatch ? parseFloat(hueMatch[1]) : 220;
+            const saturation = 85 + amplitude * 15;
+            const lightness = 55 + amplitude * 25;
+            
+            ctx.shadowColor = `hsla(${hue}, ${saturation}%, ${lightness + 20}%, 0.6)`;
+            ctx.shadowBlur = Math.max(5, amplitude * 20);
             ctx.fill();
             ctx.shadowBlur = 0;
+        }
+        
+        // 高振幅時的特殊效果
+        if (isBeat && amplitude > 0.8) {
+            // 使用更亮的顏色
+            const hueMatch = color.match(/hsl\(([^,]+)/);
+            const hue = hueMatch ? parseFloat(hueMatch[1]) : 220;
+            const saturation = 85 + amplitude * 15;
+            const lightness = 55 + amplitude * 25;
+            
+            ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness + 30}%, 0.9)`;
+            createRoundedRectPath(ctx, barX, barY - barThickness / 2, barLength, barThickness, radius);
+            ctx.fill();
         }
     }
     
@@ -2904,39 +2994,134 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         ctx.restore();
     }
     
-    // 5. 底部假播放器 (卡片風格 + 持續抖動 + 真實秒數)
-    const playerWidth = frameSize; // 與中央方塊同寬
-    const playerHeight = height * 0.15;
-    const playerX = centerX - playerWidth / 2;
-    const playerY = height * 0.7; // 上移播放器，減少下方留白
-    
-    // 持續的小抖動
-    const baseShake = Math.sin(frame * 0.1) * 1.5;
-    const shakeX = baseShake + Math.sin(frame * 0.07) * 0.8;
-    const shakeY = Math.cos(frame * 0.13) * 1.2;
-    
-    // 卡片背景 (灰綠色)
-    ctx.fillStyle = 'rgba(100, 120, 100, 0.9)';
-    ctx.beginPath();
-    const cornerRadius = 16 + Math.sin(frame * 0.05) * 1;
-    ctx.moveTo(playerX + cornerRadius + shakeX, playerY + shakeY);
-    ctx.lineTo(playerX + playerWidth - cornerRadius + shakeX, playerY + shakeY);
-    ctx.quadraticCurveTo(playerX + playerWidth + shakeX, playerY + shakeY, playerX + playerWidth + shakeX, playerY + cornerRadius + shakeY);
-    ctx.lineTo(playerX + playerWidth + shakeX, playerY + playerHeight - cornerRadius + shakeY);
-    ctx.quadraticCurveTo(playerX + playerWidth + shakeX, playerY + playerHeight + shakeY, playerX + playerWidth - cornerRadius + shakeX, playerY + playerHeight + shakeY);
-    ctx.lineTo(playerX + cornerRadius + shakeX, playerY + playerHeight + shakeY);
-    ctx.quadraticCurveTo(playerX + shakeX, playerY + playerHeight + shakeY, playerX + shakeX, playerY + playerHeight - cornerRadius + shakeY);
-    ctx.lineTo(playerX + shakeX, playerY + cornerRadius + shakeY);
-    ctx.quadraticCurveTo(playerX + shakeX, playerY + shakeY, playerX + cornerRadius + shakeX, playerY + shakeY);
-    ctx.fill();
+    // 5. 底部假播放器 (卡片風格 + 持續抖動 + 真實秒數) - 可選顯示
+    if (controlCardEnabled !== false) {
+        const playerWidth = frameSize; // 與中央方塊同寬
+        // 動態調整控制卡高度，根據字體大小調整
+        const baseHeight = height * 0.15;
+        const cardFontSize = controlCardFontSize || 24;
+        // 限制字體大小的影響，避免控制卡過大
+        const maxFontSize = 100;
+        const clampedFontSize = Math.min(cardFontSize, maxFontSize);
+        const heightMultiplier = Math.max(1, clampedFontSize / 24); // 字體越大，高度越大
+        let playerHeight = Math.min(baseHeight * heightMultiplier, height * 0.3); // 最大不超過30%高度
+        const playerX = centerX - playerWidth / 2;
+        // 動態調整Y位置，字體越大越往上移
+        const baseY = height * 0.75;
+        const yOffset = (clampedFontSize - 24) * 0.2; // 進一步減少偏移量
+        let playerY = Math.max(height * 0.6, Math.min(baseY - yOffset, height * 0.85)); // 最低60%，最高85%
+        
+        // 檢查控制卡是否超出畫布邊界
+        if (playerY + playerHeight > height - 10) {
+            const adjustedPlayerY = height - playerHeight - 10;
+            if (adjustedPlayerY < height * 0.6) {
+                // 如果調整後位置太低，則縮小控制卡高度
+                const maxAllowedHeight = height * 0.25;
+                const finalPlayerHeight = Math.min(playerHeight, maxAllowedHeight);
+                playerY = height - finalPlayerHeight - 10;
+                playerHeight = finalPlayerHeight;
+            } else {
+                playerY = adjustedPlayerY;
+            }
+        }
+        
+        // 持續的小抖動
+        const baseShake = Math.sin(frame * 0.1) * 1.5;
+        const shakeX = baseShake + Math.sin(frame * 0.07) * 0.8;
+        const shakeY = Math.cos(frame * 0.13) * 1.2;
+        
+        // 卡片背景 - 根據樣式決定
+        const cardStyle = controlCardStyle || ControlCardStyle.FILLED;
+        const cardBgColor = controlCardBackgroundColor || 'rgba(100, 120, 100, 0.9)';
+        const cardColor = controlCardColor || '#ffffff';
+        
+        if (cardStyle === ControlCardStyle.FILLED || cardStyle === ControlCardStyle.OUTLINE) {
+            if (cardStyle === ControlCardStyle.FILLED) {
+                ctx.fillStyle = cardBgColor;
+            } else {
+                ctx.strokeStyle = cardColor;
+                ctx.lineWidth = 2;
+            }
+            
+            ctx.beginPath();
+            const cornerRadius = 16 + Math.sin(frame * 0.05) * 1;
+            ctx.moveTo(playerX + cornerRadius + shakeX, playerY + shakeY);
+            ctx.lineTo(playerX + playerWidth - cornerRadius + shakeX, playerY + shakeY);
+            ctx.quadraticCurveTo(playerX + playerWidth + shakeX, playerY + shakeY, playerX + playerWidth + shakeX, playerY + cornerRadius + shakeY);
+            ctx.lineTo(playerX + playerWidth + shakeX, playerY + playerHeight - cornerRadius + shakeY);
+            ctx.quadraticCurveTo(playerX + playerWidth + shakeX, playerY + playerHeight + shakeY, playerX + playerWidth - cornerRadius + shakeX, playerY + playerHeight + shakeY);
+            ctx.lineTo(playerX + cornerRadius + shakeX, playerY + playerHeight + shakeY);
+            ctx.quadraticCurveTo(playerX + shakeX, playerY + playerHeight + shakeY, playerX + shakeX, playerY + playerHeight - cornerRadius + shakeY);
+            ctx.lineTo(playerX + shakeX, playerY + cornerRadius + shakeY);
+            ctx.quadraticCurveTo(playerX + shakeX, playerY + shakeY, playerX + cornerRadius + shakeX, playerY + shakeY);
+            
+            if (cardStyle === ControlCardStyle.FILLED) {
+                ctx.fill();
+            } else {
+                ctx.stroke();
+            }
+        }
     
     // 專輯封面 (左上角)
     const albumSize = playerHeight * 0.6;
     const albumX = playerX + 20 + shakeX;
     const albumY = playerY + 20 + shakeY;
     
-    // 專輯封面背景
-    ctx.fillStyle = 'rgba(80, 100, 80, 0.8)';
+    // 專輯封面背景 - 使用控制卡顏色和透明度
+    // (cardStyle, cardBgColor, cardColor 已在上面定義，重複使用)
+    
+    // 根據控制卡樣式調整專輯封面透明度
+    let albumOpacity = 0.6;
+    if (cardStyle === ControlCardStyle.OUTLINE) {
+        albumOpacity = 0.3; // 外框模式：更透明
+    } else if (cardStyle === ControlCardStyle.TRANSPARENT) {
+        albumOpacity = 0.4; // 透明模式：中等透明度
+    }
+    
+    // 使用控制卡背景顏色，但調整透明度和色調變化
+    let albumBgColor;
+    if (cardBgColor.startsWith('rgba')) {
+        // 提取 rgba 值並調整色調
+        const rgbaMatch = cardBgColor.match(/rgba?\(([^)]+)\)/);
+        if (rgbaMatch) {
+            const values = rgbaMatch[1].split(',').map(v => parseFloat(v.trim()));
+            const [r, g, b] = values;
+            // 增加色調變化：稍微調整 RGB 值創造落差
+            const adjustedR = Math.max(0, Math.min(255, r * 0.8 + 20));
+            const adjustedG = Math.max(0, Math.min(255, g * 0.8 + 20));
+            const adjustedB = Math.max(0, Math.min(255, b * 0.8 + 20));
+            albumBgColor = `rgba(${adjustedR}, ${adjustedG}, ${adjustedB}, ${albumOpacity})`;
+        } else {
+            albumBgColor = cardBgColor.replace(/[\d\.]+\)$/g, `${albumOpacity})`);
+        }
+    } else if (cardBgColor.startsWith('rgb')) {
+        // 提取 rgb 值並調整色調
+        const rgbMatch = cardBgColor.match(/rgb\(([^)]+)\)/);
+        if (rgbMatch) {
+            const values = rgbMatch[1].split(',').map(v => parseInt(v.trim()));
+            const [r, g, b] = values;
+            // 增加色調變化
+            const adjustedR = Math.max(0, Math.min(255, Math.floor(r * 0.8 + 20)));
+            const adjustedG = Math.max(0, Math.min(255, Math.floor(g * 0.8 + 20)));
+            const adjustedB = Math.max(0, Math.min(255, Math.floor(b * 0.8 + 20)));
+            albumBgColor = `rgba(${adjustedR}, ${adjustedG}, ${adjustedB}, ${albumOpacity})`;
+        } else {
+            albumBgColor = cardBgColor.replace('rgb(', 'rgba(').replace(')', `, ${albumOpacity})`);
+        }
+    } else {
+        // 如果是十六進制顏色，轉換為rgba並調整色調
+        const hex = cardBgColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        // 增加色調變化
+        const adjustedR = Math.max(0, Math.min(255, Math.floor(r * 0.8 + 20)));
+        const adjustedG = Math.max(0, Math.min(255, Math.floor(g * 0.8 + 20)));
+        const adjustedB = Math.max(0, Math.min(255, Math.floor(b * 0.8 + 20)));
+        albumBgColor = `rgba(${adjustedR}, ${adjustedG}, ${adjustedB}, ${albumOpacity})`;
+    }
+    
+    ctx.fillStyle = albumBgColor;
     ctx.beginPath();
     const albumRadius = 8 + Math.sin(frame * 0.03) * 0.5;
     ctx.moveTo(albumX + albumRadius, albumY);
@@ -2950,8 +3135,10 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
     ctx.quadraticCurveTo(albumX, albumY, albumX + albumRadius, albumY);
     ctx.fill();
     
-    // 專輯封面裝飾 (抽象圖案)
-    ctx.fillStyle = 'rgba(120, 140, 120, 0.6)';
+    // 專輯封面裝飾 (抽象圖案) - 使用控制卡文字顏色
+    ctx.fillStyle = cardColor;
+    ctx.strokeStyle = cardColor;
+    
     // 波浪線
     ctx.beginPath();
     for (let i = 0; i < albumSize; i += 2) {
@@ -2971,107 +3158,139 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         ctx.arc(dotX, dotY, 3, 0, Math.PI * 2);
         ctx.fill();
     }
+        // 歌曲資訊 (右側) - 動態調整間距
+        const infoX = albumX + albumSize + 20;
+        const infoY = playerY + Math.max(30, clampedFontSize * 0.8); // 從控制卡頂部開始，根據字體大小調整，最小30px
+        const dynamicSpacing = Math.max(25, Math.min(clampedFontSize * 1.2, 120)); // 根據字體大小調整行距，最大120px
+        
+        // 歌曲名稱
+        ctx.fillStyle = cardColor;
+        ctx.font = `bold ${Math.min(clampedFontSize + 2, 60)}px Arial`;
+        ctx.textAlign = 'left';
+        const songName = props.geometricSongName || 'Name of the song';
+        const songNameY = infoY + Math.cos(frame * 0.03) * 0.3;
+        
+        // 確保歌曲名稱在控制卡內，不超出頂部邊界
+        const songNameHeight = Math.min(clampedFontSize + 2, 60);
+        const minSongNameY = playerY + songNameHeight + 15; // 控制卡頂部 + 字體高度 + 15px間距
+        const adjustedSongNameY = Math.max(songNameY, minSongNameY);
+        
+        ctx.fillText(songName, infoX + Math.sin(frame * 0.02) * 0.5, adjustedSongNameY);
+        
+        // 歌手名稱 - 使用動態間距
+        ctx.font = `${Math.min(clampedFontSize, 55)}px Arial`;
+        ctx.fillStyle = cardStyle === ControlCardStyle.OUTLINE ? cardColor : 'rgba(255, 255, 255, 0.8)';
+        const artistName = props.geometricArtistName || 'Artist';
+        const artistNameY = adjustedSongNameY + dynamicSpacing + Math.cos(frame * 0.035) * 0.2;
+        
+        // 確保歌手名稱在控制卡內，不超出頂部邊界
+        const artistNameHeight = Math.min(clampedFontSize, 55);
+        const minArtistNameY = playerY + songNameHeight + artistNameHeight + 25; // 控制卡頂部 + 歌名高度 + 歌手高度 + 25px間距
+        const adjustedArtistNameY = Math.max(artistNameY, minArtistNameY);
+        
+        ctx.fillText(artistName, infoX + Math.sin(frame * 0.025) * 0.3, adjustedArtistNameY);
     
-    // 歌曲資訊 (右側)
-    const infoX = albumX + albumSize + 20;
-    const infoY = albumY + 10;
+        // 右上角圖標 - 調整位置避免與文字重疊
+        const iconSpacing = Math.max(80, clampedFontSize * 1.5); // 根據字體大小調整右邊距，最小80px
+        const iconX = playerX + playerWidth - iconSpacing + shakeX;
+        const iconY = Math.max(adjustedSongNameY, albumY + 10) + shakeY;
+        
+        // 檢查文字寬度，避免與圖標重疊
+        const songNameText = props.geometricSongName || 'Name of the song';
+        const songNameWidth = ctx.measureText(songNameText).width;
+        const maxTextWidth = iconX - infoX - 20; // 留出20px間距
+        
+        // 如果文字太長，調整圖標位置
+        const adjustedIconX = songNameWidth > maxTextWidth ? infoX + songNameWidth + 30 : iconX;
+        
+        // 耳機圖標
+        ctx.fillStyle = cardColor;
+        ctx.font = `${Math.min(clampedFontSize + 4, 70)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('🎧', adjustedIconX + Math.sin(frame * 0.04) * 0.3, iconY + Math.cos(frame * 0.05) * 0.2);
+        
+        // 三點菜單 - 增加間距避免與耳機重疊
+        const threeDotsSpacing = Math.max(40, clampedFontSize * 0.8); // 根據字體大小調整間距，最小40px
+        ctx.fillText('⋯', adjustedIconX + threeDotsSpacing + Math.sin(frame * 0.06) * 0.2, iconY + Math.cos(frame * 0.04) * 0.2);
     
-    // 歌曲名稱
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 16px Arial';
-    ctx.textAlign = 'left';
-    const songName = props.geometricSongName || 'Name of the song';
-    ctx.fillText(songName, infoX + Math.sin(frame * 0.02) * 0.5, infoY + Math.cos(frame * 0.03) * 0.3);
+        // 進度條 - 動態調整位置
+        const progressBarWidth = playerWidth - 40;
+        const progressBarHeight = Math.max(4, Math.min(clampedFontSize * 0.15, 15)); // 根據字體大小調整進度條高度
+        const progressBarX = playerX + 20 + shakeX;
+        const progressBarOffset = Math.max(60, Math.min(clampedFontSize * 2.5, 180)); // 根據字體大小調整進度條位置，最大180px
+        const progressBarY = playerY + playerHeight - progressBarOffset + shakeY;
+        
+        // 進度條背景
+        ctx.fillStyle = cardStyle === ControlCardStyle.OUTLINE ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.3)';
+        ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
+        
+        // 進度條 (真實秒數控制)
+        const currentTime = props.audioRef?.current?.currentTime || 0;
+        const totalSeconds = props.audioRef?.current?.duration || 240; // 使用實際音頻長度
+        const progress = totalSeconds > 0 ? Math.min(currentTime / totalSeconds, 1) : 0;
+        const currentProgressWidth = progressBarWidth * progress;
+        
+        ctx.fillStyle = cardColor;
+        ctx.fillRect(progressBarX, progressBarY, currentProgressWidth, progressBarHeight);
+        
+        // 時間顯示 - 動態調整字體和位置
+        ctx.fillStyle = cardColor;
+        const timeFontSize = Math.max(Math.min(clampedFontSize * 0.7, 70), 12); // 時間字體不低於12px，不超過70px
+        ctx.font = `${timeFontSize}px Arial`;
+        const timeOffset = Math.max(8, Math.min(clampedFontSize * 0.4, 40)); // 根據字體大小調整時間顯示位置
+        ctx.textAlign = 'left';
+        const currentMinutes = Math.floor(currentTime / 60);
+        const currentSecs = Math.floor(currentTime % 60);
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        const totalSecs = Math.floor(totalSeconds % 60);
+        ctx.fillText(`${currentMinutes}:${currentSecs.toString().padStart(2, '0')}`, progressBarX + Math.sin(frame * 0.02) * 0.3, progressBarY - timeOffset + Math.cos(frame * 0.03) * 0.2);
+        
+        ctx.textAlign = 'right';
+        ctx.fillText(`${totalMinutes}:${totalSecs.toString().padStart(2, '0')}`, progressBarX + progressBarWidth + Math.sin(frame * 0.025) * 0.3, progressBarY - timeOffset + Math.cos(frame * 0.035) * 0.2);
     
-    // 歌手名稱
-    ctx.font = '14px Arial';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    const artistName = props.geometricArtistName || 'Artist';
-    ctx.fillText(artistName, infoX + Math.sin(frame * 0.025) * 0.3, infoY + 25 + Math.cos(frame * 0.035) * 0.2);
-    
-    // 右上角圖標
-    const iconX = playerX + playerWidth - 60 + shakeX;
-    const iconY = albumY + 10 + shakeY;
-    
-    // 耳機圖標
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '18px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('🎧', iconX + Math.sin(frame * 0.04) * 0.3, iconY + Math.cos(frame * 0.05) * 0.2);
-    
-    // 三點菜單
-    ctx.fillText('⋯', iconX + 25 + Math.sin(frame * 0.06) * 0.2, iconY + Math.cos(frame * 0.04) * 0.2);
-    
-    // 進度條
-    const progressBarWidth = playerWidth - 40;
-    const progressBarHeight = 4;
-    const progressBarX = playerX + 20 + shakeX;
-    const progressBarY = playerY + playerHeight - 60 + shakeY;
-    
-    // 進度條背景
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
-    
-    // 進度條 (真實秒數控制)
-    const currentTime = props.audioRef?.current?.currentTime || 0;
-    const totalSeconds = props.audioRef?.current?.duration || 240; // 使用實際音頻長度
-    const progress = totalSeconds > 0 ? Math.min(currentTime / totalSeconds, 1) : 0;
-    const currentProgressWidth = progressBarWidth * progress;
-    
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(progressBarX, progressBarY, currentProgressWidth, progressBarHeight);
-    
-    // 時間顯示
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'left';
-    const currentMinutes = Math.floor(currentTime / 60);
-    const currentSecs = Math.floor(currentTime % 60);
-    const totalMinutes = Math.floor(totalSeconds / 60);
-    const totalSecs = Math.floor(totalSeconds % 60);
-    ctx.fillText(`${currentMinutes}:${currentSecs.toString().padStart(2, '0')}`, progressBarX + Math.sin(frame * 0.02) * 0.3, progressBarY - 8 + Math.cos(frame * 0.03) * 0.2);
-    
-    ctx.textAlign = 'right';
-    ctx.fillText(`${totalMinutes}:${totalSecs.toString().padStart(2, '0')}`, progressBarX + progressBarWidth + Math.sin(frame * 0.025) * 0.3, progressBarY - 8 + Math.cos(frame * 0.035) * 0.2);
-    
-    // 控制按鈕區域
-    const buttonY = playerY + playerHeight - 25 + shakeY;
-    const buttonSpacing = 40;
-    const startX = playerX + playerWidth / 2 - (buttonSpacing * 2) + shakeX;
-    
-    // 隨機播放按鈕
-    const shuffleX = startX;
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '16px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('🔀', shuffleX + Math.sin(frame * 0.03) * 0.3, buttonY + Math.cos(frame * 0.04) * 0.2);
-    
-    // 前一首按鈕
-    const prevX = startX + buttonSpacing;
-    ctx.fillText('⏮', prevX + Math.sin(frame * 0.035) * 0.2, buttonY + Math.cos(frame * 0.045) * 0.2);
-    
-    // 播放/暫停按鈕 (中央大按鈕)
-    const playX = startX + buttonSpacing * 2;
-    const playRadius = 20 + Math.sin(frame * 0.08) * 1;
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(playX, buttonY, playRadius, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // 暫停圖標 (兩條豎線)
-    ctx.fillStyle = 'rgba(100, 120, 100, 0.9)';
-    ctx.fillRect(playX - 6, buttonY - 8, 3, 16);
-    ctx.fillRect(playX + 3, buttonY - 8, 3, 16);
-    
-    // 下一首按鈕
-    const nextX = startX + buttonSpacing * 3;
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '16px Arial';
-    ctx.fillText('⏭', nextX + Math.sin(frame * 0.04) * 0.2, buttonY + Math.cos(frame * 0.05) * 0.2);
-    
-    // 重複播放按鈕
-    const repeatX = startX + buttonSpacing * 4;
-    ctx.fillText('🔁', repeatX + Math.sin(frame * 0.045) * 0.3, buttonY + Math.cos(frame * 0.055) * 0.2);
+        // 控制按鈕區域 - 動態調整位置和間距
+        const buttonOffset = Math.max(25, Math.min(clampedFontSize * 1.2, 80)); // 根據字體大小調整按鈕位置，最大80px
+        const buttonY = playerY + playerHeight - buttonOffset + shakeY;
+        const buttonSpacing = Math.max(40, Math.min(clampedFontSize * 1.8, 120)); // 根據字體大小調整按鈕間距，最大120px
+        const startX = playerX + playerWidth / 2 - (buttonSpacing * 2) + shakeX;
+        
+        // 隨機播放按鈕
+        const shuffleX = startX;
+        ctx.fillStyle = cardColor;
+        ctx.font = `${Math.min(clampedFontSize + 2, 60)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('🔀', shuffleX + Math.sin(frame * 0.03) * 0.3, buttonY + Math.cos(frame * 0.04) * 0.2);
+        
+        // 前一首按鈕
+        const prevX = startX + buttonSpacing;
+        ctx.fillText('⏮', prevX + Math.sin(frame * 0.035) * 0.2, buttonY + Math.cos(frame * 0.045) * 0.2);
+        
+        // 播放/暫停按鈕 (中央大按鈕) - 動態調整大小
+        const playX = startX + buttonSpacing * 2;
+        const baseRadius = Math.max(20, Math.min(clampedFontSize * 0.8, 80)); // 根據字體大小調整按鈕半徑
+        const playRadius = baseRadius + Math.sin(frame * 0.08) * 1;
+        ctx.fillStyle = cardColor;
+        ctx.beginPath();
+        ctx.arc(playX, buttonY, playRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 暫停圖標 (兩條豎線) - 動態調整大小
+        const iconSize = Math.max(3, Math.min(clampedFontSize * 0.15, 15)); // 根據字體大小調整圖標大小
+        const iconHeight = Math.max(16, Math.min(clampedFontSize * 0.7, 70));
+        ctx.fillStyle = cardStyle === ControlCardStyle.OUTLINE ? cardColor : cardBgColor;
+        ctx.fillRect(playX - iconSize * 2, buttonY - iconHeight / 2, iconSize, iconHeight);
+        ctx.fillRect(playX + iconSize, buttonY - iconHeight / 2, iconSize, iconHeight);
+        
+        // 下一首按鈕
+        const nextX = startX + buttonSpacing * 3;
+        ctx.fillStyle = cardColor;
+        ctx.font = `${Math.min(clampedFontSize + 2, 60)}px Arial`;
+        ctx.fillText('⏭', nextX + Math.sin(frame * 0.04) * 0.2, buttonY + Math.cos(frame * 0.05) * 0.2);
+        
+        // 重複播放按鈕
+        const repeatX = startX + buttonSpacing * 4;
+        ctx.fillText('🔁', repeatX + Math.sin(frame * 0.045) * 0.3, buttonY + Math.cos(frame * 0.055) * 0.2);
+    }
     
     // 7. 動態效果
     // 正方形內的掃描線
@@ -3116,97 +3335,92 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
     ctx.restore();
 };
 
-const drawPianoVirtuoso = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[]) => {
-    if (!dataArray) return;
+
+// 繪製直式字幕
+const drawVerticalSubtitle = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    text: string,
+    fontSize: number,
+    fontName: string,
+    color: string,
+    effect: GraphicEffectType,
+    bgStyle: SubtitleBgStyle,
+    isBeat: boolean | undefined,
+    dragOffset: { x: number; y: number },
+    horizontalPosition: number = 0.5, // 0.0 = 左側, 1.0 = 右側
+    verticalPosition: number = 0.5 // 0.0 = 上方, 1.0 = 下方
+) => {
+    const characters = text.split('');
+    const charSpacing = fontSize * 1.2; // 字元間距
+    const totalHeight = charSpacing * characters.length;
+    
+    // 起始位置：根據位置參數計算水平和垂直位置
+    const margin = width * 0.1; // 距離邊緣 10%
+    const startX = margin + (width - 2 * margin) * horizontalPosition + dragOffset.x; // 根據水平位置參數計算
+    const startY = margin + (height - 2 * margin - totalHeight) * verticalPosition + dragOffset.y; // 根據垂直位置參數計算
+    
     ctx.save();
-
-    const keyboardHeight = height * 0.25; // Made keyboard slightly taller
-    const keyboardY = height - keyboardHeight;
-
-    // --- Keyboard Glow on Beat ---
-    if (isBeat) {
-        ctx.shadowColor = colors.accent;
-        ctx.shadowBlur = 40; // Increased glow
-    }
-
-    // --- Data Mapping ---
-    const numWhiteKeys = 28;
-    const whiteKeyWidth = width / numWhiteKeys;
-    const blackKeyWidth = whiteKeyWidth * 0.6;
-    const blackKeyHeight = keyboardHeight * 0.6;
-    const keyDataPoints = Math.floor(dataArray.length * 0.7 / numWhiteKeys);
-
-    const whiteKeyPresses = new Array(numWhiteKeys).fill(0);
-
-    // --- Draw White Keys ---
-    for (let i = 0; i < numWhiteKeys; i++) {
-        let pressAmount = 0;
-        const dataStart = i * keyDataPoints;
-        const dataEnd = dataStart + keyDataPoints;
-        for (let j = dataStart; j < dataEnd; j++) {
-            pressAmount += dataArray[j] || 0;
-        }
-        pressAmount /= (keyDataPoints * 255); // Normalize
-        whiteKeyPresses[i] = pressAmount;
-
-        const isPressed = (Math.pow(pressAmount, 2) * sensitivity) > 0.1;
+    ctx.font = `bold ${fontSize}px "${fontName}", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // 繪製背景（如果需要）
+    if (bgStyle !== SubtitleBgStyle.NONE) {
+        const bgPaddingX = fontSize * 0.6;
+        const bgPaddingY = fontSize * 0.4;
+        const bgWidth = fontSize + bgPaddingX * 2;
+        const bgHeight = totalHeight + bgPaddingY * 2;
+        const bgX = startX - bgWidth / 2;
+        const bgY = startY - bgPaddingY;
         
-        const keyX = i * whiteKeyWidth;
-        const keyYOffset = isPressed ? 2 : 0; // Key press down animation
-        
-        // Add gradient for 3D effect
-        const whiteKeyGradient = ctx.createLinearGradient(keyX, keyboardY, keyX, keyboardY + keyboardHeight);
-        whiteKeyGradient.addColorStop(0, isPressed ? '#bbb' : '#fff');
-        whiteKeyGradient.addColorStop(1, isPressed ? '#999' : '#e0e0e0');
-
-        ctx.fillStyle = whiteKeyGradient;
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 1;
-        ctx.fillRect(keyX, keyboardY + keyYOffset, whiteKeyWidth, keyboardHeight);
-        ctx.strokeRect(keyX, keyboardY + keyYOffset, whiteKeyWidth, keyboardHeight);
+        ctx.fillStyle = bgStyle === SubtitleBgStyle.BLACK ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.5)';
+        createRoundedRectPath(ctx, bgX, bgY, bgWidth, bgHeight, 5);
+        ctx.fill();
     }
-
-    // Reset shadow for subsequent drawings
-    ctx.shadowBlur = 0;
-
-    // --- Draw Black Keys ---
-    const blackKeyPattern = [1, 1, 0, 1, 1, 1, 0]; // C#, D#, F#, G#, A#
-    for (let i = 0; i < numWhiteKeys - 1; i++) {
-         const patternIndex = i % 7;
-         if (blackKeyPattern[patternIndex] === 1) {
-            const pressAmount = (whiteKeyPresses[i] + whiteKeyPresses[i+1]) / 2;
-            const isPressed = (Math.pow(pressAmount, 2) * sensitivity) > 0.15;
-
-            const keyX = (i + 1) * whiteKeyWidth - (blackKeyWidth / 2);
-            const keyYOffset = isPressed ? 2 : 0;
-
-            const blackKeyGradient = ctx.createLinearGradient(keyX, keyboardY, keyX, keyboardY + blackKeyHeight);
-            blackKeyGradient.addColorStop(0, isPressed ? '#555' : '#333');
-            blackKeyGradient.addColorStop(1, isPressed ? '#333' : '#000');
-
-            ctx.fillStyle = blackKeyGradient;
-            ctx.fillRect(keyX, keyboardY + keyYOffset, blackKeyWidth, blackKeyHeight);
-         }
-    }
-
-    // --- Draw Particles (Musical Notes) ---
-    if (particles) {
-        particles.forEach(p => {
-            const noteSymbols = ['♪', '♫', '♬', '♭', '♯'];
-            const symbol = noteSymbols[Math.floor(p.angle * noteSymbols.length)];
-
-            ctx.font = `bold ${p.radius}px "Arial"`;
-            ctx.fillStyle = applyAlphaToColor(p.color, p.opacity);
-            ctx.textAlign = 'center';
-            
-            // Add glow to particles
-            ctx.shadowColor = applyAlphaToColor(p.color, p.opacity * 0.8);
+    
+    // 設定特效
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = fontSize * 0.1;
+    
+    switch (effect) {
+        case GraphicEffectType.GLOW:
+            ctx.shadowColor = color;
             ctx.shadowBlur = 15;
-
-            ctx.fillText(symbol, p.x, p.y);
-        });
+            break;
     }
-
+    
+    ctx.fillStyle = color;
+    
+    // 逐字繪製
+    characters.forEach((char, index) => {
+        const charY = startY + (index * charSpacing) + charSpacing / 2;
+        
+        // 處理 Glitch 效果
+        if (effect === GraphicEffectType.GLITCH && isBeat) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            const glitchAmount = fontSize * 0.1;
+            ctx.fillStyle = 'rgba(255, 0, 100, 0.7)';
+            ctx.fillText(char, startX + (Math.random() - 0.5) * glitchAmount, charY + (Math.random() - 0.5) * glitchAmount);
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
+            ctx.fillText(char, startX + (Math.random() - 0.5) * glitchAmount, charY + (Math.random() - 0.5) * glitchAmount);
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.restore();
+        }
+        
+        // 繪製主要文字
+        ctx.fillStyle = color;
+        ctx.fillText(char, startX, charY);
+        
+        // 描邊效果
+        if (effect === GraphicEffectType.STROKE) {
+            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+            ctx.strokeText(char, startX, charY);
+        }
+    });
+    
     ctx.restore();
 };
 
@@ -3215,7 +3429,7 @@ const drawSubtitles = (
     width: number,
     height: number,
     currentSubtitle: Subtitle | undefined,
-    { fontSizeVw, fontFamily, color, effect, bgStyle, isBeat, dragOffset = { x: 0, y: 0 } }: {
+    { fontSizeVw, fontFamily, color, effect, bgStyle, isBeat, dragOffset = { x: 0, y: 0 }, orientation = SubtitleOrientation.HORIZONTAL }: {
         fontSizeVw: number;
         fontFamily: FontType;
         color: string;
@@ -3223,6 +3437,7 @@ const drawSubtitles = (
         bgStyle: SubtitleBgStyle;
         isBeat?: boolean;
         dragOffset?: { x: number; y: number };
+        orientation?: SubtitleOrientation;
     }
 ) => {
     if (!currentSubtitle || !currentSubtitle.text) return;
@@ -3233,13 +3448,28 @@ const drawSubtitles = (
     
     const fontSize = (fontSizeVw / 100) * width;
     const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
-    console.log('傳統字幕字體設定:', { fontFamily, actualFontName, fontSize });
     ctx.font = `bold ${fontSize}px "${actualFontName}", sans-serif`;
+    
+    // 直式顯示
+    if (orientation === SubtitleOrientation.VERTICAL) {
+        const verticalHorizontalPos = (latestPropsRef as any)?.verticalSubtitlePosition ?? 0.5;
+        const verticalVerticalPos = (latestPropsRef as any)?.verticalSubtitleVerticalPosition ?? 0.5;
+        drawVerticalSubtitle(ctx, width, height, text, fontSize, actualFontName, color, effect, bgStyle, isBeat, dragOffset, verticalHorizontalPos, verticalVerticalPos);
+        ctx.restore();
+        return;
+    }
+    
+    // 橫式顯示（原有邏輯）
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     
-    const positionX = width / 2 + dragOffset.x;
-    const positionY = height - (height * 0.08) + dragOffset.y;
+    // 使用新的位置控制參數
+    const horizontalPos = (latestPropsRef as any)?.horizontalSubtitlePosition ?? 0.5;
+    const horizontalVerticalPos = (latestPropsRef as any)?.horizontalSubtitleVerticalPosition ?? 0.2;
+    
+    const margin = width * 0.1; // 距離邊緣 10%
+    const positionX = margin + (width - 2 * margin) * horizontalPos + dragOffset.x;
+    const positionY = margin + (height - 2 * margin) * horizontalVerticalPos + dragOffset.y;
 
     const metrics = ctx.measureText(text);
     const textHeight = metrics.fontBoundingBoxAscent ?? fontSize;
@@ -3294,7 +3524,6 @@ const drawSubtitles = (
     
     ctx.restore();
 };
-
 // 逐字顯示字幕函數（打字機風格）
 const drawWordByWordSubtitles = (
     ctx: CanvasRenderingContext2D,
@@ -3318,7 +3547,6 @@ const drawWordByWordSubtitles = (
     
     const fontSize = (fontSizeVw / 100) * width;
     const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
-    console.log('打字機字幕字體設定:', { fontFamily, actualFontName, fontSize });
     ctx.font = `bold ${fontSize}px "${actualFontName}", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
@@ -3329,9 +3557,13 @@ const drawWordByWordSubtitles = (
     // 找到當前時間對應的字幕
     let currentSubtitle: Subtitle | undefined;
     for (let i = subtitles.length - 1; i >= 0; i--) {
-        if (currentTime >= subtitles[i].time) {
-            currentSubtitle = subtitles[i];
-            break;
+        const subtitle = subtitles[i];
+        if (currentTime >= subtitle.time) {
+            // 檢查結束時間
+            if (!subtitle.endTime || currentTime <= subtitle.endTime) {
+                currentSubtitle = subtitle;
+                break;
+            }
         }
     }
     
@@ -3447,12 +3679,26 @@ const drawLyricsDisplay = (
     
     // 找到當前時間對應的歌詞
     let currentIndex = 0;
+    let lastValidIndex = 0;
+    
     for (let i = 0; i < subtitles.length; i++) {
-        if (currentTime >= subtitles[i].time) {
-            currentIndex = i;
-        } else {
+        const subtitle = subtitles[i];
+        
+        // 如果當前時間還沒到這句歌詞，停止搜尋
+        if (currentTime < subtitle.time) {
             break;
         }
+        
+        // 記錄這是最後一句已經開始的歌詞
+        lastValidIndex = i;
+        
+        // 如果這句歌詞還在顯示時間內（沒有結束時間或還沒過結束時間）
+        if (!subtitle.endTime || currentTime <= subtitle.endTime) {
+            currentIndex = i;
+            break;
+        }
+        // 如果已經過了結束時間，繼續找下一句，但保留這個索引作為備用
+        currentIndex = i;
     }
     
     // 獲取要顯示的10行歌詞（當前行前後各5行）
@@ -3479,7 +3725,6 @@ const drawLyricsDisplay = (
         const baseFontSize = width * (fontSize / 100); // 字體大小百分比
         const currentFontSize = isCurrentLine ? baseFontSize * 1.5 : baseFontSize; // 當前行放大1.5倍
         const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
-        console.log('捲軸歌詞字體設定:', { fontFamily, actualFontName, currentFontSize });
         ctx.font = `bold ${currentFontSize}px "${actualFontName}", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -3547,7 +3792,6 @@ const drawLyricsDisplay = (
     
     ctx.restore();
 };
-
 // 電視雜訊過場動畫
 const drawTVStaticTransition = (
     ctx: CanvasRenderingContext2D,
@@ -3817,6 +4061,1011 @@ type DrawFunction = (
     geometricFrameImage?: HTMLImageElement | null,
     geometricSemicircleImage?: HTMLImageElement | null,
 ) => void;
+// 獨立控制卡繪製函數
+const drawVinylControlCard = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    frame: number,
+    controlCardEnabled?: boolean,
+    controlCardFontSize?: number,
+    controlCardStyle?: ControlCardStyle,
+    controlCardColor?: string,
+    controlCardBackgroundColor?: string
+) => {
+    if (controlCardEnabled === false) return;
+    
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const discRadius = Math.min(width, height) * 0.22;
+    
+    // 控制卡 (右側) - 短一些、厚一些的樣式
+    const cardW = width * 0.21; // 長度改為目前的 70%
+    const cardH = 300; // 高度固定為 300px
+    
+    // 根據配置模式調整控制卡位置
+    let cardX, cardY;
+    const layoutMode = (latestPropsRef as any)?.vinylLayoutMode || 'horizontal';
+    if (layoutMode === 'vertical') {
+        // 上下排列：控制卡在唱片下方，確保不重疊
+        cardX = centerX - cardW * 0.5;
+        // 直接設定控制卡在唱片下方80像素處
+        cardY = centerY + discRadius + 80;
+        
+        // 如果會超出畫布底部，則調整到安全位置
+        if (cardY + cardH > height - 10) {
+            cardY = height - cardH - 10;
+        }
+        
+        // 確保控制卡不會超出左邊界
+        cardX = Math.max(10, cardX);
+        // 確保控制卡不會超出右邊界
+        cardX = Math.min(cardX, width - cardW - 10);
+    } else {
+        // 左右排列：控制卡在唱片右側（預設）
+        cardX = centerX + discRadius * 1.25;
+        cardY = centerY - cardH * 0.5;
+        // 確保控制卡不會超出右邊界
+        if (cardX + cardW > width - 10) {
+            cardX = width - cardW - 10;
+        }
+        // 確保控制卡不會超出上下邊界
+        cardY = Math.max(10, Math.min(cardY, height - cardH - 10));
+    }
+
+    const style = controlCardStyle as any;
+    const color = controlCardColor || '#111827';
+    const bg = controlCardBackgroundColor || 'rgba(240, 244, 248, 0.92)';
+
+    // 卡片底
+    if (style !== 'transparent') {
+        ctx.fillStyle = bg;
+    } else {
+        ctx.fillStyle = 'rgba(0,0,0,0)';
+    }
+    ctx.strokeStyle = style === 'outline' ? color : 'rgba(0,0,0,0.07)';
+    ctx.lineWidth = 2;
+    const r = 14;
+    ctx.beginPath();
+    ctx.moveTo(cardX + r, cardY);
+    ctx.lineTo(cardX + cardW - r, cardY);
+    ctx.quadraticCurveTo(cardX + cardW, cardY, cardX + cardW, cardY + r);
+    ctx.lineTo(cardX + cardW, cardY + cardH - r);
+    ctx.quadraticCurveTo(cardX + cardW, cardY + cardH, cardX + cardW - r, cardY + cardH);
+    ctx.lineTo(cardX + r, cardY + cardH);
+    ctx.quadraticCurveTo(cardX, cardY + cardH, cardX, cardY + cardH - r);
+    ctx.lineTo(cardX, cardY + r);
+    ctx.quadraticCurveTo(cardX, cardY, cardX + r, cardY);
+    ctx.closePath();
+    if (style !== 'transparent') ctx.fill();
+    if (style === 'outline') ctx.stroke();
+
+    // 進度條和時間（放到底部一起顯示）
+    const barMargin = 22;
+    const barX = cardX + barMargin;
+    const barW = cardW - barMargin * 2;
+    // 時間文字（左/右）
+    const timeToMMSS = (t: number) => {
+        const m = Math.floor(t / 60);
+        const s = Math.floor(t % 60);
+        return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    };
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px Poppins, sans-serif';
+    ctx.textBaseline = 'middle';
+    // 將時間與進度條一起上移，避免貼底
+    const barY = cardY + cardH - 140; // 從底部往上 140px
+    const timerY = barY + 24; // 置於進度條下方一點
+    const bgStroke = 6;
+    const fgStroke = 6;
+    // 自訂樣式：膠囊形狀 + 漸層 + 刻度 + 斜紋填充
+    const drawRoundedRect = (x:number, y:number, w:number, h:number, r:number) => {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    };
+    const trackH = 10;
+    const trackY = barY - trackH/2;
+    // 背景膠囊
+    const trackGrad = ctx.createLinearGradient(barX, trackY, barX + barW, trackY);
+    trackGrad.addColorStop(0, 'rgba(255,255,255,0.15)');
+    trackGrad.addColorStop(0.5, 'rgba(255,255,255,0.25)');
+    trackGrad.addColorStop(1, 'rgba(255,255,255,0.15)');
+    ctx.fillStyle = trackGrad;
+    drawRoundedRect(barX, trackY, barW, trackH, trackH/2);
+    ctx.fill();
+    
+    // 進度填充（膠囊形狀）
+    const progress = 0.35; // 模擬進度
+    const progressW = barW * progress;
+    if (progressW > 0) {
+        const progressGrad = ctx.createLinearGradient(barX, trackY, barX + progressW, trackY);
+        progressGrad.addColorStop(0, '#4ade80');
+        progressGrad.addColorStop(0.5, '#22c55e');
+        progressGrad.addColorStop(1, '#16a34a');
+        ctx.fillStyle = progressGrad;
+        drawRoundedRect(barX, trackY, progressW, trackH, trackH/2);
+        ctx.fill();
+    }
+    
+    // 時間顯示
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px Poppins, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(timeToMMSS(35), barX, timerY);
+    ctx.textAlign = 'right';
+    ctx.fillText(timeToMMSS(204), barX + barW, timerY);
+    
+    // 播放控制按鈕
+    const btnSize = 28;
+    const btnY = cardY + cardH - 80;
+    const btnSpacing = 40;
+    const totalBtnWidth = btnSize * 3 + btnSpacing * 2;
+    const btnStartX = cardX + (cardW - totalBtnWidth) / 2;
+    
+    // 上一首按鈕
+    const prevBtnX = btnStartX;
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.beginPath();
+    ctx.arc(prevBtnX + btnSize/2, btnY + btnSize/2, btnSize/2, 0, Math.PI * 2);
+    ctx.fill();
+    // 左箭頭
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.moveTo(prevBtnX + btnSize/2 - 6, btnY + btnSize/2);
+    ctx.lineTo(prevBtnX + btnSize/2 + 2, btnY + btnSize/2 - 4);
+    ctx.lineTo(prevBtnX + btnSize/2 + 2, btnY + btnSize/2 + 4);
+    ctx.closePath();
+    ctx.fill();
+    
+    // 暫停按鈕
+    const pauseBtnX = prevBtnX + btnSize + btnSpacing;
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.beginPath();
+    ctx.arc(pauseBtnX + btnSize/2, btnY + btnSize/2, btnSize/2, 0, Math.PI * 2);
+    ctx.fill();
+    // 暫停圖標
+    ctx.fillStyle = '#333';
+    ctx.fillRect(pauseBtnX + btnSize/2 - 6, btnY + btnSize/2 - 4, 3, 8);
+    ctx.fillRect(pauseBtnX + btnSize/2 + 3, btnY + btnSize/2 - 4, 3, 8);
+    
+    // 下一首按鈕
+    const nextBtnX = pauseBtnX + btnSize + btnSpacing;
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.beginPath();
+    ctx.arc(nextBtnX + btnSize/2, btnY + btnSize/2, btnSize/2, 0, Math.PI * 2);
+    ctx.fill();
+    // 右箭頭
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.moveTo(nextBtnX + btnSize/2 + 6, btnY + btnSize/2);
+    ctx.lineTo(nextBtnX + btnSize/2 - 2, btnY + btnSize/2 - 4);
+    ctx.lineTo(nextBtnX + btnSize/2 - 2, btnY + btnSize/2 + 4);
+    ctx.closePath();
+    ctx.fill();
+};
+
+// 實驗款：Vinyl Record 旋轉唱片 + 控制卡
+const drawVinylRecord: DrawFunction = (
+    ctx,
+    dataArray,
+    width,
+    height,
+    frame,
+    sensitivity,
+    colors,
+    graphicEffect,
+    isBeat
+) => {
+    // 不在此重置或覆寫矩陣，讓外層全域 transform（effectScale/effectOffsetX/Y + visualizationTransform）生效
+ 
+     // 支援快速設置中的特效大小與拖曳位置
+     const activeProps: any = (latestPropsRef as any)?.current ?? {};
+     // Use only quick-setting scale for now (effectScale from QuickSettingsPanel)
+     const quickScale = typeof activeProps?.effectScale === 'number' ? activeProps.effectScale : 1.0;
+     const transform = activeProps?.visualizationTransform || { x: 0, y: 0, scale: 1.0 };
+     // 夾住安全範圍，避免被拖曳/縮放到畫面之外導致整體看似消失
+     const scale = Math.max(0.1, Math.min(3.0, quickScale));
+     const rawX = typeof transform.x === 'number' && !isNaN(transform.x) ? transform.x : 0;
+     const rawY = typeof transform.y === 'number' && !isNaN(transform.y) ? transform.y : 0;
+     // 自動偵測像素/百分比：若值大於 50 視為像素，轉為百分比
+     const xPercent = Math.abs(rawX) > 50 ? (rawX / width) * 100 : rawX;
+     const yPercent = Math.abs(rawY) > 50 ? (rawY / height) * 100 : rawY;
+     const offsetXPercent = Math.max(-40, Math.min(40, xPercent));
+     const offsetYPercent = Math.max(-40, Math.min(40, yPercent));
+     // Also apply quick-setting pixel offsets (effectOffsetX/Y)
+     const quickOffsetX = typeof activeProps?.effectOffsetX === 'number' ? activeProps.effectOffsetX : 0;
+     const quickOffsetY = typeof activeProps?.effectOffsetY === 'number' ? activeProps.effectOffsetY : 0;
+     const targetCX = width / 2 + quickOffsetX + (offsetXPercent / 100) * width;
+     const targetCY = height / 2 + quickOffsetY + (offsetYPercent / 100) * height;
+     // 初始化或平滑靠攏
+     const lerp = (a:number, b:number, t:number) => a + (b - a) * t;
+     if (!transformState.initialized) {
+         transformState = { cx: targetCX, cy: targetCY, scale, initialized: true };
+     } else {
+         // 放慢插值係數，拖曳更順不突兀
+         transformState.cx = lerp(transformState.cx, targetCX, 0.15);
+         transformState.cy = lerp(transformState.cy, targetCY, 0.15);
+         transformState.scale = lerp(transformState.scale, scale, 0.15);
+     }
+    const centerX = width / 2; // 讓外層 transform 控制位置
+    // 直式佈局時讓唱片往上移，給控制卡留空間
+    const vinylLayoutMode = (latestPropsRef as any)?.vinylLayoutMode || 'horizontal';
+    const centerY = vinylLayoutMode === 'vertical' ? height * 0.35 : height / 2;
+     const smoothScale = 1;     // 讓外層 transform 控制縮放
+     // 由全局 transform 控制縮放，基準大小不再乘以 scale，避免雙重縮放
+     const baseRadius = Math.min(width, height) * 0.22;
+     const discRadius = baseRadius;
+     // 調整中圈比例：加大內徑，讓黑膠圈更窄
+     const ringRadius = discRadius * 0.82;
+ 
+     // 背景柔霧
+     const bg = ctx.createRadialGradient(centerX, centerY, discRadius * 0.2, centerX, centerY, discRadius * 1.6);
+     bg.addColorStop(0, 'rgba(0,0,0,0.35)');
+     bg.addColorStop(1, 'rgba(0,0,0,0)');
+     ctx.fillStyle = bg;
+     ctx.fillRect(0, 0, width, height);
+ 
+    // 旋轉角（依唱片轉速計算，放慢至 20 RPM；每幀≈60fps）
+    const RPM = 20;
+    const anglePerFrame = (RPM / 60) * (Math.PI * 2) / 60; // 每幀角度增量
+    const angle = frame * anglePerFrame + (isBeat ? 0.002 : 0);
+    
+    // 檢查是否開啟中心照片固定模式
+    const vinylCenterFixed = (latestPropsRef as any)?.vinylCenterFixed || false;
+
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    
+    // 整體旋轉邏輯：固定模式下不旋轉整體，讓各層獨立控制
+    if (!vinylCenterFixed) {
+        ctx.rotate(angle);
+    }
+
+    // 外圈黑膠（深黑色，帶光澤效果）
+    ctx.save();
+    // 如果開啟中心固定模式，黑膠遮罩需要旋轉
+    if (vinylCenterFixed) {
+        ctx.rotate(angle);
+    }
+    
+    // 黑膠唱片底色 - 深沉的黑色
+    ctx.fillStyle = '#0a0a0a';
+    ctx.beginPath();
+    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 添加邊緣高光 - 模擬光線反射
+    const edgeGlow = ctx.createRadialGradient(0, 0, discRadius * 0.95, 0, 0, discRadius * 1.02);
+    edgeGlow.addColorStop(0, 'rgba(255,255,255,0)');
+    edgeGlow.addColorStop(0.8, 'rgba(255,255,255,0)');
+    edgeGlow.addColorStop(0.95, 'rgba(255,255,255,0.1)');
+    edgeGlow.addColorStop(1, 'rgba(255,255,255,0.3)');
+    ctx.fillStyle = edgeGlow;
+    ctx.beginPath();
+    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+
+    // 唱片紋路（限制在中圈：從內到外的同心條紋，黑/灰交錯，帶光線效果）
+    ctx.save();
+    // 如果開啟中心固定模式，唱片紋路需要旋轉
+    if (vinylCenterFixed) {
+        ctx.rotate(angle);
+    }
+    
+    // 創建剪裁區域
+    ctx.beginPath();
+    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
+    ctx.arc(0, 0, ringRadius * 0.96, 0, Math.PI * 2, true);
+    ctx.clip('evenodd');
+    
+    // 繪製音軌溝槽 - 更細緻的紋路
+    for (let i = 0; i <= 80; i++) {
+        const r = ringRadius * 0.96 + i * ((discRadius - ringRadius * 0.96) / 80);
+        const progress = i / 80;
+        
+        // 根據位置調整溝槽顏色和寬度
+        if (i % 2 === 0) {
+            // 深色溝槽
+            ctx.lineWidth = 0.8;
+            ctx.strokeStyle = '#0d0f12';
+        } else {
+            // 淺色溝槽（高光）
+            ctx.lineWidth = 0.6;
+            // 根據旋轉角度和位置計算高光強度
+            const lightAngle = Math.sin(angle * 2 + progress * Math.PI * 4) * 0.5 + 0.5;
+            const lightIntensity = 0.15 + lightAngle * 0.25;
+            ctx.strokeStyle = `rgba(255,255,255,${lightIntensity})`;
+        }
+        
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+    
+    // 添加徑向高光條紋，模擬光線反射
+    const numLightStreaks = 12;
+    for (let i = 0; i < numLightStreaks; i++) {
+        const streakAngle = (i / numLightStreaks) * Math.PI * 2 + angle * 0.5;
+        const streakGradient = ctx.createLinearGradient(
+            Math.cos(streakAngle) * ringRadius * 0.96,
+            Math.sin(streakAngle) * ringRadius * 0.96,
+            Math.cos(streakAngle) * discRadius,
+            Math.sin(streakAngle) * discRadius
+        );
+        
+        streakGradient.addColorStop(0, 'rgba(255,255,255,0)');
+        streakGradient.addColorStop(0.3, 'rgba(255,255,255,0.08)');
+        streakGradient.addColorStop(0.7, 'rgba(255,255,255,0.12)');
+        streakGradient.addColorStop(1, 'rgba(255,255,255,0)');
+        
+        ctx.strokeStyle = streakGradient;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(streakAngle) * ringRadius * 0.96, Math.sin(streakAngle) * ringRadius * 0.96);
+        ctx.lineTo(Math.cos(streakAngle) * discRadius, Math.sin(streakAngle) * discRadius);
+        ctx.stroke();
+    }
+    
+    ctx.restore();
+    // 斜向高光帶 - 增強光線效果
+    const gloss = ctx.createLinearGradient(-discRadius, -discRadius, discRadius, discRadius);
+    gloss.addColorStop(0, 'rgba(255,255,255,0)');
+    gloss.addColorStop(0.3, 'rgba(255,255,255,0.08)');
+    gloss.addColorStop(0.5, 'rgba(255,255,255,0.15)');
+    gloss.addColorStop(0.7, 'rgba(255,255,255,0.08)');
+    gloss.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gloss;
+    ctx.beginPath();
+    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 添加額外的徑向高光，模擬頂部光源
+    const radialGloss = ctx.createRadialGradient(0, -discRadius * 0.3, 0, 0, -discRadius * 0.3, discRadius * 1.2);
+    radialGloss.addColorStop(0, 'rgba(255,255,255,0.12)');
+    radialGloss.addColorStop(0.5, 'rgba(255,255,255,0.06)');
+    radialGloss.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = radialGloss;
+    ctx.beginPath();
+    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 三圈結構：
+    // 1) 內圈：原圖
+    // 2) 中圈：黑膠唱片遮罩
+    // 3) 外圈：半透明遮罩（原圖暗化）
+    // 中心貼紙（若有圖片，使用圖片）
+    // 從最新屬性讀取圖片（避免引用組件內部的 refs 導致作用域錯誤）
+    const vinylImage = ((latestPropsRef as any)?.vinylImage ?? null) as string | null;
+    
+    // 預設黑膠唱片圖片（base64編碼 - 純黑膠紋理）
+    const defaultVinylImage = 'data:image/svg+xml;base64,' + btoa(`
+        <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="vinylGradient" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" style="stop-color:#181b21;stop-opacity:1" />
+                    <stop offset="70%" style="stop-color:#181b21;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#0f1419;stop-opacity:1" />
+                </radialGradient>
+            </defs>
+            <circle cx="200" cy="200" r="200" fill="url(#vinylGradient)"/>
+            <circle cx="200" cy="200" r="180" fill="none" stroke="#2a2f36" stroke-width="1"/>
+            <circle cx="200" cy="200" r="160" fill="none" stroke="#1f2329" stroke-width="1"/>
+            <circle cx="200" cy="200" r="140" fill="none" stroke="#2a2f36" stroke-width="1"/>
+            <circle cx="200" cy="200" r="120" fill="none" stroke="#1f2329" stroke-width="1"/>
+            <circle cx="200" cy="200" r="100" fill="none" stroke="#2a2f36" stroke-width="1"/>
+            <circle cx="200" cy="200" r="80" fill="none" stroke="#1f2329" stroke-width="1"/>
+            <circle cx="200" cy="200" r="60" fill="none" stroke="#2a2f36" stroke-width="1"/>
+            <circle cx="200" cy="200" r="40" fill="none" stroke="#1f2329" stroke-width="1"/>
+            <circle cx="200" cy="200" r="25" fill="none" stroke="#2a2f36" stroke-width="1"/>
+            <circle cx="200" cy="200" r="10" fill="none" stroke="#1f2329" stroke-width="1"/>
+        </svg>
+    `);
+    // 使用上傳的圖片或預設圖片
+    const imageToUse = vinylImage || defaultVinylImage;
+    const img = getOrCreateCachedImage('vinylImage', imageToUse);
+    
+    if (img && img.complete) {
+        const innerR = ringRadius * 0.92; // 讓內圈更大，黑膠圈變窄
+        const size = innerR * 2; // 以內圈大小鋪滿
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, innerR, 0, Math.PI * 2);
+        ctx.clip();
+        
+        // 中心照片在固定模式下保持不動（不需要任何旋轉）
+        ctx.drawImage(img, -size / 2, -size / 2, size, size);
+        
+        // 在中心圖片上添加高光效果
+        const centerGloss = ctx.createLinearGradient(-innerR, -innerR, innerR, innerR);
+        centerGloss.addColorStop(0, 'rgba(255,255,255,0)');
+        centerGloss.addColorStop(0.3, 'rgba(255,255,255,0.06)');
+        centerGloss.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+        centerGloss.addColorStop(0.7, 'rgba(255,255,255,0.06)');
+        centerGloss.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = centerGloss;
+        ctx.beginPath();
+        ctx.arc(0, 0, innerR, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 添加徑向高光到中心圖片
+        const centerRadialGloss = ctx.createRadialGradient(0, -innerR * 0.3, 0, 0, -innerR * 0.3, innerR * 1.2);
+        centerRadialGloss.addColorStop(0, 'rgba(255,255,255,0.08)');
+        centerRadialGloss.addColorStop(0.5, 'rgba(255,255,255,0.04)');
+        centerRadialGloss.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = centerRadialGloss;
+        ctx.beginPath();
+        ctx.arc(0, 0, innerR, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+    } else {
+        // 首次尚未載入完成時，畫一個漸層佔位
+        ctx.fillStyle = '#1f2937';
+        ctx.beginPath();
+        ctx.arc(0, 0, ringRadius * 0.92, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // 中心孔
+    ctx.fillStyle = '#e5e7eb';
+    ctx.beginPath();
+    ctx.arc(0, 0, ringRadius * 0.06, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 中圈：黑膠唱片遮罩（深灰色，不是純黑）
+    ctx.fillStyle = '#1c1f24';
+    ctx.beginPath();
+    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
+    ctx.arc(0, 0, ringRadius * 0.96, 0, Math.PI * 2, true);
+    ctx.fill('evenodd');
+
+    // 外圈：半透明遮罩（同圖暗化，跟著旋轉）
+    const img2 = getOrCreateCachedImage('vinylImageOuter', imageToUse);
+    const outerR = discRadius * 1.08;
+    if (img2 && img2.complete) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, outerR, 0, Math.PI * 2);
+        ctx.arc(0, 0, discRadius * 0.92, 0, Math.PI * 2, true);
+        ctx.clip('evenodd');
+        
+        // 外圈半透明遮罩繼續旋轉
+        ctx.rotate(angle);
+        
+        const size2 = outerR * 2;
+        ctx.globalAlpha = 0.6;
+        ctx.drawImage(img2, -size2 / 2, -size2 / 2, size2, size2);
+        
+        // 在外圈遮罩上也添加高光效果
+        ctx.globalAlpha = 0.4;
+        const outerGloss = ctx.createLinearGradient(-outerR, -outerR, outerR, outerR);
+        outerGloss.addColorStop(0, 'rgba(255,255,255,0)');
+        outerGloss.addColorStop(0.5, 'rgba(255,255,255,0.08)');
+        outerGloss.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = outerGloss;
+        ctx.beginPath();
+        ctx.arc(0, 0, outerR, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.globalAlpha = 1;
+        ctx.restore();
+    } else {
+        ctx.save();
+        ctx.globalAlpha = 0.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, outerR, 0, Math.PI * 2);
+        ctx.arc(0, 0, discRadius * 0.92, 0, Math.PI * 2, true);
+        ctx.fillStyle = '#000';
+        ctx.fill('evenodd');
+        ctx.restore();
+    }
+
+    ctx.restore();
+
+    // 唱臂與唱針（縮短、左上接觸，含折角）
+    {
+        const baseX = centerX - discRadius * 0.92;
+        const baseY = centerY - discRadius * 0.92;
+        // 基座
+        ctx.fillStyle = 'rgba(30,32,36,0.9)';
+        ctx.beginPath();
+        ctx.arc(baseX, baseY, 16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#9aa3ac';
+        ctx.beginPath();
+        ctx.arc(baseX, baseY, 8, 0, Math.PI * 2);
+        ctx.fill();
+        // 兩段式唱臂：基座 -> 肘節 -> 接觸點
+        const contactAngle = -Math.PI * 0.72; // 左上
+        const contactX = centerX + Math.cos(contactAngle) * ringRadius * 1.0;
+        const contactY = centerY + Math.sin(contactAngle) * ringRadius * 1.0;
+        const elbowX = baseX + (contactX - baseX) * 0.58 + 10;
+        const elbowY = baseY + (contactY - baseY) * 0.58 - 6;
+        const armGrad = ctx.createLinearGradient(baseX, baseY, contactX, contactY);
+        armGrad.addColorStop(0, '#ffffff'); // 純白
+        armGrad.addColorStop(1, '#e5e7eb'); // 白色
+        ctx.strokeStyle = armGrad;
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        // 段1：基座 -> 肘
+        ctx.beginPath();
+        ctx.moveTo(baseX, baseY);
+        ctx.lineTo(elbowX, elbowY);
+        ctx.stroke();
+        // 段2：肘 -> 接觸點（細一點）
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(elbowX, elbowY);
+        ctx.lineTo(contactX, contactY);
+        ctx.stroke();
+        // 唱頭（矩形，短一些，停在中圈）
+        const headLen = 14;
+        const headWide = 8;
+        const dirX = (contactX - elbowX);
+        const dirY = (contactY - elbowY);
+        const len = Math.hypot(dirX, dirY) || 1;
+        const nx = dirX / len, ny = dirY / len;
+        const px = -ny, py = nx;
+        const hx = contactX - nx * (headLen * 0.2);
+        const hy = contactY - ny * (headLen * 0.2);
+        ctx.fillStyle = '#f3f4f6'; // 近白色唱頭
+        ctx.beginPath();
+        ctx.moveTo(hx + px * headWide, hy + py * headWide);
+        ctx.lineTo(hx - px * headWide, hy - py * headWide);
+        ctx.lineTo(hx - px * headWide + nx * headLen, hy - py * headWide + ny * headLen);
+        ctx.lineTo(hx + px * headWide + nx * headLen, hy + py * headWide + ny * headLen);
+        ctx.closePath();
+        ctx.fill();
+        // 針尖（小三角形，落在中圈，不進入內圈）
+        ctx.fillStyle = '#ffffff'; // 針尖純白
+        ctx.beginPath();
+        const tipX = contactX;
+        const tipY = contactY;
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(tipX - nx * 6 + px * 3, tipY - ny * 6 + py * 3);
+        ctx.lineTo(tipX - nx * 6 - px * 3, tipY - ny * 6 - py * 3);
+        ctx.closePath();
+        ctx.fill();
+        // 針尖陰影
+        ctx.globalAlpha = 0.25;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, ringRadius * 0.95, Math.atan2(hy-centerY, hx-centerX) - 0.02, Math.atan2(hy-centerY, hx-centerX) + 0.02);
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 8;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+    }
+};
+
+// 圖片快取，避免每幀重建
+const imageCache: Record<string, HTMLImageElement> = {};
+function getOrCreateCachedImage(key: string, src: string): HTMLImageElement | null {
+    const cached = imageCache[key];
+    if (cached && cached.src === src) return cached;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = src;
+    img.onload = () => {
+        // 圖片載入後，下一幀即可繪製出來
+        // 這裡不需要做任何事，主渲染迴圈會自動更新
+        // 僅供除錯
+        console.log('[Vinyl] image loaded', key);
+    };
+    img.onerror = (e) => {
+        console.warn('[Vinyl] image failed to load', key, src, e);
+    };
+    imageCache[key] = img;
+    return img;
+}
+
+// 鋼琴演奏家效果（只繪製鋼琴，音符在主要循環中處理）
+const drawPianoVirtuoso: DrawFunction = (
+    ctx,
+    dataArray,
+    width,
+    height,
+    frame,
+    sensitivity,
+    finalColors,
+    graphicEffect,
+    isBeat,
+    waveformStroke,
+    particles
+) => {
+    // 獲取最新的透明度設置
+    const pianoOpacity = (latestPropsRef as any)?.pianoOpacity || 1.0;
+    
+    // 繪製鋼琴鍵盤
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const pianoWidth = Math.min(width, height) * 0.8;
+    const pianoHeight = 60;
+    
+    // 設置透明度
+    ctx.save();
+    ctx.globalAlpha = pianoOpacity;
+    
+    // 繪製鋼琴鍵盤
+    const numKeys = 52; // 4個八度
+    const keyWidth = pianoWidth / numKeys;
+    
+    for (let i = 0; i < numKeys; i++) {
+        const x = centerX - pianoWidth / 2 + i * keyWidth;
+        const y = centerY - pianoHeight / 2;
+        
+        // 白鍵
+        if ([0, 2, 4, 5, 7, 9, 11].includes(i % 12)) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x, y, keyWidth - 1, pianoHeight);
+            ctx.strokeStyle = '#cccccc';
+            ctx.strokeRect(x, y, keyWidth - 1, pianoHeight);
+        }
+        // 黑鍵
+        else {
+            ctx.fillStyle = '#333333';
+            ctx.fillRect(x + keyWidth * 0.6, y, keyWidth * 0.8, pianoHeight * 0.6);
+        }
+    }
+    
+    ctx.restore();
+};
+
+// 可視化映射表
+const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
+    [VisualizationType.CIRCULAR_WAVE]: drawCircularWave,
+    [VisualizationType.RADIAL_BARS]: drawRadialBars,
+    [VisualizationType.SPIRAL]: drawSpiral,
+    [VisualizationType.PARTICLES]: drawParticles,
+    [VisualizationType.GEOMETRIC_BARS]: drawGeometricBars,
+    [VisualizationType.VINYL_RECORD]: drawVinylRecord,
+    [VisualizationType.PIANO_VIRTUOSO]: drawPianoVirtuoso,
+    [VisualizationType.Z_CUSTOM]: drawZCustomVisualization,
+};
+
+// 圖片快取，避免每幀重建
+const imageCache: Record<string, HTMLImageElement> = {};
+        if (cardX + cardW > width - 10) {
+            cardX = width - cardW - 10;
+        }
+        // 確保控制卡不會超出上下邊界
+        cardY = Math.max(10, Math.min(cardY, height - cardH - 10));
+    }
+    
+    if (cardEnabled) {
+
+        const style = (latestPropsRef as any)?.controlCardStyle as any;
+        const color = (latestPropsRef as any)?.controlCardColor || '#111827';
+        const bg = (latestPropsRef as any)?.controlCardBackgroundColor || 'rgba(240, 244, 248, 0.92)';
+
+        // 卡片底
+        if (style !== 'transparent') {
+            ctx.fillStyle = bg;
+        } else {
+            ctx.fillStyle = 'rgba(0,0,0,0)';
+        }
+        ctx.strokeStyle = style === 'outline' ? color : 'rgba(0,0,0,0.07)';
+        ctx.lineWidth = 2;
+        const r = 14;
+        ctx.beginPath();
+        ctx.moveTo(cardX + r, cardY);
+        ctx.lineTo(cardX + cardW - r, cardY);
+        ctx.quadraticCurveTo(cardX + cardW, cardY, cardX + cardW, cardY + r);
+        ctx.lineTo(cardX + cardW, cardY + cardH - r);
+        ctx.quadraticCurveTo(cardX + cardW, cardY + cardH, cardX + cardW - r, cardY + cardH);
+        ctx.lineTo(cardX + r, cardY + cardH);
+        ctx.quadraticCurveTo(cardX, cardY + cardH, cardX, cardY + cardH - r);
+        ctx.lineTo(cardX, cardY + r);
+        ctx.quadraticCurveTo(cardX, cardY, cardX + r, cardY);
+        ctx.closePath();
+        if (style !== 'transparent') ctx.fill();
+        if (style === 'outline') ctx.stroke();
+
+        // 進度條和時間（放到底部一起顯示）
+        const barMargin = 22;
+        const barX = cardX + barMargin;
+        const barW = cardW - barMargin * 2;
+        // 時間文字（左/右）
+        const timeToMMSS = (t: number) => {
+            const m = Math.floor(t / 60);
+            const s = Math.floor(t % 60);
+            return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        };
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px Poppins, sans-serif';
+        ctx.textBaseline = 'middle';
+        // 將時間與進度條一起上移，避免貼底
+        const barY = cardY + cardH - 140; // 從底部往上 140px
+        const timerY = barY + 24; // 置於進度條下方一點
+        const bgStroke = 6;
+        const fgStroke = 6;
+        // 自訂樣式：膠囊形狀 + 漸層 + 刻度 + 斜紋填充
+        const drawRoundedRect = (x:number, y:number, w:number, h:number, r:number) => {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        };
+        const trackH = 10;
+        const trackY = barY - trackH/2;
+        // 背景膠囊
+        const trackGrad = ctx.createLinearGradient(barX, trackY, barX + barW, trackY);
+        trackGrad.addColorStop(0, 'rgba(255,255,255,0.08)');
+        trackGrad.addColorStop(1, 'rgba(0,0,0,0.18)');
+        ctx.fillStyle = trackGrad;
+        drawRoundedRect(barX, trackY, barW, trackH, trackH/2);
+        ctx.fill();
+        // 內陰影
+        ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+        ctx.lineWidth = 1;
+        drawRoundedRect(barX+0.5, trackY+0.5, barW-1, trackH-1, trackH/2-1);
+        ctx.stroke();
+        // 刻度（10%）
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 2;
+        for (let i=0;i<=10;i++) {
+            const tx = barX + (barW * i/10);
+            ctx.beginPath();
+            ctx.moveTo(tx, trackY + trackH + 3);
+            ctx.lineTo(tx, trackY + trackH + 7);
+            ctx.stroke();
+        }
+        // 進度值（膠囊填充 + 斜紋）
+        const audio = (latestPropsRef as any)?.audioRef?.current as HTMLAudioElement | undefined;
+        const duration = audio?.duration || 0;
+        const curTime = audio?.currentTime || 0;
+        const progress = duration > 0 ? (curTime / duration) : 0.0;
+        const fillW = Math.max(0, Math.min(barW, barW * progress));
+        const fillGrad = ctx.createLinearGradient(barX, trackY, barX + fillW, trackY);
+        fillGrad.addColorStop(0, color);
+        fillGrad.addColorStop(1, 'rgba(255,255,255,0.85)');
+        ctx.fillStyle = fillGrad;
+        drawRoundedRect(barX, trackY, fillW, trackH, trackH/2);
+        ctx.fill();
+        // 斜紋動畫
+        const stripeW = 8;
+        const offset = ((typeof frame === 'number' ? frame : 0) % stripeW);
+        ctx.save();
+        ctx.beginPath();
+        drawRoundedRect(barX, trackY, fillW, trackH, trackH/2);
+        ctx.clip();
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+        ctx.lineWidth = 3;
+        for (let x = barX - stripeW + offset; x < barX + fillW; x += stripeW) {
+            ctx.beginPath();
+            ctx.moveTo(x, trackY);
+            ctx.lineTo(x + 6, trackY + trackH);
+            ctx.stroke();
+        }
+        ctx.restore();
+        // 節點
+        ctx.fillStyle = '#ffffff';
+        const knobX = barX + barW * progress;
+        ctx.beginPath();
+        ctx.arc(knobX, barY, 9, 0, Math.PI * 2);
+        ctx.fill();
+        // 左右時間文字與進度條同列
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px Poppins, sans-serif';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(timeToMMSS(curTime), barX + 2, timerY);
+        if (duration > 0) ctx.fillText(timeToMMSS(duration), barX + barW - 48, timerY);
+
+        // 細長波形（貼近參考樣式）
+        // 波形區域（左右縮短，預留左右 20px padding）
+        const wavePadding = 20;
+        const waveX = barX + wavePadding;
+        const waveW = barW - wavePadding * 2;
+        // 將波形再上移，預留更大底部空間
+        const waveBaseline = cardY + 100;
+        const samples = 64;
+        const getSample = (t: number, bandStart: number, bandEnd: number) => {
+            if (!dataArray) return 0.5;
+            const len = dataArray.length;
+            const s = Math.max(0, Math.min(len - 1, Math.floor(bandStart * len)));
+            const e = Math.max(s + 1, Math.min(len, Math.floor(bandEnd * len)));
+            const idx = s + Math.floor(t * (e - s - 1));
+            return dataArray[idx] / 255;
+        };
+        // 線條波狀圖（白色，取中頻）- 先不繪製，最後覆蓋在山形圖上層
+        // 提高線條振幅（x10）
+        const waveHeight1 = 1300;
+        const drawMidLine = () => {
+            ctx.beginPath();
+            for (let i = 0; i <= samples; i++) {
+                const t = i / samples;
+                const v = getSample(t, 0.25, 0.6);
+                // 非線性增益，讓峰更高
+                const amp = Math.max(0, v - 0.4);
+                const y = waveBaseline - Math.pow(amp, 1.25) * waveHeight1;
+                const x = waveX + t * waveW;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        };
+        // 山形圖（黃綠，高頻，振幅明顯）：以折線形成的鋸齒/山峰並向下填滿
+        // 條狀聲波圖（黃綠）：與白色線條共用同一條基準線與相同 X 取樣點
+        const barCount = samples + 1; // 與線條同樣的取樣點數
+        const barWidth = Math.max(2, (waveW / barCount) * 0.6); // 以取樣間距為基礎寬度
+        for (let i = 0; i < barCount; i++) {
+            const t = i / (barCount - 1);
+            // 取低頻到中低頻，讓能量更有起伏
+            const v = getSample(t, 0.05, 0.35);
+            // 放大振幅，柱形更高
+            const amp = Math.max(0, v - 0.28);
+            const h = Math.pow(amp, 1.35) * 900; // x10 放大柱狀高度
+            const xCenter = waveX + t * waveW;
+            const x = xCenter - barWidth / 2; // 讓柱中心對齊線條的取樣 X
+            const y = waveBaseline - h;
+            const grad = ctx.createLinearGradient(0, y, 0, waveBaseline);
+            grad.addColorStop(0, 'rgba(210,230,110,0.85)');
+            grad.addColorStop(1, 'rgba(210,230,110,0.15)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, barWidth, h);
+            // 頂部高光
+            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.fillRect(x, y, barWidth, 2);
+        }
+        // 最後繪製白色中頻線條，與山形圖同基準線疊加
+        drawMidLine();
+
+        // 控制按鈕 (上一首/播放/下一首) 隨進度條整體上移，並與其保持距離
+        const iconY = barY + 80;
+        const gap = 100;
+        const playX = cardX + cardW * 0.5;
+        const prevX = playX - gap;
+        const nextX = playX + gap;
+        // 三個圓形按鈕（僅此一組）
+        const drawCircle = (x: number, y: number) => {
+            ctx.fillStyle = 'rgba(0,0,0,0.25)';
+            ctx.beginPath();
+            ctx.arc(x, y, 28, 0, Math.PI * 2);
+            ctx.fill();
+        };
+        drawCircle(prevX, iconY);
+        drawCircle(playX, iconY);
+        drawCircle(nextX, iconY);
+        // Prev ▶◀
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(prevX + 10, iconY - 10);
+        ctx.lineTo(prevX - 6, iconY);
+        ctx.lineTo(prevX + 10, iconY + 10);
+        ctx.closePath();
+        ctx.fill();
+        // Pause ||
+        ctx.fillRect(playX - 8, iconY - 12, 6, 24);
+        ctx.fillRect(playX + 2, iconY - 12, 6, 24);
+        // Next ◀▶
+        ctx.beginPath();
+        ctx.moveTo(nextX - 10, iconY - 10);
+        ctx.lineTo(nextX + 6, iconY);
+        ctx.lineTo(nextX - 10, iconY + 10);
+        ctx.closePath();
+        ctx.fill();
+    }
+};
+
+// 圖片快取，避免每幀重建
+const imageCache: Record<string, HTMLImageElement> = {};
+function getOrCreateCachedImage(key: string, src: string): HTMLImageElement | null {
+    const cached = imageCache[key];
+    if (cached && cached.src === src) return cached;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = src;
+    img.onload = () => {
+        // 圖片載入後，下一幀即可繪製出來
+        // 這裡不需要做任何事，主渲染迴圈會自動更新
+        // 僅供除錯
+        console.log('[Vinyl] image loaded', key);
+    };
+    img.onerror = (e) => {
+        console.warn('[Vinyl] image failed to load', key, src, e);
+    };
+    imageCache[key] = img;
+    return img;
+}
+
+// 鋼琴演奏家效果（只繪製鋼琴，音符在主要循環中處理）
+const drawPianoVirtuoso: DrawFunction = (
+    ctx,
+    dataArray,
+    width,
+    height,
+    frame,
+    sensitivity,
+    colors,
+    graphicEffect,
+    isBeat
+) => {
+    if (!dataArray) return;
+    
+    // 獲取鋼琴透明度設定
+    const pianoOpacity = (latestPropsRef as any)?.pianoOpacity ?? 1.0;
+    
+    const keyboardHeight = height * 0.25;
+    const numWhiteKeys = 28;
+    const whiteKeyWidth = width / numWhiteKeys;
+    const blackKeyWidth = whiteKeyWidth * 0.6;
+    const blackKeyHeight = keyboardHeight * 0.6;
+    
+    // 只對鋼琴鍵盤應用透明度
+    ctx.save();
+    ctx.globalAlpha = pianoOpacity;
+    
+    // 繪製白鍵
+    for (let i = 0; i < numWhiteKeys; i++) {
+        const x = i * whiteKeyWidth;
+        const keyDataPoints = Math.floor(dataArray.length * 0.7 / numWhiteKeys);
+        const dataStart = i * keyDataPoints;
+        const dataEnd = dataStart + keyDataPoints;
+        
+        let pressAmount = 0;
+        for (let j = dataStart; j < dataEnd; j++) {
+            pressAmount += dataArray[j] || 0;
+        }
+        pressAmount = pressAmount / (keyDataPoints * 255);
+        
+        const isPressed = (Math.pow(pressAmount, 2) * sensitivity) > 0.1;
+        
+        // 白鍵背景
+        ctx.fillStyle = isPressed ? colors.accent : '#f8f9fa';
+        ctx.strokeStyle = '#dee2e6';
+        ctx.lineWidth = 1;
+        
+        ctx.fillRect(x, height - keyboardHeight, whiteKeyWidth - 1, keyboardHeight);
+        ctx.strokeRect(x, height - keyboardHeight, whiteKeyWidth - 1, keyboardHeight);
+        
+        // 白鍵文字
+        ctx.fillStyle = isPressed ? '#ffffff' : '#6c757d';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(String.fromCharCode(65 + (i % 7)), x + whiteKeyWidth / 2, height - 10);
+    }
+    
+    // 繪製黑鍵
+    const blackKeyPattern = [1, 1, 0, 1, 1, 1, 0];
+    for (let i = 0; i < numWhiteKeys - 1; i++) {
+        const patternIndex = i % 7;
+        if (blackKeyPattern[patternIndex] === 1) {
+            const x = (i + 1) * whiteKeyWidth - blackKeyWidth / 2;
+            const pressAmount = ((dataArray[Math.floor(i * dataArray.length * 0.7 / numWhiteKeys)] || 0) + 
+                               (dataArray[Math.floor((i + 1) * dataArray.length * 0.7 / numWhiteKeys)] || 0)) / 2 / 255;
+            
+            const isPressed = (Math.pow(pressAmount, 2) * sensitivity) > 0.15;
+            
+            ctx.fillStyle = isPressed ? colors.secondary : '#343a40';
+            ctx.fillRect(x, height - keyboardHeight, blackKeyWidth, blackKeyHeight);
+            
+            // 黑鍵高光
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(x, height - keyboardHeight, blackKeyWidth, 5);
+        }
+    }
+    
+    // 恢復透明度設定，讓音符正常顯示
+    ctx.restore();
+};
 
 const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.MONSTERCAT]: drawMonstercat,
@@ -3841,6 +5090,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.PIANO_VIRTUOSO]: drawPianoVirtuoso,
     [VisualizationType.GEOMETRIC_BARS]: drawGeometricBars,
     [VisualizationType.Z_CUSTOM]: drawGeometricBars, // 暫時使用 drawGeometricBars，稍後會替換
+    [VisualizationType.VINYL_RECORD]: drawVinylRecord,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
@@ -3876,8 +5126,6 @@ type Shockwave = {
     opacity: number;
     lineWidth: number;
 };
-
-
 const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((props, ref) => {
     const { analyser, audioRef, isPlaying, disableVisualizer } = props;
     const animationFrameId = useRef<number>(0);
@@ -3907,7 +5155,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
 
     useEffect(() => {
         propsRef.current = props;
-    });
+        latestPropsRef = props;
+    }, [props]);
 
     useEffect(() => {
         // Clear dynamic elements when visualization changes to prevent artifacts
@@ -3979,6 +5228,10 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         }
     }, [props.geometricSemicircleImage]);
 
+    // 濾鏡特效粒子系統狀態
+    const filterParticlesRef = useRef<FilterParticle[]>([]);
+    const lastFilterTypeRef = useRef<FilterEffectType | null>(null);
+
     const renderFrame = useCallback(() => {
         const {
             visualizationType, customText, textColor, fontFamily, graphicEffect, 
@@ -3986,7 +5239,10 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             sensitivity, smoothing, equalization, backgroundColor, colors, watermarkPosition, 
             waveformStroke, isTransitioning, transitionType, backgroundImages, currentImageIndex,
             subtitles, showSubtitles, subtitleFontSize, subtitleFontFamily, 
-            subtitleColor, subtitleBgStyle, effectScale, effectOffsetX, effectOffsetY
+            subtitleColor, subtitleBgStyle, effectScale, effectOffsetX, effectOffsetY,
+            filterEffectType, filterEffectIntensity, filterEffectOpacity, filterEffectSpeed, filterEffectEnabled,
+            controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor,
+            vinylRecordEnabled
         } = propsRef.current;
 
         const canvas = (ref as React.RefObject<HTMLCanvasElement>).current;
@@ -4010,7 +5266,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         
         if (analyser) {
             dataArray = new Uint8Array(analyser.frequencyBinCount);
-            analyser.getByteFrequencyData(dataArray);
+            analyser.getByteFrequencyData(dataArray as any);
             bassAvg = dataArray.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
             if (bassAvg > 180) {
                 isBeat = true;
@@ -4074,6 +5330,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             drawTransitionEffect(ctx, width, height, transitionType, transitionProgress);
         }
 
+        // 調試覆蓋層已移除
+
         const drawFunction = VISUALIZATION_MAP[visualizationType];
         if (drawFunction && !isVisualizerDisabled) {
             const shouldTransform = !IGNORE_TRANSFORM_VISUALIZATIONS.has(visualizationType);
@@ -4098,7 +5356,23 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 ctx.fillStyle = bgGradient;
                 ctx.fillRect(0, 0, width, height);
             }
+            if (visualizationType === VisualizationType.GEOMETRIC_BARS) {
+                // 可夜特別訂製版需要特殊處理，傳遞額外參數
+                drawGeometricBars(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, propsRef.current, controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor);
+            } else if (visualizationType === VisualizationType.Z_CUSTOM) {
+                // Z總訂製款需要特殊處理，傳遞額外參數
+                const currentFrame = typeof frame.current === 'number' ? frame.current : 0;
+                drawZCustomVisualization(ctx, width, height, propsRef.current.zCustomCenterImage, propsRef, currentFrame);
+        } else if (visualizationType === VisualizationType.VINYL_RECORD) {
+            // 檢查唱片開關
+            if (vinylRecordEnabled !== false) {
+                drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
+            }
+            // 控制卡始終繪製（不受唱片開關影響）
+            drawVinylControlCard(ctx, width, height, frame.current, controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor);
+            } else {
             drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
+            }
             
             if (shouldTransform) {
                 ctx.restore();
@@ -4144,27 +5418,71 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             p.vy += 0.08;
             p.opacity -= 0.015;
         });
+        
+        // 繪製音符粒子
+        particlesRef.current.forEach(p => {
+            const noteSymbols = ['♪', '♫', '♬', '♭', '♯'];
+            const symbol = noteSymbols[Math.floor(p.angle * noteSymbols.length)];
+            
+            ctx.save();
+            ctx.font = `bold ${p.radius}px "Arial"`;
+            ctx.fillStyle = applyAlphaToColor(p.color, p.opacity);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // 添加發光效果
+            ctx.shadowColor = applyAlphaToColor(p.color, p.opacity * 0.8);
+            ctx.shadowBlur = 15;
+            
+            ctx.fillText(symbol, p.x, p.y);
+            ctx.restore();
+        });
+        
         particlesRef.current = particlesRef.current.filter(p => p.opacity > 0 && p.y < height + 100);
 
-        // 繪製 Z總訂製款可視化
-        if (propsRef.current.visualizationType === VisualizationType.Z_CUSTOM) {
-            drawZCustomVisualization(ctx, width, height, propsRef.current.zCustomCenterImage, propsRef, frame.current);
-        }
-        
-        // 繪製 CTA 動畫（獨立功能，適用於所有可視化）
-        if (propsRef.current.showCtaAnimation && propsRef.current.ctaChannelName) {
-            // 計算 CTA 位置，包含拖動偏移
-            const basePosition = propsRef.current.ctaPosition || { x: 50, y: 50 };
-            const dragOffset = dragState.current.isDragging && dragState.current.draggedElement === 'cta' 
-                ? dragState.current.dragOffset 
-                : { x: 0, y: 0 };
+        // Z總訂製款可視化已在主要繪製循環中處理，無需重複繪製
+
+        // 濾鏡特效處理
+        if (filterEffectEnabled && filterEffectType) {
+            // 檢查濾鏡類型是否改變，如果改變則重新初始化粒子
+            if (lastFilterTypeRef.current !== filterEffectType) {
+                filterParticlesRef.current = [];
+                lastFilterTypeRef.current = filterEffectType;
+            }
             
-            const ctaPosition = {
-                x: basePosition.x + (dragOffset.x / width) * 100,
-                y: basePosition.y + (dragOffset.y / height) * 100
-            };
+            // 添加新粒子（增加隨機性，不要一次性創建太多）
+            const resolutionScale = Math.max(width / 1920, height / 1080) * 1.5;
+            const maxParticleCount = Math.floor((filterEffectIntensity || 0.5) * 80 * resolutionScale);
             
-            drawCtaAnimation(ctx, width, height, propsRef.current.ctaChannelName, ctaPosition);
+            // 隨機添加新粒子，避免整齊的批次
+            if (filterParticlesRef.current.length < maxParticleCount && Math.random() < 0.15) {
+                const newParticle = createFilterParticle(filterEffectType, width, height);
+                filterParticlesRef.current.push(newParticle);
+            }
+            
+            // 移除超出邊界的粒子
+            filterParticlesRef.current = filterParticlesRef.current.filter(particle => {
+                // 檢查粒子是否超出邊界
+                if (particle.y > height + 20 || 
+                    particle.x < -20 || 
+                    particle.x > width + 20) {
+                    return false;
+                }
+                return true;
+            });
+            
+            // 繪製濾鏡特效（在所有其他內容之上）
+            drawFilterEffects(
+                ctx, 
+                width, 
+                height, 
+                filterEffectType, 
+                filterEffectIntensity || 0.5, 
+                filterEffectOpacity || 0.6, 
+                filterEffectSpeed || 1.0, 
+                filterParticlesRef.current, 
+                frame.current
+            );
         }
 
         // 字幕和自定義文字最後繪製，確保在最上層
@@ -4172,9 +5490,13 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         let currentSubtitle: Subtitle | undefined = undefined;
         if (showSubtitles && subtitles.length > 0) {
             for (let i = subtitles.length - 1; i >= 0; i--) {
-                if (currentTime >= subtitles[i].time) {
-                    currentSubtitle = subtitles[i];
+                const subtitle = subtitles[i];
+                if (currentTime >= subtitle.time) {
+                    // 檢查結束時間
+                    if (!subtitle.endTime || currentTime <= subtitle.endTime) {
+                        currentSubtitle = subtitle;
                     break;
+                    }
                 }
             }
         }
@@ -4213,7 +5535,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 effect: GraphicEffectType.NONE, 
                 bgStyle: subtitleBgStyle, 
                 isBeat,
-                dragOffset
+                dragOffset,
+                orientation: propsRef.current.subtitleOrientation
             });
         }
         // 無字幕模式：不顯示任何字幕
@@ -4230,6 +5553,22 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 textPositionY: textPositionY,
                 isBeat 
             });
+        }
+        
+        // 繪製 CTA 動畫（在字幕之後，但確保不覆蓋字幕）
+        if (propsRef.current.showCtaAnimation && propsRef.current.ctaChannelName) {
+            // 計算 CTA 位置，包含拖動偏移
+            const basePosition = propsRef.current.ctaPosition || { x: 50, y: 50 };
+            const dragOffset = dragState.current.isDragging && dragState.current.draggedElement === 'cta' 
+                ? dragState.current.dragOffset 
+                : { x: 0, y: 0 };
+            
+            const ctaPosition = {
+                x: basePosition.x + (dragOffset.x / width) * 100,
+                y: basePosition.y + (dragOffset.y / height) * 100
+            };
+            
+            drawCtaAnimation(ctx, width, height, propsRef.current.ctaChannelName, ctaPosition);
         }
         
         if (propsRef.current.isPlaying) {
@@ -4393,8 +5732,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             // 其他可視化類型 - 縮小中央區域
             const centerX = width / 2;
             const centerY = height / 2;
-            const vizWidth = width * 0.6; // 從0.8縮小到0.6
-            const vizHeight = height * 0.6; // 從0.8縮小到0.6
+            const vizWidth = width * 0.3; // 縮小到30%
+            const vizHeight = height * 0.3; // 縮小到30%
             
             if (pos.x >= centerX - vizWidth / 2 && pos.x <= centerX + vizWidth / 2 &&
                 pos.y >= centerY - vizHeight / 2 && pos.y <= centerY + vizHeight / 2) {
@@ -4418,19 +5757,34 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                     return 'lyrics';
                 }
             } else {
-                // 傳統字幕和逐字顯示模式 - 擴大底部檢測區域
-                const subtitleY = height - (height * 0.08);
-                const subtitleHeight = height * 0.25; // 從0.15擴大到0.25
+                // 傳統字幕和逐字顯示模式 - 根據方向設定檢測區域
+                const orientation = propsRef.current.subtitleOrientation;
                 
-                if (pos.y >= subtitleY - subtitleHeight && pos.y <= subtitleY + subtitleHeight) {
-                    return 'subtitle';
+                if (orientation === SubtitleOrientation.VERTICAL) {
+                    // 直式字幕 - 檢測右側區域
+                    const subtitleX = width - (width * 0.1); // 距離右邊 10%
+                    const subtitleWidth = width * 0.15; // 檢測寬度
+                    const centerY = height / 2;
+                    const subtitleHeight = height * 0.6; // 檢測高度
+                    
+                    if (pos.x >= subtitleX - subtitleWidth && pos.x <= subtitleX + subtitleWidth &&
+                        pos.y >= centerY - subtitleHeight / 2 && pos.y <= centerY + subtitleHeight / 2) {
+                        return 'subtitle';
+                    }
+                } else {
+                    // 橫式字幕 - 檢測底部區域
+                    const subtitleY = height - (height * 0.08);
+                    const subtitleHeight = height * 0.25;
+                    
+                    if (pos.y >= subtitleY - subtitleHeight && pos.y <= subtitleY + subtitleHeight) {
+                        return 'subtitle';
+                    }
                 }
             }
         }
         
         return null;
     };
-
     // 更新元素位置
     const updateElementPosition = (element: string, offset: { x: number; y: number }) => {
         const { width, height } = (ref as React.RefObject<HTMLCanvasElement>).current || { width: 0, height: 0 };
@@ -4469,9 +5823,6 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             }
         }
     };
-
-
-
     // 繪製 CTA 動畫
     const drawCtaAnimation = (ctx: CanvasRenderingContext2D, width: number, height: number, channelName: string, position: { x: number; y: number }) => {
         const currentTime = Date.now();
@@ -4578,21 +5929,21 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
             
-            // 訂閱文字（中文）- 搖滾圓體字體，增加行距
+            // 訂閱文字（中文）- 清松手寫體1，增加行距
             ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-            ctx.font = 'bold 36px "RocknRoll One", "Noto Sans TC", sans-serif';
+            ctx.font = 'bold 36px "Jason Handwriting 1", "Noto Sans TC", sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('訂閱', ctaX, ctaY - 35);
             
-            // 訂閱文字（英文）- 搖滾圓體字體，增加行距
+            // 訂閱文字（英文）- 清松手寫體1，增加行距
             ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-            ctx.font = 'bold 28px "RocknRoll One", "Noto Sans TC", sans-serif';
+            ctx.font = 'bold 28px "Jason Handwriting 1", "Noto Sans TC", sans-serif';
             ctx.fillText('SUBSCRIBE', ctaX, ctaY + 5);
             
-            // 頻道名稱，搖滾圓體字體，增加行距
+            // 頻道名稱，清松手寫體1，增加行距
             ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-            ctx.font = 'bold 22px "RocknRoll One", "Noto Sans TC", sans-serif';
+            ctx.font = 'bold 22px "Jason Handwriting 1", "Noto Sans TC", sans-serif';
             ctx.fillText(channelName, ctaX, ctaY + 50);
             
             ctx.restore();
@@ -4639,7 +5990,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         ctx.restore();
     };
 
-    return <canvas ref={ref} className="w-full h-full" style={{ backgroundColor: 'transparent', border: '2px solid #4ecdc4', borderRadius: '8px' }} />;
+    return <canvas ref={ref} className="w-full h-full" style={{ backgroundColor: '#000000', border: '2px solid #4ecdc4', borderRadius: '8px' }} />;
 });
 
 AudioVisualizer.displayName = 'AudioVisualizer';
@@ -5047,12 +6398,11 @@ const drawRandomPixels = (ctx: CanvasRenderingContext2D, width: number, height: 
         ctx.fillRect(x, y, 2, 2);
     }
 };
-
 // Z總訂製款 - 黑膠唱片旋轉效果
-const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, height: number, centerImage: string | null, propsRef: React.MutableRefObject<AudioVisualizerProps>, frame: number) => {
+const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, height: number, centerImage: string | null, propsRef: React.MutableRefObject<AudioVisualizerProps>, frame: number | null) => {
     // 獲取 Z總訂製款的控制參數
-    const zCustomScale = propsRef.current.zCustomScale || 1.0;
-    const zCustomPosition = propsRef.current.zCustomPosition || { x: 0, y: 0 };
+    const zCustomScale = (propsRef.current as any).zCustomScale || 1.0;
+    const zCustomPosition = (propsRef.current as any).zCustomPosition || { x: 0, y: 0 };
     const colors = propsRef.current.colors;
     
     // 計算中心位置（包含位置偏移）
@@ -5066,7 +6416,7 @@ const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, 
     let audioData: Uint8Array | null = null;
     if (analyser) {
         audioData = new Uint8Array(analyser.frequencyBinCount);
-        analyser.getByteFrequencyData(audioData);
+        analyser.getByteFrequencyData(audioData as any);
     }
     
     // 計算音頻強度
@@ -5075,7 +6425,7 @@ const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, 
     const highIntensity = audioData ? audioData.slice(50, 100).reduce((a, b) => a + b, 0) / 50 / 255 : 0;
     
     // 計算旋轉角度（與可夜訂製款相同的速度）
-    const frameValue = typeof frame === 'object' ? (frame?.current || 0) : (frame || 0);
+    const frameValue = frame ?? 0;
     const rotationAngle = (frameValue * 0.01) % (Math.PI * 2);
     
     // 調試：檢查 frame 值
@@ -5085,25 +6435,110 @@ const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, 
     ctx.translate(centerX, centerY);
     ctx.rotate(rotationAngle);
     
-    // 繪製黑膠唱片外圈
-    ctx.fillStyle = '#1a1a1a';
+    // 繪製黑膠唱片外圈（深黑色，帶光澤效果）
+    ctx.fillStyle = '#0a0a0a';
     ctx.beginPath();
     ctx.arc(0, 0, recordRadius, 0, Math.PI * 2);
     ctx.fill();
     
-    // 繪製唱片紋路（同心圓）
-    ctx.strokeStyle = '#333333';
-    ctx.lineWidth = 1;
-    for (let i = 1; i <= 8; i++) {
-        const radius = (recordRadius * 0.2) + (recordRadius * 0.8 * i / 8);
+    // 添加邊緣高光 - 模擬光線反射
+    const edgeGlow = ctx.createRadialGradient(0, 0, recordRadius * 0.95, 0, 0, recordRadius * 1.02);
+    edgeGlow.addColorStop(0, 'rgba(255,255,255,0)');
+    edgeGlow.addColorStop(0.8, 'rgba(255,255,255,0)');
+    edgeGlow.addColorStop(0.95, 'rgba(255,255,255,0.1)');
+    edgeGlow.addColorStop(1, 'rgba(255,255,255,0.3)');
+    ctx.fillStyle = edgeGlow;
+    ctx.beginPath();
+    ctx.arc(0, 0, recordRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 繪製唱片紋路（同心圓，帶動態高光效果）
+    for (let i = 1; i <= 20; i++) {
+        const radius = (recordRadius * 0.2) + (recordRadius * 0.8 * i / 20);
+        const progress = i / 20;
+        
+        if (i % 2 === 0) {
+            // 深色溝槽
+            ctx.lineWidth = 0.8;
+            ctx.strokeStyle = '#0d0f12';
+        } else {
+            // 淺色溝槽（高光）
+            ctx.lineWidth = 0.6;
+            // 根據旋轉角度和位置計算高光強度
+            const lightAngle = Math.sin(rotationAngle * 2 + progress * Math.PI * 4) * 0.5 + 0.5;
+            const lightIntensity = 0.15 + lightAngle * 0.25;
+            ctx.strokeStyle = `rgba(255,255,255,${lightIntensity})`;
+        }
+        
         ctx.beginPath();
         ctx.arc(0, 0, radius, 0, Math.PI * 2);
         ctx.stroke();
     }
     
+    // 添加徑向高光條紋，模擬光線反射（帶光暈效果）
+    const numLightStreaks = 12;
+    for (let i = 0; i < numLightStreaks; i++) {
+        const streakAngle = (i / numLightStreaks) * Math.PI * 2 + rotationAngle * 0.5;
+        
+        // 外層光暈 - 粉色/洋紅色
+        ctx.save();
+        ctx.shadowColor = '#FF69B4'; // 洋紅色
+        ctx.shadowBlur = 20;
+        ctx.strokeStyle = 'rgba(255, 105, 180, 0.6)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(streakAngle) * recordRadius * 0.2, Math.sin(streakAngle) * recordRadius * 0.2);
+        ctx.lineTo(Math.cos(streakAngle) * recordRadius, Math.sin(streakAngle) * recordRadius);
+        ctx.stroke();
+        
+        // 內層光暈 - 青色/藍色
+        ctx.shadowColor = '#00FFFF'; // 青色
+        ctx.shadowBlur = 15;
+        ctx.strokeStyle = 'rgba(0, 255, 255, 0.7)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(streakAngle) * recordRadius * 0.2, Math.sin(streakAngle) * recordRadius * 0.2);
+        ctx.lineTo(Math.cos(streakAngle) * recordRadius, Math.sin(streakAngle) * recordRadius);
+        ctx.stroke();
+        
+        // 核心高光條紋
+        ctx.shadowColor = '#FFFFFF';
+        ctx.shadowBlur = 10;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(streakAngle) * recordRadius * 0.2, Math.sin(streakAngle) * recordRadius * 0.2);
+        ctx.lineTo(Math.cos(streakAngle) * recordRadius, Math.sin(streakAngle) * recordRadius);
+        ctx.stroke();
+        
+        ctx.restore();
+    }
+    
     // 繪製中央黃色標籤
     const labelRadius = recordRadius * 0.25;
     ctx.fillStyle = '#FFD700'; // 金黃色
+    ctx.beginPath();
+    ctx.arc(0, 0, labelRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 為中央標籤添加高光效果
+    const labelGloss = ctx.createLinearGradient(-labelRadius, -labelRadius, labelRadius, labelRadius);
+    labelGloss.addColorStop(0, 'rgba(255,255,255,0)');
+    labelGloss.addColorStop(0.3, 'rgba(255,255,255,0.1)');
+    labelGloss.addColorStop(0.5, 'rgba(255,255,255,0.15)');
+    labelGloss.addColorStop(0.7, 'rgba(255,255,255,0.1)');
+    labelGloss.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = labelGloss;
+    ctx.beginPath();
+    ctx.arc(0, 0, labelRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 添加徑向高光到中央標籤
+    const labelRadialGloss = ctx.createRadialGradient(0, -labelRadius * 0.3, 0, 0, -labelRadius * 0.3, labelRadius * 1.2);
+    labelRadialGloss.addColorStop(0, 'rgba(255,255,255,0.12)');
+    labelRadialGloss.addColorStop(0.5, 'rgba(255,255,255,0.06)');
+    labelRadialGloss.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = labelRadialGloss;
     ctx.beginPath();
     ctx.arc(0, 0, labelRadius, 0, Math.PI * 2);
     ctx.fill();
@@ -5212,6 +6647,478 @@ const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, 
     }
     ctx.stroke();
     
+    ctx.restore();
+};
+
+// 濾鏡特效粒子系統
+interface FilterParticle {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    size: number;
+    opacity: number;
+    rotation: number;
+    rotationSpeed: number;
+    color: string;
+    life: number;
+    maxLife: number;
+}
+const createFilterParticle = (type: FilterEffectType, width: number, height: number): FilterParticle => {
+    const baseSpeed = 1.0;
+    // 根據畫布解析度調整粒子大小
+    const resolutionScale = Math.max(width / 1920, height / 1080) * 2;
+    const baseSize = 8 * resolutionScale;
+
+    switch (type) {
+        case FilterEffectType.SNOW:
+            return {
+                x: Math.random() * width,
+                y: -10 - Math.random() * 50, // 從不同高度開始
+                vx: (Math.random() - 0.5) * 0.8, // 增加水平擺動
+                vy: baseSpeed * 0.5 + Math.random() * baseSpeed * 0.8, // 增加速度變化
+                size: baseSize * (0.6 + Math.random() * 0.8), // 增加大小變化
+                opacity: 0.3 + Math.random() * 0.5,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.02,
+                color: '#ffffff',
+                life: 1,
+                maxLife: 1
+            };
+
+        case FilterEffectType.PARTICLES:
+            return {
+                x: Math.random() * width,
+                y: height + 10 + Math.random() * 30, // 從不同高度開始
+                vx: (Math.random() - 0.5) * 1.2, // 增加水平擺動
+                vy: -(baseSpeed * 0.3 + Math.random() * baseSpeed * 0.9), // 增加速度變化
+                size: baseSize * (0.4 + Math.random() * 1.2), // 增加大小變化
+                opacity: 0.4 + Math.random() * 0.6,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.03,
+                color: `hsl(${Math.random() * 80 + 160}, 80%, ${50 + Math.random() * 30}%)`,
+                life: 1,
+                maxLife: 1
+            };
+
+        case FilterEffectType.STARS:
+            return {
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: 0,
+                vy: 0,
+                size: (3 + Math.random() * 6) * resolutionScale, // 大幅增加星星大小
+                opacity: 0.4 + Math.random() * 0.6,
+                rotation: 0,
+                rotationSpeed: 0,
+                color: '#ffffff',
+                life: Math.random() * 3 + 1,
+                maxLife: Math.random() * 3 + 1
+            };
+
+        case FilterEffectType.RAIN:
+            return {
+                x: Math.random() * width,
+                y: -10,
+                vx: 0,
+                vy: baseSpeed * 2 + Math.random() * baseSpeed,
+                size: 1 + Math.random() * 2,
+                opacity: 0.3 + Math.random() * 0.4,
+                rotation: 0,
+                rotationSpeed: 0,
+                color: '#87CEEB',
+                life: 1,
+                maxLife: 1
+            };
+
+        case FilterEffectType.CHERRY_BLOSSOM:
+            return {
+                x: Math.random() * width,
+                y: -10,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: baseSpeed * 0.5 + Math.random() * baseSpeed * 0.3,
+                size: baseSize * 0.6 + Math.random() * baseSize * 0.4,
+                opacity: 0.5 + Math.random() * 0.3,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.02,
+                color: '#FFB6C1',
+                life: 1,
+                maxLife: 1
+            };
+
+        default:
+            return {
+                x: 0, y: 0, vx: 0, vy: 0, size: 1, opacity: 1,
+                rotation: 0, rotationSpeed: 0, color: '#ffffff', life: 1, maxLife: 1
+            };
+    }
+};
+
+const drawFilterParticle = (ctx: CanvasRenderingContext2D, particle: FilterParticle, type: FilterEffectType) => {
+    ctx.save();
+    ctx.translate(particle.x, particle.y);
+    ctx.rotate(particle.rotation);
+    ctx.globalAlpha = particle.opacity;
+
+    switch (type) {
+        case FilterEffectType.SNOW:
+            // 繪製精緻雪花
+            const size = particle.size;
+            const glowSize = size * 2;
+            
+            // 外層光暈
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.3;
+            const glowGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, glowSize);
+            glowGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+            glowGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
+            glowGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = glowGradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, glowSize, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 雪花主體 - 六角星形
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = Math.max(1, size * 0.1);
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+            ctx.shadowBlur = size * 0.3;
+            
+            // 主軸線
+            for (let i = 0; i < 6; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, size);
+                ctx.stroke();
+                
+                // 側枝
+                ctx.beginPath();
+                ctx.moveTo(size * 0.3, 0);
+                ctx.lineTo(size * 0.6, 0);
+                ctx.stroke();
+                
+                ctx.rotate(Math.PI / 3);
+            }
+            
+            // 中心圓點
+            ctx.beginPath();
+            ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 重置陰影
+            ctx.shadowBlur = 0;
+            break;
+
+        case FilterEffectType.PARTICLES:
+            // 繪製精緻發光粒子
+            const particleSize = particle.size;
+            
+            // 外層大光暈
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.2;
+            const outerGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, particleSize * 3);
+            outerGlow.addColorStop(0, particle.color);
+            outerGlow.addColorStop(0.3, particle.color.replace(')', ', 0.3)').replace('hsl', 'hsla'));
+            outerGlow.addColorStop(1, particle.color.replace(')', ', 0)').replace('hsl', 'hsla'));
+            ctx.fillStyle = outerGlow;
+            ctx.beginPath();
+            ctx.arc(0, 0, particleSize * 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 中層光暈
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.6;
+            const middleGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, particleSize * 1.5);
+            middleGlow.addColorStop(0, particle.color);
+            middleGlow.addColorStop(0.5, particle.color.replace(')', ', 0.7)').replace('hsl', 'hsla'));
+            middleGlow.addColorStop(1, particle.color.replace(')', ', 0)').replace('hsl', 'hsla'));
+            ctx.fillStyle = middleGlow;
+            ctx.beginPath();
+            ctx.arc(0, 0, particleSize * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 核心發光
+            ctx.globalAlpha = particle.opacity;
+            const coreGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, particleSize);
+            coreGradient.addColorStop(0, '#ffffff');
+            coreGradient.addColorStop(0.3, particle.color);
+            coreGradient.addColorStop(0.8, particle.color.replace(')', ', 0.8)').replace('hsl', 'hsla'));
+            coreGradient.addColorStop(1, particle.color.replace(')', ', 0)').replace('hsl', 'hsla'));
+            ctx.fillStyle = coreGradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, particleSize, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 拖尾效果（如果粒子有速度）
+            if (Math.abs(particle.vx) > 0.1 || Math.abs(particle.vy) > 0.1) {
+                ctx.save();
+                ctx.globalAlpha = particle.opacity * 0.4;
+                const trailGradient = ctx.createLinearGradient(-particle.vx * 5, -particle.vy * 5, 0, 0);
+                trailGradient.addColorStop(0, particle.color.replace(')', ', 0)').replace('hsl', 'hsla'));
+                trailGradient.addColorStop(1, particle.color);
+                ctx.fillStyle = trailGradient;
+                ctx.beginPath();
+                ctx.ellipse(-particle.vx * 3, -particle.vy * 3, particleSize * 0.8, particleSize * 0.3, Math.atan2(particle.vy, particle.vx), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            break;
+
+        case FilterEffectType.STARS:
+            // 繪製精緻閃爍星星
+            const starSize = particle.size;
+            const twinkleIntensity = Math.sin(Date.now() * 0.005 + particle.x * 0.01 + particle.y * 0.01) * 0.5 + 0.5;
+            const currentAlpha = particle.opacity * (0.3 + twinkleIntensity * 0.7);
+            
+            // 外層大光暈
+            ctx.save();
+            ctx.globalAlpha = currentAlpha * 0.15;
+            const starGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, starSize * 4);
+            starGlow.addColorStop(0, '#ffffff');
+            starGlow.addColorStop(0.3, '#ffffff');
+            starGlow.addColorStop(0.7, '#ffffff');
+            starGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = starGlow;
+            ctx.beginPath();
+            ctx.arc(0, 0, starSize * 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 十字光線
+            ctx.save();
+            ctx.globalAlpha = currentAlpha * 0.6;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = Math.max(1, starSize * 0.15);
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = starSize * 0.5;
+            
+            // 水平線
+            ctx.beginPath();
+            ctx.moveTo(-starSize * 2, 0);
+            ctx.lineTo(starSize * 2, 0);
+            ctx.stroke();
+            
+            // 垂直線
+            ctx.beginPath();
+            ctx.moveTo(0, -starSize * 2);
+            ctx.lineTo(0, starSize * 2);
+            ctx.stroke();
+            
+            ctx.restore();
+            
+            // 星星主體
+            ctx.globalAlpha = currentAlpha;
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+            ctx.shadowBlur = starSize * 0.8;
+            
+            ctx.beginPath();
+            // 五角星形狀
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * 4 * Math.PI) / 5;
+                const x = Math.cos(angle) * starSize;
+                const y = Math.sin(angle) * starSize;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                
+                // 內角點
+                const innerAngle = ((i * 4 + 2) * Math.PI) / 5;
+                const innerX = Math.cos(innerAngle) * starSize * 0.4;
+                const innerY = Math.sin(innerAngle) * starSize * 0.4;
+                ctx.lineTo(innerX, innerY);
+            }
+            ctx.closePath();
+            ctx.fill();
+            
+            // 中心亮點
+            ctx.beginPath();
+            ctx.arc(0, 0, starSize * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 重置陰影
+            ctx.shadowBlur = 0;
+            break;
+
+        case FilterEffectType.RAIN:
+            // 繪製精緻雨滴
+            const rainLength = particle.size * 4;
+            
+            // 速度線效果
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.3;
+            ctx.strokeStyle = particle.color;
+            ctx.lineWidth = 2;
+            ctx.shadowColor = particle.color;
+            ctx.shadowBlur = particle.size * 2;
+            ctx.beginPath();
+            ctx.moveTo(-particle.vx * 8, -particle.vy * 8);
+            ctx.lineTo(0, 0);
+            ctx.stroke();
+            ctx.restore();
+            
+            // 雨滴主體
+            ctx.strokeStyle = particle.color;
+            ctx.lineWidth = Math.max(1, particle.size * 0.3);
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+            ctx.shadowBlur = particle.size * 1.5;
+            
+            // 雨滴形狀（上細下粗）
+            const gradient = ctx.createLinearGradient(0, 0, 0, rainLength);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+            gradient.addColorStop(0.3, particle.color);
+            gradient.addColorStop(1, particle.color.replace(')', ', 0.8)').replace('hsl', 'hsla'));
+            
+            ctx.strokeStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, rainLength);
+            ctx.stroke();
+            
+            // 雨滴尖端
+            ctx.beginPath();
+            ctx.arc(0, rainLength, particle.size * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 重置陰影
+            ctx.shadowBlur = 0;
+            break;
+
+        case FilterEffectType.CHERRY_BLOSSOM:
+            // 繪製精緻櫻花瓣
+            const petalSize = particle.size;
+            
+            // 花瓣陰影
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.3;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.beginPath();
+            ctx.ellipse(petalSize * 0.1, petalSize * 0.1, petalSize, petalSize * 0.6, particle.rotation, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 花瓣主體
+            ctx.globalAlpha = particle.opacity;
+            const petalGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, petalSize);
+            petalGradient.addColorStop(0, '#ffb3d9'); // 淺粉色中心
+            petalGradient.addColorStop(0.7, particle.color);
+            petalGradient.addColorStop(1, particle.color.replace(')', ', 0.7)').replace('hsl', 'hsla'));
+            
+            ctx.fillStyle = petalGradient;
+            ctx.beginPath();
+            
+            // 櫻花瓣形狀（心形輪廓）
+            const heartShape = (t: number) => {
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+                return { x: x * petalSize * 0.1, y: y * petalSize * 0.1 };
+            };
+            
+            // 繪製心形花瓣
+            ctx.beginPath();
+            for (let t = 0; t <= Math.PI * 2; t += 0.1) {
+                const { x, y } = heartShape(t);
+                if (t === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.fill();
+            
+            // 花瓣紋理
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.6;
+            ctx.strokeStyle = '#ff8cc8';
+            ctx.lineWidth = Math.max(1, petalSize * 0.08);
+            ctx.beginPath();
+            // 從中心向外輻射的線條
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * Math.PI * 2) / 5;
+                const endX = Math.cos(angle) * petalSize * 0.7;
+                const endY = Math.sin(angle) * petalSize * 0.7;
+                ctx.moveTo(0, 0);
+                ctx.lineTo(endX, endY);
+            }
+            ctx.stroke();
+            ctx.restore();
+            
+            // 花瓣高光
+            ctx.save();
+            ctx.globalAlpha = particle.opacity * 0.8;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.ellipse(-petalSize * 0.2, -petalSize * 0.2, petalSize * 0.3, petalSize * 0.2, particle.rotation, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            break;
+    }
+
+    ctx.restore();
+};
+
+const drawFilterEffects = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    type: FilterEffectType,
+    intensity: number,
+    opacity: number,
+    speed: number,
+    particles: FilterParticle[],
+    frame: number
+) => {
+    if (!particles || particles.length === 0) return;
+
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.globalCompositeOperation = 'screen';
+
+    // 更新和繪製粒子
+    particles.forEach((particle, index) => {
+        // 增加隨機擺動，讓粒子軌跡更自然
+        const windEffect = (Math.random() - 0.5) * 0.3;
+        const turbulence = Math.sin(frame * 0.01 + index * 0.1) * 0.2;
+        
+        // 更新位置
+        particle.x += (particle.vx + windEffect + turbulence) * speed;
+        particle.y += particle.vy * speed;
+        particle.rotation += particle.rotationSpeed * speed;
+
+        // 檢查邊界和生命週期
+        let shouldRemove = false;
+
+        if (type === FilterEffectType.STARS) {
+            // 星星閃爍效果
+            particle.life -= 0.02 * speed;
+            if (particle.life <= 0) {
+                particle.x = Math.random() * width;
+                particle.y = Math.random() * height;
+                particle.life = particle.maxLife;
+                particle.opacity = 0.3 + Math.random() * 0.7;
+            }
+        } else {
+            // 其他粒子檢查邊界
+            if (particle.y > height + 20 || 
+                particle.x < -20 || 
+                particle.x > width + 20) {
+                shouldRemove = true;
+            }
+        }
+
+        if (!shouldRemove) {
+            // 繪製粒子
+            drawFilterParticle(ctx, particle, type);
+        }
+    });
+
     ctx.restore();
 };
 

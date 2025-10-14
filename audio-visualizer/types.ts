@@ -282,6 +282,7 @@ export interface AudioVisualizerProps {
     // Vinyl Record 實驗款
     vinylImage?: string | null;
     vinylLayoutMode?: 'horizontal' | 'vertical';
+    vinylRecordEnabled?: boolean;
 }
 
 export type Palette = {

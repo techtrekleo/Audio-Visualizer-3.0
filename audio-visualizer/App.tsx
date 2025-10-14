@@ -109,6 +109,7 @@ function App() {
     const [vinylImage, setVinylImage] = useState<string | null>(null);
     const [vinylLayoutMode, setVinylLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
     const [vinylCenterFixed, setVinylCenterFixed] = useState<boolean>(false); // 中心照片固定
+    const [vinylRecordEnabled, setVinylRecordEnabled] = useState<boolean>(true); // 唱片開關
     
     // Lyrics Display State (測試中)
     const [showLyricsDisplay, setShowLyricsDisplay] = useState<boolean>(false);
@@ -163,13 +164,14 @@ function App() {
     const [controlCardEnabled, setControlCardEnabled] = useState<boolean>(true); // 控制卡開關
     const [controlCardFontSize, setControlCardFontSize] = useState<number>(24); // 控制卡字體大小 (24-50px)
     
+    
     // API Key 管理狀態
     const [showApiKeyModal, setShowApiKeyModal] = useState<boolean>(false); // 是否顯示 API Key 彈出視窗
     const [userApiKey, setUserApiKey] = useState<string>(''); // 用戶自定義 API Key
     const [apiQuotaExceeded, setApiQuotaExceeded] = useState<boolean>(false); // API 配額是否用完
     const [controlCardStyle, setControlCardStyle] = useState<ControlCardStyle>(ControlCardStyle.FILLED); // 控制卡樣式
     const [controlCardColor, setControlCardColor] = useState<string>('#ffffff'); // 控制卡顏色
-    const [controlCardBackgroundColor, setControlCardBackgroundColor] = useState<string>('rgba(100, 120, 100, 0.9)'); // 控制卡背景顏色
+    const [controlCardBackgroundColor, setControlCardBackgroundColor] = useState<string>('rgba(0, 0, 0, 0.5)'); // 控制卡背景顏色
     const [songNameList, setSongNameList] = useState<string[]>([]); // 歌名列表
     const [currentSongIndex, setCurrentSongIndex] = useState<number>(0); // 當前歌曲索引
     const [autoChangeSong, setAutoChangeSong] = useState<boolean>(false); // 自動切換歌曲
@@ -1487,6 +1489,8 @@ function App() {
                                     controlCardStyle={controlCardStyle}
                                     controlCardColor={controlCardColor}
                                     controlCardBackgroundColor={controlCardBackgroundColor}
+                                    // Vinyl Record props
+                                    vinylRecordEnabled={vinylRecordEnabled}
                                 />
                             </div>
                         </div>
@@ -1675,6 +1679,9 @@ function App() {
                             onControlCardColorChange={setControlCardColor}
                             controlCardBackgroundColor={controlCardBackgroundColor}
                             onControlCardBackgroundColorChange={setControlCardBackgroundColor}
+                            // Vinyl Record props
+                            vinylRecordEnabled={vinylRecordEnabled}
+                            onVinylRecordEnabledChange={setVinylRecordEnabled}
                             songNameList={songNameList}
                             onSongNameListChange={setSongNameList}
                             autoChangeSong={autoChangeSong}

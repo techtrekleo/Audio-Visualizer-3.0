@@ -290,6 +290,16 @@ interface OptimizedControlsProps {
     onControlCardColorChange?: (c: string) => void;
     controlCardBackgroundColor?: string;
     onControlCardBackgroundColorChange?: (c: string) => void;
+    // 唱片設定（Vinyl）
+    vinylRecordEnabled?: boolean;
+    onVinylRecordEnabledChange?: (enabled: boolean) => void;
+    controlCardFontSize?: number;
+    onControlCardFontSizeChange?: (size: number) => void;
+    // Song management props
+    songNameList?: string[];
+    onSongNameListChange?: (list: string[]) => void;
+    autoChangeSong?: boolean;
+    onAutoChangeSongChange?: (auto: boolean) => void;
     // Filter Effects props
     filterEffectType?: FilterEffectType;
     onFilterEffectTypeChange?: (type: FilterEffectType) => void;
@@ -1693,13 +1703,13 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                     <div className="flex space-x-2">
                                                         <input
                                                             type="color"
-                                                            value={props.controlCardBackgroundColor || 'rgba(100, 120, 100, 0.9)'}
+                                                            value={props.controlCardBackgroundColor || 'rgba(0, 0, 0, 0.5)'}
                                                             onChange={(e) => props.onControlCardBackgroundColorChange?.(e.target.value)}
                                                             className="w-12 h-8 rounded border border-gray-600 cursor-pointer"
                                                         />
                                                         <input
                                                             type="text"
-                                                            value={props.controlCardBackgroundColor || 'rgba(100, 120, 100, 0.9)'}
+                                                            value={props.controlCardBackgroundColor || 'rgba(0, 0, 0, 0.5)'}
                                                             onChange={(e) => props.onControlCardBackgroundColorChange?.(e.target.value)}
                                                             className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
                                                             placeholder="rgba(100, 120, 100, 0.9)"
@@ -1909,8 +1919,27 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     </p>
                                 </div>
 
+                                {/* 唱片設定 */}
+                                <div className="space-y-4 border-t border-gray-600 pt-4">
+                                    <h4 className="text-sm font-medium text-cyan-400">唱片設定</h4>
+                                    
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-gray-300">顯示唱片</label>
+                                        <button
+                                            onClick={() => props.onVinylRecordEnabledChange?.(!props.vinylRecordEnabled)}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                                props.vinylRecordEnabled ? 'bg-cyan-500' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.vinylRecordEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
+                                </div>
+
                                 {/* 控制卡設定 */}
                                 <div className="space-y-4 border-t border-gray-600 pt-4">
+                                    <h4 className="text-sm font-medium text-cyan-400">控制卡設定</h4>
+                                    
                                     <div className="flex items-center justify-between">
                                         <label className="text-sm font-medium text-gray-300">顯示控制卡</label>
                                         <button

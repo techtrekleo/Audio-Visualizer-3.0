@@ -4121,10 +4121,10 @@ const drawVinylRecord: DrawFunction = (
      ctx.fillStyle = bg;
      ctx.fillRect(0, 0, width, height);
  
-    // 旋轉角（依唱片轉速計算，放慢至 20 RPM；每幀≈60fps）
-    const RPM = 20;
-    const anglePerFrame = (RPM / 60) * (Math.PI * 2) / 60; // 每幀角度增量
-    const angle = frame * anglePerFrame + (isBeat ? 0.002 : 0);
+     // 旋轉角（依唱片轉速計算，放慢至 10 RPM；每幀≈60fps）
+     const RPM = 10; // 降低一半速度
+     const anglePerFrame = (RPM / 60) * (Math.PI * 2) / 60; // 每幀角度增量
+     const angle = frame * anglePerFrame + (isBeat ? 0.001 : 0); // 降低一半速度
     
     // 檢查是否開啟中心照片固定模式
     const vinylCenterFixed = (latestPropsRef as any)?.vinylCenterFixed || false;
@@ -4137,24 +4137,15 @@ const drawVinylRecord: DrawFunction = (
         ctx.rotate(angle);
     }
 
-    // 外圈黑膠（黑灰色）
-    ctx.save();
-    // 如果開啟中心固定模式，黑膠遮罩需要旋轉
-    if (vinylCenterFixed) {
-        ctx.rotate(angle);
-    }
-    ctx.fillStyle = '#181b21';
-    ctx.beginPath();
-    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+    // 移除實心的外圈黑膠，改為在最後統一處理透明度
 
-    // 唱片紋路（限制在中圈：從內到外的同心條紋，黑/灰交錯）
+    // 唱片紋路（限制在中圈：從內到外的同心條紋，黑/灰交錯，70%透明度）
     ctx.save();
     // 如果開啟中心固定模式，唱片紋路需要旋轉
     if (vinylCenterFixed) {
         ctx.rotate(angle);
     }
+    ctx.globalAlpha = 0.7; // 70%透明度
     ctx.beginPath();
     ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
     ctx.arc(0, 0, ringRadius * 0.96, 0, Math.PI * 2, true);
@@ -4168,7 +4159,9 @@ const drawVinylRecord: DrawFunction = (
         ctx.stroke();
     }
     ctx.restore();
-    // 斜向高光帶
+    // 斜向高光帶（70%透明度）
+    ctx.save();
+    ctx.globalAlpha = 0.7; // 70%透明度
     const gloss = ctx.createLinearGradient(-discRadius, -discRadius, discRadius, discRadius);
     gloss.addColorStop(0, 'rgba(255,255,255,0)');
     gloss.addColorStop(0.5, 'rgba(255,255,255,0.06)');
@@ -4177,6 +4170,7 @@ const drawVinylRecord: DrawFunction = (
     ctx.beginPath();
     ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
 
     // 三圈結構：
     // 1) 內圈：原圖
@@ -4186,33 +4180,34 @@ const drawVinylRecord: DrawFunction = (
     // 從最新屬性讀取圖片（避免引用組件內部的 refs 導致作用域錯誤）
     const vinylImage = ((latestPropsRef as any)?.vinylImage ?? null) as string | null;
     
-    // 預設黑膠唱片圖片（base64編碼 - 純黑膠紋理）
+    // 預設黑膠唱片圖片（base64編碼 - 純黑膠紋理，70%透明度）
     const defaultVinylImage = 'data:image/svg+xml;base64,' + btoa(`
         <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <radialGradient id="vinylGradient" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" style="stop-color:#181b21;stop-opacity:1" />
-                    <stop offset="70%" style="stop-color:#181b21;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#0f1419;stop-opacity:1" />
+                    <stop offset="0%" style="stop-color:#181b21;stop-opacity:0.7" />
+                    <stop offset="70%" style="stop-color:#181b21;stop-opacity:0.7" />
+                    <stop offset="100%" style="stop-color:#0f1419;stop-opacity:0.7" />
                 </radialGradient>
             </defs>
             <circle cx="200" cy="200" r="200" fill="url(#vinylGradient)"/>
-            <circle cx="200" cy="200" r="180" fill="none" stroke="#2a2f36" stroke-width="1"/>
-            <circle cx="200" cy="200" r="160" fill="none" stroke="#1f2329" stroke-width="1"/>
-            <circle cx="200" cy="200" r="140" fill="none" stroke="#2a2f36" stroke-width="1"/>
-            <circle cx="200" cy="200" r="120" fill="none" stroke="#1f2329" stroke-width="1"/>
-            <circle cx="200" cy="200" r="100" fill="none" stroke="#2a2f36" stroke-width="1"/>
-            <circle cx="200" cy="200" r="80" fill="none" stroke="#1f2329" stroke-width="1"/>
-            <circle cx="200" cy="200" r="60" fill="none" stroke="#2a2f36" stroke-width="1"/>
-            <circle cx="200" cy="200" r="40" fill="none" stroke="#1f2329" stroke-width="1"/>
-            <circle cx="200" cy="200" r="25" fill="none" stroke="#2a2f36" stroke-width="1"/>
-            <circle cx="200" cy="200" r="10" fill="none" stroke="#1f2329" stroke-width="1"/>
+            <circle cx="200" cy="200" r="180" fill="none" stroke="#2a2f36" stroke-width="1" opacity="0.7"/>
+            <circle cx="200" cy="200" r="160" fill="none" stroke="#1f2329" stroke-width="1" opacity="0.7"/>
+            <circle cx="200" cy="200" r="140" fill="none" stroke="#2a2f36" stroke-width="1" opacity="0.7"/>
+            <circle cx="200" cy="200" r="120" fill="none" stroke="#1f2329" stroke-width="1" opacity="0.7"/>
+            <circle cx="200" cy="200" r="100" fill="none" stroke="#2a2f36" stroke-width="1" opacity="0.7"/>
+            <circle cx="200" cy="200" r="80" fill="none" stroke="#1f2329" stroke-width="1" opacity="0.7"/>
+            <circle cx="200" cy="200" r="60" fill="none" stroke="#2a2f36" stroke-width="1" opacity="0.7"/>
+            <circle cx="200" cy="200" r="40" fill="none" stroke="#1f2329" stroke-width="1" opacity="0.7"/>
+            <circle cx="200" cy="200" r="25" fill="none" stroke="#2a2f36" stroke-width="1" opacity="0.7"/>
+            <circle cx="200" cy="200" r="10" fill="none" stroke="#1f2329" stroke-width="1" opacity="0.7"/>
         </svg>
     `);
     // 使用上傳的圖片或預設圖片
     const imageToUse = vinylImage || defaultVinylImage;
     const img = getOrCreateCachedImage('vinylImage', imageToUse);
     
+    // 先繪製中心圖片（完全不透明，不影響後續透明度）
     if (img && img.complete) {
         const innerR = ringRadius * 0.92; // 讓內圈更大，黑膠圈變窄
         const size = innerR * 2; // 以內圈大小鋪滿
@@ -4222,7 +4217,6 @@ const drawVinylRecord: DrawFunction = (
         ctx.clip();
         
         // 中心照片在固定模式下保持不動（不需要任何旋轉）
-        
         ctx.drawImage(img, -size / 2, -size / 2, size, size);
         ctx.restore();
     } else {
@@ -4239,12 +4233,15 @@ const drawVinylRecord: DrawFunction = (
     ctx.arc(0, 0, ringRadius * 0.06, 0, Math.PI * 2);
     ctx.fill();
 
-    // 中圈：黑膠唱片遮罩（深灰色，不是純黑）
-    ctx.fillStyle = '#1c1f24';
-    ctx.beginPath();
-    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
-    ctx.arc(0, 0, ringRadius * 0.96, 0, Math.PI * 2, true);
-    ctx.fill('evenodd');
+     // 中圈：黑膠唱片遮罩（深灰色，70%透明度）
+     ctx.save();
+     ctx.globalAlpha = 0.7; // 70%透明度
+     ctx.fillStyle = '#1c1f24';
+     ctx.beginPath();
+     ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
+     ctx.arc(0, 0, ringRadius * 0.96, 0, Math.PI * 2, true);
+     ctx.fill('evenodd');
+     ctx.restore();
 
     // 外圈：半透明遮罩（同圖暗化，跟著旋轉）
     const img2 = getOrCreateCachedImage('vinylImageOuter', imageToUse);
@@ -4259,10 +4256,10 @@ const drawVinylRecord: DrawFunction = (
         // 外圈半透明遮罩繼續旋轉
         ctx.rotate(angle);
         
-        const size2 = outerR * 2;
-        ctx.globalAlpha = 0.6;
-        ctx.drawImage(img2, -size2 / 2, -size2 / 2, size2, size2);
-        ctx.globalAlpha = 1;
+         const size2 = outerR * 2;
+         ctx.globalAlpha = 0.7; // 外圈圖片70%透明度
+         ctx.drawImage(img2, -size2 / 2, -size2 / 2, size2, size2);
+         ctx.globalAlpha = 1;
         ctx.restore();
     } else {
         ctx.save();
@@ -4389,7 +4386,7 @@ const drawVinylRecord: DrawFunction = (
 
         const style = (latestPropsRef as any)?.controlCardStyle as any;
         const color = (latestPropsRef as any)?.controlCardColor || '#111827';
-        const bg = (latestPropsRef as any)?.controlCardBackgroundColor || 'rgba(240, 244, 248, 0.92)';
+         const bg = (latestPropsRef as any)?.controlCardBackgroundColor || 'rgba(0, 0, 0, 0.5)'; // 黑色背景，50%透明度
 
         // 卡片底
         if (style !== 'transparent') {
