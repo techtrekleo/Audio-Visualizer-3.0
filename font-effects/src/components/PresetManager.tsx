@@ -115,7 +115,6 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
                   onChange={(e) => setPresetName(e.target.value)}
                   placeholder="輸入預設名稱..."
                   className="w-full p-3 bg-gray-900 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                  maxLength={50}
                 />
               </div>
               <div className="flex gap-3">

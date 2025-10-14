@@ -88,10 +88,9 @@ export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
           value={textBlock.text}
           onChange={(e) => onUpdate({ ...textBlock, text: e.target.value })}
           placeholder={`輸入${getTypeLabel()}...`}
-          maxLength={30}
           className="w-full p-3 bg-gray-900 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
         />
-        <p className="text-right text-sm text-gray-500 -mt-2">{textBlock.text.length} / 30</p>
+        <p className="text-right text-sm text-gray-500 -mt-2">{textBlock.text.length} 字元</p>
       </div>
 
       <div className="space-y-3">
