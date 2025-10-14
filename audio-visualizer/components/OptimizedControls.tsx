@@ -1313,7 +1313,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             label="水平位置"
                                             value={
                                                 props.subtitleOrientation === SubtitleOrientation.VERTICAL 
-                                                    ? (props.verticalSubtitlePosition || 0.5)
+                                                    ? (props.verticalSubtitlePosition || 1.2)
                                                     : (props.horizontalSubtitlePosition || 0.5)
                                             }
                                             onChange={(value) => {
@@ -1324,7 +1324,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 }
                                             }}
                                             min={0}
-                                            max={1}
+                                            max={1.2}
                                             step={0.05}
                                         />
                                         <SliderControl
@@ -1332,7 +1332,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             value={
                                                 props.subtitleOrientation === SubtitleOrientation.VERTICAL 
                                                     ? (props.verticalSubtitleVerticalPosition || 0.5)
-                                                    : (props.horizontalSubtitleVerticalPosition || 0.85)
+                                                    : (props.horizontalSubtitleVerticalPosition || 1.2)
                                             }
                                             onChange={(value) => {
                                                 if (props.subtitleOrientation === SubtitleOrientation.VERTICAL) {
@@ -1342,7 +1342,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 }
                                             }}
                                             min={0}
-                                            max={2}
+                                            max={1.2}
                                             step={0.05}
                                         />
                                     </div>

@@ -4059,18 +4059,22 @@ type DrawFunction = (
     particles?: Particle[],
     geometricFrameImage?: HTMLImageElement | null,
     geometricSemicircleImage?: HTMLImageElement | null,
+    vinylRecordEnabled?: boolean,
 ) => void;
 // 實驗款：Vinyl Record 旋轉唱片 + 控制卡
-const drawVinylRecord: DrawFunction = (
-    ctx,
-    dataArray,
-    width,
-    height,
-    frame,
-    sensitivity,
-    colors,
-    graphicEffect,
-    isBeat
+const drawVinylRecord = (
+    ctx: CanvasRenderingContext2D,
+    dataArray: Uint8Array | null,
+    width: number,
+    height: number,
+    frame: number,
+    sensitivity: number,
+    colors: Palette,
+    graphicEffect: GraphicEffectType,
+    isBeat?: boolean,
+    waveformStroke?: boolean,
+    particles?: Particle[],
+    vinylRecordEnabled: boolean = true
 ) => {
     // 不在此重置或覆寫矩陣，讓外層全域 transform（effectScale/effectOffsetX/Y + visualizationTransform）生效
  
@@ -4129,18 +4133,20 @@ const drawVinylRecord: DrawFunction = (
     // 檢查是否開啟中心照片固定模式
     const vinylCenterFixed = (latestPropsRef as any)?.vinylCenterFixed || false;
 
-    ctx.save();
-    ctx.translate(centerX, centerY);
-    
-    // 整體旋轉邏輯：固定模式下不旋轉整體，讓各層獨立控制
-    if (!vinylCenterFixed) {
-        ctx.rotate(angle);
-    }
+    // 只有當唱片啟用時才繪製唱片部分
+    if (vinylRecordEnabled) {
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        
+        // 整體旋轉邏輯：固定模式下不旋轉整體，讓各層獨立控制
+        if (!vinylCenterFixed) {
+            ctx.rotate(angle);
+        }
 
-    // 修正版：外圈圖片旋轉，中間補半透明黑膠
-    
-    // 從最新屬性讀取圖片
-    const vinylImage = ((latestPropsRef as any)?.vinylImage ?? null) as string | null;
+        // 修正版：外圈圖片旋轉，中間補半透明黑膠
+        
+        // 從最新屬性讀取圖片
+        const vinylImage = ((latestPropsRef as any)?.vinylImage ?? null) as string | null;
     
     // 第一部分：中心圖片（完全不透明）
     if (vinylImage) {
@@ -4266,7 +4272,10 @@ const drawVinylRecord: DrawFunction = (
         ctx.stroke();
         ctx.globalAlpha = 1;
     }
-    // 控制卡 (右側) - 短一些、厚一些的樣式
+    
+    } // 關閉 vinylRecordEnabled 條件判斷
+    
+    // 控制卡 (右側) - 短一些、厚一些的樣式（始終顯示）
     const cardW = width * 0.21; // 長度改為目前的 70%
     const cardH = 300; // 高度固定為 300px
     const cardEnabled = (latestPropsRef as any)?.controlCardEnabled !== false; // 預設顯示
@@ -4922,7 +4931,9 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 const currentFrame = typeof frame.current === 'number' ? frame.current : 0;
                 drawZCustomVisualization(ctx, width, height, propsRef.current.zCustomCenterImage, propsRef, currentFrame);
         } else if (visualizationType === VisualizationType.VINYL_RECORD) {
-            drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
+            // 檢查是否啟用唱片顯示
+            const vinylRecordEnabled = propsRef.current.vinylRecordEnabled !== false;
+            drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, vinylRecordEnabled);
             } else {
             drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
             }
