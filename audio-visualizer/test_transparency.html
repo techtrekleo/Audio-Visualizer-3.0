@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>透明度測試</title>
+    <style>
+        body { margin: 0; padding: 20px; background: #333; color: white; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #666; }
+        canvas { border: 1px solid #fff; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>黑膠唱片透明度測試</h1>
+    
+    <div class="test-section">
+        <h2>測試說明</h2>
+        <p>以下canvas應該顯示：</p>
+        <ul>
+            <li>外圈旋轉圖片：70%透明度</li>
+            <li>中圈黑膠：70%透明度</li>
+            <li>中心圖片：完全不透明</li>
+            <li>控制卡背景：50%透明度</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Canvas 測試</h2>
+        <canvas id="testCanvas" width="800" height="600"></canvas>
+    </div>
+
+    <script>
+        // 測試透明度設定
+        const canvas = document.getElementById('testCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 設置背景
+        ctx.fillStyle = 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // 測試70%透明度
+        ctx.save();
+        ctx.globalAlpha = 0.7;
+        ctx.fillStyle = '#1c1f24';
+        ctx.beginPath();
+        ctx.arc(400, 300, 150, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        
+        // 測試50%透明度
+        ctx.save();
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(600, 200, 150, 200);
+        ctx.restore();
+        
+        console.log('透明度測試完成');
+    </script>
+</body>
+</html>
+

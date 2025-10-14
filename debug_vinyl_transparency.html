@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黑膠唱片透明度調試工具</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            font-family: Arial, sans-serif;
+        }
+        .debug-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .debug-section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        canvas {
+            border: 2px solid #333;
+            margin: 10px 0;
+        }
+        .info {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 黑膠唱片透明度調試工具</h1>
+    
+    <div class="debug-container">
+        <div class="debug-section">
+            <h3>測試1: 基本透明度</h3>
+            <canvas id="canvas1" width="300" height="300"></canvas>
+            <div class="info">測試基本的 globalAlpha 透明度效果</div>
+            <button onclick="testBasicTransparency()">測試</button>
+        </div>
+
+        <div class="debug-section">
+            <h3>測試2: 圓形透明度</h3>
+            <canvas id="canvas2" width="300" height="300"></canvas>
+            <div class="info">測試圓形的透明度效果</div>
+            <button onclick="testCircleTransparency()">測試</button>
+        </div>
+
+        <div class="debug-section">
+            <h3>測試3: 黑膠唱片結構</h3>
+            <canvas id="canvas3" width="300" height="300"></canvas>
+            <div class="info">模擬黑膠唱片的完整結構</div>
+            <button onclick="testVinylStructure()">測試</button>
+        </div>
+
+        <div class="debug-section">
+            <h3>測試4: 移除所有遮罩</h3>
+            <canvas id="canvas4" width="300" height="300"></canvas>
+            <div class="info">移除所有 clip 和 fill('evenodd')</div>
+            <button onclick="testNoMask()">測試</button>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h3>🎯 調試結果</h3>
+        <div id="debug-output" class="info"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const output = document.getElementById('debug-output');
+            output.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+            console.log(message);
+        }
+
+        function testBasicTransparency() {
+            const canvas = document.getElementById('canvas1');
+            const ctx = canvas.getContext('2d');
+            
+            // 清除畫布
+            ctx.clearRect(0, 0, 300, 300);
+            
+            // 繪製背景
+            ctx.fillStyle = '#ff6b6b';
+            ctx.fillRect(0, 0, 300, 300);
+            
+            // 繪製半透明圓形
+            ctx.save();
+            ctx.globalAlpha = 0.7;
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(150, 150, 100, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            log('✅ 基本透明度測試完成');
+        }
+
+        function testCircleTransparency() {
+            const canvas = document.getElementById('canvas2');
+            const ctx = canvas.getContext('2d');
+            
+            // 清除畫布
+            ctx.clearRect(0, 0, 300, 300);
+            
+            // 繪製彩色背景
+            const gradient = ctx.createRadialGradient(150, 150, 0, 150, 150, 150);
+            gradient.addColorStop(0, '#ff6b6b');
+            gradient.addColorStop(0.5, '#4ecdc4');
+            gradient.addColorStop(1, '#45b7d1');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 300, 300);
+            
+            // 繪製半透明黑膠唱片
+            ctx.save();
+            ctx.globalAlpha = 0.7;
+            ctx.fillStyle = '#1c1f24';
+            ctx.beginPath();
+            ctx.arc(150, 150, 120, 0, Math.PI * 2);
+            ctx.arc(150, 150, 60, 0, Math.PI * 2, true);
+            ctx.fill('evenodd');
+            ctx.restore();
+            
+            log('✅ 圓形透明度測試完成');
+        }
+
+        function testVinylStructure() {
+            const canvas = document.getElementById('canvas3');
+            const ctx = canvas.getContext('2d');
+            
+            // 清除畫布
+            ctx.clearRect(0, 0, 300, 300);
+            
+            // 繪製背景
+            const gradient = ctx.createRadialGradient(150, 150, 0, 150, 150, 150);
+            gradient.addColorStop(0, '#ff6b6b');
+            gradient.addColorStop(0.5, '#4ecdc4');
+            gradient.addColorStop(1, '#45b7d1');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 300, 300);
+            
+            // 模擬黑膠唱片的完整結構
+            const centerX = 150;
+            const centerY = 150;
+            const discRadius = 120;
+            const ringRadius = 80;
+            
+            // 1. 唱片紋路
+            ctx.save();
+            ctx.globalAlpha = 0.7;
+            for (let i = 0; i <= 20; i++) {
+                const r = ringRadius + i * ((discRadius - ringRadius) / 20);
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = i % 2 === 0 ? '#2a2f36' : '#1f2329';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            ctx.restore();
+            
+            // 2. 斜向高光帶
+            ctx.save();
+            ctx.globalAlpha = 0.7;
+            const gloss = ctx.createLinearGradient(centerX - discRadius, centerY - discRadius, centerX + discRadius, centerY + discRadius);
+            gloss.addColorStop(0, 'rgba(255,255,255,0)');
+            gloss.addColorStop(0.5, 'rgba(255,255,255,0.06)');
+            gloss.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = gloss;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, discRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // 3. 中心圖片（不透明）
+            ctx.fillStyle = '#1f2937';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, ringRadius * 0.9, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 4. 中心孔
+            ctx.fillStyle = '#e5e7eb';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, ringRadius * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+            
+            log('✅ 黑膠唱片結構測試完成');
+        }
+
+        function testNoMask() {
+            const canvas = document.getElementById('canvas4');
+            const ctx = canvas.getContext('2d');
+            
+            // 清除畫布
+            ctx.clearRect(0, 0, 300, 300);
+            
+            // 繪製背景
+            const gradient = ctx.createRadialGradient(150, 150, 0, 150, 150, 150);
+            gradient.addColorStop(0, '#ff6b6b');
+            gradient.addColorStop(0.5, '#4ecdc4');
+            gradient.addColorStop(1, '#45b7d1');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 300, 300);
+            
+            const centerX = 150;
+            const centerY = 150;
+            const discRadius = 120;
+            const ringRadius = 80;
+            
+            // 只繪製紋路，不使用任何遮罩
+            ctx.save();
+            ctx.globalAlpha = 0.7;
+            for (let i = 0; i <= 20; i++) {
+                const r = ringRadius + i * ((discRadius - ringRadius) / 20);
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = i % 2 === 0 ? '#2a2f36' : '#1f2329';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            ctx.restore();
+            
+            // 中心圖片（不透明）
+            ctx.fillStyle = '#1f2937';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, ringRadius * 0.9, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 中心孔
+            ctx.fillStyle = '#e5e7eb';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, ringRadius * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+            
+            log('✅ 無遮罩測試完成 - 應該能看到背景透過紋路顯示');
+        }
+
+        // 頁面載入時自動運行所有測試
+        window.onload = function() {
+            log('🚀 調試工具已載入');
+            testBasicTransparency();
+            testCircleTransparency();
+            testVinylStructure();
+            testNoMask();
+            log('🎯 所有測試完成！請檢查每個畫布的透明度效果');
+        };
+    </script>
+</body>
+</html>

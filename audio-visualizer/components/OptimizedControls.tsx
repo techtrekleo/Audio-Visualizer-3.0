@@ -1332,7 +1332,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             value={
                                                 props.subtitleOrientation === SubtitleOrientation.VERTICAL 
                                                     ? (props.verticalSubtitleVerticalPosition || 0.5)
-                                                    : (props.horizontalSubtitleVerticalPosition || 0.2)
+                                                    : (props.horizontalSubtitleVerticalPosition || 0.85)
                                             }
                                             onChange={(value) => {
                                                 if (props.subtitleOrientation === SubtitleOrientation.VERTICAL) {
@@ -1342,7 +1342,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 }
                                             }}
                                             min={0}
-                                            max={1}
+                                            max={2}
                                             step={0.05}
                                         />
                                     </div>
@@ -1494,8 +1494,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         label="垂直位置 (%)"
                                         value={props.lyricsPositionY}
                                         onChange={props.onLyricsPositionYChange}
-                                        min={-50}
-                                        max={50}
+                                        min={-100}
+                                        max={100}
                                         step={5}
                                         colorType="position"
                                     />

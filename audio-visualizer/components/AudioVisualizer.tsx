@@ -4114,12 +4114,12 @@ const drawVinylRecord: DrawFunction = (
      // 調整中圈比例：加大內徑，讓黑膠圈更窄
      const ringRadius = discRadius * 0.82;
  
-     // 背景柔霧
-     const bg = ctx.createRadialGradient(centerX, centerY, discRadius * 0.2, centerX, centerY, discRadius * 1.6);
-     bg.addColorStop(0, 'rgba(0,0,0,0.35)');
-     bg.addColorStop(1, 'rgba(0,0,0,0)');
-     ctx.fillStyle = bg;
-     ctx.fillRect(0, 0, width, height);
+    // 背景柔霧（降低強度，避免覆蓋透明度效果）
+    const bg = ctx.createRadialGradient(centerX, centerY, discRadius * 0.2, centerX, centerY, discRadius * 1.6);
+    bg.addColorStop(0, 'rgba(0,0,0,0.05)'); // 大幅降低背景強度
+    bg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, width, height);
  
      // 旋轉角（依唱片轉速計算，放慢至 10 RPM；每幀≈60fps）
      const RPM = 10; // 降低一半速度
@@ -4137,140 +4137,59 @@ const drawVinylRecord: DrawFunction = (
         ctx.rotate(angle);
     }
 
-    // 移除實心的外圈黑膠，改為在最後統一處理透明度
-
-    // 唱片紋路（限制在中圈：從內到外的同心條紋，黑/灰交錯，70%透明度）
-    ctx.save();
-    // 如果開啟中心固定模式，唱片紋路需要旋轉
-    if (vinylCenterFixed) {
-        ctx.rotate(angle);
-    }
-    ctx.globalAlpha = 0.7; // 70%透明度
-    ctx.beginPath();
-    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
-    ctx.arc(0, 0, ringRadius * 0.96, 0, Math.PI * 2, true);
-    ctx.clip('evenodd');
-    for (let i = 0; i <= 48; i++) {
-        const r = ringRadius * 0.96 + i * ((discRadius - ringRadius * 0.96) / 48);
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = i % 2 === 0 ? '#2a2f36' : '#1f2329';
-        ctx.beginPath();
-        ctx.arc(0, 0, r, 0, Math.PI * 2);
-        ctx.stroke();
-    }
-    ctx.restore();
-    // 斜向高光帶（70%透明度）
-    ctx.save();
-    ctx.globalAlpha = 0.7; // 70%透明度
-    const gloss = ctx.createLinearGradient(-discRadius, -discRadius, discRadius, discRadius);
-    gloss.addColorStop(0, 'rgba(255,255,255,0)');
-    gloss.addColorStop(0.5, 'rgba(255,255,255,0.06)');
-    gloss.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = gloss;
-    ctx.beginPath();
-    ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    // 三圈結構：
-    // 1) 內圈：原圖
-    // 2) 中圈：黑膠唱片遮罩
-    // 3) 外圈：半透明遮罩（原圖暗化）
-    // 中心貼紙（若有圖片，使用圖片）
-    // 從最新屬性讀取圖片（避免引用組件內部的 refs 導致作用域錯誤）
+    // 修正版：外圈圖片旋轉，中間補半透明黑膠
+    
+    // 從最新屬性讀取圖片
     const vinylImage = ((latestPropsRef as any)?.vinylImage ?? null) as string | null;
     
-    // 預設黑膠唱片圖片（base64編碼 - 純黑膠紋理，70%透明度）
-    const defaultVinylImage = 'data:image/svg+xml;base64,' + btoa(`
-        <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <radialGradient id="vinylGradient" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" style="stop-color:#181b21;stop-opacity:0.7" />
-                    <stop offset="70%" style="stop-color:#181b21;stop-opacity:0.7" />
-                    <stop offset="100%" style="stop-color:#0f1419;stop-opacity:0.7" />
-                </radialGradient>
-            </defs>
-            <circle cx="200" cy="200" r="200" fill="url(#vinylGradient)"/>
-            <circle cx="200" cy="200" r="180" fill="none" stroke="#2a2f36" stroke-width="1" opacity="0.7"/>
-            <circle cx="200" cy="200" r="160" fill="none" stroke="#1f2329" stroke-width="1" opacity="0.7"/>
-            <circle cx="200" cy="200" r="140" fill="none" stroke="#2a2f36" stroke-width="1" opacity="0.7"/>
-            <circle cx="200" cy="200" r="120" fill="none" stroke="#1f2329" stroke-width="1" opacity="0.7"/>
-            <circle cx="200" cy="200" r="100" fill="none" stroke="#2a2f36" stroke-width="1" opacity="0.7"/>
-            <circle cx="200" cy="200" r="80" fill="none" stroke="#1f2329" stroke-width="1" opacity="0.7"/>
-            <circle cx="200" cy="200" r="60" fill="none" stroke="#2a2f36" stroke-width="1" opacity="0.7"/>
-            <circle cx="200" cy="200" r="40" fill="none" stroke="#1f2329" stroke-width="1" opacity="0.7"/>
-            <circle cx="200" cy="200" r="25" fill="none" stroke="#2a2f36" stroke-width="1" opacity="0.7"/>
-            <circle cx="200" cy="200" r="10" fill="none" stroke="#1f2329" stroke-width="1" opacity="0.7"/>
-        </svg>
-    `);
-    // 使用上傳的圖片或預設圖片
-    const imageToUse = vinylImage || defaultVinylImage;
-    const img = getOrCreateCachedImage('vinylImage', imageToUse);
-    
-    // 先繪製中心圖片（完全不透明，不影響後續透明度）
-    if (img && img.complete) {
-        const innerR = ringRadius * 0.92; // 讓內圈更大，黑膠圈變窄
-        const size = innerR * 2; // 以內圈大小鋪滿
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(0, 0, innerR, 0, Math.PI * 2);
-        ctx.clip();
-        
-        // 中心照片在固定模式下保持不動（不需要任何旋轉）
-        ctx.drawImage(img, -size / 2, -size / 2, size, size);
-        ctx.restore();
-    } else {
-        // 首次尚未載入完成時，畫一個漸層佔位
-        ctx.fillStyle = '#1f2937';
-        ctx.beginPath();
-        ctx.arc(0, 0, ringRadius * 0.92, 0, Math.PI * 2);
-        ctx.fill();
+    // 第一部分：中心圖片（完全不透明）
+    if (vinylImage) {
+        const img = getOrCreateCachedImage('vinylImage', vinylImage);
+        if (img && img.complete) {
+            const centerImageRadius = discRadius * 0.6; // 中心圖片大小
+            const size = centerImageRadius * 2;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(0, 0, centerImageRadius, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.drawImage(img, -size / 2, -size / 2, size, size);
+            ctx.restore();
+        }
     }
-
+    
+    // 第二部分：中間半透明黑膠環（70%透明度）- 縮小範圍
+    ctx.save();
+    ctx.globalAlpha = 0.7; // 70%透明度
+    ctx.fillStyle = '#1c1f24'; // 深灰色黑膠
+    ctx.beginPath();
+    ctx.arc(0, 0, discRadius * 0.75, 0, Math.PI * 2); // 外徑（縮小）
+    ctx.arc(0, 0, discRadius * 0.6, 0, Math.PI * 2, true); // 內徑（挖掉中心圖片）
+    ctx.fill('evenodd');
+    ctx.restore();
+    
+    // 第三部分：外圈圖片旋轉（70%透明度，圓形裁剪）- 擴大範圍
+    if (vinylImage) {
+        const img = getOrCreateCachedImage('vinylImageOuter', vinylImage);
+        if (img && img.complete) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(0, 0, discRadius, 0, Math.PI * 2); // 外圈
+            ctx.arc(0, 0, discRadius * 0.75, 0, Math.PI * 2, true); // 內圈（與黑膠環對齊）
+            ctx.clip('evenodd');
+            
+            ctx.rotate(angle); // 跟著旋轉
+            ctx.globalAlpha = 0.7; // 70%透明度
+            const size = discRadius * 2;
+            ctx.drawImage(img, -size / 2, -size / 2, size, size);
+            ctx.restore();
+        }
+    }
+    
     // 中心孔
     ctx.fillStyle = '#e5e7eb';
     ctx.beginPath();
-    ctx.arc(0, 0, ringRadius * 0.06, 0, Math.PI * 2);
+    ctx.arc(0, 0, discRadius * 0.08, 0, Math.PI * 2);
     ctx.fill();
-
-     // 中圈：黑膠唱片遮罩（深灰色，70%透明度）
-     ctx.save();
-     ctx.globalAlpha = 0.7; // 70%透明度
-     ctx.fillStyle = '#1c1f24';
-     ctx.beginPath();
-     ctx.arc(0, 0, discRadius, 0, Math.PI * 2);
-     ctx.arc(0, 0, ringRadius * 0.96, 0, Math.PI * 2, true);
-     ctx.fill('evenodd');
-     ctx.restore();
-
-    // 外圈：半透明遮罩（同圖暗化，跟著旋轉）
-    const img2 = getOrCreateCachedImage('vinylImageOuter', imageToUse);
-    const outerR = discRadius * 1.08;
-    if (img2 && img2.complete) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(0, 0, outerR, 0, Math.PI * 2);
-        ctx.arc(0, 0, discRadius * 0.92, 0, Math.PI * 2, true);
-        ctx.clip('evenodd');
-        
-        // 外圈半透明遮罩繼續旋轉
-        ctx.rotate(angle);
-        
-         const size2 = outerR * 2;
-         ctx.globalAlpha = 0.7; // 外圈圖片70%透明度
-         ctx.drawImage(img2, -size2 / 2, -size2 / 2, size2, size2);
-         ctx.globalAlpha = 1;
-        ctx.restore();
-    } else {
-        ctx.save();
-        ctx.globalAlpha = 0.2;
-        ctx.beginPath();
-        ctx.arc(0, 0, outerR, 0, Math.PI * 2);
-        ctx.arc(0, 0, discRadius * 0.92, 0, Math.PI * 2, true);
-        ctx.fillStyle = '#000';
-        ctx.fill('evenodd');
-        ctx.restore();
-    }
 
     ctx.restore();
 
