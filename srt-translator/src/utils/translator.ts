@@ -80,28 +80,47 @@ async function translateText(text: string, targetLanguage: Language, apiKey: str
   if (candidate.content.parts && candidate.content.parts.length > 0) {
     // 標準結構
     translatedText = candidate.content.parts[0].text || '';
+    console.log('使用標準 parts 結構獲取翻譯');
   } else if (candidate.content.text) {
     // 直接文本結構
     translatedText = candidate.content.text;
+    console.log('使用直接 text 結構獲取翻譯');
+  } else if (candidate.text) {
+    // 頂層 text 結構
+    translatedText = candidate.text;
+    console.log('使用頂層 text 結構獲取翻譯');
   } else if (candidate.finishReason === 'MAX_TOKENS') {
     // 當達到 MAX_TOKENS 時，嘗試從其他地方獲取文本
     console.log('達到 MAX_TOKENS，嘗試其他方法獲取翻譯');
+    // 檢查是否有部分回應
+    if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+      translatedText = candidate.content.parts[0].text || '';
+    }
     // 如果沒有找到翻譯結果，返回原文
     if (!translatedText) {
+      console.warn('MAX_TOKENS 情況下未找到翻譯，返回原文');
       translatedText = text;
     }
   } else {
     console.error('API 回應結構:', candidate);
+    console.error('完整的 API 回應:', JSON.stringify(data, null, 2));
     throw new Error('API 返回的數據結構不正確 - 無法找到翻譯文本');
   }
 
-  if (!translatedText) {
+  if (!translatedText || translatedText.trim() === '') {
     console.error('翻譯結果為空，返回原文');
     return text;
   }
 
-  console.log('最終翻譯結果:', translatedText.trim());
-  return translatedText.trim();
+  const finalResult = translatedText.trim();
+  
+  // 檢查翻譯結果是否與原文相同（可能的翻譯失敗）
+  if (finalResult === text.trim()) {
+    console.warn('翻譯結果與原文相同，可能翻譯失敗');
+  }
+  
+  console.log('最終翻譯結果:', finalResult);
+  return finalResult;
 }
 
 /**
@@ -181,29 +200,50 @@ async function translateInOneBatch(
       const match = translatedFullText.match(markerPattern);
       
       let translatedText = subtitle.text;
+      let foundTranslation = false;
       
-      if (match && match[1]) {
+      if (match && match[1] && match[1].trim() !== '') {
         translatedText = match[1].trim();
+        foundTranslation = true;
+        console.log(`✅ 找到字幕 ${subtitle.index} 的翻譯:`, translatedText);
       } else {
         // 如果找不到標記，嘗試按行號匹配
         const lineIndex = subtitle.index - 1;
         if (translatedLines[lineIndex]) {
-          translatedText = translatedLines[lineIndex]
+          const lineText = translatedLines[lineIndex]
             .replace(/^<<<\d+>>>/, '')
             .trim();
+          if (lineText !== '') {
+            translatedText = lineText;
+            foundTranslation = true;
+            console.log(`✅ 按行號找到字幕 ${subtitle.index} 的翻譯:`, translatedText);
+          }
         }
+      }
+      
+      if (!foundTranslation) {
+        console.warn(`⚠️ 字幕 ${subtitle.index} 未找到翻譯，保持原文:`, subtitle.text);
       }
       
       translatedSubtitles.push({
         index: subtitle.index,
         startTime: subtitle.startTime,
         endTime: subtitle.endTime,
-        text: translatedText || subtitle.text
+        text: translatedText
       });
       
       if (onProgress) {
         onProgress(translatedSubtitles.length, subtitles.length);
       }
+    }
+    
+    // 統計翻譯成功率
+    const translatedCount = translatedSubtitles.filter(sub => sub.text !== subtitles.find(orig => orig.index === sub.index)?.text).length;
+    const successRate = ((translatedCount / subtitles.length) * 100).toFixed(1);
+    console.log(`📊 整篇翻譯統計: ${translatedCount}/${subtitles.length} 條成功翻譯 (${successRate}%)`);
+    
+    if (successRate !== '100.0') {
+      console.warn(`⚠️ 有 ${subtitles.length - translatedCount} 條字幕保持原文，請檢查翻譯結果`);
     }
     
     return translatedSubtitles;
@@ -243,11 +283,24 @@ async function translateInMultipleBatches(
         const markerPattern = new RegExp(`<<<${subtitle.index}>>>(.+?)(?=<<<|$)`, 's');
         const match = translatedBatchText.match(markerPattern);
         
+        let translatedText = subtitle.text;
+        let foundTranslation = false;
+        
+        if (match && match[1] && match[1].trim() !== '') {
+          translatedText = match[1].trim();
+          foundTranslation = true;
+          console.log(`✅ 批次中找到字幕 ${subtitle.index} 的翻譯:`, translatedText);
+        }
+        
+        if (!foundTranslation) {
+          console.warn(`⚠️ 批次中字幕 ${subtitle.index} 未找到翻譯，保持原文:`, subtitle.text);
+        }
+        
         translatedSubtitles.push({
           index: subtitle.index,
           startTime: subtitle.startTime,
           endTime: subtitle.endTime,
-          text: match && match[1] ? match[1].trim() : subtitle.text
+          text: translatedText
         });
       }
       
@@ -277,6 +330,15 @@ async function translateInMultipleBatches(
         onProgress(translatedSubtitles.length, subtitles.length);
       }
     }
+  }
+  
+  // 統計翻譯成功率
+  const translatedCount = translatedSubtitles.filter(sub => sub.text !== subtitles.find(orig => orig.index === sub.index)?.text).length;
+  const successRate = ((translatedCount / subtitles.length) * 100).toFixed(1);
+  console.log(`📊 分批翻譯統計: ${translatedCount}/${subtitles.length} 條成功翻譯 (${successRate}%)`);
+  
+  if (successRate !== '100.0') {
+    console.warn(`⚠️ 有 ${subtitles.length - translatedCount} 條字幕保持原文，請檢查翻譯結果`);
   }
   
   return translatedSubtitles;
