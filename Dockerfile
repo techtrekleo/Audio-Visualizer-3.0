@@ -31,6 +31,9 @@ RUN npm run build
 # 建置 YouTube SEO 工具
 WORKDIR /app/youtube-seo
 RUN npm install
+# 確保環境變數在構建時可用
+ARG GEMINI_API_KEY
+ENV GEMINI_API_KEY=$GEMINI_API_KEY
 RUN npm run build
 
 # 建置 SRT 字幕翻譯系統
