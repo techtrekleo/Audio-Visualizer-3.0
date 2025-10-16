@@ -136,6 +136,20 @@ function App() {
     const [showCtaAnimation, setShowCtaAnimation] = useState<boolean>(false);
     const [ctaChannelName, setCtaChannelName] = useState<string>('口袋裡的貓');
     const [ctaPosition, setCtaPosition] = useState<{ x: number; y: number }>({ x: 50, y: 50 }); // 百分比位置
+    const [ctaFontFamily, setCtaFontFamily] = useState<FontType>(FontType.POPPINS); // CTA 字體
+    const [ctaPositionX, setCtaPositionX] = useState<number>(50); // CTA 水平位置 (0-100)
+    const [ctaPositionY, setCtaPositionY] = useState<number>(50); // CTA 垂直位置 (0-100)
+    
+    // CTA 位置變更處理函數
+    const handleCtaPositionXChange = (value: number) => {
+        setCtaPositionX(value);
+        setCtaPosition(prev => ({ ...prev, x: value }));
+    };
+    
+    const handleCtaPositionYChange = (value: number) => {
+        setCtaPositionY(value);
+        setCtaPosition(prev => ({ ...prev, y: value }));
+    };
     
     // 幾何圖形可視化狀態
     const [showGeometricControls, setShowGeometricControls] = useState<boolean>(false); // 幾何圖形控制面板
@@ -1463,6 +1477,7 @@ function App() {
                                     onVisualizationScaleChange={setVisualizationScale}
                                     showCtaAnimation={showCtaAnimation}
                                     ctaChannelName={ctaChannelName}
+                                    ctaFontFamily={ctaFontFamily}
                                     ctaPosition={ctaPosition}
                                     onCtaPositionUpdate={setCtaPosition}
                                     zCustomCenterImage={zCustomCenterImage}
@@ -1648,6 +1663,12 @@ function App() {
                             onShowCtaAnimationChange={setShowCtaAnimation}
                             ctaChannelName={ctaChannelName}
                             onCtaChannelNameChange={setCtaChannelName}
+                            ctaFontFamily={ctaFontFamily}
+                            onCtaFontFamilyChange={setCtaFontFamily}
+                            ctaPositionX={ctaPositionX}
+                            onCtaPositionXChange={handleCtaPositionXChange}
+                            ctaPositionY={ctaPositionY}
+                            onCtaPositionYChange={handleCtaPositionYChange}
                             showZCustomControls={showZCustomControls}
                             onShowZCustomControlsChange={setShowZCustomControls}
                             zCustomCenterImage={zCustomCenterImage}

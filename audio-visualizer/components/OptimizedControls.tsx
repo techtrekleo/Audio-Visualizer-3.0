@@ -258,6 +258,12 @@ interface OptimizedControlsProps {
     onShowCtaAnimationChange?: (show: boolean) => void;
     ctaChannelName?: string;
     onCtaChannelNameChange?: (name: string) => void;
+    ctaFontFamily?: FontType;
+    onCtaFontFamilyChange?: (font: FontType) => void;
+    ctaPositionX?: number;
+    onCtaPositionXChange?: (value: number) => void;
+    ctaPositionY?: number;
+    onCtaPositionYChange?: (value: number) => void;
     // Z總訂製款控制
     showZCustomControls?: boolean;
     onShowZCustomControlsChange?: (show: boolean) => void;
@@ -777,17 +783,47 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         
                         {/* CTA 動畫頻道名稱輸入 */}
                         {props.showCtaAnimation && (
-                            <div className="mt-4">
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
-                                    頻道名稱
-                                </label>
-                                <input
-                                    type="text"
-                                    value={props.ctaChannelName || ''}
-                                    onChange={(e) => props.onCtaChannelNameChange?.(e.target.value)}
-                                    placeholder="輸入頻道名稱..."
-                                    className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
-                                />
+                            <div className="mt-4 space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        頻道名稱
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={props.ctaChannelName || ''}
+                                        onChange={(e) => props.onCtaChannelNameChange?.(e.target.value)}
+                                        placeholder="輸入頻道名稱..."
+                                        className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                                    />
+                                </div>
+                                <div>
+                                    <SelectControl
+                                        label="字體"
+                                        value={props.ctaFontFamily || FontType.POPPINS}
+                                        onChange={(value) => props.onCtaFontFamilyChange?.(value as FontType)}
+                                        options={Object.values(FontType).map(v => ({ value: v, label: v }))}
+                                    />
+                                </div>
+                                <div>
+                                    <SliderControl
+                                        label="水平位置"
+                                        value={props.ctaPositionX || 50}
+                                        onChange={(value) => props.onCtaPositionXChange?.(value)}
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                    />
+                                </div>
+                                <div>
+                                    <SliderControl
+                                        label="垂直位置"
+                                        value={props.ctaPositionY || 50}
+                                        onChange={(value) => props.onCtaPositionYChange?.(value)}
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                    />
+                                </div>
                             </div>
                         )}
                     </div>

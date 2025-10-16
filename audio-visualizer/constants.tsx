@@ -25,6 +25,9 @@ export const RESOLUTION_MAP: Record<Resolution, {width: number, height: number} 
     [Resolution.P4K]: { width: 3840, height: 2160 },
     [Resolution.SQUARE_1080]: { width: 1080, height: 1080 },
     [Resolution.SQUARE_4K]: { width: 2160, height: 2160 },
+    [Resolution.RATIO_2_1_4K]: { width: 4096, height: 2048 },
+    [Resolution.RATIO_2_1_1080]: { width: 1920, height: 960 },
+    [Resolution.RATIO_2_1_720]: { width: 1280, height: 640 },
     [Resolution.CURRENT]: null,
 };
 

@@ -117,6 +117,7 @@ interface AudioVisualizerProps {
     // CTA 動畫狀態
     showCtaAnimation?: boolean;
     ctaChannelName?: string;
+    ctaFontFamily?: FontType;
     ctaPosition?: { x: number; y: number };
     onCtaPositionUpdate?: (position: { x: number; y: number }) => void;
     // Z總訂製款狀態
@@ -5132,7 +5133,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 y: basePosition.y + (dragOffset.y / height) * 100
             };
             
-            drawCtaAnimation(ctx, width, height, propsRef.current.ctaChannelName, ctaPosition);
+            drawCtaAnimation(ctx, width, height, propsRef.current.ctaChannelName, ctaPosition, propsRef.current.ctaFontFamily);
         }
         
         if (propsRef.current.isPlaying) {
@@ -5388,7 +5389,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         }
     };
     // 繪製 CTA 動畫
-    const drawCtaAnimation = (ctx: CanvasRenderingContext2D, width: number, height: number, channelName: string, position: { x: number; y: number }) => {
+    const drawCtaAnimation = (ctx: CanvasRenderingContext2D, width: number, height: number, channelName: string, position: { x: number; y: number }, fontFamily?: FontType) => {
         const currentTime = Date.now();
         const audioCurrentTime = propsRef.current.audioRef?.current?.currentTime || 0;
         
@@ -5493,21 +5494,21 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
             
-            // 訂閱文字（中文）- 清松手寫體1，增加行距
+            // 訂閱文字（中文）- 使用動態字體
             ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-            ctx.font = 'bold 36px "Jason Handwriting 1", "Noto Sans TC", sans-serif';
+            ctx.font = `bold 36px "${fontFamily || FontType.POPPINS}", "Noto Sans TC", sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('訂閱', ctaX, ctaY - 35);
             
-            // 訂閱文字（英文）- 清松手寫體1，增加行距
+            // 訂閱文字（英文）- 使用動態字體
             ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-            ctx.font = 'bold 28px "Jason Handwriting 1", "Noto Sans TC", sans-serif';
+            ctx.font = `bold 28px "${fontFamily || FontType.POPPINS}", "Noto Sans TC", sans-serif`;
             ctx.fillText('SUBSCRIBE', ctaX, ctaY + 5);
             
-            // 頻道名稱，清松手寫體1，增加行距
+            // 頻道名稱，使用動態字體
             ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-            ctx.font = 'bold 22px "Jason Handwriting 1", "Noto Sans TC", sans-serif';
+            ctx.font = `bold 22px "${fontFamily || FontType.POPPINS}", "Noto Sans TC", sans-serif`;
             ctx.fillText(channelName, ctaX, ctaY + 50);
             
             ctx.restore();
