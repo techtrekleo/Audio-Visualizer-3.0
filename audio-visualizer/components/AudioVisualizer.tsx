@@ -4192,11 +4192,7 @@ const drawVinylRecord = (
         }
     }
     
-    // 中心孔
-    ctx.fillStyle = '#e5e7eb';
-    ctx.beginPath();
-    ctx.arc(0, 0, discRadius * 0.08, 0, Math.PI * 2);
-    ctx.fill();
+    // 中心孔已移除
 
     ctx.restore();
 
