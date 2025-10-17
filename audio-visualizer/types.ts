@@ -24,6 +24,7 @@ export enum VisualizationType {
     GEOMETRIC_BARS = '可夜特別訂製版',
     Z_CUSTOM = 'Z總訂製款',
     VINYL_RECORD = '唱片加控制卡',
+    CHINESE_CONTROL_CARD = '中國風控制卡',
 }
 
 // 特效分類系統
