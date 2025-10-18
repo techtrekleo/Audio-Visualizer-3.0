@@ -102,14 +102,47 @@ const App: React.FC = () => {
   }, [updateImage]);
 
   
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // 壓縮圖片以減少存儲空間
+  const compressImage = (file: File, maxWidth: number = 1920, quality: number = 0.8): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // 計算縮放比例
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        
+        // 繪製壓縮後的圖片
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // 轉換為 base64，使用較低的質量
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedDataUrl);
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setBackgroundImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        // 壓縮圖片以減少存儲空間
+        const compressedImage = await compressImage(file, 1920, 0.8);
+        setBackgroundImage(compressedImage);
+      } catch (error) {
+        console.error('圖片壓縮失敗:', error);
+        // 如果壓縮失敗，使用原始方法
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setBackgroundImage(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
     if(event.target) {
       event.target.value = '';

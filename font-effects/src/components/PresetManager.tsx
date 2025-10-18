@@ -37,8 +37,34 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
   // 保存預設到 localStorage
   const savePresets = (newPresets: SavedPreset[]) => {
-    localStorage.setItem('font-effects-presets', JSON.stringify(newPresets));
-    setPresets(newPresets);
+    try {
+      const dataString = JSON.stringify(newPresets);
+      localStorage.setItem('font-effects-presets', dataString);
+      setPresets(newPresets);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        // 存儲空間不足，清理舊數據
+        console.warn('存儲空間不足，正在清理舊預設...');
+        
+        // 按創建時間排序，保留最新的10個預設
+        const sortedPresets = newPresets.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        const limitedPresets = sortedPresets.slice(0, 10);
+        
+        try {
+          localStorage.setItem('font-effects-presets', JSON.stringify(limitedPresets));
+          setPresets(limitedPresets);
+          alert('存儲空間不足，已自動清理舊預設，保留最新10個預設。');
+        } catch (secondError) {
+          console.error('清理後仍無法保存:', secondError);
+          alert('存儲空間嚴重不足，無法保存預設。請清理瀏覽器數據或使用其他瀏覽器。');
+        }
+      } else {
+        console.error('保存預設失敗:', error);
+        alert('保存預設失敗，請重試。');
+      }
+    }
   };
 
   // 保存當前設定
@@ -81,6 +107,30 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
     }
   };
 
+  // 清理所有預設
+  const handleClearAllPresets = () => {
+    if (confirm('確定要刪除所有預設嗎？此操作無法復原。')) {
+      localStorage.removeItem('font-effects-presets');
+      setPresets([]);
+      alert('所有預設已清除！');
+    }
+  };
+
+  // 獲取存儲使用情況
+  const getStorageUsage = () => {
+    try {
+      const data = localStorage.getItem('font-effects-presets');
+      if (data) {
+        const sizeInBytes = new Blob([data]).size;
+        const sizeInKB = (sizeInBytes / 1024).toFixed(2);
+        return `${sizeInKB} KB`;
+      }
+      return '0 KB';
+    } catch (error) {
+      return '無法計算';
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* 保存和載入按鈕 */}
@@ -97,6 +147,35 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
         >
           📂 載入預設
         </button>
+      </div>
+
+      {/* 存儲管理 */}
+      <div className="bg-gray-800 p-4 rounded-lg">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-gray-300">存儲使用情況</span>
+          <span className="text-sm font-mono text-yellow-400">{getStorageUsage()}</span>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleClearAllPresets}
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-3 rounded transition"
+          >
+            🗑️ 清理所有預設
+          </button>
+          <button
+            onClick={() => {
+              // 自動清理舊預設，保留最新5個
+              const sortedPresets = presets.sort((a, b) => 
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              );
+              const limitedPresets = sortedPresets.slice(0, 5);
+              savePresets(limitedPresets);
+            }}
+            className="flex-1 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold py-2 px-3 rounded transition"
+          >
+            🔄 自動清理
+          </button>
+        </div>
       </div>
 
       {/* 保存對話框 */}
