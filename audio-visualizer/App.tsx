@@ -11,7 +11,7 @@ import AdSenseAd from './components/AdSenseAd';
 import LyricsDisplay from './components/LyricsDisplay';
 import ApiKeyModal from './components/ApiKeyModal';
 import { UnifiedHeader } from './components/UnifiedLayout';
-import { UnifiedFooter, ModalProvider } from '../shared-components/dist';
+// import { UnifiedFooter, ModalProvider } from '../shared-components/dist';
 // import AdManager from './components/AdManager';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
@@ -1375,8 +1375,8 @@ function App() {
     };
 
     return (
-        <ModalProvider>
-            <div className="flex flex-col">
+        <>
+        <div className="flex flex-col">
                 <UnifiedHeader />
             {audioUrl && (
                 <audio
@@ -1737,7 +1737,7 @@ function App() {
             </main>
             
             {/* 統一的 Footer */}
-            <UnifiedFooter />
+            {/* <UnifiedFooter /> */}
         </div>
         
         {/* API Key 輸入彈出視窗 */}
@@ -1752,7 +1752,7 @@ function App() {
                 : "請輸入您的 Gemini API Key 以使用 AI 字幕生成功能。"
             }
         />
-    </ModalProvider>
+        </>
     );
 }
 

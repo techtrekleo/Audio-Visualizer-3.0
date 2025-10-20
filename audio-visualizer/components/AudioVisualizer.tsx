@@ -3417,11 +3417,11 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         const threeDotsSpacing = Math.max(40, clampedFontSize * 0.8); // 根據字體大小調整間距，最小40px
         ctx.fillText('⋯', adjustedIconX + threeDotsSpacing + Math.sin(frame * 0.06) * 0.2, iconY + Math.cos(frame * 0.04) * 0.2);
     
-        // 進度條 - 動態調整位置
+        // 進度條 - 動態調整位置，增加與時間顯示的間距
         const progressBarWidth = playerWidth - 40;
         const progressBarHeight = Math.max(4, Math.min(clampedFontSize * 0.15, 15)); // 根據字體大小調整進度條高度
         const progressBarX = playerX + 20 + shakeX;
-        const progressBarOffset = Math.max(60, Math.min(clampedFontSize * 2.5, 180)); // 根據字體大小調整進度條位置，最大180px
+        const progressBarOffset = Math.max(80, Math.min(clampedFontSize * 3.0, 200)); // 增加進度條與底部的距離，為時間顯示留出更多空間
         const progressBarY = playerY + playerHeight - progressBarOffset + shakeY;
         
         // 進度條背景
@@ -3437,20 +3437,23 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         ctx.fillStyle = cardColor;
         ctx.fillRect(progressBarX, progressBarY, currentProgressWidth, progressBarHeight);
         
-        // 時間顯示 - 動態調整字體和位置
+        // 時間顯示 - 動態調整字體和位置，增加與進度條的間距
         ctx.fillStyle = cardColor;
         const timeFontSize = Math.max(Math.min(clampedFontSize * 0.7, 70), 12); // 時間字體不低於12px，不超過70px
         ctx.font = `${timeFontSize}px Arial`;
-        const timeOffset = Math.max(8, Math.min(clampedFontSize * 0.4, 40)); // 根據字體大小調整時間顯示位置
+        const timeOffset = Math.max(15, Math.min(clampedFontSize * 0.6, 50)); // 增加時間與進度條的間距，最小15px
         ctx.textAlign = 'left';
         const currentMinutes = Math.floor(currentTime / 60);
         const currentSecs = Math.floor(currentTime % 60);
         const totalMinutes = Math.floor(totalSeconds / 60);
         const totalSecs = Math.floor(totalSeconds % 60);
-        ctx.fillText(`${currentMinutes}:${currentSecs.toString().padStart(2, '0')}`, progressBarX + Math.sin(frame * 0.02) * 0.3, progressBarY - timeOffset + Math.cos(frame * 0.03) * 0.2);
+        
+        // 確保時間顯示不會與背景重疊，增加額外的安全間距
+        const safeTimeY = Math.max(progressBarY - timeOffset, playerY + 20); // 確保時間不會超出控制卡頂部
+        ctx.fillText(`${currentMinutes}:${currentSecs.toString().padStart(2, '0')}`, progressBarX + Math.sin(frame * 0.02) * 0.3, safeTimeY + Math.cos(frame * 0.03) * 0.2);
         
         ctx.textAlign = 'right';
-        ctx.fillText(`${totalMinutes}:${totalSecs.toString().padStart(2, '0')}`, progressBarX + progressBarWidth + Math.sin(frame * 0.025) * 0.3, progressBarY - timeOffset + Math.cos(frame * 0.035) * 0.2);
+        ctx.fillText(`${totalMinutes}:${totalSecs.toString().padStart(2, '0')}`, progressBarX + progressBarWidth + Math.sin(frame * 0.025) * 0.3, safeTimeY + Math.cos(frame * 0.035) * 0.2);
     
         // 控制按鈕區域 - 動態調整位置和間距
         const buttonOffset = Math.max(25, Math.min(clampedFontSize * 1.2, 80)); // 根據字體大小調整按鈕位置，最大80px
