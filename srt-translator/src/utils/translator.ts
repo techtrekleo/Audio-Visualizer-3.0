@@ -1,11 +1,58 @@
 import { SRTSubtitle, Language } from '../types';
 
+/**
+ * 檢測文本的主要語言
+ */
+async function detectLanguage(text: string, apiKey: string): Promise<string> {
+  const sampleText = text.substring(0, 500); // 使用前500個字符進行檢測
+  
+  const prompt = `Please detect the language of the following text and return only the ISO 639-1 language code (e.g., 'en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'th', 'vi', 'id', 'ms', 'tr', 'pl', 'nl'). Do not provide any explanation, just the language code:\n\n${sampleText}`;
+  
+  try {
+    const response = await fetch(`${GEMINI_API_ENDPOINT}?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 10,
+        }
+      })
+    });
+    
+    if (!response.ok) {
+      console.warn('語言檢測失敗，使用預設值');
+      return 'en'; // 預設為英文
+    }
+    
+    const data = await response.json();
+    const detectedLang = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
+    
+    if (detectedLang && detectedLang.length <= 5) {
+      console.log(`🔍 檢測到語言: ${detectedLang}`);
+      return detectedLang;
+    }
+    
+    return 'en'; // 預設為英文
+  } catch (error) {
+    console.warn('語言檢測出錯，使用預設值:', error);
+    return 'en';
+  }
+}
+
 const GEMINI_API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent';
 
 /**
- * 使用 Gemini API 翻譯單個字幕塊
+ * 使用 Gemini API 翻譯單個字幕塊（帶重試機制）
  */
-async function translateText(text: string, targetLanguage: Language, apiKey: string): Promise<string> {
+async function translateText(text: string, targetLanguage: Language, apiKey: string, retryCount = 0): Promise<string> {
   // 添加調試信息
   console.log('翻譯文本:', text);
   console.log('目標語言:', targetLanguage.name);
@@ -13,7 +60,16 @@ async function translateText(text: string, targetLanguage: Language, apiKey: str
   
   // 使用原生語言名稱，讓 AI 更好地理解目標語言
   const targetLanguageName = targetLanguage.nativeName || targetLanguage.name;
-  const prompt = `請將以下文本翻譯成${targetLanguageName}：\n\n${text}`;
+  
+  // 根據目標語言選擇合適的提示詞語言
+  let prompt: string;
+  if (targetLanguage.code.startsWith('zh')) {
+    // 中文目標語言使用中文提示詞
+    prompt = `請將以下文本翻譯成${targetLanguageName}。請保持原文的語氣、風格和格式，確保翻譯準確自然：\n\n${text}`;
+  } else {
+    // 其他語言使用英文提示詞，更通用
+    prompt = `Please translate the following text to ${targetLanguageName} (${targetLanguage.name}). Maintain the original tone, style, and format. Ensure the translation is accurate and natural:\n\n${text}`;
+  }
   
   console.log('翻譯提示詞:', prompt);
 
@@ -31,7 +87,9 @@ async function translateText(text: string, targetLanguage: Language, apiKey: str
       }],
       systemInstruction: {
         parts: [{
-          text: "你是一個專業的多語言翻譯工具。請直接翻譯給定的文本到目標語言，保持原始格式和結構。不要添加任何解釋、思考過程、額外內容或標記。只返回純粹的翻譯結果。"
+          text: targetLanguage.code.startsWith('zh') 
+            ? "你是一個專業的多語言翻譯工具。請直接翻譯給定的文本到目標語言，保持原始格式和結構。確保翻譯準確、自然、符合目標語言的表達習慣。不要添加任何解釋、思考過程、額外內容或標記。只返回純粹的翻譯結果。"
+            : "You are a professional multilingual translation tool. Please translate the given text to the target language while maintaining the original format and structure. Ensure the translation is accurate, natural, and follows the target language's expression patterns. Do not add any explanations, reasoning, additional content, or markers. Only return the pure translation result."
         }]
       },
       generationConfig: {
@@ -45,7 +103,20 @@ async function translateText(text: string, targetLanguage: Language, apiKey: str
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(`翻譯失敗: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
+    console.error('API 錯誤回應:', errorData);
+    
+    // 提供更詳細的錯誤信息
+    if (response.status === 400) {
+      throw new Error(`翻譯請求格式錯誤 (400): ${errorData.error?.message || '請檢查 API Key 和請求格式'}`);
+    } else if (response.status === 403) {
+      throw new Error(`API 權限不足 (403): ${errorData.error?.message || '請檢查 API Key 是否有效'}`);
+    } else if (response.status === 429) {
+      throw new Error(`API 請求過於頻繁 (429): ${errorData.error?.message || '請稍後再試'}`);
+    } else if (response.status >= 500) {
+      throw new Error(`服務器錯誤 (${response.status}): ${errorData.error?.message || 'Google 服務暫時不可用，請稍後再試'}`);
+    } else {
+      throw new Error(`翻譯失敗 (${response.status}): ${errorData.error?.message || response.statusText}`);
+    }
   }
 
   const data = await response.json();
@@ -126,6 +197,48 @@ async function translateText(text: string, targetLanguage: Language, apiKey: str
 }
 
 /**
+ * 帶重試機制的翻譯函數
+ */
+async function translateTextWithRetry(text: string, targetLanguage: Language, apiKey: string): Promise<string> {
+  const maxRetries = 3;
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      if (attempt > 0) {
+        console.log(`🔄 重試翻譯 (第 ${attempt + 1} 次嘗試)...`);
+        // 重試前等待
+        await new Promise(resolve => setTimeout(resolve, attempt * 2000));
+      }
+      
+      return await translateText(text, targetLanguage, apiKey, attempt);
+    } catch (error) {
+      lastError = error as Error;
+      console.error(`❌ 翻譯失敗 (第 ${attempt + 1} 次嘗試):`, error);
+      
+      // 如果是最後一次嘗試，拋出錯誤
+      if (attempt === maxRetries) {
+        break;
+      }
+      
+      // 檢查是否是可重試的錯誤
+      const errorMessage = lastError.message.toLowerCase();
+      if (errorMessage.includes('429') || errorMessage.includes('rate limit') || 
+          errorMessage.includes('500') || errorMessage.includes('503') || 
+          errorMessage.includes('timeout')) {
+        console.log(`⏳ 檢測到可重試錯誤，將在 ${(attempt + 1) * 2} 秒後重試...`);
+        continue;
+      } else {
+        // 不可重試的錯誤，直接拋出
+        break;
+      }
+    }
+  }
+  
+  throw lastError || new Error('翻譯失敗：未知錯誤');
+}
+
+/**
  * 智能翻譯 SRT 字幕文件（自動判斷最佳批次大小）
  * @param subtitles 原始字幕數組
  * @param targetLanguage 目標語言
@@ -186,8 +299,8 @@ async function translateInOneBatch(
       onProgress(0, subtitles.length);
     }
     
-    // 整篇一次翻譯
-    const translatedFullText = await translateText(fullText, targetLanguage, apiKey);
+    // 整篇一次翻譯（使用重試機制）
+    const translatedFullText = await translateTextWithRetry(fullText, targetLanguage, apiKey);
     
     console.log('✅ 翻譯完成，解析結果...');
     
@@ -279,7 +392,7 @@ async function translateInMultipleBatches(
         `<<<${subtitle.index}>>>${subtitle.text}`
       ).join('\n');
       
-      const translatedBatchText = await translateText(batchText, targetLanguage, apiKey);
+      const translatedBatchText = await translateTextWithRetry(batchText, targetLanguage, apiKey);
       
       for (const subtitle of batch) {
         const markerPattern = new RegExp(`<<<${subtitle.index}>>>(.+?)(?=<<<|$)`, 's');
