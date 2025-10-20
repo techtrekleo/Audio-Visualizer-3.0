@@ -1,58 +1,11 @@
 import { SRTSubtitle, Language } from '../types';
 
-/**
- * 檢測文本的主要語言
- */
-async function detectLanguage(text: string, apiKey: string): Promise<string> {
-  const sampleText = text.substring(0, 500); // 使用前500個字符進行檢測
-  
-  const prompt = `Please detect the language of the following text and return only the ISO 639-1 language code (e.g., 'en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'th', 'vi', 'id', 'ms', 'tr', 'pl', 'nl'). Do not provide any explanation, just the language code:\n\n${sampleText}`;
-  
-  try {
-    const response = await fetch(`${GEMINI_API_ENDPOINT}?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 10,
-        }
-      })
-    });
-    
-    if (!response.ok) {
-      console.warn('語言檢測失敗，使用預設值');
-      return 'en'; // 預設為英文
-    }
-    
-    const data = await response.json();
-    const detectedLang = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
-    
-    if (detectedLang && detectedLang.length <= 5) {
-      console.log(`🔍 檢測到語言: ${detectedLang}`);
-      return detectedLang;
-    }
-    
-    return 'en'; // 預設為英文
-  } catch (error) {
-    console.warn('語言檢測出錯，使用預設值:', error);
-    return 'en';
-  }
-}
-
 const GEMINI_API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent';
 
 /**
  * 使用 Gemini API 翻譯單個字幕塊（帶重試機制）
  */
-async function translateText(text: string, targetLanguage: Language, apiKey: string, retryCount = 0): Promise<string> {
+async function translateText(text: string, targetLanguage: Language, apiKey: string, _retryCount = 0): Promise<string> {
   // 添加調試信息
   console.log('翻譯文本:', text);
   console.log('目標語言:', targetLanguage.name);
