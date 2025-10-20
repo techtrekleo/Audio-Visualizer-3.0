@@ -3210,10 +3210,10 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         const heightMultiplier = Math.max(1, clampedFontSize / 24); // 字體越大，高度越大
         let playerHeight = Math.min(baseHeight * heightMultiplier, height * 0.3); // 最大不超過30%高度
         const playerX = centerX - playerWidth / 2;
-        // 動態調整Y位置，字體越大越往上移
-        const baseY = height * 0.75;
-        const yOffset = (clampedFontSize - 24) * 0.2; // 進一步減少偏移量
-        let playerY = Math.max(height * 0.6, Math.min(baseY - yOffset, height * 0.85)); // 最低60%，最高85%
+        // 動態調整Y位置，將控制卡片往上移，避免重疊
+        const baseY = height * 0.65; // 從 0.75 改為 0.65，往上移
+        const yOffset = (clampedFontSize - 24) * 0.3; // 增加偏移量
+        let playerY = Math.max(height * 0.5, Math.min(baseY - yOffset, height * 0.8)); // 最低50%，最高80%
         
         // 檢查控制卡是否超出畫布邊界
         if (playerY + playerHeight > height - 10) {
@@ -3266,10 +3266,10 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
             }
         }
     
-    // 專輯封面 (左上角)
+    // 專輯封面 (左上角) - 增加與頂部的間距
     const albumSize = playerHeight * 0.6;
     const albumX = playerX + 20 + shakeX;
-    const albumY = playerY + 20 + shakeY;
+    const albumY = playerY + 35 + shakeY; // 從 20 增加到 35，增加間距
     
     // 專輯封面背景 - 使用控制卡顏色和透明度
     // (cardStyle, cardBgColor, cardColor 已在上面定義，重複使用)
@@ -3362,10 +3362,10 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         ctx.arc(dotX, dotY, 3, 0, Math.PI * 2);
         ctx.fill();
     }
-        // 歌曲資訊 (右側) - 動態調整間距
+        // 歌曲資訊 (右側) - 增加與頂部的間距
         const infoX = albumX + albumSize + 20;
-        const infoY = playerY + Math.max(30, clampedFontSize * 0.8); // 從控制卡頂部開始，根據字體大小調整，最小30px
-        const dynamicSpacing = Math.max(25, Math.min(clampedFontSize * 1.2, 120)); // 根據字體大小調整行距，最大120px
+        const infoY = playerY + Math.max(45, clampedFontSize * 1.0); // 從 30 增加到 45，增加間距
+        const dynamicSpacing = Math.max(30, Math.min(clampedFontSize * 1.4, 140)); // 增加行距
         
         // 歌曲名稱
         ctx.fillStyle = cardColor;
@@ -3394,10 +3394,10 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         
         ctx.fillText(artistName, infoX + Math.sin(frame * 0.025) * 0.3, adjustedArtistNameY);
     
-        // 右上角圖標 - 調整位置避免與文字重疊
+        // 右上角圖標 - 調整位置避免與文字和進度條重疊
         const iconSpacing = Math.max(80, clampedFontSize * 1.5); // 根據字體大小調整右邊距，最小80px
         const iconX = playerX + playerWidth - iconSpacing + shakeX;
-        const iconY = Math.max(adjustedSongNameY, albumY + 10) + shakeY;
+        const iconY = Math.max(adjustedSongNameY, albumY + 25) + shakeY; // 從 10 增加到 25，增加間距
         
         // 檢查文字寬度，避免與圖標重疊
         const songNameText = props.geometricSongName || 'Name of the song';
@@ -3417,11 +3417,11 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         const threeDotsSpacing = Math.max(40, clampedFontSize * 0.8); // 根據字體大小調整間距，最小40px
         ctx.fillText('⋯', adjustedIconX + threeDotsSpacing + Math.sin(frame * 0.06) * 0.2, iconY + Math.cos(frame * 0.04) * 0.2);
     
-        // 進度條 - 動態調整位置，增加與時間顯示的間距
+        // 進度條 - 大幅增加與底部的距離，避免與圖標重疊
         const progressBarWidth = playerWidth - 40;
         const progressBarHeight = Math.max(4, Math.min(clampedFontSize * 0.15, 15)); // 根據字體大小調整進度條高度
         const progressBarX = playerX + 20 + shakeX;
-        const progressBarOffset = Math.max(80, Math.min(clampedFontSize * 3.0, 200)); // 增加進度條與底部的距離，為時間顯示留出更多空間
+        const progressBarOffset = Math.max(120, Math.min(clampedFontSize * 3.5, 250)); // 大幅增加進度條與底部的距離
         const progressBarY = playerY + playerHeight - progressBarOffset + shakeY;
         
         // 進度條背景
