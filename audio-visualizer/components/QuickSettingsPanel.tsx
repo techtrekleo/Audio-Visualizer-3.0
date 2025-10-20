@@ -246,8 +246,8 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                             />
                             <input
                                 type="range"
-                                min={-500}
-                                max={500}
+                                min={-1000}
+                                max={1000}
                                 step={10}
                                 value={effectOffsetY}
                                 onChange={(e) => onEffectOffsetYChange(parseFloat(e.target.value))}
@@ -258,7 +258,7 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                 className="absolute top-0 h-2 bg-white/20 rounded-lg pointer-events-none"
                                 style={{
                                     left: 0,
-                                    width: `${((effectOffsetY - (-500)) / (500 - (-500))) * 100}%`,
+                                    width: `${((effectOffsetY - (-1000)) / (1000 - (-1000))) * 100}%`,
                                     transition: 'width 0.1s ease'
                                 }}
                             />

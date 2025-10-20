@@ -163,6 +163,17 @@ const applyAlphaToColor = (color: string, alpha: number): string => {
     return `${color.substring(0, 7)}${alphaHex}`;
 };
 
+// --- Basic Wave Scrolling (EKG) offscreen buffer ---
+let basicWaveScrollCanvas: HTMLCanvasElement | null = null;
+let basicWaveScrollCtx: CanvasRenderingContext2D | null = null;
+let basicWavePrevY: number | null = null;
+let basicWaveBufferSize: { w: number; h: number } | null = null;
+
+// --- Basic Wave Amplitude Decay System ---
+let basicWaveDecayBuffer: number[] = [];
+let basicWaveDecayTime = 0.1; // 0.1秒衰減時間
+let basicWaveLastUpdateTime = 0;
+
 
 const createRoundedRectPath = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) => {
     if (width < 2 * radius) radius = width / 2;
@@ -327,6 +338,199 @@ const drawLuminousWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
 
     drawMirroredBezierWave('left');
     drawMirroredBezierWave('right');
+    
+    ctx.restore();
+};
+
+const drawBasicWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[], geometricFrameImage?: HTMLImageElement | null, geometricSemicircleImage?: HTMLImageElement | null, vinylRecordEnabled?: boolean) => {
+    if (!dataArray) return;
+    ctx.save();
+    
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const maxAmplitude = height * 0.15; // 進一步降為0.15，約再扁平 ~40%
+    
+    // 鼓聲檢測 - 檢測低頻能量
+    const bassData = dataArray.slice(0, Math.floor(dataArray.length * 0.1));
+    const bassEnergy = bassData.reduce((sum, val) => sum + val, 0) / bassData.length;
+    const isDrumHit = bassEnergy > 150; // 鼓聲閾值
+    
+    // 鼓聲震動效果 - 減少震動幅度
+    const drumShake = isDrumHit ? (Math.sin(frame * 0.3) * 8) : 0; // 再降到8
+    const drumScale = isDrumHit ? 1.08 : 1.0; // 再降到1.08
+    
+    // 節奏變化 - 基於整體音頻能量，降低強度讓坡度更平緩
+    const totalEnergy = dataArray.reduce((sum, val) => sum + val, 0) / dataArray.length;
+    const rhythmIntensity = Math.min(totalEnergy / 120, 1.0); // 再降，整體更平緩
+    
+    // 波浪點數 - 大幅增加點數讓曲線更平滑細緻
+    const numPoints = 800; // 再增加點數以獲得更細膩曲線
+    const waveWidth = width * 0.8;
+    const waveStartX = centerX - waveWidth / 2;
+    
+    // 初始化衰減緩衝區
+    if (basicWaveDecayBuffer.length !== numPoints + 1) {
+        basicWaveDecayBuffer = new Array(numPoints + 1).fill(0);
+    }
+    
+    // 計算時間差和衰減係數
+    const currentTime = performance.now() / 1000; // 轉換為秒
+    const deltaTime = currentTime - basicWaveLastUpdateTime;
+    basicWaveLastUpdateTime = currentTime;
+    
+    // 衰減係數：每秒衰減到原值的 1/e^(1/decayTime)
+    const decayFactor = Math.exp(-deltaTime / basicWaveDecayTime);
+    
+    // 創建波浪點 - 添加平滑處理消除鋸齒
+    const wavePoints: {x: number, y: number}[] = [];
+    const reflectionPoints: {x: number, y: number}[] = [];
+    
+    // 增大平滑半徑，讓波浪更圓滑
+    const smoothingRadius = 12; // 進一步增加平滑半徑
+    
+    for (let i = 0; i <= numPoints; i++) {
+        const progress = i / numPoints;
+        const x = waveStartX + progress * waveWidth;
+        
+        // 音頻數據索引 - 使用完整頻譜，確保尾端也有振幅
+        const dataIndex = Math.floor(progress * dataArray.length);
+        
+        // 平滑處理 - 對周圍的數據點進行平均
+        let smoothedAmplitude = 0;
+        let sampleCount = 0;
+        
+        for (let j = -smoothingRadius; j <= smoothingRadius; j++) {
+            const sampleIndex = Math.max(0, Math.min(dataArray.length - 1, dataIndex + j));
+            smoothedAmplitude += dataArray[sampleIndex];
+            sampleCount++;
+        }
+        
+        // 應用平方根降低峰值，讓波形更扁平
+        const rawAmplitude = smoothedAmplitude / sampleCount / 255;
+        // 使用更強的壓縮（平方根），顯著降低峰值；再放大3倍以符合需求
+        const amplitudeScale = 3.0;
+        const currentAmplitude = Math.pow(rawAmplitude, 0.5) * maxAmplitude * sensitivity * rhythmIntensity * amplitudeScale;
+        
+        // 應用衰減系統：結合當前振幅和歷史衰減
+        const targetAmplitude = currentAmplitude;
+        const previousDecay = basicWaveDecayBuffer[i] || 0;
+        
+        // 如果當前振幅大於衰減值，則更新；否則應用衰減
+        if (targetAmplitude > previousDecay) {
+            basicWaveDecayBuffer[i] = targetAmplitude;
+        } else {
+            basicWaveDecayBuffer[i] = previousDecay * decayFactor;
+        }
+        
+        const finalAmplitude = basicWaveDecayBuffer[i];
+        
+        // 基礎波浪形狀 - 使用更平滑的波形，減少振幅
+        const baseWave = Math.sin(progress * Math.PI * 2 + frame * 0.01) * 2; // 再降到2
+        
+        // 鼓聲震動效果 - 更柔和的震動
+        const drumEffect = isDrumHit ? Math.sin(progress * Math.PI * 4 + frame * 0.05) * drumShake * 0.2 : 0; // 再降到0.2
+        
+        // 最終Y位置
+        const y = centerY - finalAmplitude - baseWave - drumEffect;
+        const reflectionY = centerY + (finalAmplitude * 0.3) + baseWave + drumEffect;
+        
+        wavePoints.push({ x, y });
+        reflectionPoints.push({ x, y: reflectionY });
+    }
+    
+    // 對已生成的點再次做一次後處理平滑（盒狀濾波），進一步降低局部坡度
+    const postSmoothRadius = 6;
+    for (let i = 0; i < wavePoints.length; i++) {
+        let sumY = 0;
+        let count = 0;
+        for (let j = -postSmoothRadius; j <= postSmoothRadius; j++) {
+            const idx = Math.max(0, Math.min(wavePoints.length - 1, i + j));
+            sumY += wavePoints[idx].y;
+            count++;
+        }
+        wavePoints[i].y = sumY / count;
+        // 反射點同樣處理
+        sumY = 0; count = 0;
+        for (let j = -postSmoothRadius; j <= postSmoothRadius; j++) {
+            const idx = Math.max(0, Math.min(reflectionPoints.length - 1, i + j));
+            sumY += reflectionPoints[idx].y;
+            count++;
+        }
+        reflectionPoints[i].y = sumY / count;
+    }
+
+    // 繪製主波浪 - 使用更平滑的貝茲曲線
+    ctx.beginPath();
+    ctx.moveTo(wavePoints[0].x, wavePoints[0].y);
+    
+    // 使用三次貝茲曲線創建極度平滑的波浪
+    for (let i = 0; i < wavePoints.length - 1; i++) {
+        const current = wavePoints[i];
+        const next = wavePoints[i + 1];
+        
+        // 更平滑的控制點計算 - 進一步降低控制點影響
+        const dx = next.x - current.x;
+        const dy = next.y - current.y;
+        
+        // 使用更保守的控制點，讓曲線更平滑圓潤
+        const cp1x = current.x + dx * 0.33; // 從0.2增加到0.33
+        const cp1y = current.y + dy * 0.05; // 從0.1降到0.05
+        const cp2x = current.x + dx * 0.67; // 從0.8降到0.67
+        const cp2y = next.y - dy * 0.05; // 從0.1降到0.05
+        
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, next.x, next.y);
+    }
+    
+    // 關閉 EKG 滾動模式，回到原本的完整波形顯示
+
+    // 主波浪描邊（純白）
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = '#ffffff';
+    ctx.stroke();
+
+    // 以基線填色（填滿主波浪下方至中心線）
+    ctx.beginPath();
+    ctx.moveTo(wavePoints[0].x, wavePoints[0].y);
+    for (let i = 0; i < wavePoints.length - 1; i++) {
+        const current = wavePoints[i];
+        const next = wavePoints[i + 1];
+        const dx = next.x - current.x;
+        const dy = next.y - current.y;
+        const cp1x = current.x + dx * 0.33;
+        const cp1y = current.y + dy * 0.05;
+        const cp2x = current.x + dx * 0.67;
+        const cp2y = next.y - dy * 0.05;
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, next.x, next.y);
+    }
+    // 關閉到基線（中心線）
+    ctx.lineTo(wavePoints[wavePoints.length - 1].x, centerY);
+    ctx.lineTo(wavePoints[0].x, centerY);
+    ctx.closePath();
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    
+    // 取消下方反射波浪，符合「底下空間填色」且維持純白主題
+    
+    // 鼓聲時的額外效果 - 減少波紋效果讓整體更平緩
+    if (isDrumHit) {
+        ctx.save();
+        ctx.globalAlpha = 0.4; // 從0.6降到0.4
+        ctx.strokeStyle = colors.accent;
+        ctx.lineWidth = 3; // 從5降到3
+        ctx.shadowBlur = 20; // 從30降到20
+        ctx.shadowColor = colors.accent;
+        
+        // 繪製震動波紋
+        for (let i = 0; i < 2; i++) { // 從3降到2
+            const rippleRadius = (frame % 20) * 2 + i * 10;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, rippleRadius, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
     
     ctx.restore();
 };
@@ -3420,7 +3624,7 @@ const drawVerticalSubtitle = (
             ctx.strokeText(char, startX, charY);
         }
     });
-    
+
     ctx.restore();
 };
 
@@ -4075,6 +4279,8 @@ const drawVinylRecord = (
     isBeat?: boolean,
     waveformStroke?: boolean,
     particles?: Particle[],
+    geometricFrameImage?: HTMLImageElement | null,
+    geometricSemicircleImage?: HTMLImageElement | null,
     vinylRecordEnabled: boolean = true
 ) => {
     // 不在此重置或覆寫矩陣，讓外層全域 transform（effectScale/effectOffsetX/Y + visualizationTransform）生效
@@ -4656,6 +4862,8 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.GEOMETRIC_BARS]: drawGeometricBars,
     [VisualizationType.Z_CUSTOM]: drawGeometricBars, // 暫時使用 drawGeometricBars，稍後會替換
     [VisualizationType.VINYL_RECORD]: drawVinylRecord,
+    [VisualizationType.BASIC_WAVE]: drawBasicWave,
+    [VisualizationType.CHINESE_CONTROL_CARD]: drawBasicWave, // 暫時使用 drawBasicWave
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
@@ -4929,8 +5137,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 drawZCustomVisualization(ctx, width, height, propsRef.current.zCustomCenterImage, propsRef, currentFrame);
         } else if (visualizationType === VisualizationType.VINYL_RECORD) {
             // 檢查是否啟用唱片顯示
-            const vinylRecordEnabled = propsRef.current.vinylRecordEnabled !== false;
-            drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, vinylRecordEnabled);
+            const vinylRecordEnabled = (propsRef.current as any).vinylRecordEnabled !== false;
+            drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, vinylRecordEnabled);
             } else {
             drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
             }
@@ -5334,11 +5542,11 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                     }
                 } else {
                     // 橫式字幕 - 檢測底部區域
-                    const subtitleY = height - (height * 0.08);
+                const subtitleY = height - (height * 0.08);
                     const subtitleHeight = height * 0.25;
-                    
-                    if (pos.y >= subtitleY - subtitleHeight && pos.y <= subtitleY + subtitleHeight) {
-                        return 'subtitle';
+                
+                if (pos.y >= subtitleY - subtitleHeight && pos.y <= subtitleY + subtitleHeight) {
+                    return 'subtitle';
                     }
                 }
             }
@@ -6656,45 +6864,45 @@ const drawFilterEffects = (
             return;
         }
 
-        ctx.globalCompositeOperation = 'screen';
+    ctx.globalCompositeOperation = 'screen';
 
-        // 更新和繪製粒子
-        particles.forEach((particle, index) => {
+    // 更新和繪製粒子
+    particles.forEach((particle, index) => {
             // 增加隨機擺動，讓粒子軌跡更自然
             const windEffect = (Math.random() - 0.5) * 0.3;
             const turbulence = Math.sin(frame * 0.01 + index * 0.1) * 0.2;
             
-            // 更新位置
+        // 更新位置
             particle.x += (particle.vx + windEffect + turbulence) * speed;
-            particle.y += particle.vy * speed;
-            particle.rotation += particle.rotationSpeed * speed;
+        particle.y += particle.vy * speed;
+        particle.rotation += particle.rotationSpeed * speed;
 
-            // 檢查邊界和生命週期
-            let shouldRemove = false;
+        // 檢查邊界和生命週期
+        let shouldRemove = false;
 
-            if (type === FilterEffectType.STARS) {
-                // 星星閃爍效果
-                particle.life -= 0.02 * speed;
-                if (particle.life <= 0) {
-                    particle.x = Math.random() * width;
-                    particle.y = Math.random() * height;
-                    particle.life = particle.maxLife;
-                    particle.opacity = 0.3 + Math.random() * 0.7;
-                }
-            } else {
-                // 其他粒子檢查邊界
-                if (particle.y > height + 20 || 
-                    particle.x < -20 || 
-                    particle.x > width + 20) {
-                    shouldRemove = true;
-                }
+        if (type === FilterEffectType.STARS) {
+            // 星星閃爍效果
+            particle.life -= 0.02 * speed;
+            if (particle.life <= 0) {
+                particle.x = Math.random() * width;
+                particle.y = Math.random() * height;
+                particle.life = particle.maxLife;
+                particle.opacity = 0.3 + Math.random() * 0.7;
             }
-
-            if (!shouldRemove) {
-                // 繪製粒子
-                drawFilterParticle(ctx, particle, type);
+        } else {
+            // 其他粒子檢查邊界
+            if (particle.y > height + 20 || 
+                particle.x < -20 || 
+                particle.x > width + 20) {
+                shouldRemove = true;
             }
-        });
+        }
+
+        if (!shouldRemove) {
+            // 繪製粒子
+            drawFilterParticle(ctx, particle, type);
+        }
+    });
     }
 
     ctx.restore();

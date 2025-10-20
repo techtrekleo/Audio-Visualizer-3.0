@@ -25,6 +25,7 @@ export enum VisualizationType {
     Z_CUSTOM = 'Z總訂製款',
     VINYL_RECORD = '唱片加控制卡',
     CHINESE_CONTROL_CARD = '中國風控制卡',
+    BASIC_WAVE = '歐皇訂製版',
 }
 
 // 特效分類系統
@@ -290,6 +291,13 @@ export interface AudioVisualizerProps {
     vinylImage?: string | null;
     vinylLayoutMode?: 'horizontal' | 'vertical';
     vinylRecordEnabled?: boolean;
+    // 中國風控制卡
+    chineseCardAlbumImage?: string | null;
+    chineseCardSongTitle?: string;
+    chineseCardArtist?: string;
+    chineseCardFontFamily?: FontType;
+    chineseCardPrimaryColor?: string;
+    chineseCardBackgroundOpacity?: number;
 }
 
 export type Palette = {

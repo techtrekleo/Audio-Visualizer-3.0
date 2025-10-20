@@ -111,6 +111,12 @@ function App() {
     const [vinylCenterFixed, setVinylCenterFixed] = useState<boolean>(false); // 中心照片固定
     const [vinylRecordEnabled, setVinylRecordEnabled] = useState<boolean>(true); // 唱片開關
     
+    // Chinese Control Card State
+    const [chineseCardAlbumImage, setChineseCardAlbumImage] = useState<string | null>(null);
+    const [chineseCardSongTitle, setChineseCardSongTitle] = useState<string>('憶新愁');
+    const [chineseCardArtist, setChineseCardArtist] = useState<string>('張福樂');
+    const [chineseCardFontFamily, setChineseCardFontFamily] = useState<FontType>(FontType.POPPINS);
+    
     // Lyrics Display State (測試中)
     const [showLyricsDisplay, setShowLyricsDisplay] = useState<boolean>(false);
     const [lyricsFontSize, setLyricsFontSize] = useState<number>(2); // 字體大小百分比
@@ -1506,6 +1512,11 @@ function App() {
                                     controlCardBackgroundColor={controlCardBackgroundColor}
                                     // Vinyl Record props
                                     vinylRecordEnabled={vinylRecordEnabled}
+                                    // Chinese Control Card props
+                                    chineseCardAlbumImage={chineseCardAlbumImage}
+                                    chineseCardSongTitle={chineseCardSongTitle}
+                                    chineseCardArtist={chineseCardArtist}
+                                    chineseCardFontFamily={chineseCardFontFamily}
                                 />
                             </div>
                         </div>
@@ -1703,6 +1714,15 @@ function App() {
                             // Vinyl Record props
                             vinylRecordEnabled={vinylRecordEnabled}
                             onVinylRecordEnabledChange={setVinylRecordEnabled}
+                            // Chinese Control Card props
+                            chineseCardAlbumImage={chineseCardAlbumImage}
+                            onChineseCardAlbumImageChange={setChineseCardAlbumImage}
+                            chineseCardSongTitle={chineseCardSongTitle}
+                            onChineseCardSongTitleChange={setChineseCardSongTitle}
+                            chineseCardArtist={chineseCardArtist}
+                            onChineseCardArtistChange={setChineseCardArtist}
+                            chineseCardFontFamily={chineseCardFontFamily}
+                            onChineseCardFontFamilyChange={setChineseCardFontFamily}
                             songNameList={songNameList}
                             onSongNameListChange={setSongNameList}
                             autoChangeSong={autoChangeSong}

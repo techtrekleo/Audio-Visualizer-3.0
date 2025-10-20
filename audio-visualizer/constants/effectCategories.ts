@@ -43,6 +43,14 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         performance: 'low',
         tags: ['放射狀', '頻譜', '衝擊力', '基礎']
     },
+    {
+        type: VisualizationType.BASIC_WAVE,
+        category: EffectCategory.BASIC,
+        description: '歐皇訂製版，純白波形帶0.1秒衰減效果',
+        difficulty: 'easy',
+        performance: 'low',
+        tags: ['純白', '平滑', '衰減', '訂製', '歐皇']
+    },
 
     // 進階款 - 中等複雜度，有特色效果
     {
