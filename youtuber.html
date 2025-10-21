@@ -168,6 +168,169 @@
                 padding: 20px;
             }
         }
+        
+        /* 頻道說明彈跳視窗樣式 */
+        .description-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .description-modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .description-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .description-header h3 {
+            margin: 0;
+            color: #ffffff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .description-header .close {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .description-header .close:hover {
+            color: #ffffff;
+        }
+        
+        .description-body {
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+            max-height: calc(80vh - 120px);
+        }
+        
+        .language-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .tab-button.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+        
+        .description-text {
+            color: #ffffff;
+            line-height: 1.8;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 自定義滾動條 */
+        .description-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .description-body::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        .description-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+        
+        .description-body::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .description-modal-content {
+                margin: 2% auto;
+                width: 95%;
+                max-height: 90vh;
+            }
+            
+            .description-body {
+                max-height: calc(90vh - 100px);
+                padding: 1rem;
+            }
+            
+            .description-header {
+                padding: 1rem;
+            }
+            
+            .description-header h3 {
+                font-size: 1.1rem;
+            }
+            
+            .language-tabs {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .tab-button {
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -193,6 +356,13 @@
     <script>
         // 創作者資料
         const creators = [
+            {
+                id: '0',
+                dcName: '口袋裡的貓',
+                channelName: '音樂脈動-Sonic Pulse',
+                youtubeUrl: 'https://www.youtube.com/channel/UCZVT570EWJ64ibL-re9CFpQ',
+                joinDate: '2025/10/15 上午 09:00:00'
+            },
             {
                 id: '1',
                 dcName: '可夜',
@@ -260,7 +430,21 @@
                 dcName: 'chrisyang',
                 channelName: 'EIRYN',
                 youtubeUrl: 'https://youtube.com/@eiryn6616?si=sFCeHJt09-VBrEjF',
-                joinDate: '2025/10/15 下午 10:10:07'
+                joinDate: '2025/10/15 下午 10:10:07',
+                channelDescription: {
+                    english: `Welcome to EIRYN Nice Music!
+Here's a collection of moving melodies and upbeat beats to accompany you through study, work, relaxation, and everyday life.
+From pop music and soothing instrumental music to light background music, we hope to bring joy and energy through our music.
+If you're looking for your own spiritual background music, this is the best place to go.
+
+👉 Don't forget to subscribe and turn on the bell to make music a part of your life.`,
+                    korean: `EIRYN Nice Music에 오신 것을 환영합니다!
+공부, 업무, 휴식, 그리고 일상생활 속에서 함께할 감동적인 멜로디와 경쾌한 비트를 만나보세요.
+팝 음악부터 차분한 기악곡, 그리고 경쾌한 배경음악까지, 저희는 음악을 통해 기쁨과 에너지를 선사하고자 합니다.
+나만의 영적인 배경음악을 찾고 있다면, 바로 이곳이 제격입니다.
+
+👉 구독하고 알림 설정도 잊지 마세요. 음악을 삶의 일부로 만들어갈 수 있습니다.`
+                }
             },
             {
                 id: '10',
@@ -394,6 +578,17 @@
                     });
                 }
                 
+                // 如果有頻道說明，添加查看詳情按鈕
+                if (creator.channelDescription) {
+                    channelButtons += `
+                        <button onclick="showChannelDescription('${creator.id}')" 
+                                class="creator-button" 
+                                style="margin-top: 10px; background: linear-gradient(45deg, #667eea, #764ba2);">
+                            <i class="fas fa-info-circle"></i> 查看頻道說明
+                        </button>
+                    `;
+                }
+                
                 return `
                     <div class="creator-card">
                         <div class="creator-header">
@@ -426,6 +621,71 @@
             // 綁定搜尋事件
             document.getElementById('searchInput').addEventListener('input', searchCreators);
         });
+        
+        // 顯示頻道說明彈跳視窗
+        function showChannelDescription(creatorId) {
+            const creator = creators.find(c => c.id === creatorId);
+            if (!creator || !creator.channelDescription) return;
+            
+            const modal = document.getElementById('descriptionModal');
+            const modalContent = document.getElementById('descriptionContent');
+            
+            modalContent.innerHTML = `
+                <div class="description-header">
+                    <h3>${creator.dcName} - ${creator.channelName}</h3>
+                    <span class="close" onclick="closeDescriptionModal()">&times;</span>
+                </div>
+                <div class="description-body">
+                    <div class="language-tabs">
+                        <button class="tab-button active" onclick="switchLanguage('english')">English</button>
+                        <button class="tab-button" onclick="switchLanguage('korean')">한국어</button>
+                    </div>
+                    <div class="description-text" id="descriptionText">
+                        ${creator.channelDescription.english.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 關閉頻道說明彈跳視窗
+        function closeDescriptionModal() {
+            const modal = document.getElementById('descriptionModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // 切換語言
+        function switchLanguage(language) {
+            const creatorId = document.querySelector('#descriptionContent .description-header h3').textContent.split(' - ')[0];
+            const creator = creators.find(c => c.dcName === creatorId);
+            if (!creator || !creator.channelDescription) return;
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // 更新內容
+            const descriptionText = document.getElementById('descriptionText');
+            descriptionText.innerHTML = creator.channelDescription[language].replace(/\n/g, '<br>');
+        }
+        
+        // 點擊背景關閉彈跳視窗
+        window.onclick = function(event) {
+            const modal = document.getElementById('descriptionModal');
+            if (event.target === modal) {
+                closeDescriptionModal();
+            }
+        }
     </script>
+    
+    <!-- 頻道說明彈跳視窗 -->
+    <div id="descriptionModal" class="description-modal">
+        <div class="description-modal-content">
+            <div id="descriptionContent"></div>
+        </div>
+    </div>
 </body>
 </html>
