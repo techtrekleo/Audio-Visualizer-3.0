@@ -217,9 +217,15 @@
             {
                 id: '4',
                 dcName: '匿名的歐皇',
-                channelName: 'RE:IGN',
+                channelName: 'RE:IGN ─ KPOP',
                 youtubeUrl: 'https://www.youtube.com/channel/UCfTRxp7lFW4CkK7s8-BV0eQ',
-                joinDate: '2025/10/15 下午 10:07:45'
+                joinDate: '2025/10/15 下午 10:07:45',
+                additionalChannels: [
+                    {
+                        channelName: 'petsolo168 ─ 萬人頻道 ─POWER&DANCE KPOP',
+                        youtubeUrl: 'https://www.youtube.com/@petsolo168'
+                    }
+                ]
             },
             {
                 id: '5',
@@ -363,23 +369,44 @@
             grid.style.display = 'grid';
             noResults.style.display = 'none';
             
-            grid.innerHTML = creatorsToRender.map(creator => `
-                <div class="creator-card">
-                    <div class="creator-header">
-                        <div class="creator-info">
-                            <h3>${creator.dcName}</h3>
-                            <p>${creator.channelName}</p>
-                        </div>
-                    </div>
-                    <div class="creator-date">加入時間：${creator.joinDate}</div>
+            grid.innerHTML = creatorsToRender.map(creator => {
+                // 生成頻道按鈕
+                let channelButtons = `
                     <a href="${creator.youtubeUrl.startsWith('http') ? creator.youtubeUrl : 'https://' + creator.youtubeUrl}" 
                        target="_blank" 
                        rel="noopener noreferrer" 
                        class="creator-button">
-                        <i class="fab fa-youtube"></i> 前往頻道
+                        <i class="fab fa-youtube"></i> ${creator.channelName}
                     </a>
-                </div>
-            `).join('');
+                `;
+                
+                // 如果有額外頻道，添加更多按鈕
+                if (creator.additionalChannels && creator.additionalChannels.length > 0) {
+                    creator.additionalChannels.forEach(channel => {
+                        channelButtons += `
+                            <a href="${channel.youtubeUrl.startsWith('http') ? channel.youtubeUrl : 'https://' + channel.youtubeUrl}" 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               class="creator-button" style="margin-top: 10px;">
+                                <i class="fab fa-youtube"></i> ${channel.channelName}
+                            </a>
+                        `;
+                    });
+                }
+                
+                return `
+                    <div class="creator-card">
+                        <div class="creator-header">
+                            <div class="creator-info">
+                                <h3>${creator.dcName}</h3>
+                                <p>${creator.channelName}${creator.additionalChannels ? ` + ${creator.additionalChannels.length} 個頻道` : ''}</p>
+                            </div>
+                        </div>
+                        <div class="creator-date">加入時間：${creator.joinDate}</div>
+                        ${channelButtons}
+                    </div>
+                `;
+            }).join('');
         }
 
         // 搜尋功能
