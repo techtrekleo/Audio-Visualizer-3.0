@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>創作者展示 - Sonic Pulse</title>
+    <meta name="description" content="發現優秀的音樂創作者和他們的頻道">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .creators-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .creator-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .creator-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .creator-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .creator-info h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .creator-info p {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        .creator-date {
+            font-size: 0.9rem;
+            color: #95a5a6;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .creator-button {
+            display: inline-block;
+            background: #ff0000;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+        }
+        
+        .creator-button:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 0, 0, 0.3);
+        }
+        
+        .creator-button i {
+            margin-right: 8px;
+        }
+        
+        .search-container {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .search-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .no-results {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .creators-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .creator-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-music"></i> 創作者展示</h1>
+            <p>發現優秀的音樂創作者和他們的頻道</p>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="搜尋創作者...">
+        </div>
+        
+        <div class="creators-grid" id="creatorsGrid">
+            <!-- 創作者卡片將由 JavaScript 動態生成 -->
+        </div>
+        
+        <div class="no-results" id="noResults" style="display: none;">
+            <i class="fas fa-search"></i> 找不到相關創作者
+        </div>
+    </div>
+
+    <script>
+        // 創作者資料
+        const creators = [
+            {
+                id: '1',
+                dcName: '【ｉ人】朽葉',
+                channelName: '朽月Music',
+                youtubeUrl: 'https://www.youtube.com/@XiuYueMusic',
+                joinDate: '2025/10/15 下午 10:07:26'
+            },
+            {
+                id: '2',
+                dcName: '口袋裡的貓',
+                channelName: 'PocketCat Music',
+                youtubeUrl: 'https://www.youtube.com/@PocketCatMusic',
+                joinDate: '2025/10/16 上午 09:15:42'
+            },
+            {
+                id: '3',
+                dcName: '【ｉ人】朽葉 （他自己說的，可是沒人這樣認為，顆顆）',
+                channelName: '朽月Music',
+                youtubeUrl: 'https://www.youtube.com/@XiuYueMusic',
+                joinDate: '2025/10/15 下午 10:07:26'
+            }
+        ];
+
+        // 渲染創作者卡片
+        function renderCreators(creatorsToRender = creators) {
+            const grid = document.getElementById('creatorsGrid');
+            const noResults = document.getElementById('noResults');
+            
+            if (creatorsToRender.length === 0) {
+                grid.style.display = 'none';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            noResults.style.display = 'none';
+            
+            grid.innerHTML = creatorsToRender.map(creator => `
+                <div class="creator-card">
+                    <div class="creator-header">
+                        <div class="creator-info">
+                            <h3>${creator.dcName}</h3>
+                            <p>${creator.channelName}</p>
+                        </div>
+                    </div>
+                    <div class="creator-date">加入時間：${creator.joinDate}</div>
+                    <a href="${creator.youtubeUrl.startsWith('http') ? creator.youtubeUrl : 'https://' + creator.youtubeUrl}" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="creator-button">
+                        <i class="fab fa-youtube"></i> 前往頻道
+                    </a>
+                </div>
+            `).join('');
+        }
+
+        // 搜尋功能
+        function searchCreators() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredCreators = creators.filter(creator => 
+                creator.dcName.toLowerCase().includes(searchTerm) ||
+                creator.channelName.toLowerCase().includes(searchTerm)
+            );
+            renderCreators(filteredCreators);
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCreators();
+            
+            // 綁定搜尋事件
+            document.getElementById('searchInput').addEventListener('input', searchCreators);
+        });
+    </script>
+</body>
+</html>
