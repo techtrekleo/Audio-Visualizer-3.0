@@ -3200,20 +3200,24 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
     
     // 5. 底部假播放器 (卡片風格 + 持續抖動 + 真實秒數) - 可選顯示
     if (controlCardEnabled !== false) {
-        const playerWidth = frameSize; // 與中央方塊同寬
-        // 動態調整控制卡高度，根據字體大小調整
-        const baseHeight = height * 0.15;
+        // 控制卡寬度也根據字體大小等比例調整
+        const baseWidth = frameSize;
         const cardFontSize = controlCardFontSize || 24;
         // 限制字體大小的影響，避免控制卡過大
         const maxFontSize = 100;
         const clampedFontSize = Math.min(cardFontSize, maxFontSize);
-        const heightMultiplier = Math.max(1, clampedFontSize / 24); // 字體越大，高度越大
-        let playerHeight = Math.min(baseHeight * heightMultiplier, height * 0.3); // 最大不超過30%高度
+        const widthMultiplier = Math.max(1.0, clampedFontSize / 24); // 字體越大，寬度也越大
+        const playerWidth = Math.min(baseWidth * widthMultiplier, width * 0.8); // 最大不超過80%寬度
+        // 動態調整控制卡高度，增加空間給按鈕
+        const baseHeight = height * 0.18; // 從 0.15 增加到 0.18，增加控制卡高度
+        // 更靈活的高度計算：字體越大，控制卡越大
+        const heightMultiplier = Math.max(1.2, clampedFontSize / 20); // 從 24 改為 20，讓控制卡更容易放大
+        let playerHeight = Math.min(baseHeight * heightMultiplier, height * 0.45); // 從 0.4 增加到 0.45，允許更大的控制卡
         const playerX = centerX - playerWidth / 2;
-        // 動態調整Y位置，將控制卡片往上移，避免重疊
-        const baseY = height * 0.65; // 從 0.75 改為 0.65，往上移
+        // 動態調整Y位置，將控制卡片往下移，與上方框架拉開距離
+        const baseY = height * 0.70; // 從 0.65 改為 0.70，往下移以增加與上方框架的距離
         const yOffset = (clampedFontSize - 24) * 0.3; // 增加偏移量
-        let playerY = Math.max(height * 0.5, Math.min(baseY - yOffset, height * 0.8)); // 最低50%，最高80%
+        let playerY = Math.max(height * 0.55, Math.min(baseY - yOffset, height * 0.8)); // 最低55%，最高80%
         
         // 檢查控制卡是否超出畫布邊界
         if (playerY + playerHeight > height - 10) {
@@ -3266,10 +3270,10 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
             }
         }
     
-    // 專輯封面 (左上角) - 增加與頂部的間距
-    const albumSize = playerHeight * 0.6;
-    const albumX = playerX + 20 + shakeX;
-    const albumY = playerY + 35 + shakeY; // 從 20 增加到 35，增加間距
+        // 專輯封面 (左上角) - 重新定義變數
+        const albumSize = playerHeight * 0.12; // 12% 高度
+        const albumX = playerX + (playerWidth * 0.05) + shakeX; // 5% 左邊距
+        const albumY = playerY + (playerHeight * 0.02) + shakeY; // 2% 頂部間距
     
     // 專輯封面背景 - 使用控制卡顏色和透明度
     // (cardStyle, cardBgColor, cardColor 已在上面定義，重複使用)
@@ -3362,14 +3366,15 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         ctx.arc(dotX, dotY, 3, 0, Math.PI * 2);
         ctx.fill();
     }
-        // 歌曲資訊 (右側) - 增加與頂部的間距
-        const infoX = albumX + albumSize + 20;
-        const infoY = playerY + Math.max(45, clampedFontSize * 1.0); // 從 30 增加到 45，增加間距
-        const dynamicSpacing = Math.max(30, Math.min(clampedFontSize * 1.4, 140)); // 增加行距
+        // 歌曲資訊 (右側) - 重新定義變數
+        const infoX = albumX + albumSize + (playerWidth * 0.05); // 5% 間距
+        const infoY = playerY + (playerHeight * 0.18); // 18% 位置
+        const dynamicSpacing = playerHeight * 0.08; // 8% 行距
         
-        // 歌曲名稱
+        // 歌曲名稱 - 使用百分比字體大小
         ctx.fillStyle = cardColor;
-        ctx.font = `bold ${Math.min(clampedFontSize + 2, 60)}px Arial`;
+        const songFontSize = Math.min(clampedFontSize + 2, playerHeight * 0.2); // 20% 高度
+        ctx.font = `bold ${songFontSize}px Arial`;
         ctx.textAlign = 'left';
         const songName = props.geometricSongName || 'Name of the song';
         const songNameY = infoY + Math.cos(frame * 0.03) * 0.3;
@@ -3381,8 +3386,9 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         
         ctx.fillText(songName, infoX + Math.sin(frame * 0.02) * 0.5, adjustedSongNameY);
         
-        // 歌手名稱 - 使用動態間距
-        ctx.font = `${Math.min(clampedFontSize, 55)}px Arial`;
+        // 歌手名稱 - 使用百分比字體大小
+        const artistFontSize = Math.min(clampedFontSize, playerHeight * 0.15); // 15% 高度
+        ctx.font = `${artistFontSize}px Arial`;
         ctx.fillStyle = cardStyle === ControlCardStyle.OUTLINE ? cardColor : 'rgba(255, 255, 255, 0.8)';
         const artistName = props.geometricArtistName || 'Artist';
         const artistNameY = adjustedSongNameY + dynamicSpacing + Math.cos(frame * 0.035) * 0.2;
@@ -3417,12 +3423,32 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         const threeDotsSpacing = Math.max(40, clampedFontSize * 0.8); // 根據字體大小調整間距，最小40px
         ctx.fillText('⋯', adjustedIconX + threeDotsSpacing + Math.sin(frame * 0.06) * 0.2, iconY + Math.cos(frame * 0.04) * 0.2);
     
-        // 進度條 - 大幅增加與底部的距離，避免與圖標重疊
-        const progressBarWidth = playerWidth - 40;
-        const progressBarHeight = Math.max(4, Math.min(clampedFontSize * 0.15, 15)); // 根據字體大小調整進度條高度
-        const progressBarX = playerX + 20 + shakeX;
-        const progressBarOffset = Math.max(120, Math.min(clampedFontSize * 3.5, 250)); // 大幅增加進度條與底部的距離
-        const progressBarY = playerY + playerHeight - progressBarOffset + shakeY;
+        // 重新規劃控制卡空間配置 - 明確分配每個區域的百分比
+        // 控制卡總高度分配：
+        // 0-15%: 專輯封面區域
+        // 15-35%: 歌曲資訊區域  
+        // 35-50%: 波形顯示區域
+        // 50-70%: 進度條區域
+        // 70-85%: 時間顯示區域
+        // 85-100%: 控制按鈕區域
+        
+        // 專輯封面 (左上角) - 0-15% 區域
+        // albumSize, albumX, albumY 已在上面定義
+        
+        // 歌曲資訊 (右側) - 15-35% 區域
+        // infoX, infoY, dynamicSpacing 已在上面定義
+        
+        // 波形顯示區域 - 35-50% 區域
+        const waveformY = playerY + (playerHeight * 0.40); // 40% 位置
+        
+        // 進度條區域 - 50-70% 區域
+        const progressBarWidth = playerWidth * 0.9; // 90% 寬度
+        const progressBarHeight = playerHeight * 0.06; // 6% 高度
+        const progressBarX = playerX + (playerWidth * 0.05) + shakeX; // 5% 左邊距
+        const progressBarY = playerY + (playerHeight * 0.55) + shakeY; // 55% 位置
+        
+        // 時間顯示區域 - 70-85% 區域
+        const timeY = playerY + (playerHeight * 0.72); // 72% 位置
         
         // 進度條背景
         ctx.fillStyle = cardStyle === ControlCardStyle.OUTLINE ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.3)';
@@ -3437,11 +3463,11 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         ctx.fillStyle = cardColor;
         ctx.fillRect(progressBarX, progressBarY, currentProgressWidth, progressBarHeight);
         
-        // 時間顯示 - 動態調整字體和位置，增加與進度條的間距
+        // 時間顯示 - 使用新的區域配置
         ctx.fillStyle = cardColor;
-        const timeFontSize = Math.max(Math.min(clampedFontSize * 0.7, 70), 12); // 時間字體不低於12px，不超過70px
+        const timeFontSize = Math.min(clampedFontSize * 0.6, playerHeight * 0.10); // 10% 高度
         ctx.font = `${timeFontSize}px Arial`;
-        const timeOffset = Math.max(15, Math.min(clampedFontSize * 0.6, 50)); // 增加時間與進度條的間距，最小15px
+        const safeTimeY = timeY; // 使用新的時間區域位置
         ctx.textAlign = 'left';
         const currentMinutes = Math.floor(currentTime / 60);
         const currentSecs = Math.floor(currentTime % 60);
@@ -3449,23 +3475,27 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         const totalSecs = Math.floor(totalSeconds % 60);
         
         // 確保時間顯示不會與背景重疊，增加額外的安全間距
-        const safeTimeY = Math.max(progressBarY - timeOffset, playerY + 20); // 確保時間不會超出控制卡頂部
+        // safeTimeY 已在上面定義為 timeY
         ctx.fillText(`${currentMinutes}:${currentSecs.toString().padStart(2, '0')}`, progressBarX + Math.sin(frame * 0.02) * 0.3, safeTimeY + Math.cos(frame * 0.03) * 0.2);
         
         ctx.textAlign = 'right';
         ctx.fillText(`${totalMinutes}:${totalSecs.toString().padStart(2, '0')}`, progressBarX + progressBarWidth + Math.sin(frame * 0.025) * 0.3, safeTimeY + Math.cos(frame * 0.035) * 0.2);
-    
-        // 控制按鈕區域 - 動態調整位置和間距
-        const buttonOffset = Math.max(25, Math.min(clampedFontSize * 1.2, 80)); // 根據字體大小調整按鈕位置，最大80px
-        const buttonY = playerY + playerHeight - buttonOffset + shakeY;
-        const buttonSpacing = Math.max(40, Math.min(clampedFontSize * 1.8, 120)); // 根據字體大小調整按鈕間距，最大120px
+        
+        // 控制按鈕區域 - 85-100% 區域
+        const buttonY = playerY + (playerHeight * 0.90) + shakeY; // 90% 位置
+        
+        // 控制按鈕區域 - 使用新的區域配置
+        const buttonSpacing = playerWidth * 0.08; // 8% 間距
         const startX = playerX + playerWidth / 2 - (buttonSpacing * 2) + shakeX;
+        
+        // 設定按鈕字體大小
+        const buttonFontSize = Math.min(clampedFontSize + 2, playerHeight * 0.12); // 12% 高度
+        ctx.font = `${buttonFontSize}px Arial`;
+        ctx.textAlign = 'center';
         
         // 隨機播放按鈕
         const shuffleX = startX;
         ctx.fillStyle = cardColor;
-        ctx.font = `${Math.min(clampedFontSize + 2, 60)}px Arial`;
-        ctx.textAlign = 'center';
         ctx.fillText('🔀', shuffleX + Math.sin(frame * 0.03) * 0.3, buttonY + Math.cos(frame * 0.04) * 0.2);
         
         // 前一首按鈕
@@ -3491,7 +3521,6 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         // 下一首按鈕
         const nextX = startX + buttonSpacing * 3;
         ctx.fillStyle = cardColor;
-        ctx.font = `${Math.min(clampedFontSize + 2, 60)}px Arial`;
         ctx.fillText('⏭', nextX + Math.sin(frame * 0.04) * 0.2, buttonY + Math.cos(frame * 0.05) * 0.2);
         
         // 重複播放按鈕

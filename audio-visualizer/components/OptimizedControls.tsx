@@ -550,7 +550,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         subtitleFontSize: props.subtitleFontSize,
         subtitleFontFamily: props.subtitleFontFamily,
         subtitleColor: props.subtitleColor,
-        subtitleEffect: props.subtitleEffect,
+        // subtitleEffect: props.subtitleEffect,
         subtitleBgStyle: props.subtitleBgStyle,
         subtitleDisplayMode: props.subtitleDisplayMode,
         effectScale: props.effectScale,
@@ -580,7 +580,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.subtitleFontSize !== undefined) props.onSubtitleFontSizeChange(settings.subtitleFontSize);
         if (settings.subtitleFontFamily) props.onSubtitleFontFamilyChange(settings.subtitleFontFamily);
         if (settings.subtitleColor) props.onSubtitleColorChange(settings.subtitleColor);
-        if (settings.subtitleEffect) props.onSubtitleEffectChange(settings.subtitleEffect);
+        // if (settings.subtitleEffect) props.onSubtitleEffectChange(settings.subtitleEffect);
         if (settings.subtitleBgStyle) props.onSubtitleBgStyleChange(settings.subtitleBgStyle);
         if (settings.subtitleDisplayMode) props.onSubtitleDisplayModeChange(settings.subtitleDisplayMode);
         if (settings.effectScale !== undefined) props.onEffectScaleChange(settings.effectScale);
@@ -592,7 +592,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.lyricsPositionY !== undefined) props.onLyricsPositionYChange(settings.lyricsPositionY);
     };
 
-    const FONT_MAP: Record<FontType, string> = {
+    const FONT_MAP: Partial<Record<FontType, string>> = {
         [FontType.POPPINS]: 'Poppins',
         [FontType.ORBITRON]: 'Orbitron',
         [FontType.LOBSTER]: 'Lobster',
@@ -1149,6 +1149,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-300">字幕格式</label>
                                 <SelectControl
+                                    label="字幕格式"
                                     value={props.subtitleFormat}
                                     onChange={(value) => props.onSubtitleFormatChange(value as SubtitleFormat)}
                                     options={[
@@ -1165,6 +1166,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     字幕語言
                                 </label>
                                 <SelectControl
+                                    label="字幕語言"
                                     value={props.subtitleLanguage}
                                     onChange={(value) => props.onSubtitleLanguageChange(value as SubtitleLanguage)}
                                     options={[

@@ -99,7 +99,7 @@ function App() {
     const [subtitleDisplayMode, setSubtitleDisplayMode] = useState<SubtitleDisplayMode>(SubtitleDisplayMode.CLASSIC);
     const [subtitleFormat, setSubtitleFormat] = useState<SubtitleFormat>(SubtitleFormat.BRACKET);
     const [subtitleLanguage, setSubtitleLanguage] = useState<SubtitleLanguage>(SubtitleLanguage.CHINESE);
-    const [subtitleOrientation, setSubtitleOrientation] = useState<SubtitleOrientation>(SubtitleOrientation.HORIZONTAL);
+    const [subtitleOrientation, setSubtitleOrientation] = useState<SubtitleOrientation>(() => SubtitleOrientation.HORIZONTAL);
     // 字幕位置控制
     const [verticalSubtitlePosition, setVerticalSubtitlePosition] = useState<number>(1); // 直式字幕水平位置 0.0 = 左側, 1.0 = 右側，預設更靠近右邊
     const [horizontalSubtitlePosition, setHorizontalSubtitlePosition] = useState<number>(0.5); // 橫式字幕水平位置 0.0 = 左側, 1.0 = 右側
@@ -1468,10 +1468,10 @@ function App() {
                                     lyricsPositionY={lyricsPositionY}
                                     subtitleDisplayMode={subtitleDisplayMode}
                                     subtitleOrientation={subtitleOrientation}
-                                    verticalSubtitlePosition={verticalSubtitlePosition}
-                                    horizontalSubtitlePosition={horizontalSubtitlePosition}
-                                    verticalSubtitleVerticalPosition={verticalSubtitleVerticalPosition}
-                                    horizontalSubtitleVerticalPosition={horizontalSubtitleVerticalPosition}
+                                    // verticalSubtitlePosition={verticalSubtitlePosition}
+                                    // horizontalSubtitlePosition={horizontalSubtitlePosition}
+                                    // verticalSubtitleVerticalPosition={verticalSubtitleVerticalPosition}
+                                    // horizontalSubtitleVerticalPosition={horizontalSubtitleVerticalPosition}
                                     disableVisualizer={!showVisualizer}
                                     subtitleDragOffset={subtitleDragOffset}
                                     lyricsDragOffset={lyricsDragOffset}
@@ -1491,8 +1491,8 @@ function App() {
                                     zCustomPosition={zCustomPosition}
                                     onZCustomPositionUpdate={setZCustomPosition}
                                     vinylImage={vinylImage}
-                                    vinylLayoutMode={vinylLayoutMode}
-                                    vinylCenterFixed={vinylCenterFixed}
+                                    // vinylLayoutMode={vinylLayoutMode}
+                                    // vinylCenterFixed={vinylCenterFixed}
                                     pianoOpacity={pianoOpacity}
                                     geometricFrameImage={geometricFrameImage}
                                     geometricSemicircleImage={geometricSemicircleImage}
@@ -1511,12 +1511,12 @@ function App() {
                                     controlCardColor={controlCardColor}
                                     controlCardBackgroundColor={controlCardBackgroundColor}
                                     // Vinyl Record props
-                                    vinylRecordEnabled={vinylRecordEnabled}
+                                    // vinylRecordEnabled={vinylRecordEnabled}
                                     // Chinese Control Card props
-                                    chineseCardAlbumImage={chineseCardAlbumImage}
-                                    chineseCardSongTitle={chineseCardSongTitle}
-                                    chineseCardArtist={chineseCardArtist}
-                                    chineseCardFontFamily={chineseCardFontFamily}
+                                    // chineseCardAlbumImage={chineseCardAlbumImage}
+                                    // chineseCardSongTitle={chineseCardSongTitle}
+                                    // chineseCardArtist={chineseCardArtist}
+                                    // chineseCardFontFamily={chineseCardFontFamily}
                                 />
                             </div>
                         </div>
@@ -1715,14 +1715,14 @@ function App() {
                             vinylRecordEnabled={vinylRecordEnabled}
                             onVinylRecordEnabledChange={setVinylRecordEnabled}
                             // Chinese Control Card props
-                            chineseCardAlbumImage={chineseCardAlbumImage}
-                            onChineseCardAlbumImageChange={setChineseCardAlbumImage}
-                            chineseCardSongTitle={chineseCardSongTitle}
-                            onChineseCardSongTitleChange={setChineseCardSongTitle}
-                            chineseCardArtist={chineseCardArtist}
-                            onChineseCardArtistChange={setChineseCardArtist}
-                            chineseCardFontFamily={chineseCardFontFamily}
-                            onChineseCardFontFamilyChange={setChineseCardFontFamily}
+                            // chineseCardAlbumImage={chineseCardAlbumImage}
+                            // onChineseCardAlbumImageChange={setChineseCardAlbumImage}
+                            // chineseCardSongTitle={chineseCardSongTitle}
+                            // onChineseCardSongTitleChange={setChineseCardSongTitle}
+                            // chineseCardArtist={chineseCardArtist}
+                            // onChineseCardArtistChange={setChineseCardArtist}
+                            // chineseCardFontFamily={chineseCardFontFamily}
+                            // onChineseCardFontFamilyChange={setChineseCardFontFamily}
                             songNameList={songNameList}
                             onSongNameListChange={setSongNameList}
                             autoChangeSong={autoChangeSong}

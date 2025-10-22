@@ -333,7 +333,7 @@ const Controls: React.FC<ControlsProps> = ({
 }) => {
     const PRESET_COLORS = ['#FFFFFF', '#67E8F9', '#F472B6', '#FFD700', '#FF4500', '#A78BFA'];
 
-    const FONT_MAP: Record<FontType, string> = {
+    const FONT_MAP: Partial<Record<FontType, string>> = {
         [FontType.POPPINS]: 'Poppins',
         [FontType.ORBITRON]: 'Orbitron',
         [FontType.LOBSTER]: 'Lobster',
@@ -810,12 +810,12 @@ const Controls: React.FC<ControlsProps> = ({
                                                         <span className="text-gray-400 text-xs">A</span>
                                                     </div>
                                                 )}
-                                                {style === SubtitleBgStyle.SEMI_TRANSPARENT && (
+                                                {style === SubtitleBgStyle.TRANSPARENT && (
                                                     <div className="w-8 h-5 bg-black/50 border border-gray-400 rounded flex items-center justify-center">
                                                         <span className="text-white text-xs">A</span>
                                                     </div>
                                                 )}
-                                                {style === SubtitleBgStyle.SOLID && (
+                                                {style === SubtitleBgStyle.TRANSPARENT && (
                                                     <div className="w-8 h-5 bg-black border border-gray-400 rounded flex items-center justify-center">
                                                         <span className="text-white text-xs">A</span>
                                                     </div>

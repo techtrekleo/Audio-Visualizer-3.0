@@ -79,9 +79,9 @@ const PopupAdManager: React.FC<PopupAdManagerProps> = ({
     }, [showPopup]);
 
     // 暴露給父組件的方法
-    React.useImperativeHandle(React.useRef(), () => ({
-        triggerPopup
-    }));
+    // React.useImperativeHandle(React.useRef(), () => ({
+    //     triggerPopup
+    // }));
 
     if (!currentAd || !isVisible) return null;
 

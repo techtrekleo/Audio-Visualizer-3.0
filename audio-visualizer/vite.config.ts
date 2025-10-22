@@ -5,11 +5,11 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode }) => {
   // Load .env files based on `mode` in the current working directory.
   // This will also load environment variables from the platform (e.g., Railway).
-  const env = loadEnv(mode, process.cwd() + '/..', '');
+  const env = loadEnv(mode, import.meta.url.replace('/vite.config.ts', '') + '/..', '');
   
   return {
     plugins: [react()],
-    base: '/audio-visualizer/', // 使用絕對路徑
+    base: './', // 使用相對路徑
     // Explicitly define environment variables to be statically replaced at build time.
     // This is a more robust approach for deployment environments.
     define: {
@@ -29,6 +29,11 @@ export default defineConfig(({ mode }) => {
           assetFileNames: 'assets/[name].[ext]'
         }
       }
+    },
+    // 添加開發服務器配置，確保路徑正確
+    server: {
+      port: 5173,
+      host: true
     }
   }
 });
