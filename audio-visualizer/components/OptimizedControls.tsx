@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle } from '../types';
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
@@ -530,7 +530,44 @@ const ProgressBar: React.FC<{
 
 const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
     const [showQuickSettings, setShowQuickSettings] = useState(true);
+    const [showDebugMode, setShowDebugMode] = useState(false);
+    const [fontErrors, setFontErrors] = useState<string[]>([]);
     const PRESET_COLORS = ['#FFFFFF', '#67E8F9', '#F472B6', '#FFD700', '#FF4500', '#A78BFA'];
+    // 字體錯誤檢測
+    useEffect(() => {
+        const checkFontErrors = () => {
+            const errors: string[] = [];
+            
+            // 檢查 FONT_MAP 是否完整
+            const missingFonts: FontType[] = [];
+            Object.values(FontType).forEach(fontType => {
+                if (!FONT_MAP[fontType]) {
+                    missingFonts.push(fontType);
+                }
+            });
+            
+            if (missingFonts.length > 0) {
+                errors.push(`FONT_MAP 缺少字體: ${missingFonts.join(', ')}`);
+            }
+            
+            // 檢查當前字體設置
+            if (props.subtitleFontFamily && !FONT_MAP[props.subtitleFontFamily]) {
+                errors.push(`字幕字體 ${props.subtitleFontFamily} 在 FONT_MAP 中不存在`);
+            }
+            
+            if (props.ctaFontFamily && !FONT_MAP[props.ctaFontFamily]) {
+                errors.push(`CTA 字體 ${props.ctaFontFamily} 在 FONT_MAP 中不存在`);
+            }
+            
+            if (props.fontFamily && !FONT_MAP[props.fontFamily]) {
+                errors.push(`自訂文字字體 ${props.fontFamily} 在 FONT_MAP 中不存在`);
+            }
+            
+            setFontErrors(errors);
+        };
+        
+        checkFontErrors();
+    }, [props.subtitleFontFamily, props.ctaFontFamily, props.fontFamily]);
 
     // 獲取當前設置
     const getCurrentSettings = (): Partial<SavedSettings> => ({
@@ -657,6 +694,56 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
     return (
         <div className="w-full max-w-7xl space-y-4">
+            {/* 調試模式開關 */}
+            <div className="bg-gray-800 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <Icon path={ICON_PATHS.SETTINGS} className="w-5 h-5 text-yellow-400" />
+                        <span className="text-white font-medium">調試模式</span>
+                    </div>
+                    <button
+                        onClick={() => setShowDebugMode(!showDebugMode)}
+                        className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-yellow-500 ${showDebugMode ? 'bg-yellow-600' : 'bg-gray-500'}`}
+                        aria-pressed={showDebugMode}
+                    >
+                        <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${showDebugMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                </div>
+                
+                {showDebugMode && (
+                    <div className="mt-4 space-y-3">
+                        <div className="bg-gray-900 rounded-lg p-3">
+                            <h4 className="text-yellow-400 font-medium mb-2">字體錯誤檢測</h4>
+                            {fontErrors.length === 0 ? (
+                                <div className="text-green-400 text-sm">✅ 沒有發現字體錯誤</div>
+                            ) : (
+                                <div className="space-y-1">
+                                    {fontErrors.map((error, index) => (
+                                        <div key={index} className="text-red-400 text-sm">❌ {error}</div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="bg-gray-900 rounded-lg p-3">
+                            <h4 className="text-yellow-400 font-medium mb-2">當前字體設置</h4>
+                            <div className="text-sm space-y-1">
+                                <div className="text-white">字幕字體: <span className="text-blue-400">{props.subtitleFontFamily || '未設置'}</span></div>
+                                <div className="text-white">CTA 字體: <span className="text-blue-400">{props.ctaFontFamily || '未設置'}</span></div>
+                                <div className="text-white">自訂文字字體: <span className="text-blue-400">{props.fontFamily || '未設置'}</span></div>
+                            </div>
+                        </div>
+                        
+                        <div className="bg-gray-900 rounded-lg p-3">
+                            <h4 className="text-yellow-400 font-medium mb-2">FONT_MAP 狀態</h4>
+                            <div className="text-sm text-white">
+                                已定義字體數量: <span className="text-green-400">{Object.keys(FONT_MAP).length}</span> / <span className="text-blue-400">{Object.values(FontType).length}</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
             {/* 快速設置面板 */}
             {showQuickSettings && (
                 <div className="mb-6">
