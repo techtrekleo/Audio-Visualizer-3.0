@@ -140,19 +140,21 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
 
                 {/* 進階控制選項 */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {/* 聲波描邊 */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-300">聲波描邊</label>
-                        <button
-                            onClick={() => onWaveformStrokeChange(!waveformStroke)}
-                            disabled={isRecording}
-                            type="button"
-                            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed ${waveformStroke ? 'bg-cyan-600' : 'bg-gray-600'}`}
-                            aria-pressed={waveformStroke}
-                        >
-                            <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${waveformStroke ? 'translate-x-6' : 'translate-x-1'}`} />
-                        </button>
-                    </div>
+                    {/* 聲波描邊 - 僅在特殊款特效時顯示 */}
+                    {(visualizationType === VisualizationType.CRT_GLITCH || visualizationType === VisualizationType.GLITCH_WAVE) && (
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-300">中間線條</label>
+                            <button
+                                onClick={() => onWaveformStrokeChange(!waveformStroke)}
+                                disabled={isRecording}
+                                type="button"
+                                className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed ${waveformStroke ? 'bg-cyan-600' : 'bg-gray-600'}`}
+                                aria-pressed={waveformStroke}
+                            >
+                                <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${waveformStroke ? 'translate-x-6' : 'translate-x-1'}`} />
+                            </button>
+                        </div>
+                    )}
 
                     {/* 特效大小 */}
                     <div className="space-y-2">

@@ -2128,13 +2128,13 @@ const drawGlitchWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | n
         ctx.shadowColor = 'transparent';
         ctx.stroke(wavePath);
         ctx.restore();
+        
+        ctx.strokeStyle = colors.primary;
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = colors.primary;
+        ctx.shadowBlur = 10;
+        ctx.stroke(wavePath);
     }
-    
-    ctx.strokeStyle = colors.primary;
-    ctx.lineWidth = 2.5;
-    ctx.shadowColor = colors.primary;
-    ctx.shadowBlur = 10;
-    ctx.stroke(wavePath);
 
     // Add classic scanlines for the retro feel (further reduced frequency)
     ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // Reduced opacity from 0.15 to 0.1
@@ -2190,29 +2190,31 @@ const drawCrtGlitch = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | nu
         ctx.stroke();
     };
 
-    // Modified effect: Dynamic Chromatic Aberration (reduced frequency)
-    // Happens less frequently and with reduced intensity
-    const isGlitching = isBeat && Math.random() > 0.5; // Only 50% chance on beat, no random glitching
-    if (isGlitching) {
-        ctx.globalCompositeOperation = 'lighter';
-        const intensity = 6; // Reduced from 12 to 6
-        drawWave('rgba(255, 0, 100, 0.5)', (Math.random() - 0.5) * intensity, 0, 2); // Magenta with reduced opacity
-        drawWave('rgba(0, 255, 255, 0.5)', (Math.random() - 0.5) * intensity, 0, 2);  // Cyan with reduced opacity
-    }
-    
     ctx.globalCompositeOperation = 'source-over';
     
     if (waveformStroke) {
+        // Modified effect: Dynamic Chromatic Aberration (reduced frequency)
+        // Happens less frequently and with reduced intensity
+        const isGlitching = isBeat && Math.random() > 0.5; // Only 50% chance on beat, no random glitching
+        if (isGlitching) {
+            ctx.globalCompositeOperation = 'lighter';
+            const intensity = 6; // Reduced from 12 to 6
+            drawWave('rgba(255, 0, 100, 0.5)', (Math.random() - 0.5) * intensity, 0, 2); // Magenta with reduced opacity
+            drawWave('rgba(0, 255, 255, 0.5)', (Math.random() - 0.5) * intensity, 0, 2);  // Cyan with reduced opacity
+        }
+        
+        ctx.globalCompositeOperation = 'source-over';
+        
         ctx.save();
         ctx.shadowBlur = 0;
         ctx.shadowColor = 'transparent';
         drawWave('rgba(0,0,0,0.7)', 0, 0, 4.5);
         ctx.restore();
+        
+        ctx.shadowColor = colors.primary;
+        ctx.shadowBlur = 10;
+        drawWave(colors.primary, 0, 0, 2.5);
     }
-    
-    ctx.shadowColor = colors.primary;
-    ctx.shadowBlur = 10;
-    drawWave(colors.primary, 0, 0, 2.5);
 
     // Original effect: Scanlines (reduced frequency)
     ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; // Reduced opacity from 0.25 to 0.15
