@@ -5802,7 +5802,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         const audioCurrentTime = propsRef.current.audioRef?.current?.currentTime || 0;
         
         // 只在音頻開始的前10秒顯示，但允許拖動時或暫停時顯示
-        if (audioCurrentTime > 10 && !dragState.current.isDragging && propsRef.current.isPlaying) return;
+        // 修改：如果沒有音頻播放，也顯示 CTA 動畫
+        if (audioCurrentTime > 10 && !dragState.current.isDragging && propsRef.current.isPlaying && propsRef.current.audioRef?.current) return;
         
         const ctaX = (position.x / 100) * width;
         const ctaY = (position.y / 100) * height;
