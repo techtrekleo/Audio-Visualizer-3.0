@@ -5513,11 +5513,12 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         }
         // 無字幕模式：不顯示任何字幕
         if (customText) {
+            const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
             drawCustomText(ctx, customText, smoothedData, { 
                 width, 
                 height, 
                 color: textColor, 
-                fontFamily, 
+                fontFamily: actualFontName, 
                 graphicEffect, 
                 position: watermarkPosition, 
                 textSize: textSize,
