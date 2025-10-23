@@ -26,6 +26,7 @@ export enum VisualizationType {
     VINYL_RECORD = '唱片加控制卡',
     CHINESE_CONTROL_CARD = '中國風控制卡',
     BASIC_WAVE = '歐皇訂製版',
+    DYNAMIC_CONTROL_CARD = '動態控制卡',
 }
 
 // 特效分類系統
@@ -33,7 +34,8 @@ export enum EffectCategory {
     BASIC = '基礎款',
     ADVANCED = '進階款',
     EXPERIMENTAL = '實驗款',
-    SPECIAL = '特殊款'
+    SPECIAL = '特殊款',
+    DYNAMIC_CONTROL = '動態控制卡'
 }
 
 export interface EffectInfo {

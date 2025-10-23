@@ -1468,10 +1468,10 @@ function App() {
                                     lyricsPositionY={lyricsPositionY}
                                     subtitleDisplayMode={subtitleDisplayMode}
                                     subtitleOrientation={subtitleOrientation}
-                                    // verticalSubtitlePosition={verticalSubtitlePosition}
-                                    // horizontalSubtitlePosition={horizontalSubtitlePosition}
-                                    // verticalSubtitleVerticalPosition={verticalSubtitleVerticalPosition}
-                                    // horizontalSubtitleVerticalPosition={horizontalSubtitleVerticalPosition}
+                                    verticalSubtitlePosition={verticalSubtitlePosition}
+                                    horizontalSubtitlePosition={horizontalSubtitlePosition}
+                                    verticalSubtitleVerticalPosition={verticalSubtitleVerticalPosition}
+                                    horizontalSubtitleVerticalPosition={horizontalSubtitleVerticalPosition}
                                     disableVisualizer={!showVisualizer}
                                     subtitleDragOffset={subtitleDragOffset}
                                     lyricsDragOffset={lyricsDragOffset}

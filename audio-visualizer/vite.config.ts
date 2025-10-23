@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
   
   return {
     plugins: [react()],
-    base: './', // 使用相對路徑
+    base: '/audio-visualizer/', // 使用絕對路徑
     // Explicitly define environment variables to be statically replaced at build time.
     // This is a more robust approach for deployment environments.
     define: {

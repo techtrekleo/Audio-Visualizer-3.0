@@ -535,6 +535,178 @@ const drawBasicWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | nu
     ctx.restore();
 };
 
+const drawDynamicControlCard = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
+    if (!dataArray) return;
+    ctx.save();
+    
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    // 音頻分析
+    const bass = dataArray.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
+    const mid = dataArray.slice(32, 128).reduce((a, b) => a + b, 0) / 96;
+    const treble = dataArray.slice(128, 256).reduce((a, b) => a + b, 0) / 128;
+    
+    const normalizedBass = bass / 255;
+    const normalizedMid = mid / 255;
+    const normalizedTreble = treble / 255;
+    
+    // 1. 高斯模糊背景效果
+    ctx.save();
+    ctx.filter = `blur(${8 + normalizedBass * 12}px)`;
+    ctx.globalAlpha = 0.3 + normalizedMid * 0.4;
+    
+    // 創建動態模糊層
+    const blurGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.min(width, height) * 0.8);
+    blurGradient.addColorStop(0, colors.primary);
+    blurGradient.addColorStop(0.5, colors.secondary);
+    blurGradient.addColorStop(1, 'transparent');
+    
+    ctx.fillStyle = blurGradient;
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
+    
+    // 2. 陽光照射效果
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    ctx.globalAlpha = 0.4 + normalizedTreble * 0.3;
+    
+    // 陽光光線
+    const sunRays = 12;
+    for (let i = 0; i < sunRays; i++) {
+        const angle = (i / sunRays) * Math.PI * 2 + frame * 0.01;
+        const rayLength = Math.min(width, height) * 0.6 + normalizedBass * 100;
+        
+        const gradient = ctx.createLinearGradient(centerX, centerY, 
+            centerX + Math.cos(angle) * rayLength, 
+            centerY + Math.sin(angle) * rayLength);
+        gradient.addColorStop(0, colors.accent);
+        gradient.addColorStop(0.7, applyAlphaToColor(colors.accent, 0.6));
+        gradient.addColorStop(1, 'transparent');
+        
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 3 + normalizedMid * 2;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = colors.accent;
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + Math.cos(angle) * rayLength, centerY + Math.sin(angle) * rayLength);
+        ctx.stroke();
+    }
+    
+    // 陽光中心光暈
+    const sunGlow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 80 + normalizedBass * 40);
+    sunGlow.addColorStop(0, colors.accent);
+    sunGlow.addColorStop(0.3, applyAlphaToColor(colors.accent, 0.8));
+    sunGlow.addColorStop(1, 'transparent');
+    
+    ctx.fillStyle = sunGlow;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 80 + normalizedBass * 40, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+    
+    // 3. 動態控制卡
+    const cardWidth = width * 0.6;
+    const cardHeight = height * 0.25;
+    const cardX = centerX - cardWidth / 2;
+    const cardY = centerY - cardHeight / 2;
+    
+    // 控制卡震動效果
+    const shakeIntensity = normalizedBass * 8;
+    const shakeX = Math.sin(frame * 0.1) * shakeIntensity;
+    const shakeY = Math.cos(frame * 0.08) * shakeIntensity;
+    
+    // 控制卡背景
+    ctx.save();
+    ctx.globalAlpha = 0.8 + normalizedMid * 0.2;
+    ctx.fillStyle = 'rgba(20, 20, 20, 0.9)';
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = colors.primary;
+    
+    const cornerRadius = 15;
+    ctx.beginPath();
+    ctx.moveTo(cardX + cornerRadius + shakeX, cardY + shakeY);
+    ctx.lineTo(cardX + cardWidth - cornerRadius + shakeX, cardY + shakeY);
+    ctx.quadraticCurveTo(cardX + cardWidth + shakeX, cardY + shakeY, cardX + cardWidth + shakeX, cardY + cornerRadius + shakeY);
+    ctx.lineTo(cardX + cardWidth + shakeX, cardY + cardHeight - cornerRadius + shakeY);
+    ctx.quadraticCurveTo(cardX + cardWidth + shakeX, cardY + cardHeight + shakeY, cardX + cardWidth - cornerRadius + shakeX, cardY + cardHeight + shakeY);
+    ctx.lineTo(cardX + cornerRadius + shakeX, cardY + cardHeight + shakeY);
+    ctx.quadraticCurveTo(cardX + shakeX, cardY + cardHeight + shakeY, cardX + shakeX, cardY + cardHeight - cornerRadius + shakeY);
+    ctx.lineTo(cardX + shakeX, cardY + cornerRadius + shakeY);
+    ctx.quadraticCurveTo(cardX + shakeX, cardY + shakeY, cardX + cornerRadius + shakeX, cardY + shakeY);
+    ctx.fill();
+    ctx.restore();
+    
+    // 控制卡邊框
+    ctx.strokeStyle = colors.accent;
+    ctx.lineWidth = 2 + normalizedTreble;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = colors.accent;
+    ctx.stroke();
+    
+    // 控制卡內容 - 音頻響應式元素
+    ctx.fillStyle = colors.primary;
+    ctx.font = `bold ${24 + normalizedBass * 8}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // 歌曲名稱
+    const songName = "動態控制卡";
+    ctx.fillText(songName, cardX + cardWidth / 2 + shakeX, cardY + cardHeight * 0.3 + shakeY);
+    
+    // 音頻條
+    const barCount = 16;
+    const barWidth = cardWidth * 0.8 / barCount;
+    const barSpacing = cardWidth * 0.2 / (barCount + 1);
+    const maxBarHeight = cardHeight * 0.3;
+    
+    for (let i = 0; i < barCount; i++) {
+        const dataIndex = Math.floor((i / barCount) * dataArray.length);
+        const amplitude = dataArray[dataIndex] / 255;
+        const barHeight = Math.pow(amplitude, 1.5) * maxBarHeight * sensitivity;
+        
+        if (barHeight < 2) continue;
+        
+        const barX = cardX + barSpacing + i * (barWidth + barSpacing) + shakeX;
+        const barY = cardY + cardHeight * 0.7 - barHeight + shakeY;
+        
+        // 音頻條顏色
+        const hue = (i / barCount) * 360;
+        const barColor = `hsl(${hue}, 80%, 60%)`;
+        
+        ctx.fillStyle = barColor;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = barColor;
+        
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+    }
+    
+    // 節拍時的額外效果
+    if (isBeat) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = 0.6;
+        
+        // 節拍光環
+        const beatRadius = 50 + normalizedBass * 30;
+        const beatGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, beatRadius);
+        beatGradient.addColorStop(0, colors.accent);
+        beatGradient.addColorStop(1, 'transparent');
+        
+        ctx.fillStyle = beatGradient;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, beatRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+    }
+    
+    ctx.restore();
+};
+
 const drawFusion = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
     if (!dataArray) return;
     ctx.save();
@@ -4896,6 +5068,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.VINYL_RECORD]: drawVinylRecord,
     [VisualizationType.BASIC_WAVE]: drawBasicWave,
     [VisualizationType.CHINESE_CONTROL_CARD]: drawBasicWave, // 暫時使用 drawBasicWave
+    [VisualizationType.DYNAMIC_CONTROL_CARD]: drawDynamicControlCard,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
@@ -6277,12 +6450,7 @@ const drawZCustomVisualization = (ctx: CanvasRenderingContext2D, width: number, 
         }
     }
     
-    // 繪製中央孔洞
-    const holeRadius = labelRadius * 0.15;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath();
-    ctx.arc(0, 0, holeRadius, 0, Math.PI * 2);
-    ctx.fill();
+    // 中央孔洞已移除
     
     ctx.restore();
     

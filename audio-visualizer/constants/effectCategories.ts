@@ -86,6 +86,16 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         tags: ['粒子', '物理', '力場', '中等性能']
     },
 
+    // 動態控制卡 - 專門的控制卡特效分類
+    {
+        type: VisualizationType.DYNAMIC_CONTROL_CARD,
+        category: EffectCategory.DYNAMIC_CONTROL,
+        description: '動態控制卡，包含高斯模糊、陽光照射效果和音樂響應式控制卡',
+        difficulty: 'medium',
+        performance: 'medium',
+        tags: ['動態', '控制卡', '高斯模糊', '陽光效果', '音樂響應']
+    },
+
     // 實驗款 - 高複雜度，創新效果
     {
         type: VisualizationType.DATA_MOSH,
@@ -200,7 +210,8 @@ export const EFFECTS_BY_CATEGORY = {
     [EffectCategory.BASIC]: EFFECT_CATEGORIES.filter(e => e.category === EffectCategory.BASIC),
     [EffectCategory.ADVANCED]: EFFECT_CATEGORIES.filter(e => e.category === EffectCategory.ADVANCED),
     [EffectCategory.EXPERIMENTAL]: EFFECT_CATEGORIES.filter(e => e.category === EffectCategory.EXPERIMENTAL),
-    [EffectCategory.SPECIAL]: EFFECT_CATEGORIES.filter(e => e.category === EffectCategory.SPECIAL)
+    [EffectCategory.SPECIAL]: EFFECT_CATEGORIES.filter(e => e.category === EffectCategory.SPECIAL),
+    [EffectCategory.DYNAMIC_CONTROL]: EFFECT_CATEGORIES.filter(e => e.category === EffectCategory.DYNAMIC_CONTROL)
 };
 
 // 獲取特效信息的輔助函數
@@ -214,7 +225,8 @@ export const getCategoryName = (category: EffectCategory): string => {
         [EffectCategory.BASIC]: '基礎款',
         [EffectCategory.ADVANCED]: '進階款',
         [EffectCategory.EXPERIMENTAL]: '實驗款',
-        [EffectCategory.SPECIAL]: '特殊款'
+        [EffectCategory.SPECIAL]: '特殊款',
+        [EffectCategory.DYNAMIC_CONTROL]: '動態控制卡'
     };
     return names[category];
 };
