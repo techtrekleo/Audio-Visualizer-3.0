@@ -569,6 +569,80 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         checkFontErrors();
     }, [props.subtitleFontFamily, props.ctaFontFamily, props.fontFamily]);
 
+    // 字體加載檢測
+    useEffect(() => {
+        const checkFontLoading = async () => {
+            const fontCheckResults: string[] = [];
+            
+            // 檢查當前使用的字體是否已加載
+            const fontsToCheck = [
+                { name: 'Poppins', family: 'Poppins' },
+                { name: 'Orbitron', family: 'Orbitron' },
+                { name: 'Lobster', family: 'Lobster' },
+                { name: 'Bungee', family: 'Bungee' },
+                { name: 'Press Start 2P', family: 'Press Start 2P' },
+                { name: 'Pacifico', family: 'Pacifico' },
+                { name: 'Dancing Script', family: 'Dancing Script' },
+                { name: 'RocknRoll One', family: 'RocknRoll One' },
+                { name: 'Reggae One', family: 'Reggae One' },
+                { name: 'VT323', family: 'VT323' },
+                { name: 'Noto Sans TC', family: 'Noto Sans TC' },
+                { name: 'Source Han Sans TC', family: 'Source Han Sans TC' },
+                { name: 'cwTeXKai', family: 'cwTeXKai' },
+                { name: 'Klee One', family: 'Klee One' },
+                { name: 'M PLUS Rounded 1c', family: 'M PLUS Rounded 1c' },
+                { name: 'Hina Mincho', family: 'Hina Mincho' },
+                { name: 'Rampart One', family: 'Rampart One' },
+                { name: 'Roboto Mono', family: 'Roboto Mono' },
+                { name: 'Open Sans', family: 'Open Sans' },
+                { name: 'Lato', family: 'Lato' },
+                { name: 'Montserrat', family: 'Montserrat' },
+                { name: 'Source Sans Pro', family: 'Source Sans Pro' },
+                { name: 'Raleway', family: 'Raleway' },
+                { name: 'Ubuntu', family: 'Ubuntu' },
+                { name: 'Playfair Display', family: 'Playfair Display' },
+                { name: 'Merriweather', family: 'Merriweather' },
+                { name: 'Oswald', family: 'Oswald' },
+                { name: 'Caveat', family: 'Caveat' },
+                { name: 'Kalam', family: 'Kalam' },
+                { name: 'Comfortaa', family: 'Comfortaa' },
+                { name: 'Fredoka One', family: 'Fredoka One' },
+                { name: 'Nunito', family: 'Nunito' },
+                { name: 'Quicksand', family: 'Quicksand' },
+                { name: 'Rubik', family: 'Rubik' },
+                { name: 'Noto Serif TC', family: 'Noto Serif TC' },
+                { name: 'Ma Shan Zheng', family: 'Ma Shan Zheng' },
+                { name: 'Zhi Mang Xing', family: 'Zhi Mang Xing' },
+                { name: 'Long Cang', family: 'Long Cang' },
+                { name: 'ZCOOL KuaiLe', family: 'ZCOOL KuaiLe' },
+                { name: 'ZCOOL QingKe HuangYou', family: 'ZCOOL QingKe HuangYou' },
+                { name: 'Liu Jian Mao Cao', family: 'Liu Jian Mao Cao' },
+                { name: 'ZCOOL XiaoWei', family: 'ZCOOL XiaoWei' },
+                { name: 'Bakudai', family: 'Bakudai' }
+            ];
+            
+            for (const font of fontsToCheck) {
+                try {
+                    await document.fonts.load(`16px "${font.family}"`);
+                    const isLoaded = document.fonts.check(`16px "${font.family}"`);
+                    if (isLoaded) {
+                        fontCheckResults.push(`✅ ${font.name}: 已加載`);
+                    } else {
+                        fontCheckResults.push(`❌ ${font.name}: 未加載`);
+                    }
+                } catch (error) {
+                    fontCheckResults.push(`❌ ${font.name}: 加載失敗`);
+                }
+            }
+            
+            setFontErrors(prev => [...prev, ...fontCheckResults]);
+        };
+        
+        if (showDebugMode) {
+            checkFontLoading();
+        }
+    }, [showDebugMode]);
+
     // 獲取當前設置
     const getCurrentSettings = (): Partial<SavedSettings> => ({
         visualizationType: props.visualizationType,
@@ -714,15 +788,24 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                     <div className="mt-4 space-y-3">
                         <div className="bg-gray-900 rounded-lg p-3">
                             <h4 className="text-yellow-400 font-medium mb-2">字體錯誤檢測</h4>
-                            {fontErrors.length === 0 ? (
+                            {fontErrors.filter(error => !error.includes('✅') && !error.includes('❌')).length === 0 ? (
                                 <div className="text-green-400 text-sm">✅ 沒有發現字體錯誤</div>
                             ) : (
                                 <div className="space-y-1">
-                                    {fontErrors.map((error, index) => (
+                                    {fontErrors.filter(error => !error.includes('✅') && !error.includes('❌')).map((error, index) => (
                                         <div key={index} className="text-red-400 text-sm">❌ {error}</div>
                                     ))}
                                 </div>
                             )}
+                        </div>
+                        
+                        <div className="bg-gray-900 rounded-lg p-3">
+                            <h4 className="text-yellow-400 font-medium mb-2">字體加載狀態</h4>
+                            <div className="max-h-40 overflow-y-auto space-y-1">
+                                {fontErrors.filter(error => error.includes('✅') || error.includes('❌')).map((error, index) => (
+                                    <div key={index} className="text-sm">{error}</div>
+                                ))}
+                            </div>
                         </div>
                         
                         <div className="bg-gray-900 rounded-lg p-3">
