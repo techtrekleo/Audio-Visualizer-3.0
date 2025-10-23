@@ -653,9 +653,7 @@ const drawDynamicControlCard = (ctx: CanvasRenderingContext2D, dataArray: Uint8A
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    // 歌曲名稱
-    const songName = "動態控制卡";
-    ctx.fillText(songName, cardX + cardWidth / 2 + shakeX, cardY + cardHeight * 0.3 + shakeY);
+    // 歌曲名稱已移除
     
     // 音頻條
     const barCount = 16;
