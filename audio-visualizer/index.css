@@ -37,6 +37,38 @@ input[type="range"].slider,
   outline: none !important;
 }
 
+/* 相片晃動滑桿專用樣式 - 強力覆蓋 */
+input[type="range"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: linear-gradient(to right, #3B82F6 0%, #10B981 100%) !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  height: 12px !important;
+  border-radius: 8px !important;
+  outline: none !important;
+}
+
+/* 強力覆蓋 Webkit slider track */
+input[type="range"]::-webkit-slider-track {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: linear-gradient(to right, #3B82F6 0%, #10B981 100%) !important;
+  height: 12px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 強力覆蓋 Mozilla slider track */
+input[type="range"]::-moz-range-track {
+  background: linear-gradient(to right, #3B82F6 0%, #10B981 100%) !important;
+  height: 12px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 /* Webkit slider track */
 input[type="range"].slider::-webkit-slider-track,
 .slider::-webkit-slider-track {

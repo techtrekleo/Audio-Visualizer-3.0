@@ -624,7 +624,7 @@ const drawDynamicControlCard = (ctx: CanvasRenderingContext2D, dataArray: Uint8A
     ctx.globalAlpha = 0.8 + normalizedMid * 0.2;
     ctx.fillStyle = 'rgba(20, 20, 20, 0.9)';
     ctx.shadowBlur = 20;
-    ctx.shadowColor = colors.primary;
+    ctx.shadowColor = '#FFFFFF'; // 改為白色發光
     
     const cornerRadius = 15;
     ctx.beginPath();
@@ -2240,6 +2240,193 @@ const drawCrtGlitch = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | nu
             } catch(e) { /* ignore */ }
         }
     }
+    
+    ctx.restore();
+};
+
+// 全局變量聲明
+declare global {
+    interface Window {
+        photoShakeAmplitudes: number[];
+    }
+}
+
+const drawPhotoShake = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, props?: any) => {
+    if (!dataArray) return;
+    ctx.save();
+    
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    // 相片晃動軌跡參數（只做位置晃動，不旋轉）- 移除鼓聲放大效果
+    const shakeIntensity = 8; // 固定晃動強度，不因鼓聲變化
+    const shakeSpeed = 0.015;
+    const shakeX = Math.sin(frame * shakeSpeed) * shakeIntensity + Math.sin(frame * shakeSpeed * 1.3) * shakeIntensity * 0.5;
+    const shakeY = Math.cos(frame * shakeSpeed * 0.8) * shakeIntensity + Math.sin(frame * shakeSpeed * 1.7) * shakeIntensity * 0.3;
+    
+    // 第一層：繪製背景圖片（使用原本的背景圖片功能）- 實現晃動效果
+    if (props?.backgroundImage) {
+        // 創建圖片對象並直接繪製（同步方式）
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = props.backgroundImage;
+        
+        // 如果圖片已經加載完成，直接繪製
+        if (img.complete && img.naturalWidth > 0) {
+            // 計算圖片尺寸，確保完全覆蓋畫布
+            const imgAspect = img.naturalWidth / img.naturalHeight;
+            const canvasAspect = width / height;
+            
+            let drawWidth, drawHeight;
+            if (imgAspect > canvasAspect) {
+                // 圖片更寬，以寬度為準
+                drawWidth = width + shakeIntensity * 4; // 增加緩衝區
+                drawHeight = drawWidth / imgAspect;
+            } else {
+                // 圖片更高，以高度為準
+                drawHeight = height + shakeIntensity * 4; // 增加緩衝區
+                drawWidth = drawHeight * imgAspect;
+            }
+            
+            // 確保圖片完全覆蓋畫布
+            if (drawWidth < width + shakeIntensity * 4) {
+                drawWidth = width + shakeIntensity * 4;
+                drawHeight = drawWidth / imgAspect;
+            }
+            if (drawHeight < height + shakeIntensity * 4) {
+                drawHeight = height + shakeIntensity * 4;
+                drawWidth = drawHeight * imgAspect;
+            }
+            
+            // 計算繪製位置（居中 + 晃動，不旋轉）
+            const drawX = centerX - drawWidth / 2 + shakeX;
+            const drawY = centerY - drawHeight / 2 + shakeY;
+            
+            // 繪製圖片（保持正向，不旋轉）
+            ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+        }
+    }
+    
+    // 第二層：半透明背景 + 標題 + 向下可視化
+    const overlayHeight = height * 0.4; // 改為40%
+    const overlayY = centerY - overlayHeight / 2; // 中央位置
+    
+    // 繪製半透明背景（可調整透明度）
+    const overlayOpacity = props?.photoShakeOverlayOpacity || 0.4;
+    ctx.fillStyle = `rgba(0, 0, 0, ${overlayOpacity})`;
+    ctx.fillRect(0, overlayY, width, overlayHeight);
+    
+    // 繪製文字信息（按照正確順序，中央對齊）
+    const songTitle = props?.photoShakeSongTitle || '歌曲名稱';
+    const subtitle = props?.photoShakeSubtitle || '副標題';
+    const fontSize = props?.photoShakeFontSize || 0.06;
+    
+    // 1. 主標題（在中央上方）- 白色描邊偽3D效果
+    ctx.fillStyle = '#FFFFFF';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 3;
+    ctx.font = `bold ${Math.min(width, height) * fontSize}px ${props?.photoShakeFontFamily || 'Poppins'}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // 描邊
+    ctx.strokeText(songTitle, centerX, overlayY + overlayHeight * 0.15);
+    // 主體
+    ctx.fillText(songTitle, centerX, overlayY + overlayHeight * 0.15);
+    
+    // 偽3D效果 - 陰影
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillText(songTitle, centerX + 2, overlayY + overlayHeight * 0.15 + 2);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillText(songTitle, centerX, overlayY + overlayHeight * 0.15);
+    
+    // 2. 副標題（在主標題下方）- 白色描邊偽3D效果
+    ctx.fillStyle = '#FFFFFF';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.font = `${Math.min(width, height) * fontSize * 0.6}px ${props?.photoShakeFontFamily || 'Poppins'}`;
+    
+    // 描邊
+    ctx.strokeText(subtitle, centerX, overlayY + overlayHeight * 0.45);
+    // 主體
+    ctx.fillText(subtitle, centerX, overlayY + overlayHeight * 0.45);
+    
+    // 偽3D效果 - 陰影
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillText(subtitle, centerX + 1, overlayY + overlayHeight * 0.45 + 1);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillText(subtitle, centerX, overlayY + overlayHeight * 0.45);
+    
+    // 3. 向下柱狀音訊可視化（在副標題下方）- 左右長度40%
+    const barWidth = 6;
+    const barSpacing = 3;
+    const maxBarHeight = overlayHeight * 0.3; // 可視化高度為上層的30%
+    const visualizerWidth = width * 0.4; // 左右長度40%
+    const numBars = Math.floor(visualizerWidth / (barWidth + barSpacing));
+    const startX = centerX - visualizerWidth / 2; // 從中央開始
+    const baselineY = overlayY + overlayHeight * 0.7; // 基準線位置
+    
+    // 震幅恢復系統 - 使用全局變量避免props修改
+    const decaySpeed = props?.photoShakeDecaySpeed || 0.95;
+    if (!window.photoShakeAmplitudes) {
+        window.photoShakeAmplitudes = new Array(numBars).fill(0);
+    }
+    
+    // 繪製預設線條（基準線）
+    ctx.strokeStyle = colors.primary || '#67E8F9';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(startX, baselineY);
+    ctx.lineTo(startX + visualizerWidth, baselineY);
+    ctx.stroke();
+    
+    // 繪製向下音訊柱狀圖
+    const dataSliceLength = Math.min(dataArray.length * 0.8, numBars);
+    for (let i = 0; i < numBars; i++) {
+        const dataIndex = Math.floor((i / numBars) * dataSliceLength);
+        const currentAmplitude = dataArray[dataIndex] || 0;
+        
+        // 更新震幅（10倍快速恢復）
+        const targetAmplitude = (currentAmplitude / 255) * maxBarHeight * sensitivity * 1.4; // 加大震幅40%
+        
+        // 如果當前音訊有信號，使用目標震幅；否則應用10倍快速衰減
+        if (currentAmplitude > 0) {
+            window.photoShakeAmplitudes[i] = targetAmplitude;
+        } else {
+            // 10倍快速恢復：原本0.95變成0.5，原本0.8變成0.05
+            const fastDecaySpeed = Math.max(0.05, decaySpeed - 0.45); // 將0.95變成0.5，0.8變成0.35
+            window.photoShakeAmplitudes[i] = window.photoShakeAmplitudes[i] * fastDecaySpeed;
+        }
+        
+        const barHeight = window.photoShakeAmplitudes[i];
+        
+        const x = startX + i * (barWidth + barSpacing);
+        const y = baselineY + barHeight; // 向下延伸（+y方向，因為基準線在上方）
+        
+        // 創建漸變色 - 預設白色，可選用顏色主題
+        const gradient = ctx.createLinearGradient(x, baselineY, x, y);
+        // 預設使用白色漸變
+        gradient.addColorStop(0, '#FFFFFF'); // 純白
+        gradient.addColorStop(0.5, '#F0F0F0'); // 淺灰白
+        gradient.addColorStop(1, '#E0E0E0'); // 更淺灰白
+        
+        // 繪製柱狀圖
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x, baselineY, barWidth, barHeight);
+        
+        // 添加發光效果 - 預設白色發光
+        ctx.shadowColor = '#FFFFFF'; // 白色發光
+        ctx.shadowBlur = 8;
+        ctx.fillRect(x, baselineY, barWidth, barHeight);
+        
+        // 重置陰影
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'transparent';
+    }
+    
+    // 重置陰影
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
     
     ctx.restore();
 };
@@ -5069,6 +5256,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.BASIC_WAVE]: drawBasicWave,
     [VisualizationType.CHINESE_CONTROL_CARD]: drawBasicWave, // 暫時使用 drawBasicWave
     [VisualizationType.DYNAMIC_CONTROL_CARD]: drawDynamicControlCard,
+    [VisualizationType.PHOTO_SHAKE]: drawPhotoShake,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
@@ -5344,9 +5532,12 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             // 檢查是否啟用唱片顯示
             const vinylRecordEnabled = (propsRef.current as any).vinylRecordEnabled !== false;
             drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, vinylRecordEnabled);
-            } else {
+        } else if (visualizationType === VisualizationType.PHOTO_SHAKE) {
+            // 相片晃動需要傳遞 props
+            drawPhotoShake(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+        } else {
             drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
-            }
+        }
             
             if (shouldTransform) {
                 ctx.restore();

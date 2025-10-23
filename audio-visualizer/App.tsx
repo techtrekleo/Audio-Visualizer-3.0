@@ -117,6 +117,15 @@ function App() {
     const [chineseCardArtist, setChineseCardArtist] = useState<string>('張福樂');
     const [chineseCardFontFamily, setChineseCardFontFamily] = useState<FontType>(FontType.POPPINS);
     
+    // Photo Shake State
+    const [photoShakeImage, setPhotoShakeImage] = useState<string | null>(null);
+    const [photoShakeSongTitle, setPhotoShakeSongTitle] = useState<string>('歌曲名稱');
+    const [photoShakeSubtitle, setPhotoShakeSubtitle] = useState<string>('副標題');
+    const [photoShakeFontFamily, setPhotoShakeFontFamily] = useState<FontType>(FontType.POPPINS);
+    const [photoShakeOverlayOpacity, setPhotoShakeOverlayOpacity] = useState<number>(0.4);
+    const [photoShakeFontSize, setPhotoShakeFontSize] = useState<number>(0.06);
+    const [photoShakeDecaySpeed, setPhotoShakeDecaySpeed] = useState<number>(0.95);
+    
     // Lyrics Display State (測試中)
     const [showLyricsDisplay, setShowLyricsDisplay] = useState<boolean>(false);
     const [lyricsFontSize, setLyricsFontSize] = useState<number>(2); // 字體大小百分比
@@ -1517,6 +1526,14 @@ function App() {
                                     // chineseCardSongTitle={chineseCardSongTitle}
                                     // chineseCardArtist={chineseCardArtist}
                                     // chineseCardFontFamily={chineseCardFontFamily}
+                                    // Photo Shake props
+                                    photoShakeImage={photoShakeImage}
+                                    photoShakeSongTitle={photoShakeSongTitle}
+                                    photoShakeSubtitle={photoShakeSubtitle}
+                                    photoShakeFontFamily={photoShakeFontFamily}
+                                    photoShakeOverlayOpacity={photoShakeOverlayOpacity}
+                                    photoShakeFontSize={photoShakeFontSize}
+                                    photoShakeDecaySpeed={photoShakeDecaySpeed}
                                 />
                             </div>
                         </div>
@@ -1541,6 +1558,30 @@ function App() {
                             onPlayPause={handlePlayPause}
                             isRecording={isRecording}
                             onRecordToggle={handleStartRecording}
+                            // Photo Shake controls
+                            photoShakeImage={photoShakeImage}
+                            onPhotoShakeImageUpload={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (event) => {
+                                        setPhotoShakeImage(event.target?.result as string);
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            }}
+                            photoShakeSongTitle={photoShakeSongTitle}
+                            onPhotoShakeSongTitleChange={setPhotoShakeSongTitle}
+                            photoShakeSubtitle={photoShakeSubtitle}
+                            onPhotoShakeSubtitleChange={setPhotoShakeSubtitle}
+                            photoShakeFontFamily={photoShakeFontFamily}
+                            onPhotoShakeFontFamilyChange={setPhotoShakeFontFamily}
+                            photoShakeOverlayOpacity={photoShakeOverlayOpacity}
+                            onPhotoShakeOverlayOpacityChange={setPhotoShakeOverlayOpacity}
+                            photoShakeFontSize={photoShakeFontSize}
+                            onPhotoShakeFontSizeChange={setPhotoShakeFontSize}
+                            photoShakeDecaySpeed={photoShakeDecaySpeed}
+                            onPhotoShakeDecaySpeedChange={setPhotoShakeDecaySpeed}
                             isLoading={isLoading}
                             visualizationType={visualizationType}
                             onVisualizationChange={handleSetVisualization}

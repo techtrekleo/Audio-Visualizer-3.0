@@ -202,6 +202,14 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         difficulty: 'medium',
         performance: 'medium',
         tags: ['黑膠', '旋轉', '唱片', '自訂圖片', '實驗']
+    },
+    {
+        type: VisualizationType.PHOTO_SHAKE,
+        category: EffectCategory.DYNAMIC_CONTROL,
+        description: '相片晃動效果，圖片沿不規則軌跡晃動',
+        difficulty: 'medium',
+        performance: 'medium',
+        tags: ['相片', '晃動', '軌跡', '音訊可視化', '控制卡']
     }
 ];
 

@@ -27,6 +27,7 @@ export enum VisualizationType {
     CHINESE_CONTROL_CARD = '中國風控制卡',
     BASIC_WAVE = '歐皇訂製版',
     DYNAMIC_CONTROL_CARD = '動態控制卡',
+    PHOTO_SHAKE = '相片晃動',
 }
 
 // 特效分類系統

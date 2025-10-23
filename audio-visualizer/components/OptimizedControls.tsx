@@ -322,6 +322,21 @@ interface OptimizedControlsProps {
     isPipActive?: boolean;
     onEnterPictureInPicture?: () => void;
     onExitPictureInPicture?: () => void;
+    // Photo Shake props
+    photoShakeImage?: string | null;
+    onPhotoShakeImageUpload?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    photoShakeSongTitle?: string;
+    onPhotoShakeSongTitleChange?: (title: string) => void;
+    photoShakeSubtitle?: string;
+    onPhotoShakeSubtitleChange?: (subtitle: string) => void;
+    photoShakeFontFamily?: FontType;
+    onPhotoShakeFontFamilyChange?: (font: FontType) => void;
+    photoShakeOverlayOpacity?: number;
+    onPhotoShakeOverlayOpacityChange?: (opacity: number) => void;
+    photoShakeFontSize?: number;
+    onPhotoShakeFontSizeChange?: (size: number) => void;
+    photoShakeDecaySpeed?: number;
+    onPhotoShakeDecaySpeedChange?: (speed: number) => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
@@ -530,118 +545,7 @@ const ProgressBar: React.FC<{
 
 const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
     const [showQuickSettings, setShowQuickSettings] = useState(true);
-    const [showDebugMode, setShowDebugMode] = useState(false);
-    const [fontErrors, setFontErrors] = useState<string[]>([]);
     const PRESET_COLORS = ['#FFFFFF', '#67E8F9', '#F472B6', '#FFD700', '#FF4500', '#A78BFA'];
-    // 字體錯誤檢測
-    useEffect(() => {
-        const checkFontErrors = () => {
-            const errors: string[] = [];
-            
-            // 檢查 FONT_MAP 是否完整
-            const missingFonts: FontType[] = [];
-            Object.values(FontType).forEach(fontType => {
-                if (!FONT_MAP[fontType]) {
-                    missingFonts.push(fontType);
-                }
-            });
-            
-            if (missingFonts.length > 0) {
-                errors.push(`FONT_MAP 缺少字體: ${missingFonts.join(', ')}`);
-            }
-            
-            // 檢查當前字體設置
-            if (props.subtitleFontFamily && !FONT_MAP[props.subtitleFontFamily]) {
-                errors.push(`字幕字體 ${props.subtitleFontFamily} 在 FONT_MAP 中不存在`);
-            }
-            
-            if (props.ctaFontFamily && !FONT_MAP[props.ctaFontFamily]) {
-                errors.push(`CTA 字體 ${props.ctaFontFamily} 在 FONT_MAP 中不存在`);
-            }
-            
-            if (props.fontFamily && !FONT_MAP[props.fontFamily]) {
-                errors.push(`自訂文字字體 ${props.fontFamily} 在 FONT_MAP 中不存在`);
-            }
-            
-            setFontErrors(errors);
-        };
-        
-        checkFontErrors();
-    }, [props.subtitleFontFamily, props.ctaFontFamily, props.fontFamily]);
-
-    // 字體加載檢測
-    useEffect(() => {
-        const checkFontLoading = async () => {
-            const fontCheckResults: string[] = [];
-            
-            // 檢查當前使用的字體是否已加載
-            const fontsToCheck = [
-                { name: 'Poppins', family: 'Poppins' },
-                { name: 'Orbitron', family: 'Orbitron' },
-                { name: 'Lobster', family: 'Lobster' },
-                { name: 'Bungee', family: 'Bungee' },
-                { name: 'Press Start 2P', family: 'Press Start 2P' },
-                { name: 'Pacifico', family: 'Pacifico' },
-                { name: 'Dancing Script', family: 'Dancing Script' },
-                { name: 'RocknRoll One', family: 'RocknRoll One' },
-                { name: 'Reggae One', family: 'Reggae One' },
-                { name: 'VT323', family: 'VT323' },
-                { name: 'Noto Sans TC', family: 'Noto Sans TC' },
-                { name: 'Source Han Sans TC', family: 'Source Han Sans TC' },
-                { name: 'cwTeXKai', family: 'cwTeXKai' },
-                { name: 'Klee One', family: 'Klee One' },
-                { name: 'M PLUS Rounded 1c', family: 'M PLUS Rounded 1c' },
-                { name: 'Hina Mincho', family: 'Hina Mincho' },
-                { name: 'Rampart One', family: 'Rampart One' },
-                { name: 'Roboto Mono', family: 'Roboto Mono' },
-                { name: 'Open Sans', family: 'Open Sans' },
-                { name: 'Lato', family: 'Lato' },
-                { name: 'Montserrat', family: 'Montserrat' },
-                { name: 'Source Sans Pro', family: 'Source Sans Pro' },
-                { name: 'Raleway', family: 'Raleway' },
-                { name: 'Ubuntu', family: 'Ubuntu' },
-                { name: 'Playfair Display', family: 'Playfair Display' },
-                { name: 'Merriweather', family: 'Merriweather' },
-                { name: 'Oswald', family: 'Oswald' },
-                { name: 'Caveat', family: 'Caveat' },
-                { name: 'Kalam', family: 'Kalam' },
-                { name: 'Comfortaa', family: 'Comfortaa' },
-                { name: 'Fredoka One', family: 'Fredoka One' },
-                { name: 'Nunito', family: 'Nunito' },
-                { name: 'Quicksand', family: 'Quicksand' },
-                { name: 'Rubik', family: 'Rubik' },
-                { name: 'Noto Serif TC', family: 'Noto Serif TC' },
-                { name: 'Ma Shan Zheng', family: 'Ma Shan Zheng' },
-                { name: 'Zhi Mang Xing', family: 'Zhi Mang Xing' },
-                { name: 'Long Cang', family: 'Long Cang' },
-                { name: 'ZCOOL KuaiLe', family: 'ZCOOL KuaiLe' },
-                { name: 'ZCOOL QingKe HuangYou', family: 'ZCOOL QingKe HuangYou' },
-                { name: 'Liu Jian Mao Cao', family: 'Liu Jian Mao Cao' },
-                { name: 'ZCOOL XiaoWei', family: 'ZCOOL XiaoWei' },
-                { name: 'Bakudai', family: 'Bakudai' }
-            ];
-            
-            for (const font of fontsToCheck) {
-                try {
-                    await document.fonts.load(`16px "${font.family}"`);
-                    const isLoaded = document.fonts.check(`16px "${font.family}"`);
-                    if (isLoaded) {
-                        fontCheckResults.push(`✅ ${font.name}: 已加載`);
-                    } else {
-                        fontCheckResults.push(`❌ ${font.name}: 未加載`);
-                    }
-                } catch (error) {
-                    fontCheckResults.push(`❌ ${font.name}: 加載失敗`);
-                }
-            }
-            
-            setFontErrors(prev => [...prev, ...fontCheckResults]);
-        };
-        
-        if (showDebugMode) {
-            checkFontLoading();
-        }
-    }, [showDebugMode]);
 
     // 獲取當前設置
     const getCurrentSettings = (): Partial<SavedSettings> => ({
@@ -768,65 +672,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
     return (
         <div className="w-full max-w-7xl space-y-4">
-            {/* 調試模式開關 */}
-            <div className="bg-gray-800 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                        <Icon path={ICON_PATHS.SETTINGS} className="w-5 h-5 text-yellow-400" />
-                        <span className="text-white font-medium">調試模式</span>
-                    </div>
-                    <button
-                        onClick={() => setShowDebugMode(!showDebugMode)}
-                        className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-yellow-500 ${showDebugMode ? 'bg-yellow-600' : 'bg-gray-500'}`}
-                        aria-pressed={showDebugMode}
-                    >
-                        <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${showDebugMode ? 'translate-x-6' : 'translate-x-1'}`} />
-                    </button>
-                </div>
-                
-                {showDebugMode && (
-                    <div className="mt-4 space-y-3">
-                        <div className="bg-gray-900 rounded-lg p-3">
-                            <h4 className="text-yellow-400 font-medium mb-2">字體錯誤檢測</h4>
-                            {fontErrors.filter(error => !error.includes('✅') && !error.includes('❌')).length === 0 ? (
-                                <div className="text-green-400 text-sm">✅ 沒有發現字體錯誤</div>
-                            ) : (
-                                <div className="space-y-1">
-                                    {fontErrors.filter(error => !error.includes('✅') && !error.includes('❌')).map((error, index) => (
-                                        <div key={index} className="text-red-400 text-sm">❌ {error}</div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                        
-                        <div className="bg-gray-900 rounded-lg p-3">
-                            <h4 className="text-yellow-400 font-medium mb-2">字體加載狀態</h4>
-                            <div className="max-h-40 overflow-y-auto space-y-1">
-                                {fontErrors.filter(error => error.includes('✅') || error.includes('❌')).map((error, index) => (
-                                    <div key={index} className="text-sm">{error}</div>
-                                ))}
-                            </div>
-                        </div>
-                        
-                        <div className="bg-gray-900 rounded-lg p-3">
-                            <h4 className="text-yellow-400 font-medium mb-2">當前字體設置</h4>
-                            <div className="text-sm space-y-1">
-                                <div className="text-white">字幕字體: <span className="text-blue-400">{props.subtitleFontFamily || '未設置'}</span></div>
-                                <div className="text-white">CTA 字體: <span className="text-blue-400">{props.ctaFontFamily || '未設置'}</span></div>
-                                <div className="text-white">自訂文字字體: <span className="text-blue-400">{props.fontFamily || '未設置'}</span></div>
-                            </div>
-                        </div>
-                        
-                        <div className="bg-gray-900 rounded-lg p-3">
-                            <h4 className="text-yellow-400 font-medium mb-2">FONT_MAP 狀態</h4>
-                            <div className="text-sm text-white">
-                                已定義字體數量: <span className="text-green-400">{Object.keys(FONT_MAP).length}</span> / <span className="text-blue-400">{Object.values(FontType).length}</span>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
             {/* 快速設置面板 */}
             {showQuickSettings && (
                 <div className="mb-6">
@@ -2336,6 +2181,159 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             </div>
                                         </>
                                     )}
+                                </div>
+                            </div>
+                        </CollapsibleControlSection>
+                    )}
+
+                    {/* 相片晃動 - 專用控制面板 */}
+                    {props.visualizationType === VisualizationType.PHOTO_SHAKE && (
+                        <CollapsibleControlSection
+                            title="相片晃動專用面板"
+                            icon="📸"
+                            priority="high"
+                            defaultExpanded={true}
+                            badge="動態控制卡"
+                        >
+                            <div className="space-y-6">
+                                {/* 背景圖片說明 */}
+                                <div className="space-y-3">
+                                    <label className="block text-sm font-medium text-gray-300">
+                                        背景圖片
+                                    </label>
+                                    <div className="bg-gray-800 rounded-lg p-3">
+                                        <p className="text-sm text-gray-300">
+                                            📸 使用上方的「背景圖片」功能上傳圖片
+                                        </p>
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            圖片會自動晃動並保持正向，不會旋轉
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* 歌名輸入 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        歌曲名稱
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={props.photoShakeSongTitle || ''}
+                                        onChange={(e) => props.onPhotoShakeSongTitleChange?.(e.target.value)}
+                                        placeholder="輸入歌曲名稱..."
+                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                {/* 副標題輸入 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        副標題
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={props.photoShakeSubtitle || ''}
+                                        onChange={(e) => props.onPhotoShakeSubtitleChange?.(e.target.value)}
+                                        placeholder="輸入副標題..."
+                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                {/* 字體選擇 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        字體
+                                    </label>
+                                    <select
+                                        value={props.photoShakeFontFamily}
+                                        onChange={(e) => props.onPhotoShakeFontFamilyChange?.(e.target.value as FontType)}
+                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                    >
+                                        {/* 中文字體 */}
+                                        <option value={FontType.NOTO_SANS_TC}>思源黑體</option>
+                                        <option value={FontType.SOURCE_HAN_SANS}>思源黑體 (TC)</option>
+                                        <option value={FontType.CW_TEX_KAI}>cwTeXKai</option>
+                                        <option value={FontType.KLEE_ONE}>Klee One</option>
+                                        <option value={FontType.QINGSONG_1}>清松手寫體1</option>
+                                        <option value={FontType.QINGSONG_2}>清松手寫體2</option>
+                                        {/* 英文字體 */}
+                                        <option value={FontType.POPPINS}>現代 (Poppins)</option>
+                                        <option value={FontType.DANCING_SCRIPT}>Dancing Script</option>
+                                        <option value={FontType.PACIFICO}>Pacifico</option>
+                                        <option value={FontType.LOBSTER}>Lobster</option>
+                                        <option value={FontType.BUNGEE}>Bungee</option>
+                                        <option value={FontType.ORBITRON}>Orbitron</option>
+                                        <option value={FontType.PRESS_START_2P}>Press Start 2P</option>
+                                        <option value={FontType.ROCKNROLL_ONE}>搖滾圓體 (RocknRoll One)</option>
+                                        <option value={FontType.REGGAE_ONE}>Reggae One</option>
+                                        <option value={FontType.VT323}>VT323</option>
+                                    </select>
+                                </div>
+
+                                {/* 字體大小控制 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        字體大小
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <span className="text-sm text-gray-300 w-12 text-center">
+                                            {Math.round((props.photoShakeFontSize || 0.06) * 1000)}
+                                        </span>
+                                        <div className="relative flex-1">
+                                            <div
+                                                className="w-full h-2 rounded-lg absolute top-0 left-0"
+                                                style={{
+                                                    background: `linear-gradient(to right, #3B82F6 0%, #10B981 100%)`
+                                                }}
+                                            />
+                                            <input
+                                                type="range"
+                                                min="0.02"
+                                                max="0.15"
+                                                step="0.01"
+                                                value={props.photoShakeFontSize || 0.06}
+                                                onChange={(e) => props.onPhotoShakeFontSizeChange?.(parseFloat(e.target.value))}
+                                                className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
+                                                style={{ background: 'transparent' }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        調整字體大小，範圍：20-150
+                                    </p>
+                                </div>
+
+                                {/* 透明度控制 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        覆蓋層透明度
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <span className="text-sm text-gray-300 w-12 text-center">
+                                            {Math.round((props.photoShakeOverlayOpacity || 0.4) * 100)}%
+                                        </span>
+                                        <div className="relative flex-1">
+                                            <div
+                                                className="w-full h-2 rounded-lg absolute top-0 left-0"
+                                                style={{
+                                                    background: `linear-gradient(to right, #3B82F6 0%, #8B5CF6 100%)`
+                                                }}
+                                            />
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="1"
+                                                step="0.01"
+                                                value={props.photoShakeOverlayOpacity ?? 0.4}
+                                                onChange={(e) => props.onPhotoShakeOverlayOpacityChange?.(parseFloat(e.target.value))}
+                                                className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
+                                                style={{ background: 'transparent' }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        調整覆蓋層的透明度，0% 為完全透明，100% 為完全不透明
+                                    </p>
                                 </div>
                             </div>
                         </CollapsibleControlSection>
