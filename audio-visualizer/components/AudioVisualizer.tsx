@@ -5905,19 +5905,20 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             
             // 訂閱文字（中文）- 使用動態字體
             ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-            ctx.font = `bold 36px "${fontFamily || FontType.POPPINS}", "Noto Sans TC", sans-serif`;
+            const actualFontName = FONT_MAP[fontFamily || FontType.POPPINS] || 'Poppins';
+            ctx.font = `bold 36px "${actualFontName}", "Noto Sans TC", sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('訂閱', ctaX, ctaY - 35);
             
             // 訂閱文字（英文）- 使用動態字體
             ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-            ctx.font = `bold 28px "${fontFamily || FontType.POPPINS}", "Noto Sans TC", sans-serif`;
+            ctx.font = `bold 28px "${actualFontName}", "Noto Sans TC", sans-serif`;
             ctx.fillText('SUBSCRIBE', ctaX, ctaY + 5);
             
             // 頻道名稱，使用動態字體
             ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-            ctx.font = `bold 22px "${fontFamily || FontType.POPPINS}", "Noto Sans TC", sans-serif`;
+            ctx.font = `bold 22px "${actualFontName}", "Noto Sans TC", sans-serif`;
             ctx.fillText(channelName, ctaX, ctaY + 50);
             
             ctx.restore();
