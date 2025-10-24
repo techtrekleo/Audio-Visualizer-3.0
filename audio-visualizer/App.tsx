@@ -1510,8 +1510,8 @@ function App() {
                                     zCustomPosition={zCustomPosition}
                                     onZCustomPositionUpdate={setZCustomPosition}
                                     vinylImage={vinylImage}
-                                    // vinylLayoutMode={vinylLayoutMode}
-                                    // vinylCenterFixed={vinylCenterFixed}
+                                    vinylLayoutMode={vinylLayoutMode}
+                                    vinylCenterFixed={vinylCenterFixed}
                                     pianoOpacity={pianoOpacity}
                                     geometricFrameImage={geometricFrameImage}
                                     geometricSemicircleImage={geometricSemicircleImage}
@@ -1530,7 +1530,7 @@ function App() {
                                     controlCardColor={controlCardColor}
                                     controlCardBackgroundColor={controlCardBackgroundColor}
                                     // Vinyl Record props
-                                    // vinylRecordEnabled={vinylRecordEnabled}
+                                    vinylRecordEnabled={vinylRecordEnabled}
                                     // Chinese Control Card props
                                     // chineseCardAlbumImage={chineseCardAlbumImage}
                                     // chineseCardSongTitle={chineseCardSongTitle}

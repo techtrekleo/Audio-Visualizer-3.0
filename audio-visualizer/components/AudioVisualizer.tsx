@@ -143,6 +143,9 @@ interface AudioVisualizerProps {
     controlCardBackgroundColor?: string;
     // Vinyl Record props
     vinylImage?: string | null;
+    vinylRecordEnabled?: boolean;
+    vinylLayoutMode?: 'horizontal' | 'vertical';
+    vinylCenterFixed?: boolean;
     // Piano opacity
     pianoOpacity?: number;
     // Photo Shake props
@@ -5016,7 +5019,7 @@ const drawVinylRecord = (
      }
     const centerX = width / 2; // 讓外層 transform 控制位置
     // 直式佈局時讓唱片往上移，給控制卡留空間
-    const vinylLayoutMode = (latestPropsRef as any)?.vinylLayoutMode || 'horizontal';
+    const vinylLayoutMode = (latestPropsRef as any)?.vinylLayoutMode || 'horizontal';                                                                           
     const centerY = vinylLayoutMode === 'vertical' ? height * 0.35 : height / 2;
      const smoothScale = 1;     // 讓外層 transform 控制縮放
      // 由全局 transform 控制縮放，基準大小不再乘以 scale，避免雙重縮放
@@ -5181,7 +5184,7 @@ const drawVinylRecord = (
     // 控制卡 (右側) - 短一些、厚一些的樣式（始終顯示）
     const cardW = width * 0.21; // 長度改為目前的 70%
     const cardH = 300; // 高度固定為 300px
-    const cardEnabled = (latestPropsRef as any)?.controlCardEnabled !== false; // 預設顯示
+    const cardEnabled = (latestPropsRef as any)?.controlCardEnabled !== false; // 預設顯示                                                                      
     
     // 根據配置模式調整控制卡位置
     let cardX, cardY;
@@ -5840,7 +5843,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 drawZCustomVisualization(ctx, width, height, propsRef.current.zCustomCenterImage, propsRef, currentFrame);
         } else if (visualizationType === VisualizationType.VINYL_RECORD) {
             // 檢查是否啟用唱片顯示
-            const vinylRecordEnabled = (propsRef.current as any).vinylRecordEnabled !== false;
+            const vinylRecordEnabled = propsRef.current?.vinylRecordEnabled !== false;
             drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, vinylRecordEnabled);
         } else if (visualizationType === VisualizationType.PHOTO_SHAKE) {
             // 相片晃動需要傳遞 props
