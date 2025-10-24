@@ -26,7 +26,8 @@ export enum VisualizationType {
     VINYL_RECORD = '唱片加控制卡',
     CHINESE_CONTROL_CARD = '中國風控制卡',
     BASIC_WAVE = '歐皇訂製版',
-    DYNAMIC_CONTROL_CARD = '動態控制卡',
+    DYNAMIC_CONTROL_CARD = '重低音強化',
+    FRAME_PIXELATION = '方框 像素化',
     PHOTO_SHAKE = '相片晃動',
 }
 

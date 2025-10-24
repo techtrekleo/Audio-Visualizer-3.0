@@ -95,6 +95,14 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         performance: 'medium',
         tags: ['動態', '控制卡', '高斯模糊', '陽光效果', '音樂響應']
     },
+    {
+        type: VisualizationType.FRAME_PIXELATION,
+        category: EffectCategory.DYNAMIC_CONTROL,
+        description: '方框 像素化，包含像素化效果、震動和音頻可視化',
+        difficulty: 'medium',
+        performance: 'medium',
+        tags: ['方框', '像素化', '震動', '音頻可視化', '控制卡']
+    },
 
     // 實驗款 - 高複雜度，創新效果
     {

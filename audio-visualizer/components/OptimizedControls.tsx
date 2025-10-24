@@ -337,6 +337,22 @@ interface OptimizedControlsProps {
     onPhotoShakeFontSizeChange?: (size: number) => void;
     photoShakeDecaySpeed?: number;
     onPhotoShakeDecaySpeedChange?: (speed: number) => void;
+    // Bass Enhancement props (重低音強化)
+    bassEnhancementBlurIntensity?: number;
+    onBassEnhancementBlurIntensityChange?: (intensity: number) => void;
+    bassEnhancementCurveIntensity?: number;
+    onBassEnhancementCurveIntensityChange?: (intensity: number) => void;
+    bassEnhancementText?: string;
+    onBassEnhancementTextChange?: (text: string) => void;
+    bassEnhancementTextColor?: string;
+    onBassEnhancementTextColorChange?: (color: string) => void;
+    bassEnhancementTextFont?: FontType;
+    onBassEnhancementTextFontChange?: (font: FontType) => void;
+    bassEnhancementTextSize?: number;
+    onBassEnhancementTextSizeChange?: (size: number) => void;
+    // Frame Pixelation props (方框像素化)
+    bassEnhancementCenterOpacity?: number;
+    onBassEnhancementCenterOpacityChange?: (opacity: number) => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
@@ -2240,35 +2256,49 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 </div>
 
                                 {/* 字體選擇 */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        字體
-                                    </label>
-                                    <select
-                                        value={props.photoShakeFontFamily}
-                                        onChange={(e) => props.onPhotoShakeFontFamilyChange?.(e.target.value as FontType)}
-                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                                    >
-                                        {/* 中文字體 */}
-                                        <option value={FontType.NOTO_SANS_TC}>思源黑體</option>
-                                        <option value={FontType.SOURCE_HAN_SANS}>思源黑體 (TC)</option>
-                                        <option value={FontType.CW_TEX_KAI}>cwTeXKai</option>
-                                        <option value={FontType.KLEE_ONE}>Klee One</option>
-                                        <option value={FontType.QINGSONG_1}>清松手寫體1</option>
-                                        <option value={FontType.QINGSONG_2}>清松手寫體2</option>
-                                        {/* 英文字體 */}
-                                        <option value={FontType.POPPINS}>現代 (Poppins)</option>
-                                        <option value={FontType.DANCING_SCRIPT}>Dancing Script</option>
-                                        <option value={FontType.PACIFICO}>Pacifico</option>
-                                        <option value={FontType.LOBSTER}>Lobster</option>
-                                        <option value={FontType.BUNGEE}>Bungee</option>
-                                        <option value={FontType.ORBITRON}>Orbitron</option>
-                                        <option value={FontType.PRESS_START_2P}>Press Start 2P</option>
-                                        <option value={FontType.ROCKNROLL_ONE}>搖滾圓體 (RocknRoll One)</option>
-                                        <option value={FontType.REGGAE_ONE}>Reggae One</option>
-                                        <option value={FontType.VT323}>VT323</option>
-                                    </select>
-                                </div>
+                                <SelectControl
+                                    label="字體"
+                                    value={props.photoShakeFontFamily || FontType.POPPINS}
+                                    onChange={(value) => props.onPhotoShakeFontFamilyChange?.(value as FontType)}
+                                    options={[
+                                        // 中文字體
+                                        { value: FontType.NOTO_SANS_TC, label: '思源黑體' },
+                                        { value: FontType.NOTO_SERIF_TC, label: '思源宋體' },
+                                        { value: FontType.TAIPEI_SANS, label: '台北黑體' },
+                                        { value: FontType.SOURCE_HAN_SANS, label: '思源黑體 (TC)' },
+                                        { value: FontType.CW_TEX_KAI, label: 'cwTeXKai' },
+                                        { value: FontType.KLEE_ONE, label: 'Klee One' },
+                                        { value: FontType.M_PLUS_ROUNDED, label: '圓體' },
+                                        { value: FontType.HINA_MINCHO, label: '日式明朝' },
+                                        { value: FontType.QINGSONG_1, label: '清松手寫體1' },
+                                        { value: FontType.QINGSONG_2, label: '清松手寫體2' },
+                                        // 書法體
+                                        { value: FontType.MA_SHAN_ZHENG, label: '馬善政楷書' },
+                                        { value: FontType.ZHI_MANG_XING, label: '志忙星楷書' },
+                                        { value: FontType.LONG_CANG, label: '龍藏手書' },
+                                        { value: FontType.ZCOOL_KUAI_LE, label: '站酷快樂體' },
+                                        { value: FontType.ZCOOL_QING_KE, label: '站酷慶科體' },
+                                        { value: FontType.LIU_JIAN_MAO_CAO, label: '劉建毛草' },
+                                        { value: FontType.ZCOOL_XIAO_WEI, label: '站酷小薇' },
+                                        { value: FontType.BAKUDAI, label: '莫大毛筆' },
+                                        // 英文字體
+                                        { value: FontType.POPPINS, label: '現代 (Poppins)' },
+                                        { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
+                                        { value: FontType.PACIFICO, label: 'Pacifico' },
+                                        { value: FontType.LOBSTER, label: 'Lobster' },
+                                        { value: FontType.BUNGEE, label: 'Bungee' },
+                                        { value: FontType.ORBITRON, label: 'Orbitron' },
+                                        { value: FontType.PRESS_START_2P, label: 'Press Start 2P' },
+                                        { value: FontType.ROCKNROLL_ONE, label: '搖滾圓體 (RocknRoll One)' },
+                                        { value: FontType.REGGAE_ONE, label: 'Reggae One' },
+                                        { value: FontType.VT323, label: 'VT323' },
+                                        { value: FontType.ROBOTO_MONO, label: 'Roboto Mono' },
+                                        { value: FontType.OPEN_SANS, label: 'Open Sans' },
+                                        { value: FontType.LATO, label: 'Lato' },
+                                        { value: FontType.MONTSERRAT, label: 'Montserrat' },
+                                        { value: FontType.SOURCE_SANS_PRO, label: 'Source Sans Pro' },
+                                    ]}
+                                />
 
                                 {/* 字體大小控制 */}
                                 <div>
@@ -2277,7 +2307,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     </label>
                                     <div className="flex items-center space-x-3">
                                         <span className="text-sm text-gray-300 w-12 text-center">
-                                            {Math.round((props.photoShakeFontSize || 0.06) * 1000)}
+                                            {Math.round(props.photoShakeFontSize || 60)}
                                         </span>
                                         <div className="relative flex-1">
                                             <div
@@ -2288,10 +2318,10 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             />
                                             <input
                                                 type="range"
-                                                min="0.02"
-                                                max="0.15"
-                                                step="0.01"
-                                                value={props.photoShakeFontSize || 0.06}
+                                                min="20"
+                                                max="150"
+                                                step="1"
+                                                value={props.photoShakeFontSize || 60}
                                                 onChange={(e) => props.onPhotoShakeFontSizeChange?.(parseFloat(e.target.value))}
                                                 className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
                                                 style={{ background: 'transparent' }}
@@ -2310,7 +2340,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     </label>
                                     <div className="flex items-center space-x-3">
                                         <span className="text-sm text-gray-300 w-12 text-center">
-                                            {Math.round((props.photoShakeOverlayOpacity || 0.4) * 100)}%
+                                            {Math.round((typeof props.photoShakeOverlayOpacity === 'number' ? props.photoShakeOverlayOpacity : 0.4) * 100)}%
                                         </span>
                                         <div className="relative flex-1">
                                             <div
@@ -2324,7 +2354,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 min="0"
                                                 max="1"
                                                 step="0.01"
-                                                value={props.photoShakeOverlayOpacity ?? 0.4}
+                                                value={typeof props.photoShakeOverlayOpacity === 'number' ? props.photoShakeOverlayOpacity : 0.4}
                                                 onChange={(e) => props.onPhotoShakeOverlayOpacityChange?.(parseFloat(e.target.value))}
                                                 className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
                                                 style={{ background: 'transparent' }}
@@ -2335,6 +2365,245 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         調整覆蓋層的透明度，0% 為完全透明，100% 為完全不透明
                                     </p>
                                 </div>
+                            </div>
+                        </CollapsibleControlSection>
+                    )}
+
+                    {/* 方框 像素化專用控制面板 */}
+                    {props.visualizationType === VisualizationType.FRAME_PIXELATION && (
+                        <CollapsibleControlSection
+                            title="方框 像素化"
+                            icon="🎵"
+                            priority="high"
+                            defaultExpanded={true}
+                            badge="方框 像素化"
+                        >
+                            <div className="space-y-4">
+                                {/* 中間方格透明度控制 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        中間方格透明度
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <span className="text-sm text-gray-300 w-12 text-center">
+                                            {Math.round((props.bassEnhancementCenterOpacity || 0.3) * 100)}%
+                                        </span>
+                                        <div className="relative flex-1">
+                                            <div
+                                                className="w-full h-2 rounded-lg absolute top-0 left-0"
+                                                style={{
+                                                    background: `linear-gradient(to right, #3B82F6 0%, #8B5CF6 100%)`
+                                                }}
+                                            />
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="1"
+                                                step="0.01"
+                                                value={props.bassEnhancementCenterOpacity ?? 0.3}
+                                                onChange={(e) => props.onBassEnhancementCenterOpacityChange?.(parseFloat(e.target.value))}
+                                                className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
+                                                style={{ background: 'transparent' }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        調整中間方格的透明度，0% 為完全透明，100% 為完全不透明
+                                    </p>
+                                </div>
+
+                                {/* 高斯模糊強度控制 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        高斯模糊強度
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <span className="text-sm text-gray-300 w-12 text-center">
+                                            {Math.round((props.bassEnhancementBlurIntensity || 0.5) * 100)}%
+                                        </span>
+                                        <div className="relative flex-1">
+                                            <div
+                                                className="w-full h-2 rounded-lg absolute top-0 left-0"
+                                                style={{
+                                                    background: `linear-gradient(to right, #10B981 0%, #F59E0B 100%)`
+                                                }}
+                                            />
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="1"
+                                                step="0.01"
+                                                value={props.bassEnhancementBlurIntensity ?? 0.5}
+                                                onChange={(e) => props.onBassEnhancementBlurIntensityChange?.(parseFloat(e.target.value))}
+                                                className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
+                                                style={{ background: 'transparent' }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        調整背景高斯模糊的強度，0% 為無模糊，100% 為最大模糊
+                                    </p>
+                                </div>
+
+                                {/* 貝茲曲線強度控制 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        貝茲曲線強度
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <span className="text-sm text-gray-300 w-12 text-center">
+                                            {Math.round((props.bassEnhancementCurveIntensity || 1.0) * 100)}%
+                                        </span>
+                                        <div className="relative flex-1">
+                                            <div
+                                                className="w-full h-2 rounded-lg absolute top-0 left-0"
+                                                style={{
+                                                    background: `linear-gradient(to right, #EF4444 0%, #F97316 100%)`
+                                                }}
+                                            />
+                                            <input
+                                                type="range"
+                                                min="0.1"
+                                                max="2"
+                                                step="0.01"
+                                                value={props.bassEnhancementCurveIntensity ?? 1.0}
+                                                onChange={(e) => props.onBassEnhancementCurveIntensityChange?.(parseFloat(e.target.value))}
+                                                className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
+                                                style={{ background: 'transparent' }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        調整貝茲曲線的強度，10% 為最小強度，200% 為最大強度
+                                    </p>
+                                </div>
+                            </div>
+                        </CollapsibleControlSection>
+                    )}
+
+                    {/* 重低音強化專用控制面板 */}
+                    {props.visualizationType === VisualizationType.DYNAMIC_CONTROL_CARD && (
+                        <CollapsibleControlSection
+                            title="重低音強化"
+                            icon="🎵"
+                            priority="high"
+                            defaultExpanded={true}
+                            badge="動態控制卡"
+                        >
+                            <div className="space-y-4">
+                                {/* 文字設定 */}
+                                <div className="space-y-4 border-t border-gray-600 pt-4">
+                                    <h4 className="text-sm font-medium text-cyan-400">文字設定</h4>
+                                    
+                                    {/* 文字內容 */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            文字內容
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={props.bassEnhancementText || '口袋裡的貓'}
+                                            onChange={(e) => props.onBassEnhancementTextChange?.(e.target.value)}
+                                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                            placeholder="輸入文字內容"
+                                        />
+                                    </div>
+
+                                    {/* 文字顏色 */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            文字顏色
+                                        </label>
+                                        <div className="flex items-center space-x-3">
+                                            <input
+                                                type="color"
+                                                value={props.bassEnhancementTextColor || '#FFFFFF'}
+                                                onChange={(e) => props.onBassEnhancementTextColorChange?.(e.target.value)}
+                                                className="w-12 h-8 rounded border border-gray-600 cursor-pointer"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={props.bassEnhancementTextColor || '#FFFFFF'}
+                                                onChange={(e) => props.onBassEnhancementTextColorChange?.(e.target.value)}
+                                                className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                                placeholder="#FFFFFF"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* 字體選擇 */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            字體
+                                        </label>
+                                        <select
+                                            value={props.bassEnhancementTextFont || FontType.POPPINS}
+                                            onChange={(e) => props.onBassEnhancementTextFontChange?.(e.target.value as FontType)}
+                                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                        >
+                                            <option value={FontType.POPPINS}>Poppins</option>
+                                            <option value={FontType.ROCKNROLL_ONE}>RocknRoll One</option>
+                                            <option value={FontType.OPEN_SANS}>Open Sans</option>
+                                            <option value={FontType.LATO}>Lato</option>
+                                            <option value={FontType.MONTSERRAT}>Montserrat</option>
+                                            <option value={FontType.OSWALD}>Oswald</option>
+                                            <option value={FontType.SOURCE_SANS_PRO}>Source Sans Pro</option>
+                                            <option value={FontType.RALEWAY}>Raleway</option>
+                                            <option value={FontType.UBUNTU}>Ubuntu</option>
+                                            <option value={FontType.NUNITO}>Nunito</option>
+                                            <option value={FontType.PLAYFAIR_DISPLAY}>Playfair Display</option>
+                                            <option value={FontType.MERRIWEATHER}>Merriweather</option>
+                                            <option value={FontType.FREDOKA_ONE}>Fredoka One</option>
+                                            <option value={FontType.LOBSTER}>Lobster</option>
+                                            <option value={FontType.PACIFICO}>Pacifico</option>
+                                            <option value={FontType.ORBITRON}>Orbitron</option>
+                                            <option value={FontType.BUNGEE}>Bungee</option>
+                                            <option value={FontType.PRESS_START_2P}>Press Start 2P</option>
+                                            <option value={FontType.DANCING_SCRIPT}>Dancing Script</option>
+                                            <option value={FontType.REGGAE_ONE}>Reggae One</option>
+                                            <option value={FontType.VT323}>VT323</option>
+                                            <option value={FontType.NOTO_SANS_TC}>思源黑體</option>
+                                            <option value={FontType.SOURCE_HAN_SANS}>思源黑體</option>
+                                            <option value={FontType.CW_TEX_KAI}>楷書</option>
+                                            <option value={FontType.KLEE_ONE}>Klee One</option>
+                                            <option value={FontType.TAIPEI_SANS}>台北黑體</option>
+                                            <option value={FontType.M_PLUS_ROUNDED}>M PLUS Rounded</option>
+                                            <option value={FontType.HINA_MINCHO}>Hina Mincho</option>
+                                            <option value={FontType.RAMPART_ONE}>Rampart One</option>
+                                            <option value={FontType.ROBOTO_MONO}>Roboto Mono</option>
+                                            <option value={FontType.CAVEAT}>Caveat</option>
+                                            <option value={FontType.KALAM}>Kalam</option>
+                                            <option value={FontType.COMFORTAA}>Comfortaa</option>
+                                            <option value={FontType.QUICKSAND}>Quicksand</option>
+                                            <option value={FontType.RUBIK}>Rubik</option>
+                                            <option value={FontType.NOTO_SERIF_TC}>思源宋體</option>
+                                            <option value={FontType.MA_SHAN_ZHENG}>馬善政體</option>
+                                            <option value={FontType.ZHI_MANG_XING}>智芒星體</option>
+                                            <option value={FontType.LONG_CANG}>龍藏體</option>
+                                            <option value={FontType.ZCOOL_KUAI_LE}>站酷快樂體</option>
+                                            <option value={FontType.ZCOOL_QING_KE}>站酷青殼體</option>
+                                            <option value={FontType.LIU_JIAN_MAO_CAO}>劉建毛草體</option>
+                                            <option value={FontType.ZCOOL_XIAO_WEI}>站酷小薇體</option>
+                                            <option value={FontType.BAKUDAI}>莫大毛筆</option>
+                                        </select>
+                                    </div>
+
+                                    {/* 字體大小 */}
+                                    <div>
+                                        <SliderControl
+                                            label="字體大小"
+                                            value={props.bassEnhancementTextSize || 4.0}
+                                            onChange={props.onBassEnhancementTextSizeChange || (() => {})}
+                                            min={1.0}
+                                            max={10.0}
+                                            step={0.1}
+                                        />
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            調整文字大小，範圍：1.0% - 10.0%
+                                        </p>
+                                    </div>
+                                </div>
+
                             </div>
                         </CollapsibleControlSection>
                     )}

@@ -44,9 +44,9 @@ const FONT_MAP: Record<FontType, string> = {
     [FontType.QUICKSAND]: 'Quicksand',
     [FontType.RUBIK]: 'Rubik',
     [FontType.NOTO_SERIF_TC]: 'Noto Serif TC',
-    [FontType.MA_SHAN_ZHENG]: 'Ma Shan Zheng',
-    [FontType.ZHI_MANG_XING]: 'Zhi Mang Xing',
-    [FontType.LONG_CANG]: 'Long Cang',
+    [FontType.MA_SHAN_ZHENG]: 'Poppins',
+    [FontType.ZHI_MANG_XING]: 'Poppins',
+    [FontType.LONG_CANG]: 'Poppins',
     [FontType.ZCOOL_KUAI_LE]: 'ZCOOL KuaiLe',
     [FontType.ZCOOL_QING_KE]: 'ZCOOL QingKe HuangYou',
     [FontType.LIU_JIAN_MAO_CAO]: 'Liu Jian Mao Cao',
@@ -97,6 +97,10 @@ interface AudioVisualizerProps {
     lyricsPositionY: number;
     subtitleDisplayMode: SubtitleDisplayMode;
     subtitleOrientation: SubtitleOrientation;
+    verticalSubtitlePosition: number;
+    horizontalSubtitlePosition: number;
+    verticalSubtitleVerticalPosition: number;
+    horizontalSubtitleVerticalPosition: number;
     // When true, skip drawing visualizer effects but keep background and subtitles
     disableVisualizer?: boolean;
     // 幾何圖形可視化參數
@@ -141,6 +145,23 @@ interface AudioVisualizerProps {
     vinylImage?: string | null;
     // Piano opacity
     pianoOpacity?: number;
+    // Photo Shake props
+    photoShakeImage?: string | null;
+    photoShakeSongTitle?: string;
+    photoShakeSubtitle?: string;
+    photoShakeFontFamily?: FontType;
+    photoShakeOverlayOpacity?: number;
+    photoShakeFontSize?: number;
+    photoShakeDecaySpeed?: number;
+    // Bass Enhancement props (重低音強化)
+    bassEnhancementBlurIntensity?: number;
+    bassEnhancementCurveIntensity?: number;
+    bassEnhancementText?: string;
+    bassEnhancementTextColor?: string;
+    bassEnhancementTextFont?: string;
+    bassEnhancementTextSize?: number;
+    // Frame Pixelation props (方框像素化)
+    bassEnhancementCenterOpacity?: number;
 }
 
 // 讓繪圖函式能取得當前屬性（不改動所有函式簽名）
@@ -535,7 +556,7 @@ const drawBasicWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | nu
     ctx.restore();
 };
 
-const drawDynamicControlCard = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean) => {
+const drawDynamicControlCard = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, props?: any) => {
     if (!dataArray) return;
     ctx.save();
     
@@ -551,101 +572,36 @@ const drawDynamicControlCard = (ctx: CanvasRenderingContext2D, dataArray: Uint8A
     const normalizedMid = mid / 255;
     const normalizedTreble = treble / 255;
     
-    // 1. 高斯模糊背景效果
-    ctx.save();
-    ctx.filter = `blur(${8 + normalizedBass * 12}px)`;
-    ctx.globalAlpha = 0.3 + normalizedMid * 0.4;
+    // 1. 兩層高斯模糊背景效果 - 只在方格外的區域
+    const blurIntensity = latestPropsRef?.bassEnhancementBlurIntensity || 0.5;
     
-    // 創建動態模糊層
-    const blurGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, Math.min(width, height) * 0.8);
-    blurGradient.addColorStop(0, colors.primary);
-    blurGradient.addColorStop(0.5, colors.secondary);
-    blurGradient.addColorStop(1, 'transparent');
-    
-    ctx.fillStyle = blurGradient;
-    ctx.fillRect(0, 0, width, height);
-    ctx.restore();
-    
-    // 2. 陽光照射效果
-    ctx.save();
-    ctx.globalCompositeOperation = 'screen';
-    ctx.globalAlpha = 0.4 + normalizedTreble * 0.3;
-    
-    // 陽光光線
-    const sunRays = 12;
-    for (let i = 0; i < sunRays; i++) {
-        const angle = (i / sunRays) * Math.PI * 2 + frame * 0.01;
-        const rayLength = Math.min(width, height) * 0.6 + normalizedBass * 100;
-        
-        const gradient = ctx.createLinearGradient(centerX, centerY, 
-            centerX + Math.cos(angle) * rayLength, 
-            centerY + Math.sin(angle) * rayLength);
-        gradient.addColorStop(0, colors.accent);
-        gradient.addColorStop(0.7, applyAlphaToColor(colors.accent, 0.6));
-        gradient.addColorStop(1, 'transparent');
-        
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = 3 + normalizedMid * 2;
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = colors.accent;
-        
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.lineTo(centerX + Math.cos(angle) * rayLength, centerY + Math.sin(angle) * rayLength);
-        ctx.stroke();
-    }
-    
-    // 陽光中心光暈
-    const sunGlow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 80 + normalizedBass * 40);
-    sunGlow.addColorStop(0, colors.accent);
-    sunGlow.addColorStop(0.3, applyAlphaToColor(colors.accent, 0.8));
-    sunGlow.addColorStop(1, 'transparent');
-    
-    ctx.fillStyle = sunGlow;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 80 + normalizedBass * 40, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.restore();
-    
-    // 3. 動態控制卡
-    const cardWidth = width * 0.6;
-    const cardHeight = height * 0.25;
+    // 計算方格區域
+    const cardWidth = width * 0.7;
+    const cardHeight = height * 0.7;
     const cardX = centerX - cardWidth / 2;
     const cardY = centerY - cardHeight / 2;
     
-    // 控制卡震動效果
-    const shakeIntensity = normalizedBass * 8;
-    const shakeX = Math.sin(frame * 0.1) * shakeIntensity;
-    const shakeY = Math.cos(frame * 0.08) * shakeIntensity;
+    // 像素化效果已移除 - 避免邊界問題
     
-    // 控制卡背景
-    ctx.save();
-    ctx.globalAlpha = 0.8 + normalizedMid * 0.2;
-    ctx.fillStyle = 'rgba(20, 20, 20, 0.9)';
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = '#FFFFFF'; // 改為白色發光
+    // 2. 移除陽光照射效果 - 已移除像太陽的可視化元素
     
-    const cornerRadius = 15;
-    ctx.beginPath();
-    ctx.moveTo(cardX + cornerRadius + shakeX, cardY + shakeY);
-    ctx.lineTo(cardX + cardWidth - cornerRadius + shakeX, cardY + shakeY);
-    ctx.quadraticCurveTo(cardX + cardWidth + shakeX, cardY + shakeY, cardX + cardWidth + shakeX, cardY + cornerRadius + shakeY);
-    ctx.lineTo(cardX + cardWidth + shakeX, cardY + cardHeight - cornerRadius + shakeY);
-    ctx.quadraticCurveTo(cardX + cardWidth + shakeX, cardY + cardHeight + shakeY, cardX + cardWidth - cornerRadius + shakeX, cardY + cardHeight + shakeY);
-    ctx.lineTo(cardX + cornerRadius + shakeX, cardY + cardHeight + shakeY);
-    ctx.quadraticCurveTo(cardX + shakeX, cardY + cardHeight + shakeY, cardX + shakeX, cardY + cardHeight - cornerRadius + shakeY);
-    ctx.lineTo(cardX + shakeX, cardY + cornerRadius + shakeY);
-    ctx.quadraticCurveTo(cardX + shakeX, cardY + shakeY, cardX + cornerRadius + shakeX, cardY + shakeY);
-    ctx.fill();
-    ctx.restore();
+    // 3. 重低音強化控制卡 - 使用前面已計算的方格尺寸
     
-    // 控制卡邊框
-    ctx.strokeStyle = colors.accent;
-    ctx.lineWidth = 2 + normalizedTreble;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = colors.accent;
-    ctx.stroke();
+    // 移除搖晃效果 - 只保留放大縮放
+    const shakeX = 0; // 移除左右搖動
+    const shakeY = 0; // 移除上下搖動
+    
+    // 放大縮放效果 - 縮放範圍1到3
+    const bassScale = 1.0 + normalizedBass * 2.0; // 從1.0到3.0，放大到3倍
+    const smoothScale = bassScale; // 移除震動，只保留純粹的放大縮放
+    
+    // 計算震動後的方格位置和大小
+    const scaledCardWidth = cardWidth * smoothScale;
+    const scaledCardHeight = cardHeight * smoothScale;
+    const scaledCardX = centerX - scaledCardWidth / 2 + shakeX;
+    const scaledCardY = centerY - scaledCardHeight / 2 + shakeY;
+    
+    // 方框已移除 - 只保留音頻可視化
     
     // 控制卡內容 - 音頻響應式元素
     ctx.fillStyle = colors.primary;
@@ -655,51 +611,399 @@ const drawDynamicControlCard = (ctx: CanvasRenderingContext2D, dataArray: Uint8A
     
     // 歌曲名稱已移除
     
-    // 音頻條
-    const barCount = 16;
-    const barWidth = cardWidth * 0.8 / barCount;
-    const barSpacing = cardWidth * 0.2 / (barCount + 1);
-    const maxBarHeight = cardHeight * 0.3;
+    // 音頻可視化位置 - 居中顯示，應用強烈震動效果
+    const curveIntensity = latestPropsRef?.bassEnhancementCurveIntensity || 1.0;
+    const segmentCount = 24; // 24 個頻段
+    const baseMaxHeight = height * 0.3; // 基礎高度較小，為強烈放大留空間
+    const maxHeight = baseMaxHeight * smoothScale; // 應用強烈震動縮放
     
-    for (let i = 0; i < barCount; i++) {
-        const dataIndex = Math.floor((i / barCount) * dataArray.length);
-        const amplitude = dataArray[dataIndex] / 255;
-        const barHeight = Math.pow(amplitude, 1.5) * maxBarHeight * sensitivity;
+    // 音頻可視化寬度和位置 - 居中，無搖晃
+    const visualizerWidth = width * 0.3 * smoothScale; // 基礎寬度較小，為放大留空間
+    const startX = centerX - visualizerWidth / 2; // 居中，無搖晃
+    const endX = startX + visualizerWidth; // 結束位置
+    const baselineY = centerY; // 居中，無搖晃
+    
+    const thickness = 3.0; // Thickness: 3.00
+    const softness = 50.0; // Softness: 50.0%
+    
+    const segmentWidth = visualizerWidth / segmentCount;
+    
+    // 白色發光基準線 - 純粹放大縮放
+    ctx.beginPath();
+    ctx.moveTo(startX, baselineY);
+    ctx.lineTo(startX + visualizerWidth, baselineY);
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = thickness * smoothScale;
+    ctx.shadowBlur = 15 * smoothScale; // 適中的發光效果
+    ctx.shadowColor = '#FFFFFF';
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+    
+    // 平滑漸變的動態波形 - 每個點不同頻率和震幅
+    const wavePoints = [];
+    const totalWidth = visualizerWidth;
+    const pointCount = 40; // 40個不同的頻率點
+    
+    // 生成每個點對應不同頻率
+    for (let i = 0; i < pointCount; i++) {
+        // 固定間隔，移除左右滑動
+        const baseX = (i / (pointCount - 1)) * totalWidth;
+        const x = baseX; // 移除隨機偏移
         
-        if (barHeight < 2) continue;
+        // 固定的頻率分布模式：高低中低高低中低低高
+        const freqRatio = i / (pointCount - 1); // 0-1的固定比例
         
-        const barX = cardX + barSpacing + i * (barWidth + barSpacing) + shakeX;
-        const barY = cardY + cardHeight * 0.7 - barHeight + shakeY;
+        // 為每個柱子設定獨特的震幅和長度參數
+        let freqStart, freqEnd, amplitudeMultiplier, widthMultiplier;
         
-        // 音頻條顏色
-        const hue = (i / barCount) * 360;
-        const barColor = `hsl(${hue}, 80%, 60%)`;
+        // 定義40個柱子的獨特參數設定
+        const columnSettings = [
+            // 柱子0-9
+            { freq: [0.0, 0.2], amp: 1.8, width: 1.5 },  { freq: [0.2, 0.6], amp: 1.2, width: 0.9 },   { freq: [0.6, 1.0], amp: 1.0, width: 0.7 },  { freq: [0.0, 0.15], amp: 2.0, width: 1.8 }, { freq: [0.3, 0.7], amp: 1.1, width: 1.0 },
+            { freq: [0.1, 0.3], amp: 1.6, width: 1.3 },  { freq: [0.4, 0.8], amp: 0.9, width: 0.8 },  { freq: [0.0, 0.25], amp: 1.9, width: 1.6 }, { freq: [0.2, 0.4], amp: 1.3, width: 1.1 },  { freq: [0.7, 1.0], amp: 0.8, width: 0.6 },
+            
+            // 柱子10-19
+            { freq: [0.5, 0.9], amp: 1.0, width: 0.9 },  { freq: [0.0, 0.2], amp: 1.7, width: 1.4 }, { freq: [0.8, 1.0], amp: 0.7, width: 0.5 },  { freq: [0.15, 0.35], amp: 1.4, width: 1.2 }, { freq: [0.6, 0.8], amp: 1.1, width: 0.8 },
+            { freq: [0.05, 0.25], amp: 1.8, width: 1.5 }, { freq: [0.3, 0.5], amp: 1.2, width: 1.0 },  { freq: [0.9, 1.0], amp: 0.6, width: 0.4 },  { freq: [0.4, 0.6], amp: 1.3, width: 1.1 },  { freq: [0.1, 0.3], amp: 1.6, width: 1.3 },
+            
+            // 柱子20-29 (重複並變化)
+            { freq: [0.0, 0.18], amp: 1.7, width: 1.4 }, { freq: [0.25, 0.65], amp: 1.1, width: 0.8 }, { freq: [0.65, 1.0], amp: 0.9, width: 0.6 }, { freq: [0.02, 0.12], amp: 1.9, width: 1.7 }, { freq: [0.35, 0.75], amp: 1.0, width: 0.9 },
+            { freq: [0.08, 0.28], amp: 1.5, width: 1.2 }, { freq: [0.45, 0.85], amp: 0.8, width: 0.7 }, { freq: [0.0, 0.22], amp: 1.8, width: 1.5 }, { freq: [0.18, 0.38], amp: 1.2, width: 1.0 }, { freq: [0.72, 1.0], amp: 0.7, width: 0.5 },
+            
+            // 柱子30-39
+            { freq: [0.52, 0.92], amp: 0.9, width: 0.8 }, { freq: [0.0, 0.19], amp: 1.6, width: 1.3 }, { freq: [0.82, 1.0], amp: 0.6, width: 0.4 }, { freq: [0.12, 0.32], amp: 1.3, width: 1.1 }, { freq: [0.62, 0.82], amp: 1.0, width: 0.7 },
+            { freq: [0.03, 0.23], amp: 1.7, width: 1.4 }, { freq: [0.28, 0.48], amp: 1.1, width: 0.9 }, { freq: [0.88, 1.0], amp: 0.5, width: 0.3 }, { freq: [0.38, 0.58], amp: 1.2, width: 1.0 }, { freq: [0.07, 0.27], amp: 1.5, width: 1.2 }
+        ];
         
-        ctx.fillStyle = barColor;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = barColor;
+        const setting = columnSettings[i];
+        freqStart = setting.freq[0];
+        freqEnd = setting.freq[1];
+        amplitudeMultiplier = setting.amp;
+        widthMultiplier = setting.width;
         
-        ctx.fillRect(barX, barY, barWidth, barHeight);
+        // 計算該頻率範圍的平均振幅
+        const freqStartIndex = Math.floor(freqStart * dataArray.length);
+        const freqEndIndex = Math.floor(freqEnd * dataArray.length);
+        let totalAmplitude = 0;
+        let freqCount = 0;
+        
+        for (let j = freqStartIndex; j < freqEndIndex && j < dataArray.length; j++) {
+            totalAmplitude += dataArray[j];
+            freqCount++;
+        }
+        
+        const rawAmplitude = freqCount > 0 ? (totalAmplitude / freqCount) / 255 : 0;
+        
+        // 平滑的振幅計算 - 沒有音頻時縮到0
+        const smoothAmplitude = rawAmplitude * amplitudeMultiplier;
+        
+        // 計算高度（每個點都有不同的震幅）- 沒有音頻時縮到0
+        const baseHeight = smoothAmplitude * maxHeight * curveIntensity;
+        const height = baseHeight; // 移除最小高度限制，讓沒有音頻時縮到0
+        
+        // 計算寬度（每個點都有不同的寬度）- 保持粗細變化
+        const baseWidth = 8 + Math.sin(frame * 0.005 + i * 0.1) * 2; // 極慢的寬度變化
+        const width = baseWidth * widthMultiplier;
+        
+        // 計算透明度（極度減少閃爍）- 使用極穩定的透明度
+        const alpha = Math.min(0.7, Math.max(0.6, smoothAmplitude * 0.3 + 0.6)); // 透明度範圍0.6-0.7，極穩定
+        
+        wavePoints.push({
+            x: startX + x,
+            height: height, // 移除最小高度限制
+            width: Math.max(2, width),   // 最小寬度2px
+            alpha: alpha,
+            freqRatio: freqRatio
+        });
     }
     
-    // 節拍時的額外效果
-    if (isBeat) {
-        ctx.save();
-        ctx.globalCompositeOperation = 'screen';
-        ctx.globalAlpha = 0.6;
+    // 複製唱片控制卡的音頻可視化效果
+    if (dataArray) {
+        // 波形區域設定
+        const wavePadding = 20;
+        const waveX = startX + wavePadding;
+        const waveW = visualizerWidth - wavePadding * 2;
+        const waveBaseline = baselineY;
+        const samples = 64;
         
-        // 節拍光環
-        const beatRadius = 50 + normalizedBass * 30;
-        const beatGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, beatRadius);
-        beatGradient.addColorStop(0, colors.accent);
-        beatGradient.addColorStop(1, 'transparent');
+        // 音頻取樣函數
+        const getSample = (t: number, bandStart: number, bandEnd: number) => {
+            if (!dataArray) return 0.5;
+            const len = dataArray.length;
+            const s = Math.max(0, Math.min(len - 1, Math.floor(bandStart * len)));
+            const e = Math.max(s + 1, Math.min(len, Math.floor(bandEnd * len)));
+            const idx = s + Math.floor(t * (e - s - 1));
+            return dataArray[idx] / 255;
+        };
         
-        ctx.fillStyle = beatGradient;
+        // 山形圖（白色，低頻到中低頻）
+        const barCount = samples + 1;
+        const barWidth = Math.max(2, (waveW / barCount) * 0.6);
+        
+        for (let i = 0; i < barCount; i++) {
+            const t = i / (barCount - 1);
+            // 取低頻到中低頻，讓能量更有起伏 - 增強敏感度
+            const v = getSample(t, 0.05, 0.35);
+            // 調高預設靈敏度
+            const amp = Math.max(0, v - 0.2); // 從0.28降低到0.2，提高靈敏度
+            const h = Math.pow(amp, 1.2) * maxHeight * 2.4; // 從1.35降低到1.2，讓響應更線性
+            const xCenter = waveX + t * waveW;
+            const x = xCenter - barWidth / 2;
+            const y = waveBaseline - h;
+            
+            if (h > 0) {
+                // 使用顏色主題漸變
+                const grad = ctx.createLinearGradient(0, y, 0, waveBaseline);
+                grad.addColorStop(0, colors.primary + '85'); // 85% 透明度
+                grad.addColorStop(1, colors.primary + '15'); // 15% 透明度
+                ctx.fillStyle = grad;
+                ctx.fillRect(x, y, barWidth, h);
+                
+                // 頂部高光 - 使用顏色主題
+                ctx.fillStyle = colors.primary + '25'; // 25% 透明度
+                ctx.fillRect(x, y, barWidth, 2);
+            }
+        }
+        
+        // 白色中頻線條 - 放大3倍
+        const waveHeight1 = maxHeight * 1.8; // 放大3倍 (0.6 * 3 = 1.8)
         ctx.beginPath();
-        ctx.arc(centerX, centerY, beatRadius, 0, Math.PI * 2);
-        ctx.fill();
+        for (let i = 0; i <= samples; i++) {
+            const t = i / samples;
+            const v = getSample(t, 0.25, 0.6);
+            // 調高預設靈敏度
+            const amp = Math.max(0, v - 0.3); // 從0.4降低到0.3，提高靈敏度
+            const y = waveBaseline - Math.pow(amp, 1.15) * waveHeight1; // 從1.25降低到1.15，讓響應更線性
+            const x = waveX + t * waveW;
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = 'rgba(255,255,255,0.92)'; // 維持白色
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+    
+    // 移除節拍光環效果 - 已移除會跑出來的球
+    
+    // 4. 文字顯示 - 在可視化下方，不隨重低音晃動
+    const textContent = props?.bassEnhancementText || '口袋裡的貓';
+    const textColor = props?.bassEnhancementTextColor || '#FFFFFF';
+    const textFontFamily = FONT_MAP[props?.bassEnhancementTextFont || FontType.POPPINS];
+    const textSize = Math.min(width, height) * ((props?.bassEnhancementTextSize || 4.0) / 100); // 使用props中的字體大小
+    
+    // 文字位置 - 在可視化下方，固定位置不晃動
+    const textY = centerY + height * 0.15; // 調整文字位置，使其更靠近可視化
+    
+    // 繪製文字
+    ctx.fillStyle = textColor;
+    ctx.font = `bold ${textSize}px ${textFontFamily}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // 文字發光效果
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = textColor;
+    ctx.fillText(textContent, centerX, textY);
+    
+    // 重置陰影
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+    
+    ctx.restore();
+};
+
+const drawFramePixelation = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, props?: any) => {
+    if (!dataArray) return;
+    
+    ctx.save();
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    // 計算音頻數據
+    const normalizedBass = Math.pow(dataArray[0] / 255, 2);
+    const normalizedMid = Math.pow(dataArray[Math.floor(dataArray.length * 0.3)] / 255, 2);
+    const normalizedTreble = Math.pow(dataArray[Math.floor(dataArray.length * 0.7)] / 255, 2);
+    
+    // 計算方格尺寸
+    const cardWidth = width * 0.7;
+    const cardHeight = height * 0.7;
+    const cardX = centerX - cardWidth / 2;
+    const cardY = centerY - cardHeight / 2;
+    
+    // 像素化效果 - 方格外的區域
+    ctx.save();
+    
+    // 計算解析度降低強度
+    const blurIntensity = props?.bassEnhancementBlurIntensity || 0.5;
+    const resolutionScale = Math.max(0.05, 0.2 - normalizedBass * 0.15 * blurIntensity);
+    const resolutionIntensity = 0.6 + normalizedMid * 0.2;
+    
+    // 創建解析度降低遮罩
+    ctx.globalAlpha = resolutionIntensity;
+    
+    // 繪製解析度降低效果 - 只在方格外的區域
+    const resolutionMargin = Math.max(width, height) * 0.5;
+    
+    // 創建解析度降低圖案 - 使用網格狀低解析度效果
+    const blockSize = Math.max(12, Math.floor(24 - normalizedBass * 12 * blurIntensity));
+    
+    // 繪製低解析度網格效果
+    ctx.fillStyle = 'rgba(20, 20, 30, 0.6)';
+    
+    // 在填充的區域上添加像素化效果
+    for (let x = -resolutionMargin; x < width + resolutionMargin; x += blockSize) {
+        for (let y = -resolutionMargin; y < height + resolutionMargin; y += blockSize) {
+            // 檢查是否在中央方格內
+            if (x >= cardX && x < cardX + cardWidth && y >= cardY && y < cardY + cardHeight) {
+                continue; // 跳過中央方格
+            }
+            
+            // 統一透明度確保所有區域顏色一致
+            const randomAlpha = 0.3 + Math.random() * 0.3;
+            ctx.globalAlpha = randomAlpha * resolutionIntensity;
+            ctx.fillStyle = 'rgba(15, 15, 25, 0.7)';
+            
+            ctx.fillRect(x, y, blockSize, blockSize);
+        }
+    }
+    
+    ctx.restore();
+    
+    // 控制卡震動效果 - 增強重低音響應
+    const shakeIntensity = normalizedBass * 12;
+    const shakeX = Math.sin(frame * 0.1) * shakeIntensity;
+    const shakeY = Math.cos(frame * 0.08) * shakeIntensity;
+    
+    // 重低音放大震動效果 - 圓滑的縮放
+    const bassScale = 1.0 + normalizedBass * 0.15;
+    const smoothScale = bassScale + Math.sin(frame * 0.05) * normalizedBass * 0.05;
+    
+    // 計算震動後的方格位置和大小
+    const scaledCardWidth = cardWidth * smoothScale;
+    const scaledCardHeight = cardHeight * smoothScale;
+    const scaledCardX = centerX - scaledCardWidth / 2 + shakeX;
+    const scaledCardY = centerY - scaledCardHeight / 2 + shakeY;
+    
+    // 控制卡背景 - 使用透明度控制
+    ctx.save();
+    const centerOpacity = props?.bassEnhancementCenterOpacity ?? 0.3;
+    ctx.globalAlpha = centerOpacity;
+    ctx.fillStyle = `rgba(25, 25, 35, ${centerOpacity})`;
+    ctx.shadowBlur = 25 * smoothScale;
+    ctx.shadowColor = '#FFFFFF';
+    
+    const cornerRadius = 15 * smoothScale;
+    ctx.beginPath();
+    ctx.moveTo(scaledCardX + cornerRadius, scaledCardY);
+    ctx.lineTo(scaledCardX + scaledCardWidth - cornerRadius, scaledCardY);
+    ctx.quadraticCurveTo(scaledCardX + scaledCardWidth, scaledCardY, scaledCardX + scaledCardWidth, scaledCardY + cornerRadius);
+    ctx.lineTo(scaledCardX + scaledCardWidth, scaledCardY + scaledCardHeight - cornerRadius);
+    ctx.quadraticCurveTo(scaledCardX + scaledCardWidth, scaledCardY + scaledCardHeight, scaledCardX + scaledCardWidth - cornerRadius, scaledCardY + scaledCardHeight);
+    ctx.lineTo(scaledCardX + cornerRadius, scaledCardY + scaledCardHeight);
+    ctx.quadraticCurveTo(scaledCardX, scaledCardY + scaledCardHeight, scaledCardX, scaledCardY + scaledCardHeight - cornerRadius);
+    ctx.lineTo(scaledCardX, scaledCardY + cornerRadius);
+    ctx.quadraticCurveTo(scaledCardX, scaledCardY, scaledCardX + cornerRadius, scaledCardY);
+    ctx.fill();
+    ctx.restore();
+    
+    // 控制卡邊框 - 使用震動後的尺寸
+    ctx.strokeStyle = colors.accent;
+    ctx.lineWidth = (2 + normalizedTreble) * smoothScale;
+    ctx.shadowBlur = 10 * smoothScale;
+    ctx.shadowColor = colors.accent;
+    ctx.stroke();
+    
+    // 音頻可視化位置 - 居中顯示，應用強烈震動效果
+    const curveIntensity = props?.bassEnhancementCurveIntensity || 1.0;
+    const segmentCount = 24;
+    const maxHeight = scaledCardHeight * 0.6;
+    
+    // 減少聲波圖寬度
+    const visualizerWidth = scaledCardWidth * 0.3;
+    const startX = scaledCardX + scaledCardWidth * 0.1;
+    const endX = startX + visualizerWidth;
+    const baselineY = scaledCardY + scaledCardHeight * 0.7;
+    
+    const thickness = 3.0;
+    const softness = 50.0;
+    
+    const segmentWidth = visualizerWidth / segmentCount;
+    const waveHeight = maxHeight;
+    const waveX = startX;
+    const waveY = baselineY - waveHeight;
+    
+    // 先畫白色發光基準線
+    ctx.beginPath();
+    ctx.moveTo(waveX, baselineY);
+    ctx.lineTo(waveX + visualizerWidth, baselineY);
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = thickness;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#FFFFFF';
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+    
+    // 複製唱片控制卡的音頻可視化效果
+    if (dataArray) {
+        // 波形區域設定
+        const wavePadding = 20;
+        const waveX = startX + wavePadding;
+        const waveW = visualizerWidth - wavePadding * 2;
+        const waveBaseline = baselineY;
+        const samples = 64;
         
-        ctx.restore();
+        // 音頻取樣函數
+        const getSample = (t: number, bandStart: number, bandEnd: number) => {
+            if (!dataArray) return 0.5;
+            const len = dataArray.length;
+            const s = Math.max(0, Math.min(len - 1, Math.floor(bandStart * len)));
+            const e = Math.max(s + 1, Math.min(len, Math.floor(bandEnd * len)));
+            const idx = s + Math.floor(t * (e - s - 1));
+            return dataArray[idx] / 255;
+        };
+        
+        // 山形圖（白色，低頻到中低頻）
+        const barCount = samples + 1;
+        const barWidth = Math.max(2, (waveW / barCount) * 0.6);
+        
+        for (let i = 0; i < barCount; i++) {
+            const t = i / (barCount - 1);
+            const v = getSample(t, 0.05, 0.35);
+            // 調高預設靈敏度
+            const amp = Math.max(0, v - 0.2);
+            const h = Math.pow(amp, 1.2) * maxHeight * 2.4;
+            const xCenter = waveX + t * waveW;
+            const x = xCenter - barWidth / 2;
+            const y = waveBaseline - h;
+            
+            if (h > 0) {
+                // 白色漸變
+                const grad = ctx.createLinearGradient(0, y, 0, waveBaseline);
+                grad.addColorStop(0, 'rgba(255,255,255,0.9)');
+                grad.addColorStop(1, 'rgba(255,255,255,0.3)');
+                ctx.fillStyle = grad;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = '#FFFFFF';
+                ctx.fillRect(x, y, barWidth, h);
+            }
+        }
+        
+        // 白色中頻線條 - 放大3倍
+        const waveHeight1 = maxHeight * 1.8;
+        ctx.beginPath();
+        for (let i = 0; i <= samples; i++) {
+            const t = i / samples;
+            const v = getSample(t, 0.25, 0.6);
+            // 調高預設靈敏度
+            const amp = Math.max(0, v - 0.3);
+            const y = waveBaseline - Math.pow(amp, 1.15) * waveHeight1;
+            const x = waveX + t * waveW;
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
     }
     
     ctx.restore();
@@ -2252,7 +2556,7 @@ declare global {
 }
 
 const drawPhotoShake = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, props?: any) => {
-    if (!dataArray) return;
+    // 相片晃動不需要音頻數據也能顯示，移除這個限制
     ctx.save();
     
     const centerX = width / 2;
@@ -2312,20 +2616,24 @@ const drawPhotoShake = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | n
     const overlayY = centerY - overlayHeight / 2; // 中央位置
     
     // 繪製半透明背景（可調整透明度）
-    const overlayOpacity = props?.photoShakeOverlayOpacity || 0.4;
+    // 修正透明度處理：使用 ?? 而不是 || 來避免0被當作falsy值
+    const overlayOpacity = typeof props?.photoShakeOverlayOpacity === 'number' ? props.photoShakeOverlayOpacity : 0.4;
     ctx.fillStyle = `rgba(0, 0, 0, ${overlayOpacity})`;
     ctx.fillRect(0, overlayY, width, overlayHeight);
     
     // 繪製文字信息（按照正確順序，中央對齊）
     const songTitle = props?.photoShakeSongTitle || '歌曲名稱';
     const subtitle = props?.photoShakeSubtitle || '副標題';
-    const fontSize = props?.photoShakeFontSize || 0.06;
+    // 修正字體大小計算：直接使用像素值，確保文字可見
+    const fontSizeValue = typeof props?.photoShakeFontSize === 'number' ? props.photoShakeFontSize : 60;
+    const fontSize = fontSizeValue; // 直接使用像素值，20-150px
     
     // 1. 主標題（在中央上方）- 白色描邊偽3D效果
     ctx.fillStyle = '#FFFFFF';
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 3;
-    ctx.font = `bold ${Math.min(width, height) * fontSize}px ${props?.photoShakeFontFamily || 'Poppins'}`;
+    const actualFontSize = fontSize; // 直接使用像素值
+    ctx.font = `bold ${actualFontSize}px "${FONT_MAP[props?.photoShakeFontFamily || FontType.POPPINS]}", "Noto Sans TC", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
@@ -2344,7 +2652,7 @@ const drawPhotoShake = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | n
     ctx.fillStyle = '#FFFFFF';
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 2;
-    ctx.font = `${Math.min(width, height) * fontSize * 0.6}px ${props?.photoShakeFontFamily || 'Poppins'}`;
+    ctx.font = `${fontSize * 0.6}px "${FONT_MAP[props?.photoShakeFontFamily || FontType.POPPINS]}", "Noto Sans TC", sans-serif`;
     
     // 描邊
     ctx.strokeText(subtitle, centerX, overlayY + overlayHeight * 0.45);
@@ -2381,10 +2689,10 @@ const drawPhotoShake = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | n
     ctx.stroke();
     
     // 繪製向下音訊柱狀圖
-    const dataSliceLength = Math.min(dataArray.length * 0.8, numBars);
+    const dataSliceLength = dataArray ? Math.min(dataArray.length * 0.8, numBars) : numBars;
     for (let i = 0; i < numBars; i++) {
         const dataIndex = Math.floor((i / numBars) * dataSliceLength);
-        const currentAmplitude = dataArray[dataIndex] || 0;
+        const currentAmplitude = dataArray ? (dataArray[dataIndex] || 0) : 0;
         
         // 更新震幅（10倍快速恢復）
         const targetAmplitude = (currentAmplitude / 255) * maxBarHeight * sensitivity * 1.4; // 加大震幅40%
@@ -3725,7 +4033,8 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         ctx.arc(dotX, dotY, 3, 0, Math.PI * 2);
         ctx.fill();
     }
-        // 歌曲資訊 (右側) - 重新定義變數
+    
+    // 歌曲資訊 (右側) - 重新定義變數
         const infoX = albumX + albumSize + (playerWidth * 0.05); // 5% 間距
         const infoY = playerY + (playerHeight * 0.18); // 18% 位置
         const dynamicSpacing = playerHeight * 0.08; // 8% 行距
@@ -5256,6 +5565,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.BASIC_WAVE]: drawBasicWave,
     [VisualizationType.CHINESE_CONTROL_CARD]: drawBasicWave, // 暫時使用 drawBasicWave
     [VisualizationType.DYNAMIC_CONTROL_CARD]: drawDynamicControlCard,
+    [VisualizationType.FRAME_PIXELATION]: drawFramePixelation,
     [VisualizationType.PHOTO_SHAKE]: drawPhotoShake,
 };
 
@@ -5535,6 +5845,12 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         } else if (visualizationType === VisualizationType.PHOTO_SHAKE) {
             // 相片晃動需要傳遞 props
             drawPhotoShake(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+        } else if (visualizationType === VisualizationType.FRAME_PIXELATION) {
+            // 方框 像素化需要傳遞 props
+            drawFramePixelation(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+        } else if (visualizationType === VisualizationType.DYNAMIC_CONTROL_CARD) {
+            // 重低音強化需要傳遞 props
+            drawDynamicControlCard(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
         } else {
             drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
         }

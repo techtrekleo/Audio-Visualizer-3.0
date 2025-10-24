@@ -122,9 +122,19 @@ function App() {
     const [photoShakeSongTitle, setPhotoShakeSongTitle] = useState<string>('歌曲名稱');
     const [photoShakeSubtitle, setPhotoShakeSubtitle] = useState<string>('副標題');
     const [photoShakeFontFamily, setPhotoShakeFontFamily] = useState<FontType>(FontType.POPPINS);
-    const [photoShakeOverlayOpacity, setPhotoShakeOverlayOpacity] = useState<number>(0.4);
-    const [photoShakeFontSize, setPhotoShakeFontSize] = useState<number>(0.06);
+    const [photoShakeOverlayOpacity, setPhotoShakeOverlayOpacity] = useState<number>(0);
+    const [photoShakeFontSize, setPhotoShakeFontSize] = useState<number>(60);
     const [photoShakeDecaySpeed, setPhotoShakeDecaySpeed] = useState<number>(0.95);
+    
+  // Bass Enhancement State (重低音強化)
+  const [bassEnhancementBlurIntensity, setBassEnhancementBlurIntensity] = useState<number>(0.5);
+  const [bassEnhancementCurveIntensity, setBassEnhancementCurveIntensity] = useState<number>(1.0);
+  const [bassEnhancementText, setBassEnhancementText] = useState<string>('口袋裡的貓');
+  const [bassEnhancementTextColor, setBassEnhancementTextColor] = useState<string>('#FFFFFF');
+  const [bassEnhancementTextFont, setBassEnhancementTextFont] = useState<FontType>(FontType.POPPINS);
+  const [bassEnhancementTextSize, setBassEnhancementTextSize] = useState<number>(4.0);
+  // Frame Pixelation State (方框像素化)
+  const [bassEnhancementCenterOpacity, setBassEnhancementCenterOpacity] = useState<number>(0.3);
     
     // Lyrics Display State (測試中)
     const [showLyricsDisplay, setShowLyricsDisplay] = useState<boolean>(false);
@@ -1534,6 +1544,15 @@ function App() {
                                     photoShakeOverlayOpacity={photoShakeOverlayOpacity}
                                     photoShakeFontSize={photoShakeFontSize}
                                     photoShakeDecaySpeed={photoShakeDecaySpeed}
+                                    // Bass Enhancement props (重低音強化)
+                                    bassEnhancementBlurIntensity={bassEnhancementBlurIntensity}
+                                    bassEnhancementCurveIntensity={bassEnhancementCurveIntensity}
+                                    bassEnhancementText={bassEnhancementText}
+                                    bassEnhancementTextColor={bassEnhancementTextColor}
+                                    bassEnhancementTextFont={bassEnhancementTextFont}
+                                    bassEnhancementTextSize={bassEnhancementTextSize}
+                                    // Frame Pixelation props (方框像素化)
+                                    bassEnhancementCenterOpacity={bassEnhancementCenterOpacity}
                                 />
                             </div>
                         </div>
@@ -1582,6 +1601,19 @@ function App() {
                             onPhotoShakeFontSizeChange={setPhotoShakeFontSize}
                             photoShakeDecaySpeed={photoShakeDecaySpeed}
                             onPhotoShakeDecaySpeedChange={setPhotoShakeDecaySpeed}
+                            // Bass Enhancement controls (重低音強化)
+                            bassEnhancementBlurIntensity={bassEnhancementBlurIntensity}
+                            onBassEnhancementBlurIntensityChange={setBassEnhancementBlurIntensity}
+                            bassEnhancementCurveIntensity={bassEnhancementCurveIntensity}
+                            onBassEnhancementCurveIntensityChange={setBassEnhancementCurveIntensity}
+                            bassEnhancementText={bassEnhancementText}
+                            onBassEnhancementTextChange={setBassEnhancementText}
+                            bassEnhancementTextColor={bassEnhancementTextColor}
+                            onBassEnhancementTextColorChange={setBassEnhancementTextColor}
+                            bassEnhancementTextFont={bassEnhancementTextFont}
+                            onBassEnhancementTextFontChange={setBassEnhancementTextFont}
+                            bassEnhancementTextSize={bassEnhancementTextSize}
+                            onBassEnhancementTextSizeChange={setBassEnhancementTextSize}
                             isLoading={isLoading}
                             visualizationType={visualizationType}
                             onVisualizationChange={handleSetVisualization}
