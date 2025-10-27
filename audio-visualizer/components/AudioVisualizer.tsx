@@ -2691,48 +2691,74 @@ const drawPhotoShake = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | n
     ctx.lineTo(startX + visualizerWidth, baselineY);
     ctx.stroke();
     
-    // 繪製向下音訊柱狀圖
+    // 繪製向下音訊柱狀圖 - 每根柱子獨立頻段（動態對稱）
     const dataSliceLength = dataArray ? Math.min(dataArray.length * 0.8, numBars) : numBars;
-    for (let i = 0; i < numBars; i++) {
-        const dataIndex = Math.floor((i / numBars) * dataSliceLength);
-        const currentAmplitude = dataArray ? (dataArray[dataIndex] || 0) : 0;
+    const halfBars = Math.floor(numBars / 2); // 左半部分
+    
+    const leftHeights: number[] = [];
+    
+    // 使用重低音強化的音頻抓取方式（完全一樣的邏輯）
+    const getSample = (t: number, bandStart: number, bandEnd: number) => {
+        if (!dataArray) return 0;
+        const len = dataArray.length;
+        const s = Math.max(0, Math.min(len - 1, Math.floor(bandStart * len)));
+        const e = Math.max(s + 1, Math.min(len, Math.floor(bandEnd * len)));
+        const idx = s + Math.floor(t * (e - s - 1));
+        return dataArray[idx] / 255;
+    };
+    
+    // 為左半的每一根柱子計算獨立響應（完全照搬重低音強化）
+    for (let i = 0; i < halfBars; i++) {
+        const t = i / (halfBars - 1); // 0 到 1
         
-        // 更新震幅（10倍快速恢復）
-        const targetAmplitude = (currentAmplitude / 255) * maxBarHeight * sensitivity * 1.4; // 加大震幅40%
+        // 完全按照重低音強化的方式：取低頻到中低頻
+        const v = getSample(t, 0.05, 0.35);
+        const amp = Math.max(0, v - 0.2); // 提高靈敏度
+        const h = Math.pow(amp, 1.2) * maxBarHeight * sensitivity * 2.4;
         
-        // 如果當前音訊有信號，使用目標震幅；否則應用10倍快速衰減
-        if (currentAmplitude > 0) {
-            window.photoShakeAmplitudes[i] = targetAmplitude;
-        } else {
-            // 10倍快速恢復：原本0.95變成0.5，原本0.8變成0.05
-            const fastDecaySpeed = Math.max(0.05, decaySpeed - 0.45); // 將0.95變成0.5，0.8變成0.35
-            window.photoShakeAmplitudes[i] = window.photoShakeAmplitudes[i] * fastDecaySpeed;
-        }
-        
-        const barHeight = window.photoShakeAmplitudes[i];
-        
+        leftHeights.push(h);
+    }
+    
+    // 繪製左半
+    for (let i = 0; i < halfBars; i++) {
         const x = startX + i * (barWidth + barSpacing);
-        const y = baselineY + barHeight; // 向下延伸（+y方向，因為基準線在上方）
+        const barHeight = leftHeights[i];
         
-        // 創建漸變色 - 預設白色，可選用顏色主題
-        const gradient = ctx.createLinearGradient(x, baselineY, x, y);
-        // 預設使用白色漸變
-        gradient.addColorStop(0, '#FFFFFF'); // 純白
-        gradient.addColorStop(0.5, '#F0F0F0'); // 淺灰白
-        gradient.addColorStop(1, '#E0E0E0'); // 更淺灰白
+        if (barHeight > 0) {
+            const gradient = ctx.createLinearGradient(x, baselineY, x, baselineY + barHeight);
+            gradient.addColorStop(0, '#FFFFFF');
+            gradient.addColorStop(0.5, '#F0F0F0');
+            gradient.addColorStop(1, '#E0E0E0');
+            
+            ctx.fillStyle = gradient;
+            ctx.shadowColor = '#FFFFFF';
+            ctx.shadowBlur = 8;
+            ctx.fillRect(x, baselineY, barWidth, barHeight);
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+        }
+    }
+    
+    // 鏡像繪製右半：完全對稱（包括最右邊）
+    for (let i = 0; i <= halfBars; i++) {
+        const mirrorIndex = halfBars - 1 - i; // 鏡像索引
+        const barHeight = leftHeights[Math.max(0, mirrorIndex)]; // 確保索引有效
+        const x = startX + (halfBars + i) * (barWidth + barSpacing);
         
-        // 繪製柱狀圖
-        ctx.fillStyle = gradient;
-        ctx.fillRect(x, baselineY, barWidth, barHeight);
-        
-        // 添加發光效果 - 預設白色發光
-        ctx.shadowColor = '#FFFFFF'; // 白色發光
-        ctx.shadowBlur = 8;
-        ctx.fillRect(x, baselineY, barWidth, barHeight);
-        
-        // 重置陰影
-        ctx.shadowBlur = 0;
-        ctx.shadowColor = 'transparent';
+        // 確保不超出可視化範圍
+        if (x + barWidth <= startX + visualizerWidth && barHeight > 0) {
+            const gradient = ctx.createLinearGradient(x, baselineY, x, baselineY + barHeight);
+            gradient.addColorStop(0, '#FFFFFF');
+            gradient.addColorStop(0.5, '#F0F0F0');
+            gradient.addColorStop(1, '#E0E0E0');
+            
+            ctx.fillStyle = gradient;
+            ctx.shadowColor = '#FFFFFF';
+            ctx.shadowBlur = 8;
+            ctx.fillRect(x, baselineY, barWidth, barHeight);
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+        }
     }
     
     // 重置陰影
