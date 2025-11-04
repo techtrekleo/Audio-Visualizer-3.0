@@ -2769,13 +2769,40 @@ const drawPhotoShake = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | n
         const barHeight = leftHeights[i];
         
         if (barHeight > 0) {
+            // 使用顏色主題
+            let barColor: string;
+            let shadowColor: string;
+            
+            if (colors.name === ColorPaletteType.RAINBOW) {
+                // 彩虹主題：根據位置動態計算顏色
+                const [startHue, endHue] = colors.hueRange;
+                const hueRangeSpan = endHue - startHue;
+                const hue = startHue + (i / halfBars) * hueRangeSpan;
+                barColor = `hsl(${hue}, 70%, 60%)`;
+                shadowColor = `hsl(${hue}, 80%, 70%)`;
+            } else {
+                // 使用主題顏色
+                barColor = colors.primary || '#FFFFFF';
+                shadowColor = colors.accent || colors.primary || '#FFFFFF';
+            }
+            
             const gradient = ctx.createLinearGradient(x, baselineY, x, baselineY + barHeight);
-            gradient.addColorStop(0, '#FFFFFF');
-            gradient.addColorStop(0.5, '#F0F0F0');
-            gradient.addColorStop(1, '#E0E0E0');
+            if (colors.name === ColorPaletteType.RAINBOW) {
+                const [startHue, endHue] = colors.hueRange;
+                const hueRangeSpan = endHue - startHue;
+                const hue1 = startHue + (i / halfBars) * hueRangeSpan;
+                const hue2 = startHue + ((i + 0.5) / halfBars) * hueRangeSpan;
+                gradient.addColorStop(0, `hsl(${hue1}, 80%, 70%)`);
+                gradient.addColorStop(0.5, `hsl(${hue1}, 70%, 60%)`);
+                gradient.addColorStop(1, `hsl(${hue1}, 60%, 50%)`);
+            } else {
+                gradient.addColorStop(0, shadowColor);
+                gradient.addColorStop(0.5, barColor);
+                gradient.addColorStop(1, barColor);
+            }
             
             ctx.fillStyle = gradient;
-            ctx.shadowColor = '#FFFFFF';
+            ctx.shadowColor = shadowColor;
             ctx.shadowBlur = 8;
             ctx.fillRect(x, baselineY, barWidth, barHeight);
             ctx.shadowBlur = 0;
@@ -2791,13 +2818,41 @@ const drawPhotoShake = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | n
         
         // 確保不超出可視化範圍
         if (x + barWidth <= startX + visualizerWidth && barHeight > 0) {
+            // 使用顏色主題（與左半對稱）
+            const barIndex = halfBars + i; // 完整的索引
+            
+            let barColor: string;
+            let shadowColor: string;
+            
+            if (colors.name === ColorPaletteType.RAINBOW) {
+                // 彩虹主題：根據位置動態計算顏色
+                const [startHue, endHue] = colors.hueRange;
+                const hueRangeSpan = endHue - startHue;
+                const hue = startHue + (barIndex / numBars) * hueRangeSpan;
+                barColor = `hsl(${hue}, 70%, 60%)`;
+                shadowColor = `hsl(${hue}, 80%, 70%)`;
+            } else {
+                // 使用主題顏色
+                barColor = colors.primary || '#FFFFFF';
+                shadowColor = colors.accent || colors.primary || '#FFFFFF';
+            }
+            
             const gradient = ctx.createLinearGradient(x, baselineY, x, baselineY + barHeight);
-            gradient.addColorStop(0, '#FFFFFF');
-            gradient.addColorStop(0.5, '#F0F0F0');
-            gradient.addColorStop(1, '#E0E0E0');
+            if (colors.name === ColorPaletteType.RAINBOW) {
+                const [startHue, endHue] = colors.hueRange;
+                const hueRangeSpan = endHue - startHue;
+                const hue = startHue + (barIndex / numBars) * hueRangeSpan;
+                gradient.addColorStop(0, `hsl(${hue}, 80%, 70%)`);
+                gradient.addColorStop(0.5, `hsl(${hue}, 70%, 60%)`);
+                gradient.addColorStop(1, `hsl(${hue}, 60%, 50%)`);
+            } else {
+                gradient.addColorStop(0, shadowColor);
+                gradient.addColorStop(0.5, barColor);
+                gradient.addColorStop(1, barColor);
+            }
             
             ctx.fillStyle = gradient;
-            ctx.shadowColor = '#FFFFFF';
+            ctx.shadowColor = shadowColor;
             ctx.shadowBlur = 8;
             ctx.fillRect(x, baselineY, barWidth, barHeight);
             ctx.shadowBlur = 0;
