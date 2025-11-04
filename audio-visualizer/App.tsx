@@ -129,13 +129,22 @@ function App() {
     // Circular Wave State (圓形波形)
     const [circularWaveImage, setCircularWaveImage] = useState<string | null>(null);
     
+    // Blurred Edge State (邊緣虛化)
+    const [blurredEdgeSinger, setBlurredEdgeSinger] = useState<string>('');
+    const [blurredEdgeSongTitle, setBlurredEdgeSongTitle] = useState<string>('');
+    const [blurredEdgeFontFamily, setBlurredEdgeFontFamily] = useState<FontType>(FontType.POPPINS);
+    const [blurredEdgeTextColor, setBlurredEdgeTextColor] = useState<string>('#FFFFFF');
+    const [blurredEdgeBgOpacity, setBlurredEdgeBgOpacity] = useState<number>(0.5);
+    const [blurredEdgeFontSize, setBlurredEdgeFontSize] = useState<number>(40);
+    
   // Bass Enhancement State (重低音強化)
   const [bassEnhancementBlurIntensity, setBassEnhancementBlurIntensity] = useState<number>(0.5);
   const [bassEnhancementCurveIntensity, setBassEnhancementCurveIntensity] = useState<number>(1.0);
-  const [bassEnhancementText, setBassEnhancementText] = useState<string>('口袋裡的貓');
+  const [bassEnhancementText, setBassEnhancementText] = useState<string>('');
   const [bassEnhancementTextColor, setBassEnhancementTextColor] = useState<string>('#FFFFFF');
   const [bassEnhancementTextFont, setBassEnhancementTextFont] = useState<FontType>(FontType.POPPINS);
   const [bassEnhancementTextSize, setBassEnhancementTextSize] = useState<number>(4.0);
+  const [bassEnhancementTextBgOpacity, setBassEnhancementTextBgOpacity] = useState<number>(0.5);
   // Frame Pixelation State (方框像素化)
   const [bassEnhancementCenterOpacity, setBassEnhancementCenterOpacity] = useState<number>(0.3);
     
@@ -1554,10 +1563,18 @@ function App() {
                                     bassEnhancementTextColor={bassEnhancementTextColor}
                                     bassEnhancementTextFont={bassEnhancementTextFont}
                                     bassEnhancementTextSize={bassEnhancementTextSize}
+                                    bassEnhancementTextBgOpacity={bassEnhancementTextBgOpacity}
                                     // Frame Pixelation props (方框像素化)
                                     bassEnhancementCenterOpacity={bassEnhancementCenterOpacity}
                                     // Circular Wave props (圓形波形)
                                     circularWaveImage={circularWaveImage}
+                                    // Blurred Edge props (邊緣虛化)
+                                    blurredEdgeSinger={blurredEdgeSinger}
+                                    blurredEdgeSongTitle={blurredEdgeSongTitle}
+                                    blurredEdgeFontFamily={blurredEdgeFontFamily}
+                                    blurredEdgeTextColor={blurredEdgeTextColor}
+                                    blurredEdgeBgOpacity={blurredEdgeBgOpacity}
+                                    blurredEdgeFontSize={blurredEdgeFontSize}
                                 />
                             </div>
                         </div>
@@ -1619,6 +1636,19 @@ function App() {
                                 }
                             }}
                             onClearCircularWaveImage={() => setCircularWaveImage(null)}
+                            // Blurred Edge controls (邊緣虛化)
+                            blurredEdgeSinger={blurredEdgeSinger}
+                            onBlurredEdgeSingerChange={setBlurredEdgeSinger}
+                            blurredEdgeSongTitle={blurredEdgeSongTitle}
+                            onBlurredEdgeSongTitleChange={setBlurredEdgeSongTitle}
+                            blurredEdgeFontFamily={blurredEdgeFontFamily}
+                            onBlurredEdgeFontFamilyChange={setBlurredEdgeFontFamily}
+                            blurredEdgeTextColor={blurredEdgeTextColor}
+                            onBlurredEdgeTextColorChange={setBlurredEdgeTextColor}
+                            blurredEdgeBgOpacity={blurredEdgeBgOpacity}
+                            onBlurredEdgeBgOpacityChange={setBlurredEdgeBgOpacity}
+                            blurredEdgeFontSize={blurredEdgeFontSize}
+                            onBlurredEdgeFontSizeChange={setBlurredEdgeFontSize}
                             // Bass Enhancement controls (重低音強化)
                             bassEnhancementBlurIntensity={bassEnhancementBlurIntensity}
                             onBassEnhancementBlurIntensityChange={setBassEnhancementBlurIntensity}
@@ -1632,6 +1662,8 @@ function App() {
                             onBassEnhancementTextFontChange={setBassEnhancementTextFont}
                             bassEnhancementTextSize={bassEnhancementTextSize}
                             onBassEnhancementTextSizeChange={setBassEnhancementTextSize}
+                            bassEnhancementTextBgOpacity={bassEnhancementTextBgOpacity}
+                            onBassEnhancementTextBgOpacityChange={setBassEnhancementTextBgOpacity}
                             isLoading={isLoading}
                             visualizationType={visualizationType}
                             onVisualizationChange={handleSetVisualization}

@@ -163,10 +163,18 @@ interface AudioVisualizerProps {
     bassEnhancementTextColor?: string;
     bassEnhancementTextFont?: string;
     bassEnhancementTextSize?: number;
+    bassEnhancementTextBgOpacity?: number;
     // Frame Pixelation props (方框像素化)
     bassEnhancementCenterOpacity?: number;
     // Circular Wave props (圓形波形)
     circularWaveImage?: string | null;
+    // Blurred Edge props (邊緣虛化)
+    blurredEdgeSinger?: string;
+    blurredEdgeSongTitle?: string;
+    blurredEdgeFontFamily?: FontType;
+    blurredEdgeTextColor?: string;
+    blurredEdgeBgOpacity?: number;
+    blurredEdgeFontSize?: number;
 }
 
 // 讓繪圖函式能取得當前屬性（不改動所有函式簽名）
@@ -791,28 +799,54 @@ const drawDynamicControlCard = (ctx: CanvasRenderingContext2D, dataArray: Uint8A
     // 移除節拍光環效果 - 已移除會跑出來的球
     
     // 4. 文字顯示 - 在可視化下方，不隨重低音晃動
-    const textContent = props?.bassEnhancementText || '口袋裡的貓';
+    const textContent = props?.bassEnhancementText;
     const textColor = props?.bassEnhancementTextColor || '#FFFFFF';
     const textFontFamily = FONT_MAP[props?.bassEnhancementTextFont || FontType.POPPINS];
     const textSize = Math.min(width, height) * ((props?.bassEnhancementTextSize || 4.0) / 100); // 使用props中的字體大小
+    const textBgOpacity = typeof props?.bassEnhancementTextBgOpacity === 'number' ? props.bassEnhancementTextBgOpacity : 0.5;
     
     // 文字位置 - 在可視化下方，固定位置不晃動
     const textY = centerY + height * 0.15; // 調整文字位置，使其更靠近可視化
     
-    // 繪製文字
-    ctx.fillStyle = textColor;
-    ctx.font = `bold ${textSize}px ${textFontFamily}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    // 文字發光效果
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = textColor;
-    ctx.fillText(textContent, centerX, textY);
-    
-    // 重置陰影
-    ctx.shadowBlur = 0;
-    ctx.shadowColor = 'transparent';
+    // 只有當文字內容存在時才繪製
+    if (textContent && textContent.trim()) {
+        // 測量文字寬度和高度
+        ctx.font = `bold ${textSize}px ${textFontFamily}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const textMetrics = ctx.measureText(textContent);
+        const textWidth = textMetrics.width;
+        const textHeight = textSize * 1.2; // 估算高度
+        
+        // 繪製文字背景（如果設置了透明度）
+        if (textBgOpacity > 0) {
+            const bgPaddingX = textSize * 0.3;
+            const bgPaddingY = textSize * 0.2;
+            const bgWidth = textWidth + bgPaddingX * 2;
+            const bgHeight = textHeight + bgPaddingY * 2;
+            const bgX = centerX - bgWidth / 2;
+            const bgY = textY - textHeight / 2 - bgPaddingY;
+            
+            ctx.fillStyle = `rgba(0, 0, 0, ${textBgOpacity})`;
+            createRoundedRectPath(ctx, bgX, bgY, bgWidth, bgHeight, textSize * 0.1);
+            ctx.fill();
+        }
+        
+        // 繪製文字
+        ctx.fillStyle = textColor;
+        ctx.font = `bold ${textSize}px ${textFontFamily}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // 文字發光效果
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = textColor;
+        ctx.fillText(textContent, centerX, textY);
+        
+        // 重置陰影
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'transparent';
+    }
     
     ctx.restore();
 };
@@ -3008,6 +3042,163 @@ const drawCircularWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
     // 重置陰影
     ctx.shadowBlur = 0;
     ctx.shadowColor = 'transparent';
+    
+    ctx.restore();
+};
+
+const drawBlurredEdge = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, props?: any) => {
+    ctx.save();
+    
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    // 1. 上半部分：文字區域（可選）
+    const textAreaHeight = height * 0.35;
+    const textAreaY = 0;
+    
+    const singer = props?.blurredEdgeSinger || '';
+    const songTitle = props?.blurredEdgeSongTitle || '';
+    const bgOpacity = typeof props?.blurredEdgeBgOpacity === 'number' ? props.blurredEdgeBgOpacity : 0.5;
+    const textColor = props?.blurredEdgeTextColor || '#FFFFFF';
+    const fontFamily = props?.blurredEdgeFontFamily || FontType.POPPINS;
+    const fontSize = typeof props?.blurredEdgeFontSize === 'number' ? props.blurredEdgeFontSize : 40;
+    
+    // 繪製文字背景（如果設置了透明度）
+    if (bgOpacity > 0 && (singer || songTitle)) {
+        ctx.fillStyle = `rgba(0, 0, 0, ${bgOpacity})`;
+        ctx.fillRect(0, textAreaY, width, textAreaHeight);
+    }
+    
+    // 繪製文字
+    if (singer || songTitle) {
+        ctx.fillStyle = textColor;
+        ctx.strokeStyle = 'rgba(0, 0, 0, 1)'; // 黑色描邊
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = fontSize * 0.1; // 描邊寬度
+        
+        // 歌手名稱（使用統一的字體大小）
+        if (singer) {
+            ctx.font = `bold ${fontSize}px "${FONT_MAP[fontFamily]}", "Noto Sans TC", sans-serif`;
+            // 先繪製描邊
+            ctx.strokeText(singer, centerX, textAreaHeight * 0.35);
+            // 再繪製填充
+            ctx.fillText(singer, centerX, textAreaHeight * 0.35);
+        }
+        
+        // 歌曲名稱（使用統一的字體大小）
+        if (songTitle) {
+            ctx.font = `bold ${fontSize}px "${FONT_MAP[fontFamily]}", "Noto Sans TC", sans-serif`;
+            // 先繪製描邊
+            ctx.strokeText(songTitle, centerX, textAreaHeight * 0.65);
+            // 再繪製填充
+            ctx.fillText(songTitle, centerX, textAreaHeight * 0.65);
+        }
+    }
+    
+    // 2. 中間：水平金屬條（變細）
+    const metalBarY = textAreaHeight + height * 0.05; // 從文字區域下方增加一些間距
+    const metalBarHeight = height * 0.01; // 從 0.02 改為 0.01，更細
+    
+    // 金屬條漸變
+    const metalGradient = ctx.createLinearGradient(0, metalBarY, 0, metalBarY + metalBarHeight);
+    metalGradient.addColorStop(0, 'rgba(220, 200, 180, 0.9)');
+    metalGradient.addColorStop(0.5, 'rgba(240, 220, 200, 1.0)');
+    metalGradient.addColorStop(1, 'rgba(200, 180, 160, 0.9)');
+    
+    ctx.fillStyle = metalGradient;
+    ctx.fillRect(0, metalBarY, width, metalBarHeight);
+    
+    // 金屬條高光
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.fillRect(0, metalBarY, width, metalBarHeight * 0.3);
+    
+    // 3. 金屬條下方：單一光柱（兩端虛化，用透明度表現音頻強度，可以超過金屬條一點點）
+    // 金屬條底部位置
+    const metalBarBottom = metalBarY + metalBarHeight;
+    
+    // 光柱起始位置（從金屬條稍微向上延伸一點點）
+    const barsStartY = metalBarBottom - height * 0.02; // 從金屬條向上延伸一點點
+    
+    // 光柱區域高度（向下延伸）
+    const barAreaHeight = height - barsStartY;
+    const fixedBarHeight = barAreaHeight * 0.7; // 固定光柱高度為70%
+    
+    if (dataArray) {
+        const numBars = 40;
+        const barWidth = width / numBars;
+        const barSpacing = barWidth * 0.1;
+        const actualBarWidth = barWidth - barSpacing;
+        
+        // 音頻取樣函數
+        const getSample = (index: number) => {
+            const t = index / numBars;
+            const len = dataArray.length;
+            const idx = Math.floor(t * len * 0.8);
+            return (dataArray[idx] || 0) / 255;
+        };
+        
+        // 主色調（根據顏色主題）
+        let primaryColor: string;
+        let accentColor: string;
+        
+        if (colors.name === ColorPaletteType.RAINBOW) {
+            // 彩虹主題使用黃色系
+            primaryColor = `hsl(50, 100%, 60%)`;
+            accentColor = `hsl(55, 100%, 80%)`;
+        } else {
+            // 其他主題使用主要顏色
+            primaryColor = colors.accent || colors.primary || '#FFD700';
+            accentColor = colors.accent || colors.primary || '#FFEB3B';
+        }
+        
+        // 繪製單一光柱（兩端虛化，用透明度表現音頻強度）
+        for (let i = 0; i < numBars; i++) {
+            const x = i * barWidth + barSpacing / 2;
+            const amplitude = getSample(i);
+            
+            // 根據音頻強度計算透明度（20% 到 100%）
+            const minOpacity = 0.2; // 最小透明度20%
+            const maxOpacity = 1.0; // 最大透明度100%
+            // 調整公式：降低幂次，增加敏感度，更容易達到100%
+            const opacity = Math.min(maxOpacity, minOpacity + (maxOpacity - minOpacity) * Math.pow(amplitude, 0.8) * sensitivity * 1.5);
+            
+            const startY = barsStartY; // 從起始位置開始
+            const endY = startY + fixedBarHeight; // 向下延伸
+            
+            // 創建垂直漸變（兩端虛化，整體透明度根據音頻強度變化）
+            const barGradient = ctx.createLinearGradient(x, startY, x, endY);
+            
+            // 頂部（上方邊緣）：逐漸變透明（虛化），整體透明度受音頻影響
+            barGradient.addColorStop(0, applyAlphaToColor(accentColor, 0));
+            barGradient.addColorStop(0.1, applyAlphaToColor(accentColor, 0.3 * opacity));
+            barGradient.addColorStop(0.2, applyAlphaToColor(primaryColor, 0.6 * opacity));
+            
+            // 中間：主色調，整體透明度受音頻影響
+            barGradient.addColorStop(0.4, applyAlphaToColor(primaryColor, opacity));
+            barGradient.addColorStop(0.5, applyAlphaToColor(primaryColor, opacity));
+            barGradient.addColorStop(0.6, applyAlphaToColor(primaryColor, opacity));
+            
+            // 底部（下方邊緣）：逐漸變透明（虛化），整體透明度受音頻影響
+            barGradient.addColorStop(0.8, applyAlphaToColor(primaryColor, 0.6 * opacity));
+            barGradient.addColorStop(0.9, applyAlphaToColor(primaryColor, 0.3 * opacity));
+            barGradient.addColorStop(1, applyAlphaToColor(primaryColor, 0));
+            
+            ctx.fillStyle = barGradient;
+            
+            // 添加發光效果（透明度也根據音頻強度變化）
+            ctx.shadowColor = applyAlphaToColor(accentColor, opacity);
+            ctx.shadowBlur = 15;
+            
+            // 繪製光柱（圓角矩形）
+            const radius = Math.min(actualBarWidth / 4, 4);
+            createRoundedRectPath(ctx, x, startY, actualBarWidth, fixedBarHeight, radius);
+            ctx.fill();
+            
+            // 重置陰影
+            ctx.shadowBlur = 0;
+        }
+    }
     
     ctx.restore();
 };
@@ -5841,6 +6032,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.FRAME_PIXELATION]: drawFramePixelation,
     [VisualizationType.PHOTO_SHAKE]: drawPhotoShake,
     [VisualizationType.CIRCULAR_WAVE]: drawCircularWave,
+    [VisualizationType.BLURRED_EDGE]: drawBlurredEdge,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
@@ -6128,6 +6320,9 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         } else if (visualizationType === VisualizationType.CIRCULAR_WAVE) {
             // 圓形波形需要傳遞 props
             drawCircularWave(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+        } else if (visualizationType === VisualizationType.BLURRED_EDGE) {
+            // 邊緣虛化需要傳遞 props
+            drawBlurredEdge(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
         } else {
             drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
         }

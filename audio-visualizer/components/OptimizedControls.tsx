@@ -350,6 +350,8 @@ interface OptimizedControlsProps {
     onBassEnhancementTextFontChange?: (font: FontType) => void;
     bassEnhancementTextSize?: number;
     onBassEnhancementTextSizeChange?: (size: number) => void;
+    bassEnhancementTextBgOpacity?: number;
+    onBassEnhancementTextBgOpacityChange?: (opacity: number) => void;
     // Frame Pixelation props (方框像素化)
     bassEnhancementCenterOpacity?: number;
     onBassEnhancementCenterOpacityChange?: (opacity: number) => void;
@@ -357,6 +359,19 @@ interface OptimizedControlsProps {
     circularWaveImage?: string | null;
     onCircularWaveImageUpload?: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onClearCircularWaveImage?: () => void;
+    // Blurred Edge props (邊緣虛化)
+    blurredEdgeSinger?: string;
+    onBlurredEdgeSingerChange?: (singer: string) => void;
+    blurredEdgeSongTitle?: string;
+    onBlurredEdgeSongTitleChange?: (title: string) => void;
+    blurredEdgeFontFamily?: FontType;
+    onBlurredEdgeFontFamilyChange?: (font: FontType) => void;
+    blurredEdgeTextColor?: string;
+    onBlurredEdgeTextColorChange?: (color: string) => void;
+    blurredEdgeBgOpacity?: number;
+    onBlurredEdgeBgOpacityChange?: (opacity: number) => void;
+    blurredEdgeFontSize?: number;
+    onBlurredEdgeFontSizeChange?: (size: number) => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
@@ -2506,10 +2521,10 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         </label>
                                         <input
                                             type="text"
-                                            value={props.bassEnhancementText || '口袋裡的貓'}
+                                            value={props.bassEnhancementText || ''}
                                             onChange={(e) => props.onBassEnhancementTextChange?.(e.target.value)}
                                             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                                            placeholder="輸入文字內容"
+                                            placeholder="輸入文字內容（留空則不顯示文字）"
                                         />
                                     </div>
 
@@ -2606,6 +2621,39 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             調整文字大小，範圍：1.0% - 10.0%
                                         </p>
                                     </div>
+
+                                    {/* 文字背景透明度 */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            文字背景透明度
+                                        </label>
+                                        <div className="flex items-center space-x-3">
+                                            <span className="text-sm text-gray-300 w-12 text-center">
+                                                {Math.round((props.bassEnhancementTextBgOpacity ?? 0.5) * 100)}%
+                                            </span>
+                                            <div className="relative flex-1">
+                                                <div
+                                                    className="w-full h-2 rounded-lg absolute top-0 left-0"
+                                                    style={{
+                                                        background: `linear-gradient(to right, rgba(59, 130, 246, 0.5) 0%, rgba(139, 92, 246, 0.5) 100%)`
+                                                    }}
+                                                />
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="1"
+                                                    step="0.01"
+                                                    value={props.bassEnhancementTextBgOpacity ?? 0.5}
+                                                    onChange={(e) => props.onBassEnhancementTextBgOpacityChange?.(parseFloat(e.target.value))}
+                                                    className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
+                                                    style={{ background: 'transparent' }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            調整文字背景的透明度，0% 為完全透明，100% 為完全不透明
+                                        </p>
+                                    </div>
                                 </div>
 
                             </div>
@@ -2688,6 +2736,180 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     </p>
                                     <p className="text-xs text-cyan-400">
                                         📐 支援所有圖片比例：方形圖片會完整顯示，長方形圖片會自動居中裁切，確保圓形區域完全覆蓋
+                                    </p>
+                                </div>
+                            </div>
+                        </CollapsibleControlSection>
+                    )}
+
+                    {/* 邊緣虛化專用控制面板 */}
+                    {props.visualizationType === VisualizationType.BLURRED_EDGE && (
+                        <CollapsibleControlSection
+                            title="邊緣虛化專用面板"
+                            icon="✨"
+                            priority="high"
+                            defaultExpanded={true}
+                            badge="動態控制卡"
+                        >
+                            <div className="space-y-6">
+                                {/* 歌手名稱 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        歌手名稱（可選）
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={props.blurredEdgeSinger || ''}
+                                        onChange={(e) => props.onBlurredEdgeSingerChange?.(e.target.value)}
+                                        placeholder="輸入歌手名稱..."
+                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                {/* 歌曲名稱 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        歌曲名稱（可選）
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={props.blurredEdgeSongTitle || ''}
+                                        onChange={(e) => props.onBlurredEdgeSongTitleChange?.(e.target.value)}
+                                        placeholder="輸入歌曲名稱..."
+                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                {/* 字體選擇 */}
+                                <SelectControl
+                                    label="字體"
+                                    value={props.blurredEdgeFontFamily || FontType.POPPINS}
+                                    onChange={(value) => props.onBlurredEdgeFontFamilyChange?.(value as FontType)}
+                                    options={[
+                                        // 中文字體
+                                        { value: FontType.NOTO_SANS_TC, label: '思源黑體' },
+                                        { value: FontType.NOTO_SERIF_TC, label: '思源宋體' },
+                                        { value: FontType.TAIPEI_SANS, label: '台北黑體' },
+                                        { value: FontType.SOURCE_HAN_SANS, label: '思源黑體 (TC)' },
+                                        { value: FontType.CW_TEX_KAI, label: 'cwTeXKai' },
+                                        { value: FontType.KLEE_ONE, label: 'Klee One' },
+                                        { value: FontType.M_PLUS_ROUNDED, label: '圓體' },
+                                        { value: FontType.HINA_MINCHO, label: '日式明朝' },
+                                        { value: FontType.QINGSONG_1, label: '清松手寫體1' },
+                                        { value: FontType.QINGSONG_2, label: '清松手寫體2' },
+                                        // 書法體
+                                        { value: FontType.MA_SHAN_ZHENG, label: '馬善政楷書' },
+                                        { value: FontType.ZHI_MANG_XING, label: '志忙星楷書' },
+                                        { value: FontType.LONG_CANG, label: '龍藏手書' },
+                                        { value: FontType.ZCOOL_KUAI_LE, label: '站酷快樂體' },
+                                        { value: FontType.ZCOOL_QING_KE, label: '站酷慶科體' },
+                                        { value: FontType.LIU_JIAN_MAO_CAO, label: '劉建毛草' },
+                                        { value: FontType.ZCOOL_XIAO_WEI, label: '站酷小薇' },
+                                        { value: FontType.BAKUDAI, label: '莫大毛筆' },
+                                        // 英文字體
+                                        { value: FontType.POPPINS, label: '現代 (Poppins)' },
+                                        { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
+                                        { value: FontType.PACIFICO, label: 'Pacifico' },
+                                        { value: FontType.LOBSTER, label: 'Lobster' },
+                                        { value: FontType.BUNGEE, label: 'Bungee' },
+                                        { value: FontType.ORBITRON, label: 'Orbitron' },
+                                        { value: FontType.PRESS_START_2P, label: 'Press Start 2P' },
+                                        { value: FontType.ROCKNROLL_ONE, label: '搖滾圓體 (RocknRoll One)' },
+                                        { value: FontType.REGGAE_ONE, label: 'Reggae One' },
+                                        { value: FontType.VT323, label: 'VT323' },
+                                        { value: FontType.ROBOTO_MONO, label: 'Roboto Mono' },
+                                        { value: FontType.OPEN_SANS, label: 'Open Sans' },
+                                        { value: FontType.LATO, label: 'Lato' },
+                                        { value: FontType.MONTSERRAT, label: 'Montserrat' },
+                                        { value: FontType.SOURCE_SANS_PRO, label: 'Source Sans Pro' },
+                                    ]}
+                                />
+
+                                {/* 文字顏色 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        文字顏色
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <input
+                                            type="color"
+                                            value={props.blurredEdgeTextColor || '#FFFFFF'}
+                                            onChange={(e) => props.onBlurredEdgeTextColorChange?.(e.target.value)}
+                                            className="w-12 h-8 rounded border border-gray-600 cursor-pointer"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={props.blurredEdgeTextColor || '#FFFFFF'}
+                                            onChange={(e) => props.onBlurredEdgeTextColorChange?.(e.target.value)}
+                                            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                            placeholder="#FFFFFF"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* 背景透明度 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        背景透明度
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <span className="text-sm text-gray-300 w-12 text-center">
+                                            {Math.round((props.blurredEdgeBgOpacity || 0.5) * 100)}%
+                                        </span>
+                                        <div className="relative flex-1">
+                                            <div
+                                                className="w-full h-2 rounded-lg absolute top-0 left-0"
+                                                style={{
+                                                    background: `linear-gradient(to right, rgba(59, 130, 246, 0.5) 0%, rgba(139, 92, 246, 0.5) 100%)`
+                                                }}
+                                            />
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="1"
+                                                step="0.01"
+                                                value={props.blurredEdgeBgOpacity ?? 0.5}
+                                                onChange={(e) => props.onBlurredEdgeBgOpacityChange?.(parseFloat(e.target.value))}
+                                                className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
+                                                style={{ background: 'transparent' }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        調整文字區域的背景透明度，0% 為完全透明，100% 為完全不透明
+                                    </p>
+                                </div>
+
+                                {/* 字體大小 */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        字體大小
+                                    </label>
+                                    <div className="flex items-center space-x-3">
+                                        <span className="text-sm text-gray-300 w-12 text-center">
+                                            {Math.round(props.blurredEdgeFontSize || 40)}px
+                                        </span>
+                                        <div className="relative flex-1">
+                                            <div
+                                                className="w-full h-2 rounded-lg absolute top-0 left-0"
+                                                style={{
+                                                    background: `linear-gradient(to right, rgba(59, 130, 246, 0.5) 0%, rgba(139, 92, 246, 0.5) 100%)`
+                                                }}
+                                            />
+                                            <input
+                                                type="range"
+                                                min="20"
+                                                max="150"
+                                                step="1"
+                                                value={props.blurredEdgeFontSize ?? 40}
+                                                onChange={(e) => props.onBlurredEdgeFontSizeChange?.(parseInt(e.target.value))}
+                                                className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
+                                                style={{ background: 'transparent' }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        調整歌手名稱和歌曲名稱的字體大小（20-150px），兩者使用相同大小
                                     </p>
                                 </div>
                             </div>

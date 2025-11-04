@@ -226,6 +226,14 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         difficulty: 'medium',
         performance: 'medium',
         tags: ['相片', '晃動', '軌跡', '音訊可視化', '控制卡']
+    },
+    {
+        type: VisualizationType.BLURRED_EDGE,
+        category: EffectCategory.DYNAMIC_CONTROL,
+        description: '邊緣虛化特效，金屬條分隔文字與音訊可視化，光柱具有邊緣虛化效果',
+        difficulty: 'medium',
+        performance: 'medium',
+        tags: ['邊緣虛化', '金屬條', '光柱', '文字', '動態控制卡']
     }
 ];
 
