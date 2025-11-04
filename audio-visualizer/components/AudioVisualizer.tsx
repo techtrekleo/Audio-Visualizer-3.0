@@ -175,6 +175,14 @@ interface AudioVisualizerProps {
     blurredEdgeTextColor?: string;
     blurredEdgeBgOpacity?: number;
     blurredEdgeFontSize?: number;
+    // Ke Ye Custom V2 props (可夜訂製版二號)
+    keYeCustomV2BoxOpacity?: number;
+    keYeCustomV2Text1?: string;
+    keYeCustomV2Text2?: string;
+    keYeCustomV2Text1Font?: FontType;
+    keYeCustomV2Text2Font?: FontType;
+    keYeCustomV2Text1Size?: number;
+    keYeCustomV2Text2Size?: number;
 }
 
 // 讓繪圖函式能取得當前屬性（不改動所有函式簽名）
@@ -3053,7 +3061,7 @@ const drawBlurredEdge = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | 
     const centerY = height / 2;
     
     // 1. 上半部分：文字區域（可選）
-    const textAreaHeight = height * 0.35;
+    const textAreaHeight = height * 0.175; // 改為50%：從0.35改為0.175
     const textAreaY = 0;
     
     const singer = props?.blurredEdgeSinger || '';
@@ -3097,8 +3105,8 @@ const drawBlurredEdge = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | 
     }
     
     // 2. 中間：水平金屬條（變細）
-    const metalBarY = textAreaHeight + height * 0.05; // 從文字區域下方增加一些間距
-    const metalBarHeight = height * 0.01; // 從 0.02 改為 0.01，更細
+    const metalBarY = textAreaHeight + height * 0.025; // 改為50%：從0.05改為0.025
+    const metalBarHeight = height * 0.005; // 改為50%：從0.01改為0.005
     
     // 金屬條漸變
     const metalGradient = ctx.createLinearGradient(0, metalBarY, 0, metalBarY + metalBarHeight);
@@ -3118,11 +3126,11 @@ const drawBlurredEdge = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | 
     const metalBarBottom = metalBarY + metalBarHeight;
     
     // 光柱起始位置（從金屬條稍微向上延伸一點點）
-    const barsStartY = metalBarBottom - height * 0.02; // 從金屬條向上延伸一點點
+    const barsStartY = metalBarBottom - height * 0.01; // 改為50%：從0.02改為0.01
     
     // 光柱區域高度（向下延伸）
     const barAreaHeight = height - barsStartY;
-    const fixedBarHeight = barAreaHeight * 0.7; // 固定光柱高度為70%
+    const fixedBarHeight = barAreaHeight * 0.35; // 改為50%：從0.7改為0.35
     
     if (dataArray) {
         const numBars = 40;
@@ -3197,6 +3205,210 @@ const drawBlurredEdge = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | 
             
             // 重置陰影
             ctx.shadowBlur = 0;
+        }
+    }
+    
+    ctx.restore();
+};
+
+const drawKeYeCustomV2 = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, props?: any) => {
+    ctx.save();
+    
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    // 獲取配置參數
+    const boxOpacity = typeof props?.keYeCustomV2BoxOpacity === 'number' ? props.keYeCustomV2BoxOpacity : 0.9;
+    const text1 = props?.keYeCustomV2Text1 || '';
+    const text2 = props?.keYeCustomV2Text2 || '';
+    const text1FontFamily = props?.keYeCustomV2Text1Font || FontType.POPPINS;
+    const text2FontFamily = props?.keYeCustomV2Text2Font || FontType.POPPINS;
+    const text1Size = typeof props?.keYeCustomV2Text1Size === 'number' ? props.keYeCustomV2Text1Size : 40;
+    const text2Size = typeof props?.keYeCustomV2Text2Size === 'number' ? props.keYeCustomV2Text2Size : 30;
+    
+    // 白色框的大小和位置
+    const boxWidth = width * 0.8;
+    const boxHeight = height * 0.2; // 高度減半
+    const boxX = centerX - boxWidth / 2;
+    const boxY = height - boxHeight - height * 0.05; // 靠近畫布底部，留5%邊距
+    const cornerRadius = boxHeight / 2; // 半圓：圓角半徑為高度的一半
+    
+    // 繪製白色圓角框（半圓形）
+    ctx.fillStyle = `rgba(255, 255, 255, ${boxOpacity})`;
+    ctx.beginPath();
+    ctx.moveTo(boxX + cornerRadius, boxY);
+    ctx.lineTo(boxX + boxWidth - cornerRadius, boxY);
+    ctx.arcTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + cornerRadius, cornerRadius);
+    ctx.lineTo(boxX + boxWidth, boxY + boxHeight - cornerRadius);
+    ctx.arcTo(boxX + boxWidth, boxY + boxHeight, boxX + boxWidth - cornerRadius, boxY + boxHeight, cornerRadius);
+    ctx.lineTo(boxX + cornerRadius, boxY + boxHeight);
+    ctx.arcTo(boxX, boxY + boxHeight, boxX, boxY + boxHeight - cornerRadius, cornerRadius);
+    ctx.lineTo(boxX, boxY + cornerRadius);
+    ctx.arcTo(boxX, boxY, boxX + cornerRadius, boxY, cornerRadius);
+    ctx.closePath();
+    ctx.fill();
+    
+    // 繪製外框線條
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // 繪製外框外的白線（距離外框2px）
+    ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
+    ctx.lineWidth = 2;
+    const outerMargin = 2; // 距離外框2px
+    ctx.beginPath();
+    ctx.moveTo(boxX - outerMargin + cornerRadius, boxY - outerMargin);
+    ctx.lineTo(boxX + boxWidth + outerMargin - cornerRadius, boxY - outerMargin);
+    ctx.arcTo(boxX + boxWidth + outerMargin, boxY - outerMargin, boxX + boxWidth + outerMargin, boxY - outerMargin + cornerRadius, cornerRadius);
+    ctx.lineTo(boxX + boxWidth + outerMargin, boxY + boxHeight + outerMargin - cornerRadius);
+    ctx.arcTo(boxX + boxWidth + outerMargin, boxY + boxHeight + outerMargin, boxX + boxWidth + outerMargin - cornerRadius, boxY + boxHeight + outerMargin, cornerRadius);
+    ctx.lineTo(boxX - outerMargin + cornerRadius, boxY + boxHeight + outerMargin);
+    ctx.arcTo(boxX - outerMargin, boxY + boxHeight + outerMargin, boxX - outerMargin, boxY + boxHeight + outerMargin - cornerRadius, cornerRadius);
+    ctx.lineTo(boxX - outerMargin, boxY - outerMargin + cornerRadius);
+    ctx.arcTo(boxX - outerMargin, boxY - outerMargin, boxX - outerMargin + cornerRadius, boxY - outerMargin, cornerRadius);
+    ctx.closePath();
+    ctx.stroke();
+    
+    // 文字區域（上方）
+    const textAreaPadding = 30;
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // 第一組文字（上方區域）
+    if (text1) {
+        const text1Y = boxY + boxHeight * 0.2; // 框頂部20%位置
+        ctx.font = `bold ${text1Size}px "${FONT_MAP[text1FontFamily]}", "Noto Sans TC", sans-serif`;
+        ctx.fillText(text1, centerX, text1Y);
+    }
+    
+    // 第二組文字（上方區域）
+    if (text2) {
+        const text2Y = boxY + boxHeight * 0.6; // 框頂部60%位置
+        ctx.font = `bold ${text2Size}px "${FONT_MAP[text2FontFamily]}", "Noto Sans TC", sans-serif`;
+        ctx.fillText(text2, centerX, text2Y);
+    }
+    
+    // 柱狀可視化區域（最底部）
+    const visualizerAreaHeight = boxHeight * 0.25; // 增加高度：佔框高度的25%
+    let visualizerAreaY = boxY + boxHeight - visualizerAreaHeight - boxHeight * 0.03; // 底部留3%邊距
+    
+    // 確保可視化區域在畫布內
+    visualizerAreaY = Math.max(0, Math.min(visualizerAreaY, height - visualizerAreaHeight));
+    
+    const visualizerAreaPadding = 65; // 增加左右邊距，避免超出（從60改為65）
+    const visualizerAreaX = boxX + visualizerAreaPadding;
+    const visualizerAreaWidth = boxWidth - visualizerAreaPadding * 2; // 減少寬度，避免超出
+    
+    if (dataArray) {
+        const numBars = 40;
+        const barWidth = visualizerAreaWidth / numBars;
+        const barSpacing = barWidth * 0.1;
+        const actualBarWidth = barWidth - barSpacing;
+        const maxBarHeight = visualizerAreaHeight * 0.8;
+        
+        // 音頻取樣函數
+        const getSample = (index: number) => {
+            const t = index / numBars;
+            const len = dataArray.length;
+            const idx = Math.floor(t * len * 0.8);
+            return (dataArray[idx] || 0) / 255;
+        };
+        
+        // 主色調（根據顏色主題）
+        let barColor: string;
+        
+        if (colors.name === ColorPaletteType.RAINBOW) {
+            // 彩虹主題使用動態顏色
+            const [startHue, endHue] = colors.hueRange;
+            const hueRangeSpan = endHue - startHue;
+            barColor = `hsl(${startHue + (frame * 0.5) % hueRangeSpan}, 70%, 50%)`;
+        } else {
+            barColor = colors.accent || colors.primary || '#000000';
+        }
+        
+        // 繪製柱狀圖
+        for (let i = 0; i < numBars; i++) {
+            const x = visualizerAreaX + i * barWidth + barSpacing / 2;
+            const amplitude = getSample(i);
+            
+            // 計算柱狀高度
+            const barHeight = Math.pow(amplitude, 1.5) * maxBarHeight * sensitivity * 2.0;
+            
+            // 最小高度（無音頻時顯示小點）
+            const minBarHeight = 3; // 小點的高度
+            const finalBarHeight = Math.max(minBarHeight, barHeight);
+            
+            const barY = visualizerAreaY + visualizerAreaHeight - finalBarHeight;
+            
+            // 確保柱狀圖不會超出可視化區域
+            if (x + actualBarWidth > visualizerAreaX + visualizerAreaWidth) {
+                continue; // 跳過超出右邊界的柱狀圖
+            }
+            if (x < visualizerAreaX) {
+                continue; // 跳過超出左邊界的柱狀圖
+            }
+            
+            // 設置顏色
+            if (colors.name === ColorPaletteType.RAINBOW) {
+                const [startHue, endHue] = colors.hueRange;
+                const hueRangeSpan = endHue - startHue;
+                const hue = startHue + (i / numBars) * hueRangeSpan;
+                barColor = `hsl(${hue}, 70%, 50%)`;
+            }
+            
+            ctx.fillStyle = barColor;
+            
+            // 繪製柱狀（圓角矩形）
+            const radius = Math.min(actualBarWidth / 4, 2);
+            createRoundedRectPath(ctx, x, barY, actualBarWidth, finalBarHeight, radius);
+            ctx.fill();
+        }
+    } else {
+        // 無音頻時顯示小點
+        const numBars = 40;
+        const barWidth = visualizerAreaWidth / numBars;
+        const barSpacing = barWidth * 0.1;
+        const actualBarWidth = barWidth - barSpacing;
+        const dotSize = 3;
+        
+        // 使用顏色主題
+        let dotColor: string;
+        if (colors.name === ColorPaletteType.RAINBOW) {
+            const [startHue, endHue] = colors.hueRange;
+            const hueRangeSpan = endHue - startHue;
+            dotColor = `hsl(${startHue + (frame * 0.5) % hueRangeSpan}, 70%, 50%)`;
+        } else {
+            dotColor = colors.accent || colors.primary || '#000000';
+        }
+        
+        ctx.fillStyle = dotColor;
+        
+        for (let i = 0; i < numBars; i++) {
+            const x = visualizerAreaX + i * barWidth + barSpacing / 2 + actualBarWidth / 2;
+            const y = visualizerAreaY + visualizerAreaHeight - dotSize / 2;
+            
+            // 確保小點不會超出可視化區域
+            if (x + dotSize / 2 > visualizerAreaX + visualizerAreaWidth) {
+                continue; // 跳過超出右邊界的小點
+            }
+            if (x - dotSize / 2 < visualizerAreaX) {
+                continue; // 跳過超出左邊界的小點
+            }
+            
+            // 如果使用彩虹主題，每個點使用不同顏色
+            if (colors.name === ColorPaletteType.RAINBOW) {
+                const [startHue, endHue] = colors.hueRange;
+                const hueRangeSpan = endHue - startHue;
+                const hue = startHue + (i / numBars) * hueRangeSpan;
+                dotColor = `hsl(${hue}, 70%, 50%)`;
+                ctx.fillStyle = dotColor;
+            }
+            
+            ctx.beginPath();
+            ctx.arc(x, y, dotSize / 2, 0, Math.PI * 2);
+            ctx.fill();
         }
     }
     
@@ -4608,10 +4820,10 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         
         // 確保時間顯示不會與背景重疊，增加額外的安全間距
         // safeTimeY 已在上面定義為 timeY
-        ctx.fillText(`${currentMinutes}:${currentSecs.toString().padStart(2, '0')}`, progressBarX + Math.sin(frame * 0.02) * 0.3, safeTimeY + Math.cos(frame * 0.03) * 0.2);
+        ctx.fillText(`${currentMinutes}:${currentSecs.toString().padStart(2, "0")}`, progressBarX + Math.sin(frame * 0.02) * 0.3, safeTimeY + Math.cos(frame * 0.03) * 0.2);
         
         ctx.textAlign = 'right';
-        ctx.fillText(`${totalMinutes}:${totalSecs.toString().padStart(2, '0')}`, progressBarX + progressBarWidth + Math.sin(frame * 0.025) * 0.3, safeTimeY + Math.cos(frame * 0.035) * 0.2);
+        ctx.fillText(`${totalMinutes}:${totalSecs.toString().padStart(2, "0")}`, progressBarX + progressBarWidth + Math.sin(frame * 0.025) * 0.3, safeTimeY + Math.cos(frame * 0.035) * 0.2);
         
         // 控制按鈕區域 - 85-100% 區域
         const buttonY = playerY + (playerHeight * 0.90) + shakeY; // 90% 位置
@@ -6033,6 +6245,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.PHOTO_SHAKE]: drawPhotoShake,
     [VisualizationType.CIRCULAR_WAVE]: drawCircularWave,
     [VisualizationType.BLURRED_EDGE]: drawBlurredEdge,
+    [VisualizationType.KE_YE_CUSTOM_V2]: drawKeYeCustomV2,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
@@ -6323,6 +6536,9 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         } else if (visualizationType === VisualizationType.BLURRED_EDGE) {
             // 邊緣虛化需要傳遞 props
             drawBlurredEdge(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+        } else if (visualizationType === VisualizationType.KE_YE_CUSTOM_V2) {
+            // 可夜訂製版二號需要傳遞 props
+            drawKeYeCustomV2(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
         } else {
             drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
         }

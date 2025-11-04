@@ -31,6 +31,7 @@ export enum VisualizationType {
     PHOTO_SHAKE = '相片晃動',
     CIRCULAR_WAVE = '圓形波形',
     BLURRED_EDGE = '邊緣虛化',
+    KE_YE_CUSTOM_V2 = '可夜訂製版二號',
 }
 
 // 特效分類系統

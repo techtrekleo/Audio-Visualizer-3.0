@@ -234,6 +234,14 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         difficulty: 'medium',
         performance: 'medium',
         tags: ['邊緣虛化', '金屬條', '光柱', '文字', '動態控制卡']
+    },
+    {
+        type: VisualizationType.KE_YE_CUSTOM_V2,
+        category: EffectCategory.DYNAMIC_CONTROL,
+        description: '可夜訂製版二號，白色圓角框內含兩組自訂文字與柱狀可視化',
+        difficulty: 'medium',
+        performance: 'medium',
+        tags: ['白色框', '圓角', '文字', '柱狀圖', '動態控制卡', '可夜訂製']
     }
 ];
 

@@ -137,6 +137,15 @@ function App() {
     const [blurredEdgeBgOpacity, setBlurredEdgeBgOpacity] = useState<number>(0.5);
     const [blurredEdgeFontSize, setBlurredEdgeFontSize] = useState<number>(40);
     
+    // Ke Ye Custom V2 State (可夜訂製版二號)
+    const [keYeCustomV2BoxOpacity, setKeYeCustomV2BoxOpacity] = useState<number>(0.5);
+    const [keYeCustomV2Text1, setKeYeCustomV2Text1] = useState<string>('');
+    const [keYeCustomV2Text2, setKeYeCustomV2Text2] = useState<string>('');
+    const [keYeCustomV2Text1Font, setKeYeCustomV2Text1Font] = useState<FontType>(FontType.POPPINS);
+    const [keYeCustomV2Text2Font, setKeYeCustomV2Text2Font] = useState<FontType>(FontType.POPPINS);
+    const [keYeCustomV2Text1Size, setKeYeCustomV2Text1Size] = useState<number>(40);
+    const [keYeCustomV2Text2Size, setKeYeCustomV2Text2Size] = useState<number>(30);
+    
   // Bass Enhancement State (重低音強化)
   const [bassEnhancementBlurIntensity, setBassEnhancementBlurIntensity] = useState<number>(0.5);
   const [bassEnhancementCurveIntensity, setBassEnhancementCurveIntensity] = useState<number>(1.0);
@@ -1575,6 +1584,14 @@ function App() {
                                     blurredEdgeTextColor={blurredEdgeTextColor}
                                     blurredEdgeBgOpacity={blurredEdgeBgOpacity}
                                     blurredEdgeFontSize={blurredEdgeFontSize}
+                            // Ke Ye Custom V2 props (可夜訂製版二號)
+                            keYeCustomV2BoxOpacity={keYeCustomV2BoxOpacity}
+                            keYeCustomV2Text1={keYeCustomV2Text1}
+                            keYeCustomV2Text2={keYeCustomV2Text2}
+                            keYeCustomV2Text1Font={keYeCustomV2Text1Font}
+                            keYeCustomV2Text2Font={keYeCustomV2Text2Font}
+                            keYeCustomV2Text1Size={keYeCustomV2Text1Size}
+                            keYeCustomV2Text2Size={keYeCustomV2Text2Size}
                                 />
                             </div>
                         </div>
@@ -1648,7 +1665,30 @@ function App() {
                             blurredEdgeBgOpacity={blurredEdgeBgOpacity}
                             onBlurredEdgeBgOpacityChange={setBlurredEdgeBgOpacity}
                             blurredEdgeFontSize={blurredEdgeFontSize}
+                            // Ke Ye Custom V2 props (可夜訂製版二號)
+                            keYeCustomV2BoxOpacity={keYeCustomV2BoxOpacity}
+                            keYeCustomV2Text1={keYeCustomV2Text1}
+                            keYeCustomV2Text2={keYeCustomV2Text2}
+                            keYeCustomV2Text1Font={keYeCustomV2Text1Font}
+                            keYeCustomV2Text2Font={keYeCustomV2Text2Font}
+                            keYeCustomV2Text1Size={keYeCustomV2Text1Size}
+                            keYeCustomV2Text2Size={keYeCustomV2Text2Size}
                             onBlurredEdgeFontSizeChange={setBlurredEdgeFontSize}
+                            // Ke Ye Custom V2 controls (可夜訂製版二號)
+                            keYeCustomV2BoxOpacity={keYeCustomV2BoxOpacity}
+                            onKeYeCustomV2BoxOpacityChange={setKeYeCustomV2BoxOpacity}
+                            keYeCustomV2Text1={keYeCustomV2Text1}
+                            onKeYeCustomV2Text1Change={setKeYeCustomV2Text1}
+                            keYeCustomV2Text2={keYeCustomV2Text2}
+                            onKeYeCustomV2Text2Change={setKeYeCustomV2Text2}
+                            keYeCustomV2Text1Font={keYeCustomV2Text1Font}
+                            onKeYeCustomV2Text1FontChange={setKeYeCustomV2Text1Font}
+                            keYeCustomV2Text2Font={keYeCustomV2Text2Font}
+                            onKeYeCustomV2Text2FontChange={setKeYeCustomV2Text2Font}
+                            keYeCustomV2Text1Size={keYeCustomV2Text1Size}
+                            onKeYeCustomV2Text1SizeChange={setKeYeCustomV2Text1Size}
+                            keYeCustomV2Text2Size={keYeCustomV2Text2Size}
+                            onKeYeCustomV2Text2SizeChange={setKeYeCustomV2Text2Size}
                             // Bass Enhancement controls (重低音強化)
                             bassEnhancementBlurIntensity={bassEnhancementBlurIntensity}
                             onBassEnhancementBlurIntensityChange={setBassEnhancementBlurIntensity}
