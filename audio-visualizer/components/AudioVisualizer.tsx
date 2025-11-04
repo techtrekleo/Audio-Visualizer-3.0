@@ -165,6 +165,8 @@ interface AudioVisualizerProps {
     bassEnhancementTextSize?: number;
     // Frame Pixelation props (方框像素化)
     bassEnhancementCenterOpacity?: number;
+    // Circular Wave props (圓形波形)
+    circularWaveImage?: string | null;
 }
 
 // 讓繪圖函式能取得當前屬性（不改動所有函式簽名）
@@ -2759,6 +2761,248 @@ const drawPhotoShake = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | n
             ctx.shadowBlur = 0;
             ctx.shadowColor = 'transparent';
         }
+    }
+    
+    // 重置陰影
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+    
+    ctx.restore();
+};
+
+const drawCircularWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, props?: any) => {
+    ctx.save();
+    
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const circleRadius = Math.min(width, height) * 0.25; // 圓形半徑
+    
+    // 1. 繪製中間的圓形圖片（從背景圖裁切）
+    if (props?.circularWaveImage) {
+        const img = getOrCreateCachedImage('circularWave', props.circularWaveImage);
+        if (img && img.complete && img.naturalWidth > 0) {
+            // 設置裁剪區域為圓形
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, circleRadius, 0, Math.PI * 2);
+            ctx.clip();
+            
+            // 計算圖片尺寸，確保完全覆蓋圓形區域（自動處理方形和長方形）
+            const imgAspect = img.naturalWidth / img.naturalHeight;
+            const drawSize = circleRadius * 2;
+            let drawWidth = drawSize;
+            let drawHeight = drawSize;
+            
+            // 根據圖片寬高比調整尺寸，確保完全覆蓋圓形
+            if (imgAspect > 1) {
+                // 圖片更寬（橫向長方形）：以高度為準，寬度增加
+                drawHeight = drawSize;
+                drawWidth = drawSize * imgAspect;
+            } else if (imgAspect < 1) {
+                // 圖片更高（縱向長方形）：以寬度為準，高度增加
+                drawWidth = drawSize;
+                drawHeight = drawSize / imgAspect;
+            } else {
+                // 方形圖片：直接使用圓形直徑
+                drawWidth = drawSize;
+                drawHeight = drawSize;
+            }
+            
+            // 居中繪製圖片（會自動裁切成圓形）
+            ctx.drawImage(img, centerX - drawWidth / 2, centerY - drawHeight / 2, drawWidth, drawHeight);
+            ctx.restore();
+        }
+    }
+    
+    // 2. 四組1/4圓的線條可視化
+    const numLines = 15; // 每組1/4圓的線條數量（60的1/4）
+    const maxLineLength = circleRadius * 0.3 * 10; // 最大線條長度（增加10倍）
+    const lineWidth = 5; // 加粗線條（從2改為5）
+    const minLineLength = circleRadius * 0.02; // 最小線條長度（無音訊時顯示小點）
+    const minDotSize = 3; // 無音訊時顯示的小點大小
+    
+    // 音頻取樣函數
+    const getSample = (t: number, bandStart: number, bandEnd: number) => {
+        if (!dataArray) return 0;
+        const len = dataArray.length;
+        const s = Math.max(0, Math.min(len - 1, Math.floor(bandStart * len)));
+        const e = Math.max(s + 1, Math.min(len, Math.floor(bandEnd * len)));
+        const idx = s + Math.floor(t * (e - s - 1));
+        return dataArray[idx] / 255;
+    };
+    
+    ctx.strokeStyle = colors.primary || '#FFFFFF';
+    ctx.lineWidth = lineWidth;
+    ctx.shadowColor = colors.accent || colors.primary || '#FFFFFF';
+    ctx.shadowBlur = 8;
+    
+    // 獲取顏色函數（支援彩虹主題）
+    const getColor = (index: number, total: number) => {
+        if (colors.name === ColorPaletteType.RAINBOW) {
+            const hue = (index / total) * 360;
+            return `hsl(${hue}, 90%, 60%)`;
+        } else if (colors.name === ColorPaletteType.WHITE) {
+            return '#FFFFFF';
+        } else {
+            return colors.primary || '#FFFFFF';
+        }
+    };
+    
+    const getShadowColor = (index: number, total: number) => {
+        if (colors.name === ColorPaletteType.RAINBOW) {
+            const hue = (index / total) * 360;
+            return `hsl(${hue}, 100%, 80%)`;
+        } else {
+            return colors.accent || colors.primary || '#FFFFFF';
+        }
+    };
+    
+    // 繪製單個1/4圓組（改為往外放射）
+    const drawQuarterCircle = (startAngle: number, endAngle: number, bassAtStart: boolean) => {
+        for (let i = 0; i < numLines; i++) {
+            const t = i / (numLines - 1); // 0 到 1
+            const angle = startAngle + t * (endAngle - startAngle);
+            
+            // 根據位置取樣音頻（低頻到中頻）
+            const v = getSample(t, 0.05, 0.35);
+            const amp = Math.max(0, v - 0.2);
+            const lineLength = Math.pow(amp, 1.2) * maxLineLength * sensitivity * 1.5;
+            
+            // 計算線條起點和終點（改為往外放射）
+            const x1 = centerX + Math.cos(angle) * circleRadius;
+            const y1 = centerY + Math.sin(angle) * circleRadius;
+            
+            // 計算全局索引（用於彩虹顏色）
+            const globalIndex = i + (startAngle === -Math.PI ? 0 : startAngle === -Math.PI / 2 ? numLines : startAngle === 0 ? numLines * 2 : numLines * 3);
+            const totalLines = numLines * 4;
+            
+            if (lineLength < minLineLength) {
+                // 沒有音訊時，只顯示小點
+                ctx.fillStyle = getColor(globalIndex, totalLines);
+                ctx.beginPath();
+                ctx.arc(x1, y1, minDotSize / 2, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // 有音訊時，顯示線條
+                const x2 = centerX + Math.cos(angle) * (circleRadius + lineLength);
+                const y2 = centerY + Math.sin(angle) * (circleRadius + lineLength);
+                
+                ctx.strokeStyle = getColor(globalIndex, totalLines);
+                ctx.shadowColor = getShadowColor(globalIndex, totalLines);
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+        }
+    };
+    
+    // 上面兩組：重音在下端（外側）
+    // 左上1/4圓：從 -π 到 -π/2
+    drawQuarterCircle(-Math.PI, -Math.PI / 2, true);
+    // 右上1/4圓：從 -π/2 到 0
+    drawQuarterCircle(-Math.PI / 2, 0, true);
+    
+    // 下面兩組：重音在上端（內側）
+    // 右下1/4圓：從 0 到 π/2
+    drawQuarterCircle(0, Math.PI / 2, false);
+    // 左下1/4圓：從 π/2 到 π
+    drawQuarterCircle(Math.PI / 2, Math.PI, false);
+    
+    // 3. 左右對稱的柱狀可視化
+    const barWidth = lineWidth; // 和圓圈線條一樣粗細（5）
+    const barSpacing = 4;
+    const maxBarHeight = height * 0.35;
+    const visualizerWidth = width * 0.5; // 左右各50%（從40%增加到50%，延伸更長）
+    const minBarHeight = maxBarHeight * 0.05; // 最小高度（無音訊時顯示）
+    const numBars = Math.floor(visualizerWidth / (barWidth + barSpacing));
+    const halfBars = Math.floor(numBars / 2);
+    
+    const baselineY = centerY;
+    const gapSize = circleRadius * 0.1; // 圓圈和柱子之間的間距
+    
+    // 左側起始位置：從左邊開始，到圓圈左側
+    const leftStartX = centerX - circleRadius - gapSize - visualizerWidth;
+    const leftEndX = centerX - circleRadius - gapSize;
+    
+    // 右側起始位置：從圓圈右側開始，到右邊
+    const rightStartX = centerX + circleRadius + gapSize;
+    const rightEndX = centerX + circleRadius + gapSize + visualizerWidth;
+    
+    const leftHeights: number[] = [];
+    
+    // 計算左側柱子高度
+    for (let i = 0; i < halfBars; i++) {
+        const t = i / (halfBars - 1);
+        const v = getSample(t, 0.05, 0.35);
+        const amp = Math.max(0, v - 0.2);
+        const h = Math.max(minBarHeight, Math.pow(amp, 1.2) * maxBarHeight * sensitivity * 2.4);
+        leftHeights.push(h);
+    }
+    
+    // 繪製左側柱子
+    const leftBarSpacing = (leftEndX - leftStartX) / halfBars;
+    for (let i = 0; i < halfBars; i++) {
+        const x = leftStartX + i * leftBarSpacing;
+        const barHeight = leftHeights[i];
+        
+        // 使用顏色主題創建漸變（支援彩虹主題）
+        let gradient: CanvasGradient;
+        if (colors.name === ColorPaletteType.RAINBOW) {
+            const hue = (i / halfBars) * 360;
+            const primaryColor = `hsl(${hue}, 90%, 60%)`;
+            const accentColor = `hsl(${(hue + 40) % 360}, 100%, 80%)`;
+            gradient = ctx.createLinearGradient(x, baselineY - barHeight, x, baselineY + barHeight);
+            gradient.addColorStop(0, accentColor);
+            gradient.addColorStop(0.5, primaryColor);
+            gradient.addColorStop(1, primaryColor);
+            ctx.shadowColor = accentColor;
+        } else {
+            const primaryColor = colors.primary || '#FFFFFF';
+            const accentColor = colors.accent || colors.primary || '#FFFFFF';
+            gradient = ctx.createLinearGradient(x, baselineY - barHeight, x, baselineY + barHeight);
+            gradient.addColorStop(0, accentColor);
+            gradient.addColorStop(0.5, primaryColor);
+            gradient.addColorStop(1, primaryColor);
+            ctx.shadowColor = accentColor;
+        }
+        
+        ctx.fillStyle = gradient;
+        ctx.shadowBlur = 8;
+        ctx.fillRect(x, baselineY - barHeight, barWidth, barHeight * 2);
+    }
+    
+    // 鏡像繪製右側柱子（完全對稱）
+    const rightBarSpacing = (rightEndX - rightStartX) / halfBars;
+    for (let i = 0; i < halfBars; i++) {
+        const mirrorIndex = halfBars - 1 - i;
+        const barHeight = leftHeights[Math.max(0, mirrorIndex)];
+        const x = rightStartX + i * rightBarSpacing;
+        
+        // 使用顏色主題創建漸變（支援彩虹主題）
+        let gradient: CanvasGradient;
+        if (colors.name === ColorPaletteType.RAINBOW) {
+            const hue = (mirrorIndex / halfBars) * 360;
+            const primaryColor = `hsl(${hue}, 90%, 60%)`;
+            const accentColor = `hsl(${(hue + 40) % 360}, 100%, 80%)`;
+            gradient = ctx.createLinearGradient(x, baselineY - barHeight, x, baselineY + barHeight);
+            gradient.addColorStop(0, accentColor);
+            gradient.addColorStop(0.5, primaryColor);
+            gradient.addColorStop(1, primaryColor);
+            ctx.shadowColor = accentColor;
+        } else {
+            const primaryColor = colors.primary || '#FFFFFF';
+            const accentColor = colors.accent || colors.primary || '#FFFFFF';
+            gradient = ctx.createLinearGradient(x, baselineY - barHeight, x, baselineY + barHeight);
+            gradient.addColorStop(0, accentColor);
+            gradient.addColorStop(0.5, primaryColor);
+            gradient.addColorStop(1, primaryColor);
+            ctx.shadowColor = accentColor;
+        }
+        
+        ctx.fillStyle = gradient;
+        ctx.shadowBlur = 8;
+        ctx.fillRect(x, baselineY - barHeight, barWidth, barHeight * 2);
     }
     
     // 重置陰影
@@ -5596,6 +5840,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.DYNAMIC_CONTROL_CARD]: drawDynamicControlCard,
     [VisualizationType.FRAME_PIXELATION]: drawFramePixelation,
     [VisualizationType.PHOTO_SHAKE]: drawPhotoShake,
+    [VisualizationType.CIRCULAR_WAVE]: drawCircularWave,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
@@ -5880,6 +6125,9 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         } else if (visualizationType === VisualizationType.DYNAMIC_CONTROL_CARD) {
             // 重低音強化需要傳遞 props
             drawDynamicControlCard(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+        } else if (visualizationType === VisualizationType.CIRCULAR_WAVE) {
+            // 圓形波形需要傳遞 props
+            drawCircularWave(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
         } else {
             drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
         }

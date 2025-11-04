@@ -126,6 +126,9 @@ function App() {
     const [photoShakeFontSize, setPhotoShakeFontSize] = useState<number>(60);
     const [photoShakeDecaySpeed, setPhotoShakeDecaySpeed] = useState<number>(0.95);
     
+    // Circular Wave State (圓形波形)
+    const [circularWaveImage, setCircularWaveImage] = useState<string | null>(null);
+    
   // Bass Enhancement State (重低音強化)
   const [bassEnhancementBlurIntensity, setBassEnhancementBlurIntensity] = useState<number>(0.5);
   const [bassEnhancementCurveIntensity, setBassEnhancementCurveIntensity] = useState<number>(1.0);
@@ -1553,6 +1556,8 @@ function App() {
                                     bassEnhancementTextSize={bassEnhancementTextSize}
                                     // Frame Pixelation props (方框像素化)
                                     bassEnhancementCenterOpacity={bassEnhancementCenterOpacity}
+                                    // Circular Wave props (圓形波形)
+                                    circularWaveImage={circularWaveImage}
                                 />
                             </div>
                         </div>
@@ -1601,6 +1606,19 @@ function App() {
                             onPhotoShakeFontSizeChange={setPhotoShakeFontSize}
                             photoShakeDecaySpeed={photoShakeDecaySpeed}
                             onPhotoShakeDecaySpeedChange={setPhotoShakeDecaySpeed}
+                            // Circular Wave controls (圓形波形)
+                            circularWaveImage={circularWaveImage}
+                            onCircularWaveImageUpload={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (event) => {
+                                        setCircularWaveImage(event.target?.result as string);
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            }}
+                            onClearCircularWaveImage={() => setCircularWaveImage(null)}
                             // Bass Enhancement controls (重低音強化)
                             bassEnhancementBlurIntensity={bassEnhancementBlurIntensity}
                             onBassEnhancementBlurIntensityChange={setBassEnhancementBlurIntensity}

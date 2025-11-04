@@ -51,6 +51,14 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         performance: 'low',
         tags: ['純白', '平滑', '衰減', '訂製', '歐皇']
     },
+    {
+        type: VisualizationType.CIRCULAR_WAVE,
+        category: EffectCategory.BASIC,
+        description: '圓形波形效果，中間圓形圖片加上周圍四組1/4圓音訊線條',
+        difficulty: 'easy',
+        performance: 'low',
+        tags: ['圓形', '波形', '圖片', '對稱', '基礎']
+    },
 
     // 進階款 - 中等複雜度，有特色效果
     {

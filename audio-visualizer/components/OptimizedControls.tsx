@@ -353,6 +353,10 @@ interface OptimizedControlsProps {
     // Frame Pixelation props (方框像素化)
     bassEnhancementCenterOpacity?: number;
     onBassEnhancementCenterOpacityChange?: (opacity: number) => void;
+    // Circular Wave props (圓形波形)
+    circularWaveImage?: string | null;
+    onCircularWaveImageUpload?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onClearCircularWaveImage?: () => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
@@ -2621,6 +2625,74 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             currentSettings={getCurrentSettings()}
                         />
                     </CollapsibleControlSection>
+
+                    {/* 圓形波形專用控制面板 */}
+                    {props.visualizationType === VisualizationType.CIRCULAR_WAVE && (
+                        <CollapsibleControlSection
+                            title="圓形波形專用面板"
+                            icon="🌊"
+                            priority="high"
+                            defaultExpanded={true}
+                            badge="圓形波形"
+                        >
+                            <div className="space-y-6">
+                                {/* 背景圖片上傳 */}
+                                <div className="space-y-3">
+                                    <label className="block text-sm font-medium text-gray-300">
+                                        背景圖片（圓形裁切）
+                                    </label>
+                                    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                                        {props.circularWaveImage ? (
+                                            <div className="space-y-3">
+                                                <div className="relative rounded-lg overflow-hidden">
+                                                    <img 
+                                                        src={props.circularWaveImage} 
+                                                        alt="預覽" 
+                                                        className="w-full h-48 object-cover"
+                                                    />
+                                                </div>
+                                                <button
+                                                    onClick={() => props.onClearCircularWaveImage?.()}
+                                                    className="w-full px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200"
+                                                >
+                                                    清除圖片
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center">
+                                                    <p className="text-gray-400 mb-2">尚未上傳圖片</p>
+                                                    <p className="text-xs text-gray-500 mb-2">
+                                                        圖片會自動裁切成圓形顯示在中間
+                                                    </p>
+                                                    <p className="text-xs text-cyan-400 font-medium">
+                                                        ✨ 自動支援方形和長方形圖片，會自動裁切成圓形
+                                                    </p>
+                                                </div>
+                                                <label className="block">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={props.onCircularWaveImageUpload}
+                                                        className="hidden"
+                                                    />
+                                                    <div className="w-full px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors duration-200 cursor-pointer text-center">
+                                                        選擇圖片
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-gray-400">
+                                        💡 上傳的圖片會自動裁切成圓形顯示在中間，周圍會有四組1/4圓的音訊可視化線條，左右兩側會有對稱的柱狀可視化
+                                    </p>
+                                    <p className="text-xs text-cyan-400">
+                                        📐 支援所有圖片比例：方形圖片會完整顯示，長方形圖片會自動居中裁切，確保圓形區域完全覆蓋
+                                    </p>
+                                </div>
+                            </div>
+                        </CollapsibleControlSection>
+                    )}
 
                     {/* 鋼琴演奏家專用控制面板 */}
                     {props.visualizationType === VisualizationType.PIANO_VIRTUOSO && (

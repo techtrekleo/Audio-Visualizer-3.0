@@ -29,6 +29,7 @@ export enum VisualizationType {
     DYNAMIC_CONTROL_CARD = '重低音強化',
     FRAME_PIXELATION = '方框 像素化',
     PHOTO_SHAKE = '相片晃動',
+    CIRCULAR_WAVE = '圓形波形',
 }
 
 // 特效分類系統
