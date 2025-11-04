@@ -653,10 +653,28 @@ const drawDynamicControlCard = (ctx: CanvasRenderingContext2D, dataArray: Uint8A
     ctx.beginPath();
     ctx.moveTo(startX, baselineY);
     ctx.lineTo(startX + visualizerWidth, baselineY);
-    ctx.strokeStyle = '#FFFFFF';
+    
+    // 支援彩虹主題
+    if (colors.name === ColorPaletteType.RAINBOW) {
+        const gradient = ctx.createLinearGradient(startX, baselineY, startX + visualizerWidth, baselineY);
+        const [startHue, endHue] = colors.hueRange;
+        const hueRangeSpan = endHue - startHue;
+        for (let i = 0; i <= 10; i++) {
+            const t = i / 10;
+            const hue = startHue + (t * hueRangeSpan);
+            gradient.addColorStop(t, `hsl(${hue}, 80%, 70%)`);
+        }
+        ctx.strokeStyle = gradient;
+        // 陰影顏色使用中間色
+        const midHue = startHue + (hueRangeSpan / 2);
+        ctx.shadowColor = `hsl(${midHue}, 80%, 70%)`;
+    } else {
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.shadowColor = '#FFFFFF';
+    }
+    
     ctx.lineWidth = thickness * smoothScale;
     ctx.shadowBlur = 15 * smoothScale; // 適中的發光效果
-    ctx.shadowColor = '#FFFFFF';
     ctx.stroke();
     ctx.shadowBlur = 0;
     ctx.shadowColor = 'transparent';
@@ -776,13 +794,31 @@ const drawDynamicControlCard = (ctx: CanvasRenderingContext2D, dataArray: Uint8A
             if (h > 0) {
                 // 使用顏色主題漸變
                 const grad = ctx.createLinearGradient(0, y, 0, waveBaseline);
-                grad.addColorStop(0, colors.primary + '85'); // 85% 透明度
-                grad.addColorStop(1, colors.primary + '15'); // 15% 透明度
+                
+                // 支援彩虹主題
+                if (colors.name === ColorPaletteType.RAINBOW) {
+                    const [startHue, endHue] = colors.hueRange;
+                    const hueRangeSpan = endHue - startHue;
+                    const hue = startHue + (t * hueRangeSpan);
+                    grad.addColorStop(0, `hsla(${hue}, 70%, 60%, 0.85)`);
+                    grad.addColorStop(1, `hsla(${hue}, 70%, 60%, 0.15)`);
+                } else {
+                    grad.addColorStop(0, colors.primary + '85'); // 85% 透明度
+                    grad.addColorStop(1, colors.primary + '15'); // 15% 透明度
+                }
+                
                 ctx.fillStyle = grad;
                 ctx.fillRect(x, y, barWidth, h);
                 
                 // 頂部高光 - 使用顏色主題
-                ctx.fillStyle = colors.primary + '25'; // 25% 透明度
+                if (colors.name === ColorPaletteType.RAINBOW) {
+                    const [startHue, endHue] = colors.hueRange;
+                    const hueRangeSpan = endHue - startHue;
+                    const hue = startHue + (t * hueRangeSpan);
+                    ctx.fillStyle = `hsla(${hue}, 80%, 70%, 0.25)`;
+                } else {
+                    ctx.fillStyle = colors.primary + '25'; // 25% 透明度
+                }
                 ctx.fillRect(x, y, barWidth, 2);
             }
         }
@@ -799,7 +835,23 @@ const drawDynamicControlCard = (ctx: CanvasRenderingContext2D, dataArray: Uint8A
             const x = waveX + t * waveW;
             if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
-        ctx.strokeStyle = 'rgba(255,255,255,0.92)'; // 維持白色
+        
+        // 支援彩虹主題
+        if (colors.name === ColorPaletteType.RAINBOW) {
+            // 彩虹主題：創建漸變線條
+            const gradient = ctx.createLinearGradient(waveX, waveBaseline, waveX + waveW, waveBaseline);
+            const [startHue, endHue] = colors.hueRange;
+            const hueRangeSpan = endHue - startHue;
+            for (let i = 0; i <= 10; i++) {
+                const t = i / 10;
+                const hue = startHue + (t * hueRangeSpan);
+                gradient.addColorStop(t, `hsla(${hue}, 70%, 60%, 0.92)`);
+            }
+            ctx.strokeStyle = gradient;
+        } else {
+            ctx.strokeStyle = 'rgba(255,255,255,0.92)'; // 維持白色
+        }
+        
         ctx.lineWidth = 2;
         ctx.stroke();
     }
@@ -2874,7 +2926,7 @@ const drawCircularWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
     const centerY = height / 2;
     const circleRadius = Math.min(width, height) * 0.25; // 圓形半徑
     
-    // 1. 繪製中間的圓形圖片（從背景圖裁切）
+    // 1. 繪製中間的圓形圖片（從背景圖裁切，不旋轉）
     if (props?.circularWaveImage) {
         const img = getOrCreateCachedImage('circularWave', props.circularWaveImage);
         if (img && img.complete && img.naturalWidth > 0) {
@@ -2911,7 +2963,9 @@ const drawCircularWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
         }
     }
     
-    // 2. 四組1/4圓的線條可視化
+    // 2. 四組1/4圓的線條可視化（逆時針旋轉30度）
+    const rotationAngle = -30 * Math.PI / 180; // 逆時針30度
+    
     const numLines = 15; // 每組1/4圓的線條數量（60的1/4）
     const maxLineLength = circleRadius * 0.3 * 10; // 最大線條長度（增加10倍）
     const lineWidth = 5; // 加粗線條（從2改為5）
@@ -2954,23 +3008,41 @@ const drawCircularWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
         }
     };
     
+    // 先計算所有象限的線條長度（用於鏡像）
+    // 象限1（右上，-π/2 到 0）作為基準
+    const quadrant1Lengths: number[] = [];
+    for (let i = 0; i < numLines; i++) {
+        const t = i / (numLines - 1); // 0 到 1
+        const v = getSample(t, 0.05, 0.35);
+        const amp = Math.max(0, v - 0.2);
+        const lineLength = Math.pow(amp, 1.2) * maxLineLength * sensitivity * 1.5;
+        quadrant1Lengths.push(lineLength);
+    }
+    
+    // 根據鏡像關係計算其他象限的線條長度
+    // 象限2（左上）：與象限1上下鏡像，使用相同的長度
+    const quadrant2Lengths = [...quadrant1Lengths];
+    
+    // 象限3（左下）：與象限2左右鏡像，需要反轉順序
+    const quadrant3Lengths = [...quadrant2Lengths].reverse();
+    
+    // 象限4（右下）：與象限1左右鏡像，需要反轉順序；與象限3上下鏡像
+    const quadrant4Lengths = [...quadrant1Lengths].reverse();
+    
     // 繪製單個1/4圓組（改為往外放射）
-    const drawQuarterCircle = (startAngle: number, endAngle: number, bassAtStart: boolean) => {
+    const drawQuarterCircle = (startAngle: number, endAngle: number, lengths: number[], quadrantIndex: number) => {
         for (let i = 0; i < numLines; i++) {
             const t = i / (numLines - 1); // 0 到 1
-            const angle = startAngle + t * (endAngle - startAngle);
+            const angle = startAngle + t * (endAngle - startAngle) + rotationAngle; // 添加旋轉
             
-            // 根據位置取樣音頻（低頻到中頻）
-            const v = getSample(t, 0.05, 0.35);
-            const amp = Math.max(0, v - 0.2);
-            const lineLength = Math.pow(amp, 1.2) * maxLineLength * sensitivity * 1.5;
+            const lineLength = lengths[i];
             
             // 計算線條起點和終點（改為往外放射）
             const x1 = centerX + Math.cos(angle) * circleRadius;
             const y1 = centerY + Math.sin(angle) * circleRadius;
             
             // 計算全局索引（用於彩虹顏色）
-            const globalIndex = i + (startAngle === -Math.PI ? 0 : startAngle === -Math.PI / 2 ? numLines : startAngle === 0 ? numLines * 2 : numLines * 3);
+            const globalIndex = i + quadrantIndex * numLines;
             const totalLines = numLines * 4;
             
             if (lineLength < minLineLength) {
@@ -2994,19 +3066,17 @@ const drawCircularWave = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
         }
     };
     
-    // 上面兩組：重音在下端（外側）
-    // 左上1/4圓：從 -π 到 -π/2
-    drawQuarterCircle(-Math.PI, -Math.PI / 2, true);
-    // 右上1/4圓：從 -π/2 到 0
-    drawQuarterCircle(-Math.PI / 2, 0, true);
+    // 繪製四個象限
+    // 象限1（右上，-π/2 到 0）
+    drawQuarterCircle(-Math.PI / 2, 0, quadrant1Lengths, 0);
+    // 象限2（左上，-π 到 -π/2）：與象限1上下鏡像
+    drawQuarterCircle(-Math.PI, -Math.PI / 2, quadrant2Lengths, 1);
+    // 象限3（左下，π/2 到 π）：與象限2左右鏡像
+    drawQuarterCircle(Math.PI / 2, Math.PI, quadrant3Lengths, 2);
+    // 象限4（右下，0 到 π/2）：與象限1左右鏡像，與象限3上下鏡像
+    drawQuarterCircle(0, Math.PI / 2, quadrant4Lengths, 3);
     
-    // 下面兩組：重音在上端（內側）
-    // 右下1/4圓：從 0 到 π/2
-    drawQuarterCircle(0, Math.PI / 2, false);
-    // 左下1/4圓：從 π/2 到 π
-    drawQuarterCircle(Math.PI / 2, Math.PI, false);
-    
-    // 3. 左右對稱的柱狀可視化
+    // 3. 左右對稱的柱狀可視化（不旋轉，保持水平）
     const barWidth = lineWidth; // 和圓圈線條一樣粗細（5）
     const barSpacing = 4;
     const maxBarHeight = height * 0.35;
@@ -3273,7 +3343,7 @@ const drawKeYeCustomV2 = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
     const centerY = height / 2;
     
     // 獲取配置參數
-    const boxOpacity = typeof props?.keYeCustomV2BoxOpacity === 'number' ? props.keYeCustomV2BoxOpacity : 0.9;
+    const boxOpacity = typeof props?.keYeCustomV2BoxOpacity === 'number' ? props.keYeCustomV2BoxOpacity : 0.5;
     const text1 = props?.keYeCustomV2Text1 || '';
     const text2 = props?.keYeCustomV2Text2 || '';
     const text1FontFamily = props?.keYeCustomV2Text1Font || FontType.POPPINS;

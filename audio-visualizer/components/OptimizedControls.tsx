@@ -2948,7 +2948,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     </label>
                                     <div className="flex items-center space-x-3">
                                         <span className="text-sm text-gray-300 w-12 text-center">
-                                            {Math.round((props.keYeCustomV2BoxOpacity ?? 0.9) * 100)}%
+                                            {Math.round((typeof props.keYeCustomV2BoxOpacity === 'number' ? props.keYeCustomV2BoxOpacity : 0.5) * 100)}%
                                         </span>
                                         <div className="relative flex-1">
                                             <div
@@ -2962,7 +2962,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 min="0"
                                                 max="1"
                                                 step="0.01"
-                                                value={props.keYeCustomV2BoxOpacity ?? 0.9}
+                                                value={typeof props.keYeCustomV2BoxOpacity === 'number' ? props.keYeCustomV2BoxOpacity : 0.5}
                                                 onChange={(e) => props.onKeYeCustomV2BoxOpacityChange?.(parseFloat(e.target.value))}
                                                 className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
                                                 style={{ background: 'transparent' }}
