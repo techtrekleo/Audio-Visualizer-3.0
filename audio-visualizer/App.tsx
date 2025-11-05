@@ -1584,6 +1584,14 @@ function App() {
                                     blurredEdgeTextColor={blurredEdgeTextColor}
                                     blurredEdgeBgOpacity={blurredEdgeBgOpacity}
                                     blurredEdgeFontSize={blurredEdgeFontSize}
+                                    // Ke Ye Custom V2 props (可夜訂製版二號)
+                                    keYeCustomV2BoxOpacity={keYeCustomV2BoxOpacity}
+                                    keYeCustomV2Text1={keYeCustomV2Text1}
+                                    keYeCustomV2Text2={keYeCustomV2Text2}
+                                    keYeCustomV2Text1Font={keYeCustomV2Text1Font}
+                                    keYeCustomV2Text2Font={keYeCustomV2Text2Font}
+                                    keYeCustomV2Text1Size={keYeCustomV2Text1Size}
+                                    keYeCustomV2Text2Size={keYeCustomV2Text2Size}
                                 />
                             </div>
                         </div>
