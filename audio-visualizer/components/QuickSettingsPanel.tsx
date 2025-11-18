@@ -18,6 +18,13 @@ interface QuickSettingsPanelProps {
     isRecording: boolean;
     colorPalette: ColorPaletteType;
     onColorPaletteChange: (palette: ColorPaletteType) => void;
+    // 自選色彩相關 props
+    customPrimaryColor?: string;
+    customSecondaryColor?: string;
+    customAccentColor?: string;
+    onCustomPrimaryColorChange?: (color: string) => void;
+    onCustomSecondaryColorChange?: (color: string) => void;
+    onCustomAccentColorChange?: (color: string) => void;
     sensitivity: number;
     onSensitivityChange: (value: number) => void;
     smoothing: number;
@@ -45,6 +52,12 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
     isRecording,
     colorPalette,
     onColorPaletteChange,
+    customPrimaryColor = '#67E8F9',
+    customSecondaryColor = '#F472B6',
+    customAccentColor = '#FFFFFF',
+    onCustomPrimaryColorChange,
+    onCustomSecondaryColorChange,
+    onCustomAccentColorChange,
     sensitivity,
     onSensitivityChange,
     smoothing,
@@ -92,7 +105,71 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                         <option value={ColorPaletteType.MIDNIGHT}>午夜</option>
                         <option value={ColorPaletteType.WHITE}>白色</option>
                         <option value={ColorPaletteType.RAINBOW}>彩虹</option>
+                        <option value={ColorPaletteType.CUSTOM}>自選色彩</option>
                     </select>
+                    
+                    {/* 自選色彩選擇器 - 僅在選擇自選色彩時顯示 */}
+                    {colorPalette === ColorPaletteType.CUSTOM && (
+                        <div className="mt-3 p-3 bg-gray-800/50 rounded-lg border border-cyan-400/30 space-y-3">
+                            <label className="text-xs font-medium text-cyan-300">自訂顏色</label>
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-400">主色</label>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="color"
+                                            value={customPrimaryColor}
+                                            onChange={(e) => onCustomPrimaryColorChange?.(e.target.value)}
+                                            className="w-10 h-10 rounded border border-gray-600 cursor-pointer"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={customPrimaryColor}
+                                            onChange={(e) => onCustomPrimaryColorChange?.(e.target.value)}
+                                            className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                                            placeholder="#67E8F9"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-400">次色</label>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="color"
+                                            value={customSecondaryColor}
+                                            onChange={(e) => onCustomSecondaryColorChange?.(e.target.value)}
+                                            className="w-10 h-10 rounded border border-gray-600 cursor-pointer"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={customSecondaryColor}
+                                            onChange={(e) => onCustomSecondaryColorChange?.(e.target.value)}
+                                            className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                                            placeholder="#F472B6"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-400">強調色</label>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="color"
+                                            value={customAccentColor}
+                                            onChange={(e) => onCustomAccentColorChange?.(e.target.value)}
+                                            className="w-10 h-10 rounded border border-gray-600 cursor-pointer"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={customAccentColor}
+                                            onChange={(e) => onCustomAccentColorChange?.(e.target.value)}
+                                            className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                                            placeholder="#FFFFFF"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Picture-in-Picture 控制 */}

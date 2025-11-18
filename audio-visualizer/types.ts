@@ -138,6 +138,7 @@ export enum ColorPaletteType {
     MIDNIGHT = '午夜',
     WHITE = '純白',
     RAINBOW = '彩虹',
+    CUSTOM = '自選色彩',
 }
 
 export enum GraphicEffectType {

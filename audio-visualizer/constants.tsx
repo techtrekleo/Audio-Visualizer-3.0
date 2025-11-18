@@ -96,4 +96,12 @@ export const COLOR_PALETTES: Record<ColorPaletteType, Palette> = {
         backgroundGlow: 'rgba(128, 128, 128, 0.2)',
         hueRange: [0, 360], // Full spectrum
     },
+    [ColorPaletteType.CUSTOM]: {
+        name: ColorPaletteType.CUSTOM,
+        primary: '#67E8F9', // Default cyan, will be overridden by custom colors
+        secondary: '#F472B6', // Default pink, will be overridden by custom colors
+        accent: '#FFFFFF', // Default white, will be overridden by custom colors
+        backgroundGlow: 'rgba(10, 80, 150, 0.2)',
+        hueRange: [180, 300], // Default range, will be calculated from custom colors
+    },
 };

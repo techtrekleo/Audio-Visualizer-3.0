@@ -160,6 +160,13 @@ interface OptimizedControlsProps {
     onBackgroundColorChange: (color: BackgroundColorType) => void;
     colorPalette: ColorPaletteType;
     onColorPaletteChange: (palette: ColorPaletteType) => void;
+    // 自選色彩相關 props
+    customPrimaryColor?: string;
+    customSecondaryColor?: string;
+    customAccentColor?: string;
+    onCustomPrimaryColorChange?: (color: string) => void;
+    onCustomSecondaryColorChange?: (color: string) => void;
+    onCustomAccentColorChange?: (color: string) => void;
     resolution: Resolution;
     onResolutionChange: (resolution: Resolution) => void;
     backgroundImage: string | null;
@@ -739,6 +746,12 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         isRecording={props.isRecording}
                         colorPalette={props.colorPalette}
                         onColorPaletteChange={props.onColorPaletteChange}
+                        customPrimaryColor={props.customPrimaryColor}
+                        customSecondaryColor={props.customSecondaryColor}
+                        customAccentColor={props.customAccentColor}
+                        onCustomPrimaryColorChange={props.onCustomPrimaryColorChange}
+                        onCustomSecondaryColorChange={props.onCustomSecondaryColorChange}
+                        onCustomAccentColorChange={props.onCustomAccentColorChange}
                         sensitivity={props.sensitivity}
                         onSensitivityChange={props.onSensitivityChange}
                         smoothing={props.smoothing}

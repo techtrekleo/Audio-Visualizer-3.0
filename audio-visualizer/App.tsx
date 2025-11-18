@@ -68,6 +68,10 @@ function App() {
     const [showWarning, setShowWarning] = useState<boolean>(false);
     const [backgroundColor, setBackgroundColor] = useState<BackgroundColorType>(BackgroundColorType.BLACK);
     const [colorPalette, setColorPalette] = useState<ColorPaletteType>(ColorPaletteType.DEFAULT);
+    // 自選色彩狀態
+    const [customPrimaryColor, setCustomPrimaryColor] = useState<string>('#67E8F9');
+    const [customSecondaryColor, setCustomSecondaryColor] = useState<string>('#F472B6');
+    const [customAccentColor, setCustomAccentColor] = useState<string>('#FFFFFF');
     const [resolution, setResolution] = useState<Resolution>(Resolution.P1080);
     const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
     const [backgroundImages, setBackgroundImages] = useState<string[]>([]); // 多張背景圖片
@@ -1103,6 +1107,70 @@ function App() {
         setColorPalette(newPalette);
     };
 
+    // 將十六進制顏色轉換為 HSL 的 Hue 值
+    const hexToHue = (hex: string): number => {
+        // 確保 hex 格式正確
+        if (!hex || !hex.startsWith('#')) {
+            return 180; // 預設為青色
+        }
+        
+        // 處理 3 位或 6 位 hex
+        let normalizedHex = hex.slice(1);
+        if (normalizedHex.length === 3) {
+            normalizedHex = normalizedHex.split('').map(c => c + c).join('');
+        }
+        
+        if (normalizedHex.length !== 6) {
+            return 180; // 預設為青色
+        }
+        
+        const r = parseInt(normalizedHex.slice(0, 2), 16) / 255;
+        const g = parseInt(normalizedHex.slice(2, 4), 16) / 255;
+        const b = parseInt(normalizedHex.slice(4, 6), 16) / 255;
+        
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let h = 0;
+        
+        if (max !== min) {
+            if (max === r) {
+                h = ((g - b) / (max - min)) % 6;
+            } else if (max === g) {
+                h = (b - r) / (max - min) + 2;
+            } else {
+                h = (r - g) / (max - min) + 4;
+            }
+        }
+        
+        h = h * 60;
+        if (h < 0) h += 360;
+        return h;
+    };
+
+    // 獲取當前使用的顏色調色板（如果是自選色彩，則使用自定義顏色）
+    const getCurrentPalette = (): Palette => {
+        if (colorPalette === ColorPaletteType.CUSTOM) {
+            const primaryHue = hexToHue(customPrimaryColor);
+            const secondaryHue = hexToHue(customSecondaryColor);
+            const accentHue = hexToHue(customAccentColor);
+            
+            // 計算 hueRange（從最小到最大）
+            const hues = [primaryHue, secondaryHue, accentHue];
+            const minHue = Math.min(...hues);
+            const maxHue = Math.max(...hues);
+            
+            return {
+                name: ColorPaletteType.CUSTOM,
+                primary: customPrimaryColor,
+                secondary: customSecondaryColor,
+                accent: customAccentColor,
+                backgroundGlow: 'rgba(10, 80, 150, 0.2)', // 可以根據需要調整
+                hueRange: [minHue, maxHue],
+            };
+        }
+        return COLOR_PALETTES[colorPalette];
+    };
+
     const handleTextChange = (text: string) => {
         setCustomText(text);
     };
@@ -1483,7 +1551,7 @@ function App() {
                                     smoothing={smoothing}
                                     equalization={equalization}
                                     backgroundColor={canvasBgColors[backgroundColor]}
-                                    colors={COLOR_PALETTES[colorPalette]}
+                                    colors={getCurrentPalette()}
                                     backgroundImage={showBackgroundImage ? backgroundImage : null}
                                     watermarkPosition={watermarkPosition}
                                     waveformStroke={waveformStroke}
@@ -1738,6 +1806,13 @@ function App() {
                             onBackgroundColorChange={setBackgroundColor}
                             colorPalette={colorPalette}
                             onColorPaletteChange={handleSetColorPalette}
+                            // 自選色彩 props
+                            customPrimaryColor={customPrimaryColor}
+                            customSecondaryColor={customSecondaryColor}
+                            customAccentColor={customAccentColor}
+                            onCustomPrimaryColorChange={setCustomPrimaryColor}
+                            onCustomSecondaryColorChange={setCustomSecondaryColor}
+                            onCustomAccentColorChange={setCustomAccentColor}
                             resolution={resolution}
                             onResolutionChange={handleSetResolution}
                             backgroundImage={backgroundImage}
