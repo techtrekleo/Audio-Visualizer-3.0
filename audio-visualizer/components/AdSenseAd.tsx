@@ -44,7 +44,7 @@ const AdSenseAd: React.FC<AdSenseAdProps> = ({ type, className = '' }) => {
           <ins
             className="adsbygoogle"
             style={{ display: 'block' }}
-            data-ad-client="ca-pub-3289174642940086"
+            data-ad-client="ca-pub-7718548739614199"
             data-ad-slot="YOUR_BANNER_AD_SLOT"
             data-ad-format="auto"
             data-full-width-responsive="true"
@@ -55,7 +55,7 @@ const AdSenseAd: React.FC<AdSenseAdProps> = ({ type, className = '' }) => {
           <ins
             className="adsbygoogle"
             style={{ display: 'block' }}
-            data-ad-client="ca-pub-3289174642940086"
+            data-ad-client="ca-pub-7718548739614199"
             data-ad-slot="YOUR_SIDEBAR_AD_SLOT"
             data-ad-format="auto"
             data-full-width-responsive="true"
@@ -66,7 +66,7 @@ const AdSenseAd: React.FC<AdSenseAdProps> = ({ type, className = '' }) => {
           <ins
             className="adsbygoogle"
             style={{ display: 'block' }}
-            data-ad-client="ca-pub-3289174642940086"
+            data-ad-client="ca-pub-7718548739614199"
             data-ad-slot="YOUR_FOOTER_AD_SLOT"
             data-ad-format="auto"
             data-full-width-responsive="true"
