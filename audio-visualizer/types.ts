@@ -148,6 +148,17 @@ export enum GraphicEffectType {
     NONE = '無',
 }
 
+// 字幕特效類型（參考封面產生器）
+export enum SubtitleEffectType {
+    NONE = '無',
+    BOLD = '粗體',
+    SHADOW = '陰影',
+    NEON = '霓虹光',
+    OUTLINE = '描邊',
+    FAUX_3D = '偽3D',
+    GLITCH = '故障感',
+}
+
 export enum Resolution {
     P720 = '720p (1280x720)',
     P1080 = '1080p (1920x1080)',

@@ -16,7 +16,7 @@ import { UnifiedHeader } from './components/UnifiedLayout';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
 import { useMediaRecorder } from './hooks/useMediaRecorder';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle } from './types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle, SubtitleEffectType } from './types';
 import { ICON_PATHS, COLOR_PALETTES, RESOLUTION_MAP } from './constants';
 import FilterEffectsDemo from './src/components/FilterEffectsDemo';
 
@@ -100,6 +100,9 @@ function App() {
     const [subtitleFontFamily, setSubtitleFontFamily] = useState<FontType>(FontType.POPPINS);
     const [subtitleColor, setSubtitleColor] = useState<string>('#FFFFFF');
     const [subtitleBgStyle, setSubtitleBgStyle] = useState<SubtitleBgStyle>(SubtitleBgStyle.TRANSPARENT);
+    // 字幕特效相關狀態
+    const [subtitleEffectIds, setSubtitleEffectIds] = useState<SubtitleEffectType[]>([]); // 可複選的特效
+    const [subtitleColor2, setSubtitleColor2] = useState<string>('#67E8F9'); // 用於陰影、描邊、霓虹光等特效的次色（預設為青色用於霓虹光）
     const [subtitleDisplayMode, setSubtitleDisplayMode] = useState<SubtitleDisplayMode>(SubtitleDisplayMode.CLASSIC);
     const [subtitleFormat, setSubtitleFormat] = useState<SubtitleFormat>(SubtitleFormat.BRACKET);
     const [subtitleLanguage, setSubtitleLanguage] = useState<SubtitleLanguage>(SubtitleLanguage.CHINESE);
@@ -1086,6 +1089,18 @@ function App() {
         console.log('User API Key saved successfully');
     };
 
+    // 處理用戶直接輸入 API Key
+    const handleUserApiKeyChange = (apiKey: string) => {
+        setUserApiKey(apiKey);
+        if (apiKey.trim()) {
+            localStorage.setItem('user_gemini_api_key', apiKey.trim());
+            console.log('User API Key saved to localStorage');
+        } else {
+            localStorage.removeItem('user_gemini_api_key');
+            console.log('User API Key removed from localStorage');
+        }
+    };
+
     const handleApiKeySkip = () => {
         console.log('User skipped API Key input');
         setSubtitlesRawText('已跳過 API Key 輸入，AI 功能暫時無法使用。');
@@ -1565,6 +1580,8 @@ function App() {
                                     subtitleFontFamily={subtitleFontFamily}
                                     subtitleColor={subtitleColor}
                                     subtitleBgStyle={subtitleBgStyle}
+                                    subtitleEffectIds={subtitleEffectIds}
+                                    subtitleColor2={subtitleColor2}
                                     effectScale={effectScale}
                                     effectOffsetX={effectOffsetX}
                                     effectOffsetY={effectOffsetY}
@@ -1847,6 +1864,12 @@ function App() {
                             onSubtitleColorChange={setSubtitleColor}
                             subtitleBgStyle={subtitleBgStyle}
                             onSubtitleBgStyleChange={setSubtitleBgStyle}
+                            subtitleEffectIds={subtitleEffectIds}
+                            onSubtitleEffectIdsChange={setSubtitleEffectIds}
+                            subtitleColor2={subtitleColor2}
+                            onSubtitleColor2Change={setSubtitleColor2}
+                            userApiKey={userApiKey}
+                            onUserApiKeyChange={handleUserApiKeyChange}
                             subtitleFormat={subtitleFormat}
                             onSubtitleFormatChange={setSubtitleFormat}
                             subtitleLanguage={subtitleLanguage}

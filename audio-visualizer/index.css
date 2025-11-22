@@ -303,8 +303,10 @@ input[type="range"].slider-enhanced::-moz-range-thumb:hover,
 }
 
 .collapsible-content.expanded {
-  max-height: 1000px;
+  max-height: 80vh;
   opacity: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .collapsible-content.collapsed {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle } from '../types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle, SubtitleEffectType } from '../types';
+import SubtitleEffectPanel from './SubtitleEffectPanel';
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
 import CollapsibleControlSection from './CollapsibleControlSection';
@@ -202,6 +203,14 @@ interface OptimizedControlsProps {
     onSubtitleColorChange: (color: string) => void;
     subtitleBgStyle: SubtitleBgStyle;
     onSubtitleBgStyleChange: (style: SubtitleBgStyle) => void;
+    // 字幕特效相關 props
+    subtitleEffectIds?: SubtitleEffectType[];
+    onSubtitleEffectIdsChange?: (effectIds: SubtitleEffectType[]) => void;
+    subtitleColor2?: string;
+    onSubtitleColor2Change?: (color: string) => void;
+    // API Key 相關 props
+    userApiKey?: string;
+    onUserApiKeyChange?: (apiKey: string) => void;
     subtitleFormat: SubtitleFormat;
     onSubtitleFormatChange: (format: SubtitleFormat) => void;
     subtitleLanguage: SubtitleLanguage;
@@ -1319,6 +1328,65 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 />
                             </div>
 
+                            {/* Gemini API Key 輸入 */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                                    <span className="text-lg">🔑</span>
+                                    Gemini API Key (選填)
+                                </label>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="password"
+                                        value={props.userApiKey || ''}
+                                        onChange={(e) => props.onUserApiKeyChange?.(e.target.value)}
+                                        onBlur={(e) => {
+                                            // 當失去焦點時自動保存
+                                            if (e.target.value.trim()) {
+                                                props.onUserApiKeyChange?.(e.target.value.trim());
+                                            }
+                                        }}
+                                        placeholder="輸入您的 Gemini API Key (可選)"
+                                        className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+                                    />
+                                    {props.userApiKey && (
+                                        <button
+                                            onClick={() => {
+                                                if (confirm('確定要清除 API Key 嗎？')) {
+                                                    props.onUserApiKeyChange?.('');
+                                                }
+                                            }}
+                                            className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-colors"
+                                            title="清除 API Key"
+                                        >
+                                            清除
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    {props.userApiKey ? (
+                                        <span className="text-xs text-green-400 flex items-center gap-1">
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                            已設置 API Key
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs text-yellow-400 flex items-center gap-1">
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                            </svg>
+                                            使用內建 API Key（配額有限）
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="text-xs text-gray-400 leading-relaxed">
+                                    💡 當內建 API 配額用完時，可輸入您自己的 Gemini API Key 繼續使用 AI 功能。API Key 僅存儲在您的瀏覽器本地。
+                                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline ml-1">
+                                        獲取 API Key
+                                    </a>
+                                </p>
+                            </div>
+
                             {/* 字幕語言選擇 */}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
@@ -1362,6 +1430,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         disabled={props.isGeneratingSubtitles || !props.audioFile}
                                         variant="secondary"
                                         className="bg-purple-600 hover:bg-purple-500"
+                                        id="ai-subtitle-button"
                                     >
                                         {props.isGeneratingSubtitles ? 
                                             <>
@@ -1374,14 +1443,21 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                               </>
                                         }
                                     </Button>
-                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-80 p-3 bg-gray-900 border border-gray-600 rounded-md text-xs text-left text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                    <div 
+                                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 p-4 bg-gray-900 border border-cyan-400/30 rounded-lg text-xs text-left text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-2xl" 
+                                        style={{ 
+                                            maxHeight: '70vh', 
+                                            overflowY: 'auto',
+                                            zIndex: 9999
+                                        }}
+                                    >
                                         <div className="space-y-2">
-                                            <div className="font-medium text-cyan-300">AI 字幕生成功能</div>
+                                            <div className="font-semibold text-cyan-300 text-sm mb-2 pb-2 border-b border-gray-700">功能</div>
                                             <div>• 直接分析音訊檔並使用 AI 產生字幕</div>
-                                            <div>• 過程可能需要一些時間，請耐心等候</div>
-                                            <div>• 結果的準確度取決於音訊的清晰度</div>
-                                            <div className="text-green-300 font-medium">• 🌟 自動轉換為繁體中文</div>
-                                            <div className="text-green-300">• 支援多種語言音訊轉繁體中文</div>
+                                            <div className="text-gray-400 text-xs mt-1">需要一些時間，請耐心等候</div>
+                                            <div className="text-gray-400 text-xs">準確度取決於音訊的清晰度</div>
+                                            <div className="text-green-300 font-medium mt-2">• 轉換為繁體中文</div>
+                                            <div className="text-green-300">• 語言音訊轉繁體中文</div>
                                         </div>
                                     </div>
                                 </div>
@@ -1603,19 +1679,35 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     ]}
                                 />
                                 
+                                {/* 文字顏色選擇器 - 獨立顯示，始終可見 */}
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300">字幕顏色</label>
-                                    <div className="flex space-x-2">
-                                        {PRESET_COLORS.map(color => (
-                                            <SwatchButton
-                                                key={color}
-                                                color={color}
-                                                onClick={props.onSubtitleColorChange}
-                                                isActive={props.subtitleColor === color}
-                                            />
-                                        ))}
+                                    <label className="block text-sm font-semibold text-gray-300">文字顏色</label>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="color"
+                                            value={props.subtitleColor}
+                                            onChange={(e) => props.onSubtitleColorChange(e.target.value)}
+                                            className="w-12 h-12 rounded border border-gray-600 cursor-pointer bg-transparent"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={props.subtitleColor}
+                                            onChange={(e) => props.onSubtitleColorChange(e.target.value)}
+                                            className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                                            placeholder="#FFFFFF"
+                                        />
                                     </div>
                                 </div>
+                                
+                                {/* 字幕特效面板 */}
+                                <SubtitleEffectPanel
+                                    subtitleEffectIds={props.subtitleEffectIds || []}
+                                    onSubtitleEffectIdsChange={props.onSubtitleEffectIdsChange || (() => {})}
+                                    subtitleColor={props.subtitleColor}
+                                    onSubtitleColorChange={props.onSubtitleColorChange}
+                                    subtitleColor2={props.subtitleColor2 || '#67E8F9'}
+                                    onSubtitleColor2Change={props.onSubtitleColor2Change || (() => {})}
+                                />
                                 
                                 <SelectControl
                                     label="字幕背景樣式"
