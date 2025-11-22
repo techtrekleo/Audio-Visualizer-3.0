@@ -454,40 +454,12 @@ const SliderControl: React.FC<{
     // 計算滑桿的百分比位置
     const percentage = ((value - min) / (max - min)) * 100;
     
-    // 根據不同類型設置顏色
+    // 根據不同類型設置顏色 - 統一使用藍色莫蘭迪色系
     const getSliderStyle = () => {
-        switch (colorType) {
-            case 'sensitivity':
-                return {
-                    background: `linear-gradient(to right, 
-                        #ef4444 0%, 
-                        #f97316 25%, 
-                        #eab308 50%, 
-                        #22c55e 75%, 
-                        #10b981 100%)`
-                };
-            case 'position':
-                return {
-                    background: `linear-gradient(to right, 
-                        #3b82f6 0%, 
-                        #8b5cf6 50%, 
-                        #ec4899 100%)`
-                };
-            case 'scale':
-                return {
-                    background: `linear-gradient(to right, 
-                        #6b7280 0%, 
-                        #10b981 50%, 
-                        #f59e0b 100%)`
-                };
-            default:
-                return {
-                    background: `linear-gradient(to right, 
-                        #374151 0%, 
-                        #06b6d4 50%, 
-                        #8b5cf6 100%)`
-                };
-        }
+        // 所有類型都使用統一的藍色莫蘭迪色系，無漸層
+        return {
+            background: '#9DB4C0' /* 藍色莫蘭迪色系 */
+        };
     };
 
     return (
@@ -2485,7 +2457,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <div
                                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                                 style={{
-                                                    background: `linear-gradient(to right, #3B82F6 0%, #8B5CF6 100%)`
+                                                    background: '#9DB4C0' /* 藍色莫蘭迪色系 */
                                                 }}
                                             />
                                             <input
@@ -2531,7 +2503,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <div
                                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                                 style={{
-                                                    background: `linear-gradient(to right, #3B82F6 0%, #8B5CF6 100%)`
+                                                    background: '#9DB4C0' /* 藍色莫蘭迪色系 */
                                                 }}
                                             />
                                             <input
@@ -2564,7 +2536,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <div
                                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                                 style={{
-                                                    background: `linear-gradient(to right, #10B981 0%, #F59E0B 100%)`
+                                                    background: '#9DB4C0' /* 藍色莫蘭迪色系 */
                                                 }}
                                             />
                                             <input
@@ -2597,7 +2569,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <div
                                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                                 style={{
-                                                    background: `linear-gradient(to right, #EF4444 0%, #F97316 100%)`
+                                                    background: '#9DB4C0' /* 藍色莫蘭迪色系 */
                                                 }}
                                             />
                                             <input
@@ -2755,7 +2727,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 <div
                                                     className="w-full h-2 rounded-lg absolute top-0 left-0"
                                                     style={{
-                                                        background: `linear-gradient(to right, rgba(59, 130, 246, 0.5) 0%, rgba(139, 92, 246, 0.5) 100%)`
+                                                        background: '#9DB4C0' /* 藍色莫蘭迪色系 */
                                                     }}
                                                 />
                                                 <input
@@ -3059,7 +3031,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <div
                                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                                 style={{
-                                                    background: `linear-gradient(to right, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%)`
+                                                    background: '#9DB4C0' /* 藍色莫蘭迪色系 */
                                                 }}
                                             />
                                             <input

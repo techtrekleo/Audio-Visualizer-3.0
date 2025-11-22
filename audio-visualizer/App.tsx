@@ -1091,9 +1091,10 @@ function App() {
 
     // 處理用戶直接輸入 API Key
     const handleUserApiKeyChange = (apiKey: string) => {
-        setUserApiKey(apiKey);
-        if (apiKey.trim()) {
-            localStorage.setItem('user_gemini_api_key', apiKey.trim());
+        const trimmedKey = apiKey.trim();
+        setUserApiKey(trimmedKey);
+        if (trimmedKey) {
+            localStorage.setItem('user_gemini_api_key', trimmedKey);
             console.log('User API Key saved to localStorage');
         } else {
             localStorage.removeItem('user_gemini_api_key');

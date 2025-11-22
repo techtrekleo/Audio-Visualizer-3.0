@@ -8,7 +8,7 @@
 /* Base styles for the entire application */
 html, body, #root {
   height: 100%;
-  background-color: #000000; /* Pure black background */
+  background-color: #111827; /* Dark gray background */
   color: #f3f4f6; /* Light text color */
   font-family: "Poppins", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -41,7 +41,7 @@ input[type="range"].slider,
 input[type="range"] {
   -webkit-appearance: none !important;
   appearance: none !important;
-  background: linear-gradient(to right, #3B82F6 0%, #10B981 100%) !important;
+  background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
   cursor: pointer !important;
   width: 100% !important;
   height: 12px !important;
@@ -53,7 +53,7 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-track {
   -webkit-appearance: none !important;
   appearance: none !important;
-  background: linear-gradient(to right, #3B82F6 0%, #10B981 100%) !important;
+  background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
   height: 12px !important;
   border-radius: 8px !important;
   border: none !important;
@@ -62,7 +62,7 @@ input[type="range"]::-webkit-slider-track {
 
 /* 強力覆蓋 Mozilla slider track */
 input[type="range"]::-moz-range-track {
-  background: linear-gradient(to right, #3B82F6 0%, #10B981 100%) !important;
+  background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
   height: 12px !important;
   border-radius: 8px !important;
   border: none !important;
@@ -74,11 +74,11 @@ input[type="range"].slider::-webkit-slider-track,
 .slider::-webkit-slider-track {
   -webkit-appearance: none !important;
   appearance: none !important;
-  background: #374151 !important;
+  background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
   height: 8px !important;
   border-radius: 4px !important;
   border: none !important;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Webkit slider thumb */
@@ -86,12 +86,12 @@ input[type="range"].slider::-webkit-slider-thumb,
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none !important;
   appearance: none !important;
-  background: #06b6d4 !important;
+  background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
   height: 20px !important;
   width: 20px !important;
   border-radius: 50% !important;
   cursor: pointer !important;
-  border: 2px solid #ffffff !important;
+  border: 2px solid #111827 !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
   transition: all 0.2s ease !important;
   margin-top: -6px !important;
@@ -99,39 +99,39 @@ input[type="range"].slider::-webkit-slider-thumb,
 
 input[type="range"].slider::-webkit-slider-thumb:hover,
 .slider::-webkit-slider-thumb:hover {
-  background: #0891b2 !important;
+  background: #8FA3B0 !important; /* 稍深的藍色莫蘭迪色系 */
   transform: scale(1.1) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 4px 8px rgba(157, 180, 192, 0.4) !important;
 }
 
 /* Mozilla slider track */
 input[type="range"].slider::-moz-range-track,
 .slider::-moz-range-track {
-  background: #374151 !important;
+  background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
   height: 8px !important;
   border-radius: 4px !important;
   border: none !important;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Mozilla slider thumb */
 input[type="range"].slider::-moz-range-thumb,
 .slider::-moz-range-thumb {
-  background: #06b6d4 !important;
+  background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
   height: 20px !important;
   width: 20px !important;
   border-radius: 50% !important;
   cursor: pointer !important;
-  border: 2px solid #ffffff !important;
+  border: 2px solid #111827 !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
   transition: all 0.2s ease !important;
 }
 
 input[type="range"].slider::-moz-range-thumb:hover,
 .slider::-moz-range-thumb:hover {
-  background: #0891b2 !important;
+  background: #8FA3B0 !important; /* 稍深的藍色莫蘭迪色系 */
   transform: scale(1.1) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 4px 8px rgba(157, 180, 192, 0.4) !important;
 }
 
 /* Enhanced button hover effects */
@@ -156,22 +156,22 @@ button:not(:disabled):active {
 }
 
 ::-webkit-scrollbar-track {
-  background: #374151;
+  background: #1f2937;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #06b6d4;
+  background: #4b5563;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #0891b2;
+  background: #6b7280;
 }
 
 /* Focus ring improvements */
 .focus\:ring-cyan-400:focus {
-  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.5);
 }
 
 /* Enhanced backdrop blur */
@@ -182,7 +182,7 @@ button:not(:disabled):active {
 
 /* Additional background improvements */
 body {
-  background: #000000; /* Pure black background */
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%); /* Dark gradient */
 }
 
 /* Canvas background fallback */
@@ -192,7 +192,7 @@ canvas {
 
 /* Main container background */
 .main-container {
-  background-color: #000000; /* Pure black background */
+  background-color: #111827; /* Dark background */
   min-height: 100vh;
 }
 
@@ -203,13 +203,13 @@ input[type="range"] {
 
 /* Force slider visibility */
 input[type="range"]::-webkit-slider-track {
-  background: #374151 !important;
+  background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
   height: 8px !important;
   border-radius: 4px !important;
 }
 
 input[type="range"]::-webkit-slider-thumb {
-  background: #06b6d4 !important;
+  background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
   height: 20px !important;
   width: 20px !important;
   border-radius: 50% !important;
@@ -246,13 +246,13 @@ input[type="range"].slider-enhanced::-webkit-slider-thumb,
 .slider-enhanced::-webkit-slider-thumb {
   -webkit-appearance: none !important;
   appearance: none !important;
-  background: #ffffff !important;
+  background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
   height: 24px !important;
   width: 24px !important;
   border-radius: 50% !important;
   cursor: pointer !important;
-  border: 3px solid #06b6d4 !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+  border: 3px solid #111827 !important;
+  box-shadow: 0 4px 8px rgba(157, 180, 192, 0.3) !important;
   transition: all 0.2s ease !important;
   margin-top: -8px !important;
   position: relative !important;
@@ -261,10 +261,10 @@ input[type="range"].slider-enhanced::-webkit-slider-thumb,
 
 input[type="range"].slider-enhanced::-webkit-slider-thumb:hover,
 .slider-enhanced::-webkit-slider-thumb:hover {
-  background: #f8fafc !important;
+  background: #8FA3B0 !important; /* 稍深的藍色莫蘭迪色系 */
   transform: scale(1.1) !important;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4) !important;
-  border-color: #0891b2 !important;
+  box-shadow: 0 6px 12px rgba(157, 180, 192, 0.4) !important;
+  border-color: #111827 !important;
 }
 
 /* Mozilla 增強版滑桿 */
@@ -278,22 +278,22 @@ input[type="range"].slider-enhanced::-moz-range-track,
 
 input[type="range"].slider-enhanced::-moz-range-thumb,
 .slider-enhanced::-moz-range-thumb {
-  background: #ffffff !important;
+  background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
   height: 24px !important;
   width: 24px !important;
   border-radius: 50% !important;
   cursor: pointer !important;
-  border: 3px solid #06b6d4 !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+  border: 3px solid #111827 !important;
+  box-shadow: 0 4px 8px rgba(157, 180, 192, 0.3) !important;
   transition: all 0.2s ease !important;
 }
 
 input[type="range"].slider-enhanced::-moz-range-thumb:hover,
 .slider-enhanced::-moz-range-thumb:hover {
-  background: #f8fafc !important;
+  background: #8FA3B0 !important; /* 稍深的藍色莫蘭迪色系 */
   transform: scale(1.1) !important;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4) !important;
-  border-color: #0891b2 !important;
+  box-shadow: 0 6px 12px rgba(157, 180, 192, 0.4) !important;
+  border-color: #111827 !important;
 }
 
 /* 摺疊動畫優化 */
@@ -326,8 +326,8 @@ input[type="range"].slider-enhanced::-moz-range-thumb:hover,
 
 /* 設置管理面板優化 */
 .settings-manager-panel {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-  border: 1px solid rgba(6, 182, 212, 0.2);
+  background: linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(17, 24, 39, 0.8) 100%);
+  border: 1px solid rgba(75, 85, 99, 0.3);
 }
 
 /* 觸控設備優化 */

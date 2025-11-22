@@ -127,7 +127,7 @@ function App() {
             
             <div className="space-y-4">
               <div>
-                <label htmlFor="songName" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="songName" className="block text-sm font-medium text-gray-100 mb-2">
                   Song Name *
                 </label>
                 <input
@@ -141,7 +141,7 @@ function App() {
               </div>
 
               <div>
-                <label htmlFor="artist" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="artist" className="block text-sm font-medium text-gray-100 mb-2">
                   Original Artist (Optional)
                 </label>
                 <div className="relative">
@@ -171,13 +171,13 @@ function App() {
                 {/* 歌手歷史記錄 */}
                 {showArtistHistory && artistHistory.length > 0 && (
                   <div className="mt-2 p-3 bg-gray-800 rounded-lg border border-gray-600">
-                    <h4 className="text-sm font-medium text-gray-300 mb-3">歌手歷史記錄</h4>
+                    <h4 className="text-sm font-medium text-gray-100 mb-3">歌手歷史記錄</h4>
                     <div className="flex flex-wrap gap-2">
                       {artistHistory.map((artistName, index) => (
                         <button
                           key={index}
                           onClick={() => addArtistFromHistory(artistName)}
-                          className="px-3 py-1 text-xs bg-gray-700 hover:bg-cyan-600 text-gray-300 hover:text-white rounded-full transition-colors duration-200"
+                          className="px-3 py-1 text-xs bg-gray-700 hover:bg-cyan-600 text-gray-100 hover:text-white rounded-full transition-colors duration-200"
                         >
                           {artistName}
                         </button>
@@ -188,7 +188,7 @@ function App() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-100 mb-2">
                   Language (語言) *
                 </label>
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
@@ -211,7 +211,7 @@ function App() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-100 mb-2">
                   Music Style * (可多選)
                 </label>
                 
@@ -244,7 +244,7 @@ function App() {
                   {/* 自定義輸入按鈕 */}
                   <button
                     onClick={() => setShowCustomInput(!showCustomInput)}
-                    className="w-full p-3 rounded-lg border-2 border-dashed border-gray-600 bg-gray-800 hover:border-gray-500 hover:bg-gray-700 transition-all duration-200 text-gray-300"
+                    className="w-full p-3 rounded-lg border-2 border-dashed border-gray-600 bg-gray-800 hover:border-gray-500 hover:bg-gray-700 transition-all duration-200 text-gray-100"
                   >
                     <div className="flex items-center justify-center">
                       <span className="mr-2">+</span>
@@ -278,14 +278,14 @@ function App() {
                   {/* 歷史記錄 */}
                   {styleHistory.length > 0 && (
                     <div className="p-4 bg-gray-800 rounded-lg border border-gray-600">
-                      <h4 className="text-sm font-medium text-gray-300 mb-3">歷史記錄</h4>
+                      <h4 className="text-sm font-medium text-gray-100 mb-3">歷史記錄</h4>
                       <div className="flex flex-wrap gap-2">
                         {styleHistory.map((style, index) => (
                           <button
                             key={index}
                             onClick={() => addFromHistory(style)}
                             disabled={selectedStyles.includes(style)}
-                            className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-gray-100 rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {style}
                           </button>
@@ -298,7 +298,7 @@ function App() {
                 {/* 已選擇的風格顯示 */}
                 {selectedStyles.length > 0 && (
                   <div className="mt-4 p-3 bg-gray-800 rounded-lg">
-                    <h4 className="text-sm font-medium text-gray-300 mb-2">已選擇的風格:</h4>
+                    <h4 className="text-sm font-medium text-gray-100 mb-2">已選擇的風格:</h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedStyles.map((styleId) => {
                         const category = musicCategories.find(c => c.id === styleId)

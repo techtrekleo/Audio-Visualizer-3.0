@@ -107,7 +107,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileLoad, onTextPaste,
           value={textInput}
           onChange={(e) => setTextInput(e.target.value)}
           placeholder="1&#10;00:00:00,000 --> 00:00:05,000&#10;這是第一條字幕&#10;&#10;2&#10;00:00:05,000 --> 00:00:10,000&#10;這是第二條字幕"
-          className="w-full h-48 px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-mono text-sm resize-none"
+          className="w-full h-48 px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-mono text-sm resize-none"
         />
         <button
           onClick={handleTextSubmit}

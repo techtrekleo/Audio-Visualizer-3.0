@@ -43,8 +43,8 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
-            color: #ffffff;
+            background: linear-gradient(135deg, #F5F1E8 0%, #E8E3D5 50%, #D4C9B0 100%);
+            color: #4B5563;
             line-height: 1.6;
             overflow-x: hidden;
         }
@@ -57,7 +57,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
+            background: linear-gradient(135deg, #F5F1E8 0%, #E8E3D5 50%, #D4C9B0 100%);
         }
         
         .bg-animation::before {
@@ -68,9 +68,9 @@
             width: 100%;
             height: 100%;
             background-image: 
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+                radial-gradient(circle at 20% 50%, rgba(156, 163, 175, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(212, 165, 165, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(167, 196, 160, 0.2) 0%, transparent 50%);
             animation: float 6s ease-in-out infinite;
         }
         
@@ -85,9 +85,9 @@
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(245, 241, 232, 0.95);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(156, 163, 175, 0.2);
             z-index: 1000;
             padding: 1rem 0;
         }
@@ -113,14 +113,14 @@
             height: 50px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid rgba(78, 205, 196, 0.5);
-            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+            border: 2px solid rgba(156, 163, 175, 0.5);
+            box-shadow: 0 4px 15px rgba(156, 163, 175, 0.3);
             transition: all 0.3s ease;
         }
         
         .logo-cat:hover {
             transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.5);
+            box-shadow: 0 6px 20px rgba(156, 163, 175, 0.5);
         }
         
         .logo-text {
@@ -132,7 +132,7 @@
         .logo-main {
             font-size: 1.8rem;
             font-weight: 900;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            background: linear-gradient(45deg, #9CA3AF, #6B7280, #A7C4A0);
             background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -143,7 +143,7 @@
         .logo-sub {
             font-size: 0.7rem;
             font-weight: 400;
-            color: #96ceb4;
+            color: #8FA68E;
             margin-top: -2px;
         }
         
@@ -160,7 +160,7 @@
         }
         
         .nav-links a {
-            color: #ffffff;
+            color: #4B5563;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s ease;
@@ -168,7 +168,7 @@
         }
         
         .nav-links a:hover {
-            color: #4ecdc4;
+            color: #6B7280;
         }
         
         .nav-links a::after {
@@ -178,7 +178,7 @@
             left: 0;
             width: 0;
             height: 2px;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
             transition: width 0.3s ease;
         }
         
@@ -209,7 +209,7 @@
             font-size: 4rem;
             font-weight: 900;
             margin-bottom: 1rem;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background: linear-gradient(45deg, #9CA3AF, #6B7280, #A7C4A0, #8FA68E);
             background-size: 400% 400%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -219,14 +219,14 @@
         
         .hero-content .subtitle {
             font-size: 1.5rem;
-            color: #b8b8b8;
+            color: #6B7280;
             margin-bottom: 2rem;
             font-weight: 300;
         }
         
         .hero-content .description {
             font-size: 1.1rem;
-            color: #d1d5db;
+            color: #4B5563;
             margin-bottom: 3rem;
             max-width: 600px;
             margin-left: auto;
@@ -255,33 +255,33 @@
         }
         
         .btn-primary {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            color: white;
-            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+            background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
+            color: #F5F1E8;
+            box-shadow: 0 10px 30px rgba(156, 163, 175, 0.3);
         }
         
         .btn-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+            box-shadow: 0 15px 40px rgba(156, 163, 175, 0.4);
         }
         
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(232, 227, 213, 0.5);
+            color: #4B5563;
+            border: 1px solid rgba(156, 163, 175, 0.3);
             backdrop-filter: blur(10px);
         }
         
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(232, 227, 213, 0.7);
             transform: translateY(-3px);
         }
         
         /* 自定義 Buy Me a Coffee 按鈕樣式 */
         .btn-coffee {
-            background: linear-gradient(135deg, #ff6b9d 0%, #4ecdc4 100%);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, #D4A5A5 0%, #A7C4A0 100%);
+            color: #F5F1E8;
+            border: 1px solid rgba(156, 163, 175, 0.3);
             border-radius: 15px;
             padding: 1rem 2rem;
             font-weight: 600;
@@ -290,7 +290,7 @@
             align-items: center;
             gap: 1rem;
             transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(156, 163, 175, 0.3);
             position: relative;
             overflow: hidden;
             font-family: 'Poppins', sans-serif;
@@ -304,7 +304,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            background: linear-gradient(90deg, transparent, rgba(245, 241, 232, 0.3), transparent);
             transition: left 0.5s ease;
         }
         
@@ -313,10 +313,10 @@
         }
         
         .btn-coffee:hover {
-            background: linear-gradient(135deg, #ff8fb3 0%, #5dd5d5 100%);
+            background: linear-gradient(135deg, #C4A5A5 0%, #8FA68E 100%);
             transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-            color: white;
+            box-shadow: 0 15px 35px rgba(156, 163, 175, 0.4);
+            color: #F5F1E8;
         }
         
         .btn-coffee:active {
@@ -404,7 +404,7 @@
         /* 工具展示區域 */
         .tools-section {
             padding: 6rem 0;
-            background: rgba(45, 45, 45, 0.1);
+            background: rgba(232, 227, 213, 0.3);
         }
         
         .section-title {
@@ -413,7 +413,7 @@
             font-size: 3rem;
             font-weight: 700;
             margin-bottom: 3rem;
-            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            background: linear-gradient(45deg, #6B7280, #9CA3AF);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -427,10 +427,10 @@
         }
         
         .tool-card {
-            background: rgba(45, 45, 45, 0.3);
+            background: rgba(245, 241, 232, 0.6);
             border-radius: 20px;
             padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(156, 163, 175, 0.2);
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
             position: relative;
@@ -444,7 +444,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(232, 227, 213, 0.3), transparent);
             transition: left 0.5s ease;
         }
         
@@ -454,14 +454,14 @@
         
         .tool-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            border-color: rgba(78, 205, 196, 0.5);
+            box-shadow: 0 20px 40px rgba(156, 163, 175, 0.3);
+            border-color: rgba(156, 163, 175, 0.5);
         }
         
         .tool-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -471,11 +471,11 @@
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 1rem;
-            color: #ffffff;
+            color: #4B5563;
         }
         
         .tool-description {
-            color: #b8b8b8;
+            color: #6B7280;
             margin-bottom: 1.5rem;
             line-height: 1.6;
         }
@@ -486,7 +486,7 @@
         }
         
         .tool-features li {
-            color: #d1d5db;
+            color: #4B5563;
             margin-bottom: 0.5rem;
             padding-left: 1.5rem;
             position: relative;
@@ -496,7 +496,7 @@
             content: '✓';
             position: absolute;
             left: 0;
-            color: #4ecdc4;
+            color: #6B7280;
             font-weight: bold;
         }
         
@@ -505,8 +505,8 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.75rem 1.5rem;
-            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
-            color: white;
+            background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
+            color: #F5F1E8;
             text-decoration: none;
             border-radius: 25px;
             font-weight: 500;
@@ -515,13 +515,13 @@
         
         .tool-link:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+            box-shadow: 0 10px 25px rgba(156, 163, 175, 0.3);
         }
         
         /* 更新日誌區域 */
         .changelog-section {
             padding: 6rem 0;
-            background: rgba(20, 20, 20, 0.3);
+            background: rgba(232, 227, 213, 0.2);
         }
         
         .changelog-timeline {
@@ -538,25 +538,25 @@
             top: 0;
             bottom: 0;
             width: 2px;
-            background: linear-gradient(180deg, #4ecdc4, #45b7d1);
+            background: linear-gradient(180deg, #9CA3AF, #A7C4A0);
         }
         
         .changelog-item {
             position: relative;
             margin-bottom: 3rem;
             padding-left: 2.5rem;
-            background: rgba(45, 45, 45, 0.3);
+            background: rgba(245, 241, 232, 0.6);
             border-radius: 15px;
             padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(156, 163, 175, 0.2);
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
         
         .changelog-item:hover {
             transform: translateX(10px);
-            border-color: rgba(78, 205, 196, 0.5);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(156, 163, 175, 0.5);
+            box-shadow: 0 10px 30px rgba(156, 163, 175, 0.3);
         }
         
         .changelog-item::before {
@@ -567,12 +567,12 @@
             width: 16px;
             height: 16px;
             border-radius: 50%;
-            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
-            box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.8);
+            background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
+            box-shadow: 0 0 0 4px rgba(245, 241, 232, 0.8);
         }
         
         .changelog-date {
-            color: #4ecdc4;
+            color: #6B7280;
             font-weight: 600;
             font-size: 1.1rem;
             margin-bottom: 1rem;
@@ -586,15 +586,15 @@
         }
         
         .changelog-tool {
-            color: #45b7d1;
+            color: #8FA68E;
             font-weight: 500;
             font-size: 0.95rem;
             margin-bottom: 0.75rem;
             display: inline-block;
-            background: rgba(69, 183, 209, 0.1);
+            background: rgba(167, 196, 160, 0.2);
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
-            border: 1px solid rgba(69, 183, 209, 0.3);
+            border: 1px solid rgba(167, 196, 160, 0.3);
         }
         
         .changelog-changes {
@@ -603,7 +603,7 @@
         }
         
         .changelog-changes li {
-            color: #d1d5db;
+            color: #4B5563;
             margin-bottom: 0.75rem;
             padding-left: 1.5rem;
             position: relative;
@@ -629,14 +629,14 @@
         .channel-section {
             padding: 6rem 0;
             text-align: center;
-            background: rgba(26, 26, 26, 0.2);
+            background: rgba(232, 227, 213, 0.3);
         }
         
         .channel-card {
-            background: rgba(45, 45, 45, 0.4);
+            background: rgba(245, 241, 232, 0.7);
             border-radius: 30px;
             padding: 4rem 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(156, 163, 175, 0.2);
             backdrop-filter: blur(10px);
             max-width: 800px;
             margin: 0 auto;
@@ -647,12 +647,12 @@
             height: 120px;
             border-radius: 50%;
             margin: 0 auto 2rem;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 8px;
-            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 10px 30px rgba(156, 163, 175, 0.3);
             transition: transform 0.3s ease;
         }
         
@@ -665,7 +665,7 @@
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(245, 241, 232, 0.5);
         }
         
         .channel-name {
@@ -673,7 +673,7 @@
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 1rem;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -681,7 +681,7 @@
         
         .channel-description {
             font-size: 1.2rem;
-            color: #b8b8b8;
+            color: #4B5563;
             margin-bottom: 2rem;
             line-height: 1.6;
         }
@@ -701,17 +701,17 @@
         .stat-number {
             font-size: 2rem;
             font-weight: 700;
-            color: #4ecdc4;
+            color: #6B7280;
             display: block;
         }
         
         .stat-label {
-            color: #b8b8b8;
+            color: #6B7280;
             font-size: 0.9rem;
         }
         
         .stat-description {
-            color: #4ecdc4;
+            color: #8FA68E;
             font-size: 0.8rem;
             font-style: italic;
             display: block;
@@ -720,10 +720,10 @@
         
         /* 頁腳 */
         .footer {
-            background: rgba(26, 26, 26, 0.8);
+            background: rgba(232, 227, 213, 0.8);
             padding: 3rem 0 2rem;
             text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(156, 163, 175, 0.2);
         }
         
         .footer-content {
@@ -741,17 +741,17 @@
         }
         
         .footer-links a {
-            color: #b8b8b8;
+            color: #6B7280;
             text-decoration: none;
             transition: color 0.3s ease;
         }
         
         .footer-links a:hover {
-            color: #4ecdc4;
+            color: #4B5563;
         }
         
         .footer-bottom {
-            color: #666;
+            color: #9CA3AF;
             font-size: 0.9rem;
         }
         
@@ -845,20 +845,20 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(75, 85, 99, 0.8);
             backdrop-filter: blur(5px);
         }
         
         .modal-content {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, #F5F1E8 0%, #E8E3D5 100%);
             margin: 2% auto;
             padding: 0;
-            border: 1px solid rgba(78, 205, 196, 0.3);
+            border: 1px solid rgba(156, 163, 175, 0.3);
             border-radius: 20px;
             width: 90%;
             max-width: 600px;
             max-height: 90vh;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 60px rgba(75, 85, 99, 0.5);
             animation: modalSlideIn 0.3s ease;
             overflow: hidden;
             display: flex;
@@ -878,7 +878,7 @@
         
         .modal-header {
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(156, 163, 175, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -886,12 +886,12 @@
         
         .modal-header h3 {
             margin: 0;
-            color: #4ecdc4;
+            color: #6B7280;
             font-family: 'Orbitron', monospace;
         }
         
         .close {
-            color: #b8b8b8;
+            color: #9CA3AF;
             font-size: 2rem;
             font-weight: bold;
             cursor: pointer;
@@ -899,7 +899,7 @@
         }
         
         .close:hover {
-            color: #4ecdc4;
+            color: #4B5563;
         }
         
         .modal-body {
@@ -915,17 +915,17 @@
         }
         
         .modal-body::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(156, 163, 175, 0.1);
             border-radius: 4px;
         }
         
         .modal-body::-webkit-scrollbar-thumb {
-            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
             border-radius: 4px;
         }
         
         .modal-body::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(45deg, #45b7d1, #4ecdc4);
+            background: linear-gradient(45deg, #A7C4A0, #9CA3AF);
         }
         
         .donation-options {
@@ -936,8 +936,8 @@
         }
         
         .donation-option {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(232, 227, 213, 0.5);
+            border: 1px solid rgba(156, 163, 175, 0.2);
             border-radius: 15px;
             padding: 1.5rem;
             text-align: center;
@@ -946,8 +946,8 @@
         
         .donation-option:hover {
             transform: translateY(-5px);
-            border-color: rgba(78, 205, 196, 0.5);
-            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.2);
+            border-color: rgba(156, 163, 175, 0.5);
+            box-shadow: 0 10px 30px rgba(156, 163, 175, 0.2);
         }
         
         .option-icon {
@@ -956,20 +956,20 @@
         }
         
         .donation-option h4 {
-            color: #ffffff;
+            color: #4B5563;
             margin-bottom: 1rem;
             font-size: 1.1rem;
         }
         
         .donation-option p {
-            color: #b8b8b8;
+            color: #6B7280;
             margin: 0.3rem 0;
             font-size: 0.9rem;
         }
         
         .copy-btn {
-            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
-            color: white;
+            background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
+            color: #F5F1E8;
             border: none;
             padding: 0.5rem 1rem;
             border-radius: 20px;
@@ -981,7 +981,7 @@
         
         .copy-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+            box-shadow: 0 5px 15px rgba(156, 163, 175, 0.3);
         }
         
         /* 轉帳步驟樣式 */
@@ -990,14 +990,14 @@
             align-items: flex-start;
             margin-bottom: 1.5rem;
             padding: 1rem;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(232, 227, 213, 0.3);
             border-radius: 10px;
-            border-left: 4px solid #4ecdc4;
+            border-left: 4px solid #9CA3AF;
         }
         
         .step-number {
-            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
-            color: white;
+            background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
+            color: #F5F1E8;
             width: 30px;
             height: 30px;
             border-radius: 50%;
@@ -1010,13 +1010,13 @@
         }
         
         .step-content h5 {
-            color: #ffffff;
+            color: #4B5563;
             margin: 0 0 0.5rem 0;
             font-size: 1rem;
         }
         
         .step-content p {
-            color: #b8b8b8;
+            color: #6B7280;
             margin: 0;
             font-size: 0.9rem;
             line-height: 1.4;
@@ -1184,19 +1184,19 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(75, 85, 99, 0.8);
             backdrop-filter: blur(5px);
         }
         .contact-modal-content {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            background: linear-gradient(135deg, #F5F1E8 0%, #E8E3D5 100%);
             margin: 10% auto;
             padding: 2rem;
-            border: 1px solid #4ecdc4;
+            border: 1px solid #9CA3AF;
             border-radius: 20px;
             width: 90%;
             max-width: 500px;
             position: relative;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 40px rgba(75, 85, 99, 0.5);
         }
         .contact-modal-header {
             display: flex;
@@ -1205,20 +1205,20 @@
             margin-bottom: 2rem;
         }
         .contact-modal-title {
-            color: #4ecdc4;
+            color: #6B7280;
             font-size: 1.5rem;
             font-weight: bold;
             margin: 0;
         }
         .contact-modal-close {
-            color: #aaa;
+            color: #9CA3AF;
             font-size: 2rem;
             font-weight: bold;
             cursor: pointer;
             transition: color 0.3s ease;
         }
         .contact-modal-close:hover {
-            color: #4ecdc4;
+            color: #4B5563;
         }
         .contact-options {
             display: flex;
@@ -1229,17 +1229,17 @@
             display: flex;
             align-items: center;
             padding: 1rem;
-            background: rgba(78, 205, 196, 0.1);
-            border: 1px solid rgba(78, 205, 196, 0.3);
+            background: rgba(156, 163, 175, 0.1);
+            border: 1px solid rgba(156, 163, 175, 0.3);
             border-radius: 15px;
             transition: all 0.3s ease;
             cursor: pointer;
             text-decoration: none;
-            color: white;
+            color: #4B5563;
         }
         .contact-option:hover {
-            background: rgba(78, 205, 196, 0.2);
-            border-color: #4ecdc4;
+            background: rgba(156, 163, 175, 0.2);
+            border-color: #9CA3AF;
             transform: translateY(-2px);
         }
         .contact-option-icon {
@@ -1260,7 +1260,7 @@
         }
         .contact-option-desc {
             font-size: 0.9rem;
-            color: #b8b8b8;
+            color: #6B7280;
         }
         
         /* 隱私政策和使用條款彈出視窗樣式 */
@@ -1272,20 +1272,20 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(75, 85, 99, 0.8);
             backdrop-filter: blur(5px);
         }
         
         .privacy-modal-content, .terms-modal-content {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, #F5F1E8 0%, #E8E3D5 100%);
             margin: 2% auto;
             padding: 0;
-            border: 1px solid rgba(78, 205, 196, 0.3);
+            border: 1px solid rgba(156, 163, 175, 0.3);
             border-radius: 20px;
             width: 90%;
             max-width: 800px;
             max-height: 90vh;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 60px rgba(75, 85, 99, 0.5);
             animation: modalSlideIn 0.3s ease;
             overflow: hidden;
             display: flex;
@@ -1294,7 +1294,7 @@
         
         .privacy-modal-header, .terms-modal-header {
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(156, 163, 175, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1302,13 +1302,13 @@
         
         .privacy-modal-title, .terms-modal-title {
             margin: 0;
-            color: #4ecdc4;
+            color: #6B7280;
             font-family: 'Orbitron', monospace;
             font-size: 1.5rem;
         }
         
         .privacy-modal-close, .terms-modal-close {
-            color: #b8b8b8;
+            color: #9CA3AF;
             font-size: 2rem;
             font-weight: bold;
             cursor: pointer;
@@ -1316,7 +1316,7 @@
         }
         
         .privacy-modal-close:hover, .terms-modal-close:hover {
-            color: #4ecdc4;
+            color: #4B5563;
         }
         
         .privacy-content, .terms-content {
@@ -1324,12 +1324,12 @@
             overflow-y: auto;
             flex: 1;
             max-height: calc(90vh - 120px);
-            color: #ffffff;
+            color: #4B5563;
             line-height: 1.6;
         }
         
         .privacy-content h3, .terms-content h3 {
-            color: #4ecdc4;
+            color: #6B7280;
             margin-top: 2rem;
             margin-bottom: 1rem;
             font-size: 1.2rem;
@@ -1341,7 +1341,7 @@
         
         .privacy-content p, .terms-content p {
             margin-bottom: 1rem;
-            color: #d1d5db;
+            color: #4B5563;
         }
         
         .privacy-content ul, .terms-content ul {
@@ -1351,11 +1351,11 @@
         
         .privacy-content li, .terms-content li {
             margin-bottom: 0.5rem;
-            color: #d1d5db;
+            color: #4B5563;
         }
         
         .privacy-content strong, .terms-content strong {
-            color: #ffffff;
+            color: #374151;
         }
         
         /* 自定義滾動條 */
@@ -1364,17 +1364,17 @@
         }
         
         .privacy-content::-webkit-scrollbar-track, .terms-content::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(156, 163, 175, 0.1);
             border-radius: 4px;
         }
         
         .privacy-content::-webkit-scrollbar-thumb, .terms-content::-webkit-scrollbar-thumb {
-            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
             border-radius: 4px;
         }
         
         .privacy-content::-webkit-scrollbar-thumb:hover, .terms-content::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(45deg, #45b7d1, #4ecdc4);
+            background: linear-gradient(45deg, #A7C4A0, #9CA3AF);
         }
         
         /* 響應式設計 */
@@ -1431,7 +1431,7 @@
                 <div class="hero-content fade-in">
                     <h1>🐱 音樂脈動</h1>
                     <p class="subtitle">Sonic Pulse</p>
-                    <p class="subtitle" style="font-size: 1.2rem; color: #96ceb4; margin-top: 0.5rem;">
+                    <p class="subtitle" style="font-size: 1.2rem; color: #8FA68E; margin-top: 0.5rem;">
                         🐱 口袋裡的貓 🐱
                     </p>
                     <p class="description">
@@ -1679,7 +1679,7 @@
                         <img src="assets/channel-avatar.png" alt="音樂脈動頻道" class="avatar-image">
                     </div>
                     <h2 class="channel-name">音樂脈動-Sonic Pulse</h2>
-                    <p style="font-size: 1.3rem; color: #96ceb4; margin-bottom: 1.5rem;">
+                    <p style="font-size: 1.3rem; color: #8FA68E; margin-bottom: 1.5rem;">
                         🐱 口袋裡的貓
                     </p>
                     <p class="channel-description">
@@ -1972,8 +1972,8 @@
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: linear-gradient(45deg, #4ecdc4, #45b7d1);
-                color: white;
+                background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
+                color: #F5F1E8;
                 padding: 1rem 1.5rem;
                 border-radius: 10px;
                 z-index: 3000;

@@ -18,6 +18,65 @@
       body {
         overscroll-behavior: none;
       }
+      
+      /* 藍色莫蘭迪色系滑塊樣式 */
+      input[type="range"] {
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
+        height: 8px !important;
+        border-radius: 4px !important;
+        outline: none !important;
+      }
+      
+      input[type="range"]::-webkit-slider-track {
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
+        height: 8px !important;
+        border-radius: 4px !important;
+        border: none !important;
+      }
+      
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
+        height: 20px !important;
+        width: 20px !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        border: 2px solid #111827 !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+        margin-top: -6px !important;
+      }
+      
+      input[type="range"]::-webkit-slider-thumb:hover {
+        background: #8FA3B0 !important; /* 稍深的藍色莫蘭迪色系 */
+        transform: scale(1.1) !important;
+      }
+      
+      input[type="range"]::-moz-range-track {
+        background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
+        height: 8px !important;
+        border-radius: 4px !important;
+        border: none !important;
+      }
+      
+      input[type="range"]::-moz-range-thumb {
+        background: #9DB4C0 !important; /* 藍色莫蘭迪色系 */
+        height: 20px !important;
+        width: 20px !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        border: 2px solid #111827 !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+      }
+      
+      input[type="range"]::-moz-range-thumb:hover {
+        background: #8FA3B0 !important; /* 稍深的藍色莫蘭迪色系 */
+        transform: scale(1.1) !important;
+      }
       @font-face {
         font-family: 'Jason Handwriting 1';
         src: url('https://cdn.jsdelivr.net/gh/jasonhandwriting/JasonHandwriting/JasonHandwriting1.ttf') format('truetype');

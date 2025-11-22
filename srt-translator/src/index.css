@@ -14,6 +14,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  color: #f3f4f6;
 }
 
 code {
@@ -28,16 +30,16 @@ code {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: #1f2937;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4a4a4a;
+  background: #4b5563;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #5a5a5a;
+  background: #6b7280;
 }
 
 /* 動畫 */
