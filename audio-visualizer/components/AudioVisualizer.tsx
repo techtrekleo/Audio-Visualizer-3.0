@@ -146,6 +146,7 @@ interface AudioVisualizerProps {
     // Vinyl Record props
     vinylImage?: string | null;
     vinylRecordEnabled?: boolean;
+    vinylNeedleEnabled?: boolean;
     vinylLayoutMode?: 'horizontal' | 'vertical';
     vinylCenterFixed?: boolean;
     // Piano opacity
@@ -5873,7 +5874,8 @@ const drawVinylRecord = (
     particles?: Particle[],
     geometricFrameImage?: HTMLImageElement | null,
     geometricSemicircleImage?: HTMLImageElement | null,
-    vinylRecordEnabled: boolean = true
+    vinylRecordEnabled: boolean = true,
+    vinylNeedleEnabled: boolean = true
 ) => {
     // 不在此重置或覆寫矩陣，讓外層全域 transform（effectScale/effectOffsetX/Y + visualizationTransform）生效
  
@@ -5995,7 +5997,7 @@ const drawVinylRecord = (
     ctx.restore();
 
     // 唱臂與唱針（縮短、左上接觸，含折角）
-    {
+    if (vinylNeedleEnabled) {
         const baseX = centerX - discRadius * 0.92;
         const baseY = centerY - discRadius * 0.92;
         // 基座
@@ -6736,7 +6738,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         } else if (visualizationType === VisualizationType.VINYL_RECORD) {
             // 檢查是否啟用唱片顯示
             const vinylRecordEnabled = propsRef.current?.vinylRecordEnabled !== false;
-            drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, vinylRecordEnabled);
+            const vinylNeedleEnabled = propsRef.current?.vinylNeedleEnabled !== false;
+            drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, vinylRecordEnabled, vinylNeedleEnabled);
         } else if (visualizationType === VisualizationType.PHOTO_SHAKE) {
             // 相片晃動需要傳遞 props
             drawPhotoShake(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);

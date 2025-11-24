@@ -315,6 +315,8 @@ interface OptimizedControlsProps {
     // 唱片設定（Vinyl）
     vinylRecordEnabled?: boolean;
     onVinylRecordEnabledChange?: (enabled: boolean) => void;
+    vinylNeedleEnabled?: boolean;
+    onVinylNeedleEnabledChange?: (enabled: boolean) => void;
     controlCardFontSize?: number;
     onControlCardFontSizeChange?: (size: number) => void;
     // Song management props
@@ -2194,6 +2196,18 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             }`}
                                         >
                                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.vinylRecordEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-gray-300">顯示指針</label>
+                                        <button
+                                            onClick={() => props.onVinylNeedleEnabledChange?.(!props.vinylNeedleEnabled)}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                                props.vinylNeedleEnabled ? 'bg-cyan-500' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.vinylNeedleEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
                                         </button>
                                     </div>
                                 </div>

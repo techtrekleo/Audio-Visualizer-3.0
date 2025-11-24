@@ -310,6 +310,7 @@ export interface AudioVisualizerProps {
     vinylImage?: string | null;
     vinylLayoutMode?: 'horizontal' | 'vertical';
     vinylRecordEnabled?: boolean;
+    vinylNeedleEnabled?: boolean;
     // 中國風控制卡
     chineseCardAlbumImage?: string | null;
     chineseCardSongTitle?: string;

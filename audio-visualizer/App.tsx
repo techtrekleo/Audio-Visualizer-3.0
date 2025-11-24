@@ -117,6 +117,7 @@ function App() {
     const [vinylLayoutMode, setVinylLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
     const [vinylCenterFixed, setVinylCenterFixed] = useState<boolean>(false); // 中心照片固定
     const [vinylRecordEnabled, setVinylRecordEnabled] = useState<boolean>(true); // 唱片開關
+    const [vinylNeedleEnabled, setVinylNeedleEnabled] = useState<boolean>(true); // 指針開關
     
     // Chinese Control Card State
     const [chineseCardAlbumImage, setChineseCardAlbumImage] = useState<string | null>(null);
@@ -1638,6 +1639,7 @@ function App() {
                                     controlCardBackgroundColor={controlCardBackgroundColor}
                                     // Vinyl Record props
                                     vinylRecordEnabled={vinylRecordEnabled}
+                                    vinylNeedleEnabled={vinylNeedleEnabled}
                                     // Chinese Control Card props
                                     // chineseCardAlbumImage={chineseCardAlbumImage}
                                     // chineseCardSongTitle={chineseCardSongTitle}
@@ -1968,6 +1970,8 @@ function App() {
                             // Vinyl Record props
                             vinylRecordEnabled={vinylRecordEnabled}
                             onVinylRecordEnabledChange={setVinylRecordEnabled}
+                            vinylNeedleEnabled={vinylNeedleEnabled}
+                            onVinylNeedleEnabledChange={setVinylNeedleEnabled}
                             // Chinese Control Card props
                             // chineseCardAlbumImage={chineseCardAlbumImage}
                             // onChineseCardAlbumImageChange={setChineseCardAlbumImage}

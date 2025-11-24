@@ -22,62 +22,23 @@ const drawImageToCanvas = (ctx: CanvasRenderingContext2D, image: HTMLImageElemen
     ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
 }
 
-const drawText = (ctx: CanvasRenderingContext2D, config: TextBlock, position?: 'center' | 'corner') => {
-    if (!config.text.trim()) return;
-
-    const { text, fontId, effectIds, color1, color2, fontSize, x, y, orientation } = config;
-    const fontObject = fonts.find(f => f.id === fontId);
-    if (!fontObject) return;
-
-    const effects = new Set(effectIds || []);
-
-    // Reset any lingering shadow effects from previous renders
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-
-    // Font settings: apply bold if selected
-    const fontWeight = effects.has('bold') ? '900' : fontObject.weight;
-    ctx.font = `${fontWeight} ${fontSize}px "${fontObject.family}"`;
-    
-    let textX, textY;
-    
-    // 使用新的座標系統
-    if (x !== undefined && y !== undefined) {
-        textX = x;
-        textY = y;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-    } else if (position === 'center') {
-        textX = ctx.canvas.width / 2;
-        textY = ctx.canvas.height / 2;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-    } else { // corner
-        const PADDING_X = ctx.canvas.width * 0.05;
-        const PADDING_Y = ctx.canvas.height * 0.05;
-        textX = PADDING_X;
-        textY = ctx.canvas.height - PADDING_Y;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
-    }
-
-    // 處理直式文字
-    if (orientation === 'vertical') {
-        console.log('繪製直式文字:', { text, textX, textY, orientation });
-        drawVerticalText(ctx, text, textX, textY, fontObject, fontWeight as string, fontSize, color1, color2, effects);
-        return;
-    }
-
-    // --- Rendering Pipeline ---
-
+// 辅助函数：绘制单行文本（用于多行文本的每一行）
+const drawSingleLineText = (
+    ctx: CanvasRenderingContext2D,
+    lineText: string,
+    textX: number,
+    textY: number,
+    effects: Set<string>,
+    color1: string,
+    color2: string
+) => {
     // 1. Faux 3D (drawn first, in the back)
     if (effects.has('faux-3d')) {
+        const fontSize = parseInt(ctx.font.match(/\d+/)?.[0] || '40');
         const depth = Math.max(1, Math.floor(fontSize / 30));
         ctx.fillStyle = color2;
         for (let i = 1; i <= depth; i++) {
-            ctx.fillText(text, textX + i, textY + i);
+            ctx.fillText(lineText, textX + i, textY + i);
         }
     }
 
@@ -101,20 +62,21 @@ const drawText = (ctx: CanvasRenderingContext2D, config: TextBlock, position?: '
 
     // 4. Stroke
     if (effects.has('outline')) {
+        const fontSize = parseInt(ctx.font.match(/\d+/)?.[0] || '40');
         ctx.strokeStyle = color2;
         ctx.lineWidth = Math.max(2, fontSize / 20);
         ctx.lineJoin = 'round';
         ctx.miterLimit = 2;
-        ctx.strokeText(text, textX, textY);
+        ctx.strokeText(lineText, textX, textY);
     }
     
     // 5. Main text fill
-    ctx.fillText(text, textX, textY);
+    ctx.fillText(lineText, textX, textY);
 
     // 5.1. Extra Neon pass for more intensity
     if (effects.has('neon')) {
         ctx.shadowBlur = 30; // Stronger glow
-        ctx.fillText(text, textX, textY);
+        ctx.fillText(lineText, textX, textY);
     }
     
     // Reset shadow before glitch effect
@@ -126,16 +88,16 @@ const drawText = (ctx: CanvasRenderingContext2D, config: TextBlock, position?: '
     // 6. Glitch effect (drawn last, on top)
     if (effects.has('glitch')) {
         ctx.fillStyle = 'rgba(255, 0, 255, 0.5)'; // Magenta
-        ctx.fillText(text, textX - 5, textY);
+        ctx.fillText(lineText, textX - 5, textY);
         ctx.fillStyle = 'rgba(0, 255, 255, 0.5)'; // Cyan
-        ctx.fillText(text, textX + 5, textY);
+        ctx.fillText(lineText, textX + 5, textY);
         // We draw the original text one more time if there's no solid fill, to ensure it's visible
         if (effects.has('neon')) {
             ctx.fillStyle = '#FFFFFF';
-            ctx.fillText(text, textX, textY);
+            ctx.fillText(lineText, textX, textY);
         } else {
              ctx.fillStyle = color1;
-             ctx.fillText(text, textX, textY);
+             ctx.fillText(lineText, textX, textY);
         }
     }
     
@@ -144,6 +106,69 @@ const drawText = (ctx: CanvasRenderingContext2D, config: TextBlock, position?: '
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
+};
+
+const drawText = (ctx: CanvasRenderingContext2D, config: TextBlock, position?: 'center' | 'corner') => {
+    if (!config.text.trim()) return;
+
+    const { text, fontId, effectIds, color1, color2, fontSize, x, y, orientation } = config;
+    const fontObject = fonts.find(f => f.id === fontId);
+    if (!fontObject) return;
+
+    const effects = new Set(effectIds || []);
+
+    // Reset any lingering shadow effects from previous renders
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+
+    // Font settings: apply bold if selected
+    const fontWeight = effects.has('bold') ? '900' : fontObject.weight;
+    ctx.font = `${fontWeight} ${fontSize}px "${fontObject.family}"`;
+    
+    // 计算行高（字体大小的1.2倍）
+    const lineHeight = fontSize * 1.2;
+    
+    // 分割文本为多行
+    const lines = text.split('\n');
+    
+    let textX, textY;
+    
+    // 使用新的座標系統
+    if (x !== undefined && y !== undefined) {
+        textX = x;
+        textY = y;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+    } else if (position === 'center') {
+        textX = ctx.canvas.width / 2;
+        textY = ctx.canvas.height / 2;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+    } else { // corner
+        const PADDING_X = ctx.canvas.width * 0.05;
+        const PADDING_Y = ctx.canvas.height * 0.05;
+        textX = PADDING_X;
+        textY = ctx.canvas.height - PADDING_Y;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+    }
+
+    // 處理直式文字（暂时不支持多行直式文字）
+    if (orientation === 'vertical') {
+        console.log('繪製直式文字:', { text, textX, textY, orientation });
+        drawVerticalText(ctx, text, textX, textY, fontObject, fontWeight as string, fontSize, color1, color2, effects);
+        return;
+    }
+
+    // 绘制多行文本
+    lines.forEach((line, index) => {
+        if (line.trim() || index === 0) { // 允许第一行为空（用于占位）
+            const currentY = textY + (index * lineHeight);
+            drawSingleLineText(ctx, line, textX, currentY, effects, color1, color2);
+        }
+    });
 };
 
 // 繪製中國風邊框 - 可調整大小和位置
