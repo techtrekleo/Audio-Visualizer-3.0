@@ -22,92 +22,6 @@ const drawImageToCanvas = (ctx: CanvasRenderingContext2D, image: HTMLImageElemen
     ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
 }
 
-// 辅助函数：绘制单行文本（用于多行文本的每一行）
-const drawSingleLineText = (
-    ctx: CanvasRenderingContext2D,
-    lineText: string,
-    textX: number,
-    textY: number,
-    effects: Set<string>,
-    color1: string,
-    color2: string
-) => {
-    // 1. Faux 3D (drawn first, in the back)
-    if (effects.has('faux-3d')) {
-        const fontSize = parseInt(ctx.font.match(/\d+/)?.[0] || '40');
-        const depth = Math.max(1, Math.floor(fontSize / 30));
-        ctx.fillStyle = color2;
-        for (let i = 1; i <= depth; i++) {
-            ctx.fillText(lineText, textX + i, textY + i);
-        }
-    }
-
-    // 2. Fill Style setup
-    if (effects.has('neon')) {
-        ctx.fillStyle = '#FFFFFF'; // Neon text is typically white on a glow
-    } else {
-        ctx.fillStyle = color1;
-    }
-
-    // 3. Shadow setup (applied before fill to affect the whole object including stroke)
-    if (effects.has('neon')) {
-        ctx.shadowColor = color1; // Glow color
-        ctx.shadowBlur = 15;
-    } else if (effects.has('shadow')) {
-        ctx.shadowColor = color2;
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 5;
-        ctx.shadowOffsetY = 5;
-    }
-
-    // 4. Stroke
-    if (effects.has('outline')) {
-        const fontSize = parseInt(ctx.font.match(/\d+/)?.[0] || '40');
-        ctx.strokeStyle = color2;
-        ctx.lineWidth = Math.max(2, fontSize / 20);
-        ctx.lineJoin = 'round';
-        ctx.miterLimit = 2;
-        ctx.strokeText(lineText, textX, textY);
-    }
-    
-    // 5. Main text fill
-    ctx.fillText(lineText, textX, textY);
-
-    // 5.1. Extra Neon pass for more intensity
-    if (effects.has('neon')) {
-        ctx.shadowBlur = 30; // Stronger glow
-        ctx.fillText(lineText, textX, textY);
-    }
-    
-    // Reset shadow before glitch effect
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-
-    // 6. Glitch effect (drawn last, on top)
-    if (effects.has('glitch')) {
-        ctx.fillStyle = 'rgba(255, 0, 255, 0.5)'; // Magenta
-        ctx.fillText(lineText, textX - 5, textY);
-        ctx.fillStyle = 'rgba(0, 255, 255, 0.5)'; // Cyan
-        ctx.fillText(lineText, textX + 5, textY);
-        // We draw the original text one more time if there's no solid fill, to ensure it's visible
-        if (effects.has('neon')) {
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillText(lineText, textX, textY);
-        } else {
-             ctx.fillStyle = color1;
-             ctx.fillText(lineText, textX, textY);
-        }
-    }
-    
-     // Final reset for the next text block
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-};
-
 const drawText = (ctx: CanvasRenderingContext2D, config: TextBlock, position?: 'center' | 'corner') => {
     if (!config.text.trim()) return;
 
@@ -126,12 +40,6 @@ const drawText = (ctx: CanvasRenderingContext2D, config: TextBlock, position?: '
     // Font settings: apply bold if selected
     const fontWeight = effects.has('bold') ? '900' : fontObject.weight;
     ctx.font = `${fontWeight} ${fontSize}px "${fontObject.family}"`;
-    
-    // 计算行高（字体大小的1.2倍）
-    const lineHeight = fontSize * 1.2;
-    
-    // 分割文本为多行
-    const lines = text.split('\n');
     
     let textX, textY;
     
@@ -155,20 +63,87 @@ const drawText = (ctx: CanvasRenderingContext2D, config: TextBlock, position?: '
         ctx.textBaseline = 'bottom';
     }
 
-    // 處理直式文字（暂时不支持多行直式文字）
+    // 處理直式文字
     if (orientation === 'vertical') {
         console.log('繪製直式文字:', { text, textX, textY, orientation });
         drawVerticalText(ctx, text, textX, textY, fontObject, fontWeight as string, fontSize, color1, color2, effects);
         return;
     }
 
-    // 绘制多行文本
-    lines.forEach((line, index) => {
-        if (line.trim() || index === 0) { // 允许第一行为空（用于占位）
-            const currentY = textY + (index * lineHeight);
-            drawSingleLineText(ctx, line, textX, currentY, effects, color1, color2);
+    // --- Rendering Pipeline ---
+
+    // 1. Faux 3D (drawn first, in the back)
+    if (effects.has('faux-3d')) {
+        const depth = Math.max(1, Math.floor(fontSize / 30));
+        ctx.fillStyle = color2;
+        for (let i = 1; i <= depth; i++) {
+            ctx.fillText(text, textX + i, textY + i);
         }
-    });
+    }
+
+    // 2. Fill Style setup
+    if (effects.has('neon')) {
+        ctx.fillStyle = '#FFFFFF'; // Neon text is typically white on a glow
+    } else {
+        ctx.fillStyle = color1;
+    }
+
+    // 3. Shadow setup (applied before fill to affect the whole object including stroke)
+    if (effects.has('neon')) {
+        ctx.shadowColor = color1; // Glow color
+        ctx.shadowBlur = 15;
+    } else if (effects.has('shadow')) {
+        ctx.shadowColor = color2;
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 5;
+        ctx.shadowOffsetY = 5;
+    }
+
+    // 4. Stroke
+    if (effects.has('outline')) {
+        ctx.strokeStyle = color2;
+        ctx.lineWidth = Math.max(2, fontSize / 20);
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        ctx.strokeText(text, textX, textY);
+    }
+    
+    // 5. Main text fill
+    ctx.fillText(text, textX, textY);
+
+    // 5.1. Extra Neon pass for more intensity
+    if (effects.has('neon')) {
+        ctx.shadowBlur = 30; // Stronger glow
+        ctx.fillText(text, textX, textY);
+    }
+    
+    // Reset shadow before glitch effect
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+
+    // 6. Glitch effect (drawn last, on top)
+    if (effects.has('glitch')) {
+        ctx.fillStyle = 'rgba(255, 0, 255, 0.5)'; // Magenta
+        ctx.fillText(text, textX - 5, textY);
+        ctx.fillStyle = 'rgba(0, 255, 255, 0.5)'; // Cyan
+        ctx.fillText(text, textX + 5, textY);
+        // We draw the original text one more time if there's no solid fill, to ensure it's visible
+        if (effects.has('neon')) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillText(text, textX, textY);
+        } else {
+             ctx.fillStyle = color1;
+             ctx.fillText(text, textX, textY);
+        }
+    }
+    
+     // Final reset for the next text block
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
 };
 
 // 繪製中國風邊框 - 可調整大小和位置

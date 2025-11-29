@@ -16,7 +16,7 @@ import { UnifiedHeader } from './components/UnifiedLayout';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
 import { useMediaRecorder } from './hooks/useMediaRecorder';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle, SubtitleEffectType } from './types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle } from './types';
 import { ICON_PATHS, COLOR_PALETTES, RESOLUTION_MAP } from './constants';
 import FilterEffectsDemo from './src/components/FilterEffectsDemo';
 
@@ -80,6 +80,7 @@ function App() {
     const [slideshowInterval, setSlideshowInterval] = useState<number>(15); // 輪播間隔（秒）
     const [isTransitioning, setIsTransitioning] = useState<boolean>(false); // 是否正在過場
     const [transitionType, setTransitionType] = useState<TransitionType>(TransitionType.TV_STATIC); // 轉場效果類型
+    const [backgroundVideo, setBackgroundVideo] = useState<string | null>(null); // 背景影片
     const [watermarkPosition, setWatermarkPosition] = useState<WatermarkPosition>(WatermarkPosition.BOTTOM_RIGHT);
     const [waveformStroke, setWaveformStroke] = useState<boolean>(true);
     // Toggles
@@ -100,9 +101,6 @@ function App() {
     const [subtitleFontFamily, setSubtitleFontFamily] = useState<FontType>(FontType.POPPINS);
     const [subtitleColor, setSubtitleColor] = useState<string>('#FFFFFF');
     const [subtitleBgStyle, setSubtitleBgStyle] = useState<SubtitleBgStyle>(SubtitleBgStyle.TRANSPARENT);
-    // 字幕特效相關狀態
-    const [subtitleEffectIds, setSubtitleEffectIds] = useState<SubtitleEffectType[]>([]); // 可複選的特效
-    const [subtitleColor2, setSubtitleColor2] = useState<string>('#67E8F9'); // 用於陰影、描邊、霓虹光等特效的次色（預設為青色用於霓虹光）
     const [subtitleDisplayMode, setSubtitleDisplayMode] = useState<SubtitleDisplayMode>(SubtitleDisplayMode.CLASSIC);
     const [subtitleFormat, setSubtitleFormat] = useState<SubtitleFormat>(SubtitleFormat.BRACKET);
     const [subtitleLanguage, setSubtitleLanguage] = useState<SubtitleLanguage>(SubtitleLanguage.CHINESE);
@@ -117,7 +115,6 @@ function App() {
     const [vinylLayoutMode, setVinylLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
     const [vinylCenterFixed, setVinylCenterFixed] = useState<boolean>(false); // 中心照片固定
     const [vinylRecordEnabled, setVinylRecordEnabled] = useState<boolean>(true); // 唱片開關
-    const [vinylNeedleEnabled, setVinylNeedleEnabled] = useState<boolean>(true); // 指針開關
     
     // Chinese Control Card State
     const [chineseCardAlbumImage, setChineseCardAlbumImage] = useState<string | null>(null);
@@ -1090,19 +1087,6 @@ function App() {
         console.log('User API Key saved successfully');
     };
 
-    // 處理用戶直接輸入 API Key
-    const handleUserApiKeyChange = (apiKey: string) => {
-        const trimmedKey = apiKey.trim();
-        setUserApiKey(trimmedKey);
-        if (trimmedKey) {
-            localStorage.setItem('user_gemini_api_key', trimmedKey);
-            console.log('User API Key saved to localStorage');
-        } else {
-            localStorage.removeItem('user_gemini_api_key');
-            console.log('User API Key removed from localStorage');
-        }
-    };
-
     const handleApiKeySkip = () => {
         console.log('User skipped API Key input');
         setSubtitlesRawText('已跳過 API Key 輸入，AI 功能暫時無法使用。');
@@ -1241,6 +1225,21 @@ function App() {
         console.log('背景圖片已清除');
     };
 
+    const handleBackgroundVideoSelect = (file: File) => {
+        if (backgroundVideo) {
+            URL.revokeObjectURL(backgroundVideo);
+        }
+        const url = URL.createObjectURL(file);
+        setBackgroundVideo(url);
+    };
+
+    const clearBackgroundVideo = () => {
+        if (backgroundVideo) {
+            URL.revokeObjectURL(backgroundVideo);
+        }
+        setBackgroundVideo(null);
+    };
+
     // 幾何圖形圖片處理函數
     const handleGeometricFrameImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -1355,6 +1354,7 @@ function App() {
         resetAudioAnalysis();
 
     }, [audioUrl, videoUrl, isPlaying, resetAudioAnalysis]);
+
 
 
     const handlePlayPause = useCallback(() => {
@@ -1519,6 +1519,9 @@ function App() {
                     onEnded={() => {
                         console.log('音頻 onEnded 事件觸發');
                         setIsPlaying(false);
+                        if (isRecording) {
+                            stopRecording();
+                        }
                     }}
                     onLoadedMetadata={handleMetadataLoaded}
                     onTimeUpdate={handleTimeUpdate}
@@ -1534,6 +1537,7 @@ function App() {
                         <h1 className="text-3xl font-bold text-white mb-2">音訊可視化工程</h1>
                         <p className="text-gray-300">將音樂轉化為震撼的視覺效果</p>
                     </div>
+
                         <div style={wrapperStyle} className="flex items-center justify-center bg-black rounded-lg border border-gray-700 overflow-hidden">
                             <div 
                                 ref={containerRef}
@@ -1570,6 +1574,7 @@ function App() {
                                     backgroundColor={canvasBgColors[backgroundColor]}
                                     colors={getCurrentPalette()}
                                     backgroundImage={showBackgroundImage ? backgroundImage : null}
+                                    backgroundVideo={showBackgroundImage ? backgroundVideo : null}
                                     watermarkPosition={watermarkPosition}
                                     waveformStroke={waveformStroke}
                                     isTransitioning={isTransitioning}
@@ -1582,8 +1587,6 @@ function App() {
                                     subtitleFontFamily={subtitleFontFamily}
                                     subtitleColor={subtitleColor}
                                     subtitleBgStyle={subtitleBgStyle}
-                                    subtitleEffectIds={subtitleEffectIds}
-                                    subtitleColor2={subtitleColor2}
                                     effectScale={effectScale}
                                     effectOffsetX={effectOffsetX}
                                     effectOffsetY={effectOffsetY}
@@ -1639,7 +1642,6 @@ function App() {
                                     controlCardBackgroundColor={controlCardBackgroundColor}
                                     // Vinyl Record props
                                     vinylRecordEnabled={vinylRecordEnabled}
-                                    vinylNeedleEnabled={vinylNeedleEnabled}
                                     // Chinese Control Card props
                                     // chineseCardAlbumImage={chineseCardAlbumImage}
                                     // chineseCardSongTitle={chineseCardSongTitle}
@@ -1841,6 +1843,9 @@ function App() {
                             backgroundImages={backgroundImages}
                             onMultipleBackgroundImagesSelect={handleMultipleBackgroundImagesSelect}
                             onClearAllBackgroundImages={clearAllBackgroundImages}
+                            backgroundVideo={backgroundVideo}
+                            onBackgroundVideoSelect={handleBackgroundVideoSelect}
+                            onClearBackgroundVideo={clearBackgroundVideo}
                             currentImageIndex={currentImageIndex}
                             isSlideshowEnabled={isSlideshowEnabled}
                             onSlideshowEnabledChange={setIsSlideshowEnabled}
@@ -1867,12 +1872,6 @@ function App() {
                             onSubtitleColorChange={setSubtitleColor}
                             subtitleBgStyle={subtitleBgStyle}
                             onSubtitleBgStyleChange={setSubtitleBgStyle}
-                            subtitleEffectIds={subtitleEffectIds}
-                            onSubtitleEffectIdsChange={setSubtitleEffectIds}
-                            subtitleColor2={subtitleColor2}
-                            onSubtitleColor2Change={setSubtitleColor2}
-                            userApiKey={userApiKey}
-                            onUserApiKeyChange={handleUserApiKeyChange}
                             subtitleFormat={subtitleFormat}
                             onSubtitleFormatChange={setSubtitleFormat}
                             subtitleLanguage={subtitleLanguage}
@@ -1970,8 +1969,6 @@ function App() {
                             // Vinyl Record props
                             vinylRecordEnabled={vinylRecordEnabled}
                             onVinylRecordEnabledChange={setVinylRecordEnabled}
-                            vinylNeedleEnabled={vinylNeedleEnabled}
-                            onVinylNeedleEnabledChange={setVinylNeedleEnabled}
                             // Chinese Control Card props
                             // chineseCardAlbumImage={chineseCardAlbumImage}
                             // onChineseCardAlbumImageChange={setChineseCardAlbumImage}

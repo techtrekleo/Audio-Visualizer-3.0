@@ -5,9 +5,9 @@
     top: 0;
     left: 0;
     right: 0;
-    background: rgba(245, 241, 232, 0.95);
+    background: rgba(0, 0, 0, 0.95);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(156, 163, 175, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 1000;
     padding: 1rem 0;
 }
@@ -33,14 +33,14 @@
     height: 50px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(156, 163, 175, 0.5);
-    box-shadow: 0 4px 15px rgba(156, 163, 175, 0.3);
+    border: 2px solid rgba(78, 205, 196, 0.5);
+    box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
     transition: all 0.3s ease;
 }
 
 .logo-cat:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(156, 163, 175, 0.5);
+    box-shadow: 0 6px 20px rgba(78, 205, 196, 0.5);
 }
 
 .logo-text {
@@ -52,7 +52,7 @@
 .logo-main {
     font-size: 1.8rem;
     font-weight: 900;
-    background: linear-gradient(45deg, #9CA3AF, #6B7280, #A7C4A0);
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
     background-size: 200% 200%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -63,7 +63,7 @@
 .logo-sub {
     font-size: 0.7rem;
     font-weight: 400;
-    color: #8FA68E;
+    color: #96ceb4;
     margin-top: -2px;
 }
 
@@ -80,7 +80,7 @@
 }
 
 .nav-links a {
-    color: #4B5563;
+    color: #ffffff;
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s ease;
@@ -88,7 +88,7 @@
 }
 
 .nav-links a:hover {
-    color: #6B7280;
+    color: #4ecdc4;
 }
 
 .nav-links a::after {
@@ -98,7 +98,7 @@
     left: 0;
     width: 0;
     height: 2px;
-    background: linear-gradient(45deg, #9CA3AF, #A7C4A0);
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
     transition: width 0.3s ease;
 }
 
@@ -108,10 +108,10 @@
 
 /* 頁腳 */
 .footer {
-    background: rgba(232, 227, 213, 0.8);
+    background: rgba(26, 26, 26, 0.8);
     padding: 3rem 0 2rem;
     text-align: center;
-    border-top: 1px solid rgba(156, 163, 175, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .footer-content {
@@ -129,25 +129,25 @@
 }
 
 .footer-links a {
-    color: #6B7280;
+    color: #b8b8b8;
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .footer-links a:hover {
-    color: #4B5563;
+    color: #4ecdc4;
 }
 
 .footer-bottom {
-    color: #9CA3AF;
+    color: #666;
     font-size: 0.9rem;
 }
 
 /* Buy Me a Coffee 按鈕樣式 */
 .btn-coffee {
-    background: linear-gradient(135deg, #D4A5A5 0%, #A7C4A0 100%);
-    color: #F5F1E8;
-    border: 1px solid rgba(156, 163, 175, 0.3);
+    background: linear-gradient(135deg, #ff6b9d 0%, #4ecdc4 100%);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 15px;
     padding: 1rem 2rem;
     font-weight: 600;
@@ -156,7 +156,7 @@
     align-items: center;
     gap: 1rem;
     transition: all 0.3s ease;
-    box-shadow: 0 8px 25px rgba(156, 163, 175, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     position: relative;
     overflow: hidden;
     font-family: 'Poppins', sans-serif;
@@ -164,10 +164,10 @@
 }
 
 .btn-coffee:hover {
-    background: linear-gradient(135deg, #C4A5A5 0%, #8FA68E 100%);
+    background: linear-gradient(135deg, #ff8fb3 0%, #5dd5d5 100%);
     transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(156, 163, 175, 0.4);
-    color: #F5F1E8;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    color: white;
 }
 
 .btn-coffee-large {

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, forwardRef, useCallback } from 'react';
-import { VisualizationType, Palette, GraphicEffectType, ColorPaletteType, WatermarkPosition, FontType, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, FilterEffectType, ControlCardStyle, SubtitleOrientation, SubtitleEffectType } from '../types';
+import { VisualizationType, Palette, GraphicEffectType, ColorPaletteType, WatermarkPosition, FontType, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, FilterEffectType, ControlCardStyle, SubtitleOrientation } from '../types';
 import ImageBasedVisualizer from './ImageBasedVisualizer';
 
 // 字體映射表
@@ -72,6 +72,7 @@ interface AudioVisualizerProps {
     backgroundColor: string;
     colors: Palette;
     backgroundImage: string | null;
+    backgroundVideo: string | null;
     watermarkPosition: WatermarkPosition;
     waveformStroke: boolean;
     isTransitioning: boolean;
@@ -85,8 +86,6 @@ interface AudioVisualizerProps {
     subtitleFontFamily: FontType;
     subtitleColor: string;
     subtitleBgStyle: SubtitleBgStyle;
-    subtitleEffectIds?: SubtitleEffectType[];
-    subtitleColor2?: string;
     effectScale: number;
     effectOffsetX: number;
     effectOffsetY: number;
@@ -146,7 +145,6 @@ interface AudioVisualizerProps {
     // Vinyl Record props
     vinylImage?: string | null;
     vinylRecordEnabled?: boolean;
-    vinylNeedleEnabled?: boolean;
     vinylLayoutMode?: 'horizontal' | 'vertical';
     vinylCenterFixed?: boolean;
     // Piano opacity
@@ -5137,7 +5135,7 @@ const drawSubtitles = (
     width: number,
     height: number,
     currentSubtitle: Subtitle | undefined,
-    { fontSizeVw, fontFamily, color, effect, bgStyle, isBeat, dragOffset = { x: 0, y: 0 }, orientation = SubtitleOrientation.HORIZONTAL, subtitleEffectIds = [], color2 = '#000000' }: {
+    { fontSizeVw, fontFamily, color, effect, bgStyle, isBeat, dragOffset = { x: 0, y: 0 }, orientation = SubtitleOrientation.HORIZONTAL }: {
         fontSizeVw: number;
         fontFamily: FontType;
         color: string;
@@ -5146,8 +5144,6 @@ const drawSubtitles = (
         isBeat?: boolean;
         dragOffset?: { x: number; y: number };
         orientation?: SubtitleOrientation;
-        subtitleEffectIds?: SubtitleEffectType[];
-        color2?: string;
     }
 ) => {
     if (!currentSubtitle || !currentSubtitle.text) return;
@@ -5202,122 +5198,35 @@ const drawSubtitles = (
     ctx.lineJoin = 'round';
     ctx.lineWidth = fontSize * 0.1;
     
-    // 使用新的字幕特效系統（如果有的話），否則使用舊的 effect 系統
-    const effects = new Set(subtitleEffectIds);
-    
-    // 重置陰影
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-    
-    // 粗體效果（通過字體權重實現，已在 ctx.font 中設置為 bold）
-    
-    // 霓虹光效果（使用次色作為光暈）
-    if (effects.has(SubtitleEffectType.NEON)) {
-        ctx.shadowColor = color2;
-        ctx.shadowBlur = 15;
-    }
-    
-    // 陰影效果
-    if (effects.has(SubtitleEffectType.SHADOW)) {
-        ctx.shadowColor = color2;
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 5;
-        ctx.shadowOffsetY = 5;
-    }
-    
-    // 描邊效果
-    if (effects.has(SubtitleEffectType.OUTLINE)) {
-        ctx.strokeStyle = color2;
-        ctx.lineWidth = Math.max(2, fontSize / 20);
-        ctx.lineJoin = 'round';
-        ctx.miterLimit = 2;
-    }
-    
-    // 偽3D效果（多層描邊）
-    if (effects.has(SubtitleEffectType.FAUX_3D)) {
-        // 先繪製多層陰影創造3D效果
-        for (let i = 3; i >= 1; i--) {
-            ctx.fillStyle = color2;
-            ctx.globalAlpha = 0.3 / i;
-            ctx.fillText(text, positionX + i * 2, positionY + i * 2);
+    const drawTextWithEffect = (offsetX = 0, offsetY = 0) => {
+        ctx.fillText(text, positionX + offsetX, positionY + offsetY);
+        if (effect === GraphicEffectType.STROKE) {
+            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+            ctx.strokeText(text, positionX + offsetX, positionY + offsetY);
         }
-        ctx.globalAlpha = 1.0;
-    }
-    
-    // 主文字填充（使用主色，用戶可以自定義）
-    ctx.fillStyle = color;
-    
-    // 繪製描邊（在填充之前）
-    if (effects.has(SubtitleEffectType.OUTLINE)) {
-        ctx.strokeText(text, positionX, positionY);
-    }
-    
-    // 繪製主文字
-    ctx.fillText(text, positionX, positionY);
-    
-    // 額外的霓虹光增強
-    if (effects.has(SubtitleEffectType.NEON)) {
-        ctx.shadowBlur = 30;
-        ctx.shadowColor = color2; // 確保使用次色作為光暈
-        ctx.fillText(text, positionX, positionY);
-    }
-    
-    // 重置陰影
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-    
-    // 故障感效果（最後繪製，在頂層）
-    if (effects.has(SubtitleEffectType.GLITCH)) {
-        if (isBeat) {
-            ctx.globalCompositeOperation = 'lighter';
-            const glitchAmount = fontSize * 0.1;
-            ctx.fillStyle = 'rgba(255, 0, 255, 0.5)'; // 洋紅色
-            ctx.fillText(text, positionX - 5 + (Math.random() - 0.5) * glitchAmount, positionY + (Math.random() - 0.5) * glitchAmount);
-            ctx.fillStyle = 'rgba(0, 255, 255, 0.5)'; // 青色
-            ctx.fillText(text, positionX + 5 + (Math.random() - 0.5) * glitchAmount, positionY + (Math.random() - 0.5) * glitchAmount);
-            ctx.globalCompositeOperation = 'source-over';
-            // 重新繪製主文字確保可見
-            ctx.fillStyle = color; // 使用用戶自定義的文字顏色
-            ctx.fillText(text, positionX, positionY);
-        }
-    }
-    
-    // 如果沒有使用新特效系統，使用舊的 effect 系統作為後備
-    if (subtitleEffectIds.length === 0) {
-        const drawTextWithEffect = (offsetX = 0, offsetY = 0) => {
-            ctx.fillText(text, positionX + offsetX, positionY + offsetY);
-            if (effect === GraphicEffectType.STROKE) {
-                ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-                ctx.strokeText(text, positionX + offsetX, positionY + offsetY);
-            }
-        };
+    };
 
-        // Handle text effects
-        switch (effect) {
-            case GraphicEffectType.GLOW:
-                ctx.shadowColor = color;
-                ctx.shadowBlur = 15;
-                break;
-            case GraphicEffectType.GLITCH:
-                if (isBeat) {
-                    ctx.globalCompositeOperation = 'lighter';
-                    const glitchAmount = fontSize * 0.1;
-                    ctx.fillStyle = 'rgba(255, 0, 100, 0.7)';
-                    drawTextWithEffect((Math.random() - 0.5) * glitchAmount, (Math.random() - 0.5) * glitchAmount);
-                    ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
-                    drawTextWithEffect((Math.random() - 0.5) * glitchAmount, (Math.random() - 0.5) * glitchAmount);
-                    ctx.globalCompositeOperation = 'source-over';
-                }
-                break;
-        }
-        
-        ctx.fillStyle = color;
-        drawTextWithEffect();
+    // Handle text effects
+    switch (effect) {
+        case GraphicEffectType.GLOW:
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 15;
+            break;
+        case GraphicEffectType.GLITCH:
+            if (isBeat) {
+                ctx.globalCompositeOperation = 'lighter';
+                const glitchAmount = fontSize * 0.1;
+                ctx.fillStyle = 'rgba(255, 0, 100, 0.7)';
+                drawTextWithEffect((Math.random() - 0.5) * glitchAmount, (Math.random() - 0.5) * glitchAmount);
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
+                drawTextWithEffect((Math.random() - 0.5) * glitchAmount, (Math.random() - 0.5) * glitchAmount);
+                ctx.globalCompositeOperation = 'source-over';
+            }
+            break;
     }
+    
+    ctx.fillStyle = color;
+    drawTextWithEffect();
     
     ctx.restore();
 };
@@ -5874,8 +5783,7 @@ const drawVinylRecord = (
     particles?: Particle[],
     geometricFrameImage?: HTMLImageElement | null,
     geometricSemicircleImage?: HTMLImageElement | null,
-    vinylRecordEnabled: boolean = true,
-    vinylNeedleEnabled: boolean = true
+    vinylRecordEnabled: boolean = true
 ) => {
     // 不在此重置或覆寫矩陣，讓外層全域 transform（effectScale/effectOffsetX/Y + visualizationTransform）生效
  
@@ -5997,7 +5905,7 @@ const drawVinylRecord = (
     ctx.restore();
 
     // 唱臂與唱針（縮短、左上接觸，含折角）
-    if (vinylNeedleEnabled) {
+    {
         const baseX = centerX - discRadius * 0.92;
         const baseY = centerY - discRadius * 0.92;
         // 基座
@@ -6506,6 +6414,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
     const particlesRef = useRef<Particle[]>([]);
     const shockwavesRef = useRef<Shockwave[]>([]);
     const backgroundImageRef = useRef<HTMLImageElement | null>(null);
+    const backgroundVideoRef = useRef<HTMLVideoElement | null>(null);
     const geometricFrameImageRef = useRef<HTMLImageElement | null>(null);
     const geometricSemicircleImageRef = useRef<HTMLImageElement | null>(null);
     const propsRef = useRef(props);
@@ -6562,6 +6471,104 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         }
     }, [props.backgroundImage]);
 
+    // 載入背景影片
+    useEffect(() => {
+        if (props.backgroundVideo) {
+            console.log('Loading background video:', props.backgroundVideo);
+            // 清除舊的影片
+            if (backgroundVideoRef.current) {
+                backgroundVideoRef.current.pause();
+                backgroundVideoRef.current.src = '';
+                backgroundVideoRef.current.load();
+            }
+            
+            const video = document.createElement('video');
+            video.crossOrigin = 'anonymous';
+            video.src = props.backgroundVideo;
+            video.loop = true; // 設置循環播放
+            video.muted = true; // 靜音，避免與音頻衝突
+            video.playsInline = true;
+            
+            video.onloadedmetadata = () => {
+                console.log('Background video loaded successfully');
+                backgroundVideoRef.current = video;
+                // 如果音頻正在播放，開始播放影片
+                if (props.isPlaying && audioRef.current) {
+                    video.currentTime = 0;
+                    video.play().catch(err => {
+                        console.error('Failed to play background video:', err);
+                    });
+                }
+            };
+            
+            video.onerror = (error) => {
+                console.error("Failed to load background video:", error);
+                backgroundVideoRef.current = null;
+            };
+            
+            // 監聽影片結束事件，實現循環播放直到音樂結束
+            video.onended = () => {
+                if (props.isPlaying && audioRef.current && !audioRef.current.ended) {
+                    // 音樂還在播放，繼續循環影片
+                    video.currentTime = 0;
+                    video.play().catch(err => {
+                        console.error('Failed to replay background video:', err);
+                    });
+                } else {
+                    // 音樂已結束，停止影片
+                    video.pause();
+                }
+            };
+            
+            // 監聽音樂結束事件，停止影片播放
+            const handleAudioEnded = () => {
+                if (video && !video.paused) {
+                    video.pause();
+                }
+            };
+            
+            if (audioRef.current) {
+                audioRef.current.addEventListener('ended', handleAudioEnded);
+            }
+        } else {
+            // 清除影片
+            if (backgroundVideoRef.current) {
+                backgroundVideoRef.current.pause();
+                backgroundVideoRef.current.src = '';
+                backgroundVideoRef.current.load();
+            }
+            backgroundVideoRef.current = null;
+        }
+        
+        return () => {
+            // 清理
+            if (backgroundVideoRef.current) {
+                backgroundVideoRef.current.pause();
+                backgroundVideoRef.current.src = '';
+                backgroundVideoRef.current.load();
+            }
+        };
+    }, [props.backgroundVideo, props.isPlaying]);
+
+    // 同步影片播放狀態與音頻播放狀態
+    useEffect(() => {
+        if (backgroundVideoRef.current) {
+            if (props.isPlaying) {
+                // 如果音頻正在播放，確保影片也在播放
+                if (backgroundVideoRef.current.paused) {
+                    backgroundVideoRef.current.play().catch(err => {
+                        console.error('Failed to play background video:', err);
+                    });
+                }
+            } else {
+                // 如果音頻暫停，暫停影片
+                if (!backgroundVideoRef.current.paused) {
+                    backgroundVideoRef.current.pause();
+                }
+            }
+        }
+    }, [props.isPlaying]);
+
     // 載入幾何圖形圖片
     useEffect(() => {
         if (props.geometricFrameImage) {
@@ -6612,7 +6619,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             sensitivity, smoothing, equalization, backgroundColor, colors, watermarkPosition, 
             waveformStroke, isTransitioning, transitionType, backgroundImages, currentImageIndex,
             subtitles, showSubtitles, subtitleFontSize, subtitleFontFamily, 
-            subtitleColor, subtitleBgStyle, subtitleEffectIds, subtitleColor2, effectScale, effectOffsetX, effectOffsetY,
+            subtitleColor, subtitleBgStyle, effectScale, effectOffsetX, effectOffsetY,
             filterEffectType, filterEffectIntensity, filterEffectOpacity, filterEffectSpeed, filterEffectEnabled,
             controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor
         } = propsRef.current;
@@ -6674,7 +6681,42 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             ctx.fillRect(0, 0, width, height);
         }
         
-        if (backgroundImageRef.current) {
+        // 優先繪製影片，如果沒有影片則繪製圖片
+        // 檢查是否有背景視頻或圖片需要繪製
+        const hasBackgroundVideo = backgroundVideoRef.current && backgroundVideoRef.current.readyState >= 2;
+        const hasBackgroundImage = backgroundImageRef.current && backgroundImageRef.current.complete;
+        
+        // 調試信息（每100幀輸出一次，避免過多日誌）
+        if (frame.current % 100 === 0) {
+            console.log('背景繪製狀態:', {
+                hasVideo: hasBackgroundVideo,
+                hasImage: hasBackgroundImage,
+                videoReadyState: backgroundVideoRef.current?.readyState,
+                imageComplete: backgroundImageRef.current?.complete,
+                backgroundImageProp: propsRef.current.backgroundImage ? '有' : '無',
+                backgroundVideoProp: propsRef.current.backgroundVideo ? '有' : '無'
+            });
+        }
+        
+        if (hasBackgroundVideo) {
+            const video = backgroundVideoRef.current;
+            const canvasAspect = width / height;
+            const videoAspect = video.videoWidth / video.videoHeight;
+            let sx, sy, sWidth, sHeight;
+
+            if (canvasAspect > videoAspect) {
+                sWidth = video.videoWidth;
+                sHeight = sWidth / canvasAspect;
+                sx = 0;
+                sy = (video.videoHeight - sHeight) / 2;
+            } else {
+                sHeight = video.videoHeight;
+                sWidth = sHeight * canvasAspect;
+                sy = 0;
+                sx = (video.videoWidth - sWidth) / 2;
+            }
+            ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, width, height);
+        } else if (hasBackgroundImage) {
             const img = backgroundImageRef.current;
             const canvasAspect = width / height;
             const imageAspect = img.width / img.height;
@@ -6738,8 +6780,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         } else if (visualizationType === VisualizationType.VINYL_RECORD) {
             // 檢查是否啟用唱片顯示
             const vinylRecordEnabled = propsRef.current?.vinylRecordEnabled !== false;
-            const vinylNeedleEnabled = propsRef.current?.vinylNeedleEnabled !== false;
-            drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, vinylRecordEnabled, vinylNeedleEnabled);
+            drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, vinylRecordEnabled);
         } else if (visualizationType === VisualizationType.PHOTO_SHAKE) {
             // 相片晃動需要傳遞 props
             drawPhotoShake(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
@@ -6924,9 +6965,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 bgStyle: subtitleBgStyle, 
                 isBeat,
                 dragOffset,
-                orientation: propsRef.current.subtitleOrientation,
-                subtitleEffectIds: propsRef.current.subtitleEffectIds || [],
-                color2: propsRef.current.subtitleColor2 || '#67E8F9'
+                orientation: propsRef.current.subtitleOrientation
             });
         }
         // 無字幕模式：不顯示任何字幕

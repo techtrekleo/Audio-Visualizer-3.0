@@ -27,9 +27,9 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #F5F1E8 0%, #E8E3D5 50%, #D4C9B0 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #4B5563;
+            color: #333;
         }
         
         .container {
@@ -41,14 +41,14 @@
         .header {
             text-align: center;
             margin-bottom: 40px;
-            color: #4B5563;
+            color: white;
         }
         
         .header h1 {
             font-size: 3rem;
             font-weight: 700;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(156, 163, 175, 0.3);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
         .header p {
@@ -64,17 +64,17 @@
         }
         
         .creator-card {
-            background: rgba(245, 241, 232, 0.95);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(156, 163, 175, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             backdrop-filter: blur(10px);
         }
         
         .creator-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(156, 163, 175, 0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
         
         .creator-header {
@@ -86,42 +86,42 @@
         .creator-info h3 {
             font-size: 1.5rem;
             font-weight: 600;
-            color: #4B5563;
+            color: #2c3e50;
             margin-bottom: 5px;
         }
         
         .creator-info p {
             font-size: 1.1rem;
-            color: #6B7280;
+            color: #7f8c8d;
             font-weight: 500;
         }
         
         .creator-date {
             font-size: 0.9rem;
-            color: #9CA3AF;
+            color: #95a5a6;
             margin-bottom: 20px;
             padding: 10px;
-            background: rgba(156, 163, 175, 0.1);
+            background: rgba(52, 152, 219, 0.1);
             border-radius: 10px;
-            border-left: 4px solid #9CA3AF;
+            border-left: 4px solid #3498db;
         }
         
         .creator-button {
             display: inline-block;
-            background: #D4A5A5;
-            color: #F5F1E8;
+            background: #ff0000;
+            color: #ffffff;
             padding: 12px 24px;
             border-radius: 25px;
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(212, 165, 165, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
         }
         
         .creator-button:hover {
-            background: #C4A5A5;
+            background: #cc0000;
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(212, 165, 165, 0.3);
+            box-shadow: 0 10px 20px rgba(255, 0, 0, 0.3);
         }
         
         .creator-button i {
@@ -140,20 +140,20 @@
             border: none;
             border-radius: 25px;
             font-size: 1.1rem;
-            background: rgba(245, 241, 232, 0.9);
-            box-shadow: 0 4px 15px rgba(156, 163, 175, 0.1);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
         }
         
         .search-input:focus {
             outline: none;
-            background: rgba(245, 241, 232, 1);
-            box-shadow: 0 8px 25px rgba(156, 163, 175, 0.2);
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
         
         .no-results {
             text-align: center;
-            color: #4B5563;
+            color: white;
             font-size: 1.2rem;
             margin-top: 40px;
         }
@@ -182,19 +182,19 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(75, 85, 99, 0.8);
+            background-color: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(5px);
         }
         
         .description-modal-content {
-            background: linear-gradient(135deg, #F5F1E8 0%, #E8E3D5 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 5% auto;
             padding: 0;
             border-radius: 20px;
             width: 90%;
             max-width: 600px;
             max-height: 80vh;
-            box-shadow: 0 20px 60px rgba(75, 85, 99, 0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             animation: modalSlideIn 0.3s ease;
             overflow: hidden;
             display: flex;
@@ -214,23 +214,23 @@
         
         .description-header {
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid rgba(156, 163, 175, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(232, 227, 213, 0.3);
+            background: rgba(255, 255, 255, 0.1);
         }
         
         .description-header h3 {
             margin: 0;
-            color: #4B5563;
+            color: #ffffff;
             font-family: 'Poppins', sans-serif;
             font-size: 1.3rem;
             font-weight: 600;
         }
         
         .description-header .close {
-            color: rgba(107, 114, 128, 0.8);
+            color: rgba(255, 255, 255, 0.8);
             font-size: 2rem;
             font-weight: bold;
             cursor: pointer;
@@ -238,7 +238,7 @@
         }
         
         .description-header .close:hover {
-            color: #4B5563;
+            color: #ffffff;
         }
         
         .description-body {
@@ -255,9 +255,9 @@
         }
         
         .tab-button {
-            background: rgba(232, 227, 213, 0.5);
-            color: rgba(75, 85, 99, 0.8);
-            border: 1px solid rgba(156, 163, 175, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 0.5rem 1rem;
             border-radius: 25px;
             cursor: pointer;
@@ -266,24 +266,24 @@
         }
         
         .tab-button.active {
-            background: rgba(156, 163, 175, 0.3);
-            color: #4B5563;
-            border-color: rgba(156, 163, 175, 0.5);
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.4);
         }
         
         .tab-button:hover {
-            background: rgba(156, 163, 175, 0.2);
-            color: #4B5563;
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
         }
         
         .description-text {
-            color: #4B5563;
+            color: #ffffff;
             line-height: 1.8;
             font-size: 1rem;
-            background: rgba(232, 227, 213, 0.3);
+            background: rgba(255, 255, 255, 0.05);
             padding: 1.5rem;
             border-radius: 15px;
-            border: 1px solid rgba(156, 163, 175, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         /* 自定義滾動條 */
@@ -396,7 +396,7 @@
                 joinDate: '2025/10/15 下午 10:07:45',
                 additionalChannels: [
                     {
-                        channelName: 'petsolo168 ─ 十萬追蹤頻道 ─POWER&DANCE KPOP',
+                        channelName: 'petsolo168 ─ 萬人頻道 ─POWER&DANCE KPOP',
                         youtubeUrl: 'https://www.youtube.com/@petsolo168'
                     }
                 ]
@@ -523,15 +523,15 @@ If you're looking for your own spiritual background music, this is the best plac
             {
                 id: '20',
                 dcName: 'Issac',
-                channelName: 'Futuristic Guardian Kobe',
-                youtubeUrl: 'https://www.youtube.com/channel/UCRKR0_AprQO05ll3p-IAVPg',
-                joinDate: '2025/11/17 上午 10:34:55'
+                channelName: 'Futuristic Guardian Roger',
+                youtubeUrl: 'https://youtube.com/@futuristicguardianroger?si=llaVQN9XnbOMFnTX',
+                joinDate: '2025/10/17 下午 12:16:14'
             },
             {
                 id: '21',
                 dcName: 'laicc',
                 channelName: 'Breathe and Be',
-                youtubeUrl: 'https://www.youtube.com/@BreatheAndBe-Mus1c',
+                youtubeUrl: 'https://www.youtube.com/@BreathAndBe',
                 joinDate: '2025/10/18 上午 9:01:09'
             },
             {
@@ -540,48 +540,6 @@ If you're looking for your own spiritual background music, this is the best plac
                 channelName: '音夢工廠',
                 youtubeUrl: 'https://www.youtube.com/@DTF-666',
                 joinDate: '2025/10/21 下午 11:00:00'
-            },
-            {
-                id: '25',
-                dcName: '時雨',
-                channelName: '心和之聲',
-                youtubeUrl: 'https://www.youtube.com/@kokorowanoODO',
-                joinDate: '2025/10/21 下午 10:49:59'
-            },
-            {
-                id: '26',
-                dcName: 'skyehsu71266',
-                channelName: '@Skye_Hsu',
-                youtubeUrl: 'https://youtube.com/@skye_hsu?si=Q_b8inUHIQkHMF47',
-                joinDate: '2025/10/29 下午 7:30:52'
-            },
-            {
-                id: '27',
-                dcName: '妮妮',
-                channelName: '旋律裡的你',
-                youtubeUrl: 'https://www.youtube.com/@%E6%97%8B%E5%BE%8B%E8%A3%A1%E7%9A%84%E4%BD%A0',
-                joinDate: '2025/11/2 下午 3:02:37'
-            },
-            {
-                id: '28',
-                dcName: 'yuhnmomo',
-                channelName: '法式草莓布丁',
-                youtubeUrl: 'https://youtube.com/channel/UCLdLKasdxG3qEKxmJZdTQLQ?si=KdK9mr-04UrGgxla',
-                joinDate: '2025/11/6 下午 7:20:08'
-            },
-            {
-                id: '29',
-                dcName: 'panny',
-                channelName: '幻音流光',
-                youtubeUrl: 'https://www.youtube.com/channel/UCQOPNojFmmirTrJj7Uy_YpA',
-                joinDate: '2025/11/9 下午 9:26:40'
-            },
-            {
-                id: '30',
-                dcName: 'Medea',
-                channelName: '塞任實驗室Siren Lab',
-                youtubeUrl: 'https://www.youtube.com/@SirenLab',
-                joinDate: '2025/11/10 下午 10:54:35'
             }
         ];
 

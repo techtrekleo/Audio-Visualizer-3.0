@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle, SubtitleEffectType } from '../types';
-import SubtitleEffectPanel from './SubtitleEffectPanel';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle } from '../types';
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
 import CollapsibleControlSection from './CollapsibleControlSection';
@@ -176,6 +175,9 @@ interface OptimizedControlsProps {
     backgroundImages: string[];
     onMultipleBackgroundImagesSelect: (files: FileList) => void;
     onClearAllBackgroundImages: () => void;
+    backgroundVideo: string | null;
+    onBackgroundVideoSelect: (file: File) => void;
+    onClearBackgroundVideo: () => void;
     currentImageIndex: number;
     isSlideshowEnabled: boolean;
     onSlideshowEnabledChange: (enabled: boolean) => void;
@@ -203,14 +205,6 @@ interface OptimizedControlsProps {
     onSubtitleColorChange: (color: string) => void;
     subtitleBgStyle: SubtitleBgStyle;
     onSubtitleBgStyleChange: (style: SubtitleBgStyle) => void;
-    // 字幕特效相關 props
-    subtitleEffectIds?: SubtitleEffectType[];
-    onSubtitleEffectIdsChange?: (effectIds: SubtitleEffectType[]) => void;
-    subtitleColor2?: string;
-    onSubtitleColor2Change?: (color: string) => void;
-    // API Key 相關 props
-    userApiKey?: string;
-    onUserApiKeyChange?: (apiKey: string) => void;
     subtitleFormat: SubtitleFormat;
     onSubtitleFormatChange: (format: SubtitleFormat) => void;
     subtitleLanguage: SubtitleLanguage;
@@ -315,8 +309,6 @@ interface OptimizedControlsProps {
     // 唱片設定（Vinyl）
     vinylRecordEnabled?: boolean;
     onVinylRecordEnabledChange?: (enabled: boolean) => void;
-    vinylNeedleEnabled?: boolean;
-    onVinylNeedleEnabledChange?: (enabled: boolean) => void;
     controlCardFontSize?: number;
     onControlCardFontSizeChange?: (size: number) => void;
     // Song management props
@@ -456,12 +448,40 @@ const SliderControl: React.FC<{
     // 計算滑桿的百分比位置
     const percentage = ((value - min) / (max - min)) * 100;
     
-    // 根據不同類型設置顏色 - 統一使用藍色莫蘭迪色系
+    // 根據不同類型設置顏色
     const getSliderStyle = () => {
-        // 所有類型都使用統一的藍色莫蘭迪色系，無漸層
-        return {
-            background: '#9DB4C0' /* 藍色莫蘭迪色系 */
-        };
+        switch (colorType) {
+            case 'sensitivity':
+                return {
+                    background: `linear-gradient(to right, 
+                        #ef4444 0%, 
+                        #f97316 25%, 
+                        #eab308 50%, 
+                        #22c55e 75%, 
+                        #10b981 100%)`
+                };
+            case 'position':
+                return {
+                    background: `linear-gradient(to right, 
+                        #3b82f6 0%, 
+                        #8b5cf6 50%, 
+                        #ec4899 100%)`
+                };
+            case 'scale':
+                return {
+                    background: `linear-gradient(to right, 
+                        #6b7280 0%, 
+                        #10b981 50%, 
+                        #f59e0b 100%)`
+                };
+            default:
+                return {
+                    background: `linear-gradient(to right, 
+                        #374151 0%, 
+                        #06b6d4 50%, 
+                        #8b5cf6 100%)`
+                };
+        }
     };
 
     return (
@@ -823,7 +843,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             </div>
                         )}
                         
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-3 flex-wrap">
                             <label className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white shadow-lg hover:shadow-xl cursor-pointer">
                                 <Icon path={ICON_PATHS.UPLOAD} className="w-5 h-5"/>
                                 <span>{props.audioFile ? '更換音樂' : '上傳音樂'}</span>
@@ -1016,7 +1036,17 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 <div className="flex flex-col gap-2">
                                     <label className="text-center bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg font-semibold transition-all duration-200 cursor-pointer">
                                         上傳單張圖片
-                                        <input type="file" className="hidden" accept="image/*" onChange={handleBackgroundImageChange} />
+                                        <input 
+                                            type="file" 
+                                            className="hidden" 
+                                            accept="image/*" 
+                                            onChange={(e) => {
+                                                if (e.target.files && e.target.files[0]) {
+                                                    props.onBackgroundImageSelect(e.target.files[0]);
+                                                }
+                                                e.target.value = '';
+                                            }} 
+                                        />
                                     </label>
                                     <label className="text-center bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg font-semibold transition-all duration-200 cursor-pointer">
                                         上傳多張圖片 (輪播)
@@ -1063,6 +1093,56 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             )}
                                         </div>
                                     )}
+                                </div>
+                                
+                                {/* 背景影片上傳 */}
+                                <div className="space-y-2 mt-4">
+                                    <label className="text-sm font-medium text-gray-300">背景影片</label>
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-center bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg font-semibold transition-all duration-200 cursor-pointer">
+                                            🎬 上傳影片
+                                            <input 
+                                                type="file" 
+                                                className="hidden" 
+                                                accept="video/*" 
+                                                onChange={(e) => {
+                                                    if (e.target.files && e.target.files[0]) {
+                                                        props.onBackgroundVideoSelect(e.target.files[0]);
+                                                    }
+                                                    e.target.value = '';
+                                                }} 
+                                            />
+                                        </label>
+                                        
+                                        {/* 清除影片按鈕 */}
+                                        {props.backgroundVideo && (
+                                            <Button 
+                                                onClick={() => {
+                                                    console.log('清除背景影片');
+                                                    props.onClearBackgroundVideo();
+                                                }} 
+                                                variant="danger" 
+                                                className="px-2 py-1 text-sm"
+                                            >
+                                                🗑️ 清除影片
+                                            </Button>
+                                        )}
+                                        
+                                        {/* 影片說明 */}
+                                        {props.backgroundVideo && (
+                                            <div className="p-3 bg-blue-500/20 border border-blue-400/30 rounded-lg text-sm">
+                                                <div className="flex items-center gap-2 text-blue-300">
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                    </svg>
+                                                    <span className="font-medium">影片已上傳</span>
+                                                </div>
+                                                <p className="text-blue-200 text-xs mt-1">
+                                                    影片會自動循環播放直到音樂結束
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 
                                 {/* 圖片預覽和輪播控制 */}
@@ -1302,65 +1382,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 />
                             </div>
 
-                            {/* Gemini API Key 輸入 */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                                    <span className="text-lg">🔑</span>
-                                    Gemini API Key (選填)
-                                </label>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="password"
-                                        value={props.userApiKey || ''}
-                                        onChange={(e) => props.onUserApiKeyChange?.(e.target.value)}
-                                        onBlur={(e) => {
-                                            // 當失去焦點時自動保存
-                                            if (e.target.value.trim()) {
-                                                props.onUserApiKeyChange?.(e.target.value.trim());
-                                            }
-                                        }}
-                                        placeholder="輸入您的 Gemini API Key (可選)"
-                                        className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
-                                    />
-                                    {props.userApiKey && (
-                                        <button
-                                            onClick={() => {
-                                                if (confirm('確定要清除 API Key 嗎？')) {
-                                                    props.onUserApiKeyChange?.('');
-                                                }
-                                            }}
-                                            className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-colors"
-                                            title="清除 API Key"
-                                        >
-                                            清除
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="flex items-start gap-2">
-                                    {props.userApiKey ? (
-                                        <span className="text-xs text-green-400 flex items-center gap-1">
-                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                            </svg>
-                                            已設置 API Key
-                                        </span>
-                                    ) : (
-                                        <span className="text-xs text-yellow-400 flex items-center gap-1">
-                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                            </svg>
-                                            使用內建 API Key（配額有限）
-                                        </span>
-                                    )}
-                                </div>
-                                <p className="text-xs text-gray-400 leading-relaxed">
-                                    💡 當內建 API 配額用完時，可輸入您自己的 Gemini API Key 繼續使用 AI 功能。API Key 僅存儲在您的瀏覽器本地。
-                                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline ml-1">
-                                        獲取 API Key
-                                    </a>
-                                </p>
-                            </div>
-
                             {/* 字幕語言選擇 */}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
@@ -1404,7 +1425,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         disabled={props.isGeneratingSubtitles || !props.audioFile}
                                         variant="secondary"
                                         className="bg-purple-600 hover:bg-purple-500"
-                                        id="ai-subtitle-button"
                                     >
                                         {props.isGeneratingSubtitles ? 
                                             <>
@@ -1417,21 +1437,14 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                               </>
                                         }
                                     </Button>
-                                    <div 
-                                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 p-4 bg-gray-900 border border-cyan-400/30 rounded-lg text-xs text-left text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-2xl" 
-                                        style={{ 
-                                            maxHeight: '70vh', 
-                                            overflowY: 'auto',
-                                            zIndex: 9999
-                                        }}
-                                    >
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-80 p-3 bg-gray-900 border border-gray-600 rounded-md text-xs text-left text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                                         <div className="space-y-2">
-                                            <div className="font-semibold text-cyan-300 text-sm mb-2 pb-2 border-b border-gray-700">功能</div>
+                                            <div className="font-medium text-cyan-300">AI 字幕生成功能</div>
                                             <div>• 直接分析音訊檔並使用 AI 產生字幕</div>
-                                            <div className="text-gray-400 text-xs mt-1">需要一些時間，請耐心等候</div>
-                                            <div className="text-gray-400 text-xs">準確度取決於音訊的清晰度</div>
-                                            <div className="text-green-300 font-medium mt-2">• 轉換為繁體中文</div>
-                                            <div className="text-green-300">• 語言音訊轉繁體中文</div>
+                                            <div>• 過程可能需要一些時間，請耐心等候</div>
+                                            <div>• 結果的準確度取決於音訊的清晰度</div>
+                                            <div className="text-green-300 font-medium">• 🌟 自動轉換為繁體中文</div>
+                                            <div className="text-green-300">• 支援多種語言音訊轉繁體中文</div>
                                         </div>
                                     </div>
                                 </div>
@@ -1653,35 +1666,19 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     ]}
                                 />
                                 
-                                {/* 文字顏色選擇器 - 獨立顯示，始終可見 */}
                                 <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-gray-300">文字顏色</label>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="color"
-                                            value={props.subtitleColor}
-                                            onChange={(e) => props.onSubtitleColorChange(e.target.value)}
-                                            className="w-12 h-12 rounded border border-gray-600 cursor-pointer bg-transparent"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={props.subtitleColor}
-                                            onChange={(e) => props.onSubtitleColorChange(e.target.value)}
-                                            className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                                            placeholder="#FFFFFF"
-                                        />
+                                    <label className="text-sm font-medium text-gray-300">字幕顏色</label>
+                                    <div className="flex space-x-2">
+                                        {PRESET_COLORS.map(color => (
+                                            <SwatchButton
+                                                key={color}
+                                                color={color}
+                                                onClick={props.onSubtitleColorChange}
+                                                isActive={props.subtitleColor === color}
+                                            />
+                                        ))}
                                     </div>
                                 </div>
-                                
-                                {/* 字幕特效面板 */}
-                                <SubtitleEffectPanel
-                                    subtitleEffectIds={props.subtitleEffectIds || []}
-                                    onSubtitleEffectIdsChange={props.onSubtitleEffectIdsChange || (() => {})}
-                                    subtitleColor={props.subtitleColor}
-                                    onSubtitleColorChange={props.onSubtitleColorChange}
-                                    subtitleColor2={props.subtitleColor2 || '#67E8F9'}
-                                    onSubtitleColor2Change={props.onSubtitleColor2Change || (() => {})}
-                                />
                                 
                                 <SelectControl
                                     label="字幕背景樣式"
@@ -2198,18 +2195,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.vinylRecordEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
                                         </button>
                                     </div>
-                                    
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-sm font-medium text-gray-300">顯示指針</label>
-                                        <button
-                                            onClick={() => props.onVinylNeedleEnabledChange?.(!props.vinylNeedleEnabled)}
-                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
-                                                props.vinylNeedleEnabled ? 'bg-cyan-500' : 'bg-gray-600'
-                                            }`}
-                                        >
-                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.vinylNeedleEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
-                                        </button>
-                                    </div>
                                 </div>
 
                                 {/* 控制卡設定 */}
@@ -2471,7 +2456,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <div
                                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                                 style={{
-                                                    background: '#9DB4C0' /* 藍色莫蘭迪色系 */
+                                                    background: `linear-gradient(to right, #3B82F6 0%, #8B5CF6 100%)`
                                                 }}
                                             />
                                             <input
@@ -2517,7 +2502,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <div
                                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                                 style={{
-                                                    background: '#9DB4C0' /* 藍色莫蘭迪色系 */
+                                                    background: `linear-gradient(to right, #3B82F6 0%, #8B5CF6 100%)`
                                                 }}
                                             />
                                             <input
@@ -2550,7 +2535,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <div
                                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                                 style={{
-                                                    background: '#9DB4C0' /* 藍色莫蘭迪色系 */
+                                                    background: `linear-gradient(to right, #10B981 0%, #F59E0B 100%)`
                                                 }}
                                             />
                                             <input
@@ -2583,7 +2568,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <div
                                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                                 style={{
-                                                    background: '#9DB4C0' /* 藍色莫蘭迪色系 */
+                                                    background: `linear-gradient(to right, #EF4444 0%, #F97316 100%)`
                                                 }}
                                             />
                                             <input
@@ -2741,7 +2726,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 <div
                                                     className="w-full h-2 rounded-lg absolute top-0 left-0"
                                                     style={{
-                                                        background: '#9DB4C0' /* 藍色莫蘭迪色系 */
+                                                        background: `linear-gradient(to right, rgba(59, 130, 246, 0.5) 0%, rgba(139, 92, 246, 0.5) 100%)`
                                                     }}
                                                 />
                                                 <input
@@ -3045,7 +3030,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <div
                                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                                 style={{
-                                                    background: '#9DB4C0' /* 藍色莫蘭迪色系 */
+                                                    background: `linear-gradient(to right, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%)`
                                                 }}
                                             />
                                             <input
@@ -3358,6 +3343,23 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                 </div>
             </div>
+            
+            {/* 批量上传管理 - 整合到控制面板中 */}
+            {props.showBatchUpload && props.onBatchSongsChange && (
+                <div className="mt-6">
+                    <BatchUploadManager
+                        songs={props.batchSongs || []}
+                        onSongsChange={props.onBatchSongsChange}
+                        onSongSelect={props.onBatchSongSelect || (() => {})}
+                        currentSongId={props.currentBatchSongId}
+                        isBatchMode={props.isBatchMode}
+                        currentBatchIndex={props.currentBatchIndex}
+                        onStartBatchRecording={props.onStartBatchRecording}
+                        onStopBatchRecording={props.onStopBatchRecording}
+                        isRecording={props.isRecording}
+                    />
+                </div>
+            )}
         </div>
     );
 };

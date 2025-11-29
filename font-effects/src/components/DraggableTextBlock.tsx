@@ -83,19 +83,12 @@ export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
       </div>
 
       <div className="space-y-3">
-        <textarea
+        <input
+          type="text"
           value={textBlock.text}
           onChange={(e) => onUpdate({ ...textBlock, text: e.target.value })}
-          onKeyDown={(e) => {
-            // 允许 Enter 键换行，但阻止 Shift+Enter 提交表单（如果有的话）
-            if (e.key === 'Enter' && !e.shiftKey) {
-              // Enter 键正常换行，不需要阻止
-            }
-          }}
           placeholder={`輸入${getTypeLabel()}...`}
-          rows={3}
-          className="w-full p-3 bg-gray-900 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-y"
-          style={{ minHeight: '80px' }}
+          className="w-full p-3 bg-gray-900 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
         />
         <p className="text-right text-sm text-gray-500 -mt-2">{textBlock.text.length} 字元</p>
       </div>
