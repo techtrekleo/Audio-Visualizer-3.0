@@ -6415,6 +6415,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
     const shockwavesRef = useRef<Shockwave[]>([]);
     const backgroundImageRef = useRef<HTMLImageElement | null>(null);
     const backgroundVideoRef = useRef<HTMLVideoElement | null>(null);
+    const lastVideoFrameRef = useRef<ImageData | null>(null); // 保存最后一帧视频帧，用于循环时平滑过渡
     const geometricFrameImageRef = useRef<HTMLImageElement | null>(null);
     const geometricSemicircleImageRef = useRef<HTMLImageElement | null>(null);
     const propsRef = useRef(props);
@@ -6485,9 +6486,39 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             const video = document.createElement('video');
             video.crossOrigin = 'anonymous';
             video.src = props.backgroundVideo;
-            video.loop = true; // 設置循環播放
+            video.loop = false; // 不使用 HTML5 的 loop 屬性，手動控制循環以避免閃爍
             video.muted = true; // 靜音，避免與音頻衝突
             video.playsInline = true;
+            video.preload = 'auto'; // 預加載視頻，確保循環時更快準備好
+            
+            // 使用 seeked 事件確保視頻已跳轉到開始位置，避免黑色閃爍
+            let isSeeking = false;
+            let seekTimeout: number | null = null;
+            
+            video.onseeked = () => {
+                if (isSeeking && props.isPlaying && audioRef.current && !audioRef.current.ended) {
+                    isSeeking = false;
+                    if (seekTimeout) {
+                        clearTimeout(seekTimeout);
+                        seekTimeout = null;
+                    }
+                    // 確保視頻已準備好再播放
+                    if (video.readyState >= 2) {
+                        video.play().catch(err => {
+                            console.error('Failed to replay background video:', err);
+                        });
+                    } else {
+                        // 如果還沒準備好，等待一下再播放
+                        setTimeout(() => {
+                            if (video.readyState >= 2 && props.isPlaying && audioRef.current && !audioRef.current.ended) {
+                                video.play().catch(err => {
+                                    console.error('Failed to replay background video after wait:', err);
+                                });
+                            }
+                        }, 50);
+                    }
+                }
+            };
             
             video.onloadedmetadata = () => {
                 console.log('Background video loaded successfully');
@@ -6510,9 +6541,24 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             video.onended = () => {
                 if (props.isPlaying && audioRef.current && !audioRef.current.ended) {
                     // 音樂還在播放，繼續循環影片
-                    video.currentTime = 0;
-                    video.play().catch(err => {
-                        console.error('Failed to replay background video:', err);
+                    // 先暫停，然後跳轉，等待 seeked 事件後再播放，避免黑色閃爍
+                    isSeeking = true;
+                    video.pause();
+                    // 使用 requestAnimationFrame 確保在下一幀之前完成跳轉
+                    requestAnimationFrame(() => {
+                        video.currentTime = 0;
+                        // 設置超時，如果 seeked 事件沒有觸發，強制播放
+                        if (seekTimeout) clearTimeout(seekTimeout);
+                        seekTimeout = window.setTimeout(() => {
+                            if (isSeeking && props.isPlaying && audioRef.current && !audioRef.current.ended) {
+                                isSeeking = false;
+                                if (video.readyState >= 2) {
+                                    video.play().catch(err => {
+                                        console.error('Failed to replay background video (timeout):', err);
+                                    });
+                                }
+                            }
+                        }, 200);
                     });
                 } else {
                     // 音樂已結束，停止影片
@@ -6538,6 +6584,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 backgroundVideoRef.current.load();
             }
             backgroundVideoRef.current = null;
+            lastVideoFrameRef.current = null; // 清除保存的幀
         }
         
         return () => {
@@ -6547,6 +6594,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 backgroundVideoRef.current.src = '';
                 backgroundVideoRef.current.load();
             }
+            lastVideoFrameRef.current = null; // 清除保存的幀
         };
     }, [props.backgroundVideo, props.isPlaying]);
 
@@ -6683,23 +6731,11 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         
         // 優先繪製影片，如果沒有影片則繪製圖片
         // 檢查是否有背景視頻或圖片需要繪製
-        const hasBackgroundVideo = backgroundVideoRef.current && backgroundVideoRef.current.readyState >= 2;
+        const video = backgroundVideoRef.current;
+        const hasBackgroundVideo = video && video.readyState >= 2;
         const hasBackgroundImage = backgroundImageRef.current && backgroundImageRef.current.complete;
         
-        // 調試信息（每100幀輸出一次，避免過多日誌）
-        if (frame.current % 100 === 0) {
-            console.log('背景繪製狀態:', {
-                hasVideo: hasBackgroundVideo,
-                hasImage: hasBackgroundImage,
-                videoReadyState: backgroundVideoRef.current?.readyState,
-                imageComplete: backgroundImageRef.current?.complete,
-                backgroundImageProp: propsRef.current.backgroundImage ? '有' : '無',
-                backgroundVideoProp: propsRef.current.backgroundVideo ? '有' : '無'
-            });
-        }
-        
-        if (hasBackgroundVideo) {
-            const video = backgroundVideoRef.current;
+        if (hasBackgroundVideo && video) {
             const canvasAspect = width / height;
             const videoAspect = video.videoWidth / video.videoHeight;
             let sx, sy, sWidth, sHeight;
@@ -6715,7 +6751,30 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 sy = 0;
                 sx = (video.videoWidth - sWidth) / 2;
             }
-            ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, width, height);
+            
+            // 檢查視頻是否準備好繪製
+            if (video.readyState >= 2) {
+                try {
+                    ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, width, height);
+                    // 保存當前幀，用於循環時平滑過渡（每10幀保存一次，避免性能問題）
+                    if (frame.current % 10 === 0) {
+                        try {
+                            lastVideoFrameRef.current = ctx.getImageData(0, 0, width, height);
+                        } catch (e) {
+                            // 如果無法保存（可能是跨域問題），忽略
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error drawing video:', error);
+                    // 如果繪製失敗，嘗試使用保存的幀
+                    if (lastVideoFrameRef.current) {
+                        ctx.putImageData(lastVideoFrameRef.current, 0, 0);
+                    }
+                }
+            } else if (lastVideoFrameRef.current) {
+                // 如果視頻還沒準備好（循環時），使用保存的最後一幀
+                ctx.putImageData(lastVideoFrameRef.current, 0, 0);
+            }
         } else if (hasBackgroundImage) {
             const img = backgroundImageRef.current;
             const canvasAspect = width / height;
