@@ -78,8 +78,8 @@ export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold" style={{ color: '#4A4A4A' }}>{getTypeLabel()}</h3>
-        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: isSelected ? '#8B9DC3' : '#9CA3AF' }}></div>
+        <h3 className="text-lg font-semibold text-gray-300">{getTypeLabel()}</h3>
+        <div className={`w-3 h-3 rounded-full ${isSelected ? 'bg-cyan-500' : 'bg-gray-500'}`}></div>
       </div>
 
       <div className="space-y-3">
@@ -88,19 +88,17 @@ export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
           value={textBlock.text}
           onChange={(e) => onUpdate({ ...textBlock, text: e.target.value })}
           placeholder={`輸入${getTypeLabel()}...`}
-          className="w-full p-3 rounded-lg focus:ring-2 transition"
-          style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+          className="w-full p-3 bg-gray-900 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
         />
-        <p className="text-right text-sm -mt-2" style={{ color: '#6B7280' }}>{textBlock.text.length} 字元</p>
+        <p className="text-right text-sm text-gray-500 -mt-2">{textBlock.text.length} 字元</p>
       </div>
 
       <div className="space-y-3">
-        <label className="block text-sm font-semibold" style={{ color: '#4A4A4A' }}>字體</label>
+        <label className="block text-sm font-semibold text-gray-300">字體</label>
         <select
           value={textBlock.fontId}
           onChange={(e) => onUpdate({ ...textBlock, fontId: e.target.value as FontId })}
-          className="w-full p-3 rounded-lg focus:ring-2 transition"
-          style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+          className="w-full p-3 bg-gray-900 border-2 border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-200"
         >
           {fonts.map(font => (
             <option key={font.id} value={font.id} style={{ fontFamily: `"${font.family}"`, fontWeight: font.weight }}>
@@ -111,45 +109,21 @@ export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
       </div>
 
       <div className="space-y-3">
-        <label className="block text-sm font-semibold" style={{ color: '#4A4A4A' }}>文字方向</label>
+        <label className="block text-sm font-semibold text-gray-300">文字方向</label>
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => onUpdate({ ...textBlock, orientation: 'horizontal' })}
-            className="py-2 px-3 rounded-lg text-center font-semibold transition-all duration-200 border text-sm"
-            style={textBlock.orientation === 'horizontal'
-              ? { background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', borderColor: '#9CA3AF', color: '#FFFFFF' }
-              : { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderColor: 'rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }
-            }
-            onMouseEnter={(e) => {
-              if (textBlock.orientation !== 'horizontal') {
-                e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (textBlock.orientation !== 'horizontal') {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-              }
-            }}
+            className={`py-2 px-3 rounded-lg text-center font-semibold transition-all duration-200 border text-sm ${
+              textBlock.orientation === 'horizontal' ? 'bg-cyan-600 border-cyan-400' : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
+            }`}
           >
             ↔️ 橫式
           </button>
           <button
             onClick={() => onUpdate({ ...textBlock, orientation: 'vertical' })}
-            className="py-2 px-3 rounded-lg text-center font-semibold transition-all duration-200 border text-sm"
-            style={textBlock.orientation === 'vertical'
-              ? { background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', borderColor: '#9CA3AF', color: '#FFFFFF' }
-              : { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderColor: 'rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }
-            }
-            onMouseEnter={(e) => {
-              if (textBlock.orientation !== 'vertical') {
-                e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (textBlock.orientation !== 'vertical') {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-              }
-            }}
+            className={`py-2 px-3 rounded-lg text-center font-semibold transition-all duration-200 border text-sm ${
+              textBlock.orientation === 'vertical' ? 'bg-cyan-600 border-cyan-400' : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
+            }`}
           >
             ↕️ 直式
           </button>
@@ -157,7 +131,7 @@ export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
       </div>
 
       <div className="space-y-3">
-        <label className="block text-sm font-semibold" style={{ color: '#4A4A4A' }}>特效 (可複選)</label>
+        <label className="block text-sm font-semibold text-gray-300">特效 (可複選)</label>
         <div className="grid grid-cols-3 gap-2">
           {effects.map(effect => {
             const isActive = effect.id === 'none' 
@@ -167,21 +141,9 @@ export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
               <button
                 key={effect.id}
                 onClick={() => handleEffectToggle(effect.id)}
-                className="py-2 px-2 rounded-lg text-center font-semibold transition-all duration-200 border text-xs"
-                style={isActive
-                  ? { background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', borderColor: '#9CA3AF', color: '#FFFFFF' }
-                  : { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderColor: 'rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }
-                }
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                  }
-                }}
+                className={`py-2 px-2 rounded-lg text-center font-semibold transition-all duration-200 border text-xs ${
+                  isActive ? 'bg-cyan-600 border-cyan-400' : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
+                }`}
               >
                 {effect.name}
               </button>
@@ -191,51 +153,47 @@ export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
       </div>
 
       <div className="space-y-3">
-        <label className="block text-sm font-semibold" style={{ color: '#4A4A4A' }}>字體大小</label>
-        <div className="p-3 rounded-lg border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
+        <label className="block text-sm font-semibold text-gray-300">字體大小</label>
+        <div className="bg-gray-800 p-3 rounded-lg border border-gray-600">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-medium" style={{ color: '#4A4A4A' }}>當前大小</span>
-            <span className="font-bold text-lg" style={{ color: '#8B9DC3' }}>{textBlock.fontSize}px</span>
+            <span className="text-gray-300 font-medium">當前大小</span>
+            <span className="text-cyan-400 font-bold text-lg">{textBlock.fontSize}px</span>
           </div>
           
           {/* 手動輸入 */}
           <div className="mb-3">
-            <label className="block text-xs mb-1" style={{ color: '#6B7280' }}>手動輸入字體大小</label>
+            <label className="block text-xs text-gray-400 mb-1">手動輸入字體大小</label>
             <input
               type="number"
               min="10"
               max="500"
               value={textBlock.fontSize}
               onChange={(e) => onUpdate({ ...textBlock, fontSize: Number(e.target.value) })}
-              className="w-full p-2 rounded text-sm focus:outline-none focus:ring-2"
-              style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+              className="w-full p-2 bg-gray-900 border border-gray-700 rounded text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="輸入字體大小 (10-500px)"
             />
           </div>
           
-          <div className="text-xs mb-2" style={{ color: '#6B7280' }}>
+          <div className="text-xs text-gray-400 mb-2">
             💡 提示：可以直接輸入數字，或在右側畫布上拖動右下角藍色控制點
           </div>
           
           <div className="flex gap-2">
             <button
               onClick={() => onUpdate({ ...textBlock, fontSize: 120 })}
-              className="px-3 py-1 text-xs rounded transition"
-              style={{ background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF' }}
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition"
             >
               重置為 120px
             </button>
             <button
               onClick={() => onUpdate({ ...textBlock, fontSize: 60 })}
-              className="px-3 py-1 text-xs rounded transition"
-              style={{ background: 'linear-gradient(135deg, #A8B5C4 0%, #9CA3AF 100%)', color: '#FFFFFF' }}
+              className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition"
             >
               重置為 60px
             </button>
             <button
               onClick={() => onUpdate({ ...textBlock, fontSize: 400 })}
-              className="px-3 py-1 text-xs rounded transition"
-              style={{ background: 'linear-gradient(135deg, #9CA3AF 0%, #8B9DC3 100%)', color: '#FFFFFF' }}
+              className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded transition"
             >
               大標題 400px
             </button>
@@ -246,17 +204,17 @@ export const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
       <div className="space-y-3">{renderColorPickers()}</div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-semibold" style={{ color: '#4A4A4A' }}>位置</label>
-        <div className="text-xs p-3 rounded-lg border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', borderColor: 'rgba(139, 157, 195, 0.3)', color: '#5C5C5C' }}>
+        <label className="block text-sm font-semibold text-gray-300">位置</label>
+        <div className="text-xs text-gray-400 bg-gray-800 p-3 rounded-lg border border-gray-600">
           <div className="flex items-center gap-2 mb-2">
-            <span style={{ color: '#D4A5A5' }}>💡</span>
+            <span className="text-yellow-400">💡</span>
             <span className="font-semibold">拖動操作說明</span>
           </div>
           <p className="mb-1">• 直接在右側畫布上拖動文字區塊來調整位置</p>
           <p className="mb-1">• 選中的文字區塊會顯示青色邊框</p>
           <p>• 拖動時會顯示黃色邊框和提示</p>
         </div>
-        <div className="text-xs p-2 rounded" style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)', color: '#6B7280' }}>
+        <div className="text-xs text-gray-500 bg-gray-900 p-2 rounded">
           當前位置：X: {Math.round(textBlock.x)}px, Y: {Math.round(textBlock.y)}px
         </div>
       </div>

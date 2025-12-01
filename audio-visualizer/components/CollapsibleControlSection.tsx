@@ -24,9 +24,9 @@ const CollapsibleControlSection: React.FC<CollapsibleControlSectionProps> = ({
     const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
     const priorityStyles = {
-        high: { borderLeft: '4px solid #8B9DC3', background: 'linear-gradient(to right, rgba(139, 157, 195, 0.1), transparent)' },
-        medium: { borderLeft: '4px solid #9CA3AF', background: 'linear-gradient(to right, rgba(156, 163, 175, 0.1), transparent)' },
-        low: { borderLeft: '4px solid #A8B5C4', background: 'linear-gradient(to right, rgba(168, 181, 196, 0.1), transparent)' }
+        high: 'border-l-4 border-l-cyan-400 bg-gradient-to-r from-cyan-500/10 to-transparent',
+        medium: 'border-l-4 border-l-blue-400 bg-gradient-to-r from-blue-500/10 to-transparent',
+        low: 'border-l-4 border-l-gray-400 bg-gradient-to-r from-gray-500/10 to-transparent'
     };
 
     const priorityIcons = {
@@ -36,25 +36,18 @@ const CollapsibleControlSection: React.FC<CollapsibleControlSectionProps> = ({
     };
 
     return (
-        <div className={`backdrop-blur-sm rounded-xl border ${className}`} style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)', ...priorityStyles[priority] }}>
+        <div className={`bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700/50 ${priorityStyles[priority]} ${className}`}>
             <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full p-4 flex items-center justify-between transition-colors duration-200 rounded-t-xl"
-                style={{ backgroundColor: 'transparent' }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                }}
+                className="w-full p-4 flex items-center justify-between hover:bg-gray-700/30 transition-colors duration-200 rounded-t-xl"
             >
                 <div className="flex items-center space-x-3">
                     <div className="flex items-center space-x-2">
-                        {icon && <Icon path={icon} className="w-5 h-5" style={{ color: '#8B9DC3' }} />}
-                        {!icon && <Icon path={priorityIcons[priority]} className="w-5 h-5" style={{ color: '#8B9DC3' }} />}
-                        <h3 className="text-lg font-semibold" style={{ color: '#4A4A4A' }}>{title}</h3>
+                        {icon && <Icon path={icon} className="w-5 h-5 text-gray-300" />}
+                        {!icon && <Icon path={priorityIcons[priority]} className="w-5 h-5 text-gray-300" />}
+                        <h3 className="text-lg font-semibold text-gray-200">{title}</h3>
                         {badge && (
-                            <span className="px-2 py-1 text-xs font-medium rounded-full" style={{ backgroundColor: 'rgba(139, 157, 195, 0.2)', color: '#4A4A4A' }}>
+                            <span className="px-2 py-1 text-xs font-medium bg-cyan-500/20 text-cyan-300 rounded-full">
                                 {badge}
                             </span>
                         )}
@@ -63,8 +56,7 @@ const CollapsibleControlSection: React.FC<CollapsibleControlSectionProps> = ({
                 <div className="flex items-center space-x-2">
                     <Icon 
                         path={isExpanded ? ICON_PATHS.CHEVRON_UP : ICON_PATHS.CHEVRON_DOWN} 
-                        className="w-5 h-5 transition-transform duration-200"
-                        style={{ color: '#6B7280' }}
+                        className="w-5 h-5 text-gray-400 transition-transform duration-200" 
                     />
                 </div>
             </button>

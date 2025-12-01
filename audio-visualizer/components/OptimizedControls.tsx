@@ -404,30 +404,19 @@ interface OptimizedControlsProps {
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
-    const baseClasses = 'px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2';
+    const baseClasses = 'px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800';
     
-    const variantStyles = {
-        primary: { background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' },
-        secondary: { backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' },
-        danger: { background: 'linear-gradient(135deg, #D4A5A5 0%, #C89B9B 100%)', color: '#FFFFFF', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }
+    const variantClasses = {
+        primary: 'bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg hover:shadow-xl focus:ring-cyan-400',
+        secondary: 'bg-gray-600 hover:bg-gray-700 text-white shadow-md hover:shadow-lg focus:ring-gray-400',
+        danger: 'bg-red-500 hover:bg-red-600 text-white shadow-lg hover:shadow-xl focus:ring-red-400'
     };
     
     return (
         <button 
             onClick={onClick} 
             disabled={disabled} 
-            className={`${baseClasses} ${className}`}
-            style={variantStyles[variant]}
-            onMouseEnter={(e) => {
-                if (!disabled && variant === 'secondary') {
-                    e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
-                }
-            }}
-            onMouseLeave={(e) => {
-                if (!disabled && variant === 'secondary') {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                }
-            }}
+            className={`${baseClasses} ${variantClasses[variant]} ${className}`}
         >
             {children}
         </button>
@@ -502,8 +491,8 @@ const SliderControl: React.FC<{
     return (
         <div className={`space-y-2 ${className}`}>
             <div className="flex justify-between items-center">
-                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>{label}</label>
-                <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', color: '#6B7280' }}>{value.toFixed(2)}</span>
+                <label className="text-sm font-medium text-gray-300">{label}</label>
+                <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">{value.toFixed(2)}</span>
             </div>
             <div className="relative">
                 {/* 背景漸變條 */}
@@ -547,12 +536,11 @@ const SelectControl: React.FC<{
     className?: string;
 }> = ({ label, value, onChange, options, className = '' }) => (
     <div className={`space-y-2 ${className}`}>
-        <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>{label}</label>
+        <label className="text-sm font-medium text-gray-300">{label}</label>
         <select
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
         >
             {options.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -584,7 +572,7 @@ const ProgressBar: React.FC<{
 
     return (
         <div className={`space-y-2 ${className}`}>
-            <div className="flex justify-between items-center text-sm" style={{ color: '#4A4A4A' }}>
+            <div className="flex justify-between items-center text-sm text-gray-300">
                 <span>{formatTime(currentTime)}</span>
                 <span>{formatTime(duration)}</span>
             </div>
@@ -788,28 +776,26 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
             )}
 
             {/* 主要控制面板 */}
-            <div className="backdrop-blur-sm border rounded-2xl shadow-2xl p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl shadow-2xl p-6">
                 {/* 額外開關 */}
                 <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="flex items-center justify-between rounded-lg px-4 py-3" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', border: '1px solid rgba(139, 157, 195, 0.3)' }}>
-                        <span className="text-sm" style={{ color: '#4A4A4A' }}>顯示可視化</span>
+                    <div className="flex items-center justify-between bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3">
+                        <span className="text-sm text-gray-200">顯示可視化</span>
                         <button
                             onClick={() => props.onShowVisualizerChange(!props.showVisualizer)}
                             type="button"
-                            className="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2"
-                            style={{ backgroundColor: props.showVisualizer ? '#8B9DC3' : 'rgba(156, 163, 175, 0.5)' }}
+                            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${props.showVisualizer ? 'bg-cyan-600' : 'bg-gray-500'}`}
                             aria-pressed={props.showVisualizer}
                         >
                             <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${props.showVisualizer ? 'translate-x-6' : 'translate-x-1'}`} />
                         </button>
                     </div>
-                    <div className="flex items-center justify-between rounded-lg px-4 py-3" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', border: '1px solid rgba(139, 157, 195, 0.3)' }}>
-                        <span className="text-sm" style={{ color: '#4A4A4A' }}>顯示背景圖片</span>
+                    <div className="flex items-center justify-between bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3">
+                        <span className="text-sm text-gray-200">顯示背景圖片</span>
                         <button
                             onClick={() => props.onShowBackgroundImageChange(!props.showBackgroundImage)}
                             type="button"
-                            className="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2"
-                            style={{ backgroundColor: props.showBackgroundImage ? '#8B9DC3' : 'rgba(156, 163, 175, 0.5)' }}
+                            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${props.showBackgroundImage ? 'bg-cyan-600' : 'bg-gray-500'}`}
                             aria-pressed={props.showBackgroundImage}
                         >
                             <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${props.showBackgroundImage ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -820,8 +806,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                 {/* 播放控制 - 始終顯示 */}
                 <div className="mb-6">
                     <div className="flex items-center space-x-2 mb-4">
-                        <Icon path={ICON_PATHS.PLAY} className="w-5 h-5" style={{ color: '#8B9DC3' }} />
-                        <h3 className="text-lg font-semibold" style={{ color: '#4A4A4A' }}>播放控制</h3>
+                        <Icon path={ICON_PATHS.PLAY} className="w-5 h-5 text-cyan-400" />
+                        <h3 className="text-lg font-semibold text-gray-200">播放控制</h3>
                     </div>
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex items-center space-x-3">
@@ -864,7 +850,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         )}
                         
                         <div className="flex items-center space-x-3 flex-wrap">
-                            <label className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl cursor-pointer" style={{ background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF' }}>
+                            <label className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white shadow-lg hover:shadow-xl cursor-pointer">
                                 <Icon path={ICON_PATHS.UPLOAD} className="w-5 h-5"/>
                                 <span>{props.audioFile ? '更換音樂' : '上傳音樂'}</span>
                                 <input 
@@ -883,13 +869,12 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             </label>
                             
                             {/* CTA 動畫控制 */}
-                            <div className="flex items-center justify-between rounded-lg px-4 py-3" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', border: '1px solid rgba(139, 157, 195, 0.3)' }}>
-                                <span className="text-sm" style={{ color: '#4A4A4A' }}>加入 CTA 動畫</span>
+                            <div className="flex items-center justify-between bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3">
+                                <span className="text-sm text-gray-200">加入 CTA 動畫</span>
                                 <button
                                     onClick={() => props.onShowCtaAnimationChange?.(!props.showCtaAnimation)}
                                     type="button"
-                                    className="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2"
-                                    style={{ backgroundColor: props.showCtaAnimation ? '#8B9DC3' : 'rgba(156, 163, 175, 0.5)' }}
+                                    className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${props.showCtaAnimation ? 'bg-cyan-600' : 'bg-gray-500'}`}
                                     aria-pressed={props.showCtaAnimation}
                                 >
                                     <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${props.showCtaAnimation ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -902,13 +887,13 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 </Button>
                             )}
                             {props.audioFile && (
-                                <a href={URL.createObjectURL(props.audioFile)} download={props.audioFile.name} className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl" style={{ background: 'linear-gradient(135deg, #A8B5C4 0%, #9CA3AF 100%)', color: '#FFFFFF' }}>
+                                <a href={URL.createObjectURL(props.audioFile)} download={props.audioFile.name} className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-500 text-white shadow-lg hover:shadow-xl">
                                     <Icon path={ICON_PATHS.DOWNLOAD} />
                                     <span>下載音樂</span>
                                 </a>
                             )}
                             {props.videoUrl && (
-                                <a href={props.videoUrl} download={`${props.audioFile?.name.replace(/\.[^/.]+$/, "") || 'visualization'}.${props.videoExtension}`} className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl" style={{ background: 'linear-gradient(135deg, #9CA3AF 0%, #8B9DC3 100%)', color: '#FFFFFF' }}>
+                                <a href={props.videoUrl} download={`${props.audioFile?.name.replace(/\.[^/.]+$/, "") || 'visualization'}.${props.videoExtension}`} className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-500 text-white shadow-lg hover:shadow-xl">
                                     <Icon path={ICON_PATHS.DOWNLOAD} />
                                     <span>下載 {props.videoExtension.toUpperCase()}</span>
                                 </a>
@@ -919,7 +904,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         {props.showCtaAnimation && (
                             <div className="mt-4 space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         頻道名稱
                                     </label>
                                     <input
@@ -927,8 +912,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         value={props.ctaChannelName || ''}
                                         onChange={(e) => props.onCtaChannelNameChange?.(e.target.value)}
                                         placeholder="輸入頻道名稱..."
-                                        className="w-full px-3 py-2 rounded-lg focus:ring-2 transition"
-                                        style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+                                        className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
                                     />
                                 </div>
                                 <div>
@@ -1055,9 +1039,9 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             />
                             
                             <div className="space-y-2">
-                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>背景圖片</label>
+                                <label className="text-sm font-medium text-gray-300">背景圖片</label>
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-center px-4 py-2 rounded-lg font-semibold transition-all duration-200 cursor-pointer" style={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; }}>
+                                    <label className="text-center bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg font-semibold transition-all duration-200 cursor-pointer">
                                         上傳單張圖片
                                         <input 
                                             type="file" 
@@ -1071,7 +1055,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             }} 
                                         />
                                     </label>
-                                    <label className="text-center px-4 py-2 rounded-lg font-semibold transition-all duration-200 cursor-pointer" style={{ background: 'linear-gradient(135deg, #9CA3AF 0%, #8B9DC3 100%)', color: '#FFFFFF' }} onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9'; }} onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}>
+                                    <label className="text-center bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg font-semibold transition-all duration-200 cursor-pointer">
                                         上傳多張圖片 (輪播)
                                         <input 
                                             type="file" 
@@ -1120,7 +1104,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 
                                 {/* 背景影片上傳 */}
                                 <div className="space-y-2 mt-4">
-                                    <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>背景影片</label>
+                                    <label className="text-sm font-medium text-gray-300">背景影片</label>
                                     <div className="flex flex-col gap-2">
                                         <label className="text-center bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg font-semibold transition-all duration-200 cursor-pointer">
                                             🎬 上傳影片
@@ -1171,7 +1155,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 {/* 圖片預覽和輪播控制 */}
                                 {props.backgroundImages.length > 0 && (
                                     <div className="mt-4 space-y-3">
-                                        <div className="text-sm" style={{ color: '#4A4A4A' }}>
+                                        <div className="text-sm text-gray-300">
                                             已上傳 {props.backgroundImages.length} 張圖片，當前顯示第 {props.currentImageIndex + 1} 張
                                         </div>
                                         
@@ -1183,10 +1167,9 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                         type="checkbox"
                                                         checked={props.isSlideshowEnabled}
                                                         onChange={(e) => props.onSlideshowEnabledChange(e.target.checked)}
-                                                        className="w-4 h-4 rounded focus:ring-2"
-                                                        style={{ color: '#8B9DC3', backgroundColor: 'rgba(255, 255, 255, 0.8)', border: '1px solid rgba(139, 157, 195, 0.4)' }}
+                                                        className="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500 focus:ring-2"
                                                     />
-                                                    <span className="text-sm" style={{ color: '#4A4A4A' }}>啟用自動輪播</span>
+                                                    <span className="text-sm text-gray-300">啟用自動輪播</span>
                                                 </label>
                                             </div>
                                         )}
@@ -1194,15 +1177,14 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         {/* 輪播間隔設定 */}
                                         {props.isSlideshowEnabled && (
                                             <div className="space-y-2">
-                                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>輪播間隔 (秒)</label>
+                                                <label className="text-sm font-medium text-gray-300">輪播間隔 (秒)</label>
                                                 <input
                                                     type="number"
                                                     min="5"
                                                     max="60"
                                                     value={props.slideshowInterval}
                                                     onChange={(e) => props.onSlideshowIntervalChange(parseInt(e.target.value))}
-                                                    className="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
-                                                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+                                                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
                                                 />
                                             </div>
                                         )}
@@ -1210,12 +1192,11 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         {/* 轉場效果選擇 */}
                                         {props.isSlideshowEnabled && (
                                             <div className="space-y-2">
-                                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>轉場效果</label>
+                                                <label className="text-sm font-medium text-gray-300">轉場效果</label>
                                                 <select
                                                     value={props.transitionType}
                                                     onChange={(e) => props.onTransitionTypeChange(e.target.value as TransitionType)}
-                                                    className="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
-                                                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+                                                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
                                                 >
                                                     <option value={TransitionType.TV_STATIC}>📺 電視雜訊</option>
                                                     <option value={TransitionType.FADE}>🌅 淡入淡出</option>
@@ -1267,7 +1248,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                     >
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>自訂文字</label>
+                                <label className="text-sm font-medium text-gray-300">自訂文字</label>
                                 <input
                                     type="text"
                                     value={props.customText}
@@ -1318,7 +1299,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             />
                             
                             <div className="space-y-2">
-                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>文字顏色</label>
+                                <label className="text-sm font-medium text-gray-300">文字顏色</label>
                                 <div className="flex space-x-2">
                                     {PRESET_COLORS.map(color => (
                                         <SwatchButton
@@ -1336,7 +1317,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         <div className="mt-6">
                             <div className="flex items-center space-x-2 mb-4">
                                 <Icon path={ICON_PATHS.SETTINGS} className="w-4 h-4 text-cyan-400" />
-                                <h4 className="text-md font-semibold" style={{ color: '#4A4A4A' }}>文字大小與位置</h4>
+                                <h4 className="text-md font-semibold text-gray-200">文字大小與位置</h4>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <SliderControl
@@ -1396,7 +1377,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         <div className="space-y-6">
                             {/* 字幕格式選擇 */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>字幕格式</label>
+                                <label className="text-sm font-medium text-gray-300">字幕格式</label>
                                 <SelectControl
                                     label="字幕格式"
                                     value={props.subtitleFormat}
@@ -1431,13 +1412,12 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             </div>
                             
                             <div className="space-y-2">
-                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>字幕文字</label>
+                                <label className="text-sm font-medium text-gray-300">字幕文字</label>
                                 <textarea 
                                     value={props.subtitlesRawText}
                                     onChange={(e) => props.onSubtitlesRawTextChange(e.target.value)}
                                     rows={5}
-                                    className="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2 font-mono text-sm"
-                                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+                                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent font-mono text-sm"
                                     placeholder={props.subtitleFormat === SubtitleFormat.BRACKET 
                                         ? "使用格式 [00:00.00] 歌詞文字，或點擊「AI 產生字幕」按鈕自動產生歌詞..."
                                         : "使用格式 00:00:14,676 --> 00:00:19,347 歌詞文字，或點擊「AI 產生字幕」按鈕自動產生歌詞..."
@@ -1464,7 +1444,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                               </>
                                         }
                                     </Button>
-                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-80 p-3 border rounded-md text-xs text-left opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)', color: '#4A4A4A' }}>
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-80 p-3 bg-gray-900 border border-gray-600 rounded-md text-xs text-left text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                                         <div className="space-y-2">
                                             <div className="font-medium text-cyan-300">AI 字幕生成功能</div>
                                             <div>• 直接分析音訊檔並使用 AI 產生字幕</div>
@@ -1509,27 +1489,17 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             
                             {/* 字幕顯示模式選擇器 */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>字幕顯示模式</label>
+                                <label className="text-sm font-medium text-gray-300">字幕顯示模式</label>
                                 <div className="flex space-x-2">
                                     {Object.values(SubtitleDisplayMode).map((mode) => (
                                         <button
                                             key={mode}
                                             onClick={() => props.onSubtitleDisplayModeChange(mode)}
-                                            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                                            style={props.subtitleDisplayMode === mode
-                                                ? { background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF' }
-                                                : { backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)' }
-                                            }
-                                            onMouseEnter={(e) => {
-                                                if (props.subtitleDisplayMode !== mode) {
-                                                    e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
-                                                }
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                if (props.subtitleDisplayMode !== mode) {
-                                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                                                }
-                                            }}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                props.subtitleDisplayMode === mode
+                                                    ? 'bg-cyan-600 text-white'
+                                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                            }`}
                                         >
                                             {mode === SubtitleDisplayMode.NONE && (
                                                 <span className="flex items-center space-x-2">
@@ -1568,27 +1538,17 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             
                             {/* 字幕方向選擇器 */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>字幕方向</label>
+                                <label className="text-sm font-medium text-gray-300">字幕方向</label>
                                 <div className="flex space-x-2">
                                     {Object.values(SubtitleOrientation).map((orientation) => (
                                         <button
                                             key={orientation}
                                             onClick={() => props.onSubtitleOrientationChange(orientation)}
-                                            className="flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                                            style={props.subtitleOrientation === orientation
-                                                ? { background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF' }
-                                                : { backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)' }
-                                            }
-                                            onMouseEnter={(e) => {
-                                                if (props.subtitleOrientation !== orientation) {
-                                                    e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
-                                                }
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                if (props.subtitleOrientation !== orientation) {
-                                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                                                }
-                                            }}
+                                            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                                props.subtitleOrientation === orientation
+                                                    ? 'bg-cyan-600 text-white'
+                                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                            }`}
                                         >
                                             {orientation === SubtitleOrientation.HORIZONTAL && (
                                                 <span className="flex items-center justify-center space-x-2">
@@ -1619,7 +1579,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 
                                 {/* 位置控制 - 使用統一的 SliderControl 樣式 */}
                                 <div className="col-span-2 space-y-3">
-                                    <div className="text-sm font-medium" style={{ color: '#4A4A4A' }}>
+                                    <div className="text-sm font-medium text-gray-300">
                                         📍 位置控制 ({props.subtitleOrientation === SubtitleOrientation.VERTICAL ? '直式' : '橫式'})
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
@@ -1721,7 +1681,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 />
                                 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>字幕顏色</label>
+                                    <label className="text-sm font-medium text-gray-300">字幕顏色</label>
                                     <div className="flex space-x-2">
                                         {PRESET_COLORS.map(color => (
                                             <SwatchButton
@@ -1780,7 +1740,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         >
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between">
-                                    <div className="text-sm" style={{ color: '#4A4A4A' }}>捲軸歌詞控制選項</div>
+                                    <div className="text-sm text-gray-300">捲軸歌詞控制選項</div>
                                 </div>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1879,7 +1839,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 {/* 歌曲資訊輸入 */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
                                             歌曲名稱
                                         </label>
                                         <input
@@ -1887,13 +1847,12 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             value={props.geometricSongName || ''}
                                             onChange={(e) => props.onGeometricSongNameChange?.(e.target.value)}
                                             placeholder="輸入歌曲名稱..."
-                                            className="w-full px-3 py-2 rounded-lg focus:ring-2 transition"
-                                        style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+                                            className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
                                         />
                                     </div>
                                     
                                     <div>
-                                        <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
                                             歌手名稱
                                         </label>
                                         <input
@@ -1901,15 +1860,14 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             value={props.geometricArtistName || ''}
                                             onChange={(e) => props.onGeometricArtistNameChange?.(e.target.value)}
                                             placeholder="輸入歌手名稱..."
-                                            className="w-full px-3 py-2 rounded-lg focus:ring-2 transition"
-                                        style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+                                            className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
                                         />
                                     </div>
                                 </div>
                                 
                                 {/* 方框圖片上傳 */}
                                 <div className="space-y-3">
-                                    <label className="block text-sm font-medium" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300">
                                         方框圖片
                                     </label>
                                     <div className="flex items-center space-x-3">
@@ -1948,7 +1906,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 半圓圖片上傳 */}
                                 <div className="space-y-3">
-                                    <label className="block text-sm font-medium" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300">
                                         半圓圖片
                                     </label>
                                     <div className="flex items-center space-x-3">
@@ -1991,7 +1949,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     
                                     {/* 控制卡開關 */}
                                     <div className="flex items-center justify-between">
-                                        <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>
+                                        <label className="text-sm font-medium text-gray-300">
                                             顯示控制卡
                                         </label>
                                         <button
@@ -2022,14 +1980,13 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                             {/* 控制卡樣式 */}
                                             <div>
-                                                <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">
                                                     控制卡樣式
                                                 </label>
                                                 <select
                                                     value={props.controlCardStyle}
                                                     onChange={(e) => props.onControlCardStyleChange?.(e.target.value as ControlCardStyle)}
-                                                    className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2"
-                                                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+                                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                                                 >
                                                     <option value={ControlCardStyle.FILLED}>🎨 填充模式</option>
                                                     <option value={ControlCardStyle.OUTLINE}>📦 外框模式</option>
@@ -2039,7 +1996,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                             {/* 文字顏色 */}
                                             <div>
-                                                <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">
                                                     文字顏色
                                                 </label>
                                                 <div className="flex space-x-2">
@@ -2062,7 +2019,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             {/* 背景顏色 (僅填充模式) */}
                                             {props.controlCardStyle === ControlCardStyle.FILLED && (
                                                 <div>
-                                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                                         背景顏色
                                                     </label>
                                                     <div className="flex space-x-2">
@@ -2085,13 +2042,14 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                             {/* 自動切換歌曲 */}
                                             <div className="flex items-center justify-between">
-                                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>
+                                                <label className="text-sm font-medium text-gray-300">
                                                     自動切換歌曲
                                                 </label>
                                                 <button
                                                     onClick={() => props.onAutoChangeSongChange?.(!props.autoChangeSong)}
-                                                    className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2"
-                                                    style={{ backgroundColor: props.autoChangeSong ? '#8B9DC3' : 'rgba(156, 163, 175, 0.5)' }}
+                                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                                        props.autoChangeSong ? 'bg-cyan-500' : 'bg-gray-600'
+                                                    }`}
                                                 >
                                                     <span
                                                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -2104,12 +2062,12 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             {/* 歌名列表 */}
                                             {props.songNameList && props.songNameList.length > 0 && (
                                                 <div>
-                                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                                         歌名列表 ({props.songNameList.length} 首)
                                                     </label>
-                                                    <div className="rounded-lg p-3 max-h-32 overflow-y-auto border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
+                                                    <div className="bg-gray-800 rounded-lg p-3 max-h-32 overflow-y-auto">
                                                         {props.songNameList.map((song, index) => (
-                                                            <div key={index} className="text-xs py-1" style={{ color: '#4A4A4A' }}>
+                                                            <div key={index} className="text-xs text-gray-300 py-1">
                                                                 {index + 1}. {song}
                                                             </div>
                                                         ))}
@@ -2139,7 +2097,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             <div className="space-y-4">
                                 {/* 中央圖片上傳 */}
                                 <div className="space-y-3">
-                                    <label className="block text-sm font-medium" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300">
                                         中央圖片
                                     </label>
                                     <div className="flex items-center space-x-3">
@@ -2188,7 +2146,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 
                                 {/* 位置控制 */}
                                 <div className="space-y-3">
-                                    <label className="block text-sm font-medium" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300">
                                         位置調整
                                     </label>
                                     <div className="grid grid-cols-2 gap-3">
@@ -2244,11 +2202,11 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             accept="image/*"
                                             onChange={props.onVinylImageUpload}
                                         />
-                                        <label htmlFor="vinyl-image-input" className="px-3 py-2 rounded cursor-pointer text-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; }}>
+                                        <label htmlFor="vinyl-image-input" className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-100 rounded cursor-pointer text-sm">
                                             選擇圖片
                                         </label>
                                         {props.vinylImage && (
-                                            <button onClick={props.onClearVinylImage} className="px-3 py-2 rounded text-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; }}>
+                                            <button onClick={props.onClearVinylImage} className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-100 rounded text-sm">
                                                 清除
                                             </button>
                                         )}
@@ -2271,8 +2229,9 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         <span className="text-sm text-gray-400">中心照片固定</span>
                                         <button
                                             onClick={() => props.onVinylCenterFixedChange?.(!props.vinylCenterFixed)}
-                                            className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2"
-                                            style={{ backgroundColor: props.vinylCenterFixed ? '#8B9DC3' : 'rgba(156, 163, 175, 0.5)' }}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                                props.vinylCenterFixed ? 'bg-cyan-500' : 'bg-gray-600'
+                                            }`}
                                         >
                                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.vinylCenterFixed ? 'translate-x-6' : 'translate-x-1'}`} />
                                         </button>
@@ -2284,25 +2243,27 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 唱片設定 */}
                                 <div className="space-y-4 border-t border-gray-600 pt-4">
-                                    <h4 className="text-sm font-medium" style={{ color: '#8B9DC3' }}>唱片設定</h4>
+                                    <h4 className="text-sm font-medium text-cyan-400">唱片設定</h4>
                                     
                                     <div className="flex items-center justify-between">
-                                        <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>顯示唱片</label>
+                                        <label className="text-sm font-medium text-gray-300">顯示唱片</label>
                                         <button
                                             onClick={() => props.onVinylRecordEnabledChange?.(!props.vinylRecordEnabled)}
-                                            className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2"
-                                            style={{ backgroundColor: props.vinylRecordEnabled ? '#8B9DC3' : 'rgba(156, 163, 175, 0.5)' }}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                                props.vinylRecordEnabled ? 'bg-cyan-500' : 'bg-gray-600'
+                                            }`}
                                         >
                                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.vinylRecordEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
                                         </button>
                                     </div>
                                     
                                     <div className="flex items-center justify-between">
-                                        <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>顯示指針</label>
+                                        <label className="text-sm font-medium text-gray-300">顯示指針</label>
                                         <button
                                             onClick={() => props.onVinylNeedleEnabledChange?.(!props.vinylNeedleEnabled)}
-                                            className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2"
-                                            style={{ backgroundColor: props.vinylNeedleEnabled !== false ? '#8B9DC3' : 'rgba(156, 163, 175, 0.5)' }}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                                props.vinylNeedleEnabled !== false ? 'bg-cyan-500' : 'bg-gray-600'
+                                            }`}
                                         >
                                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.vinylNeedleEnabled !== false ? 'translate-x-6' : 'translate-x-1'}`} />
                                         </button>
@@ -2311,10 +2272,10 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 控制卡設定 */}
                                 <div className="space-y-4 border-t border-gray-600 pt-4">
-                                    <h4 className="text-sm font-medium" style={{ color: '#8B9DC3' }}>控制卡設定</h4>
+                                    <h4 className="text-sm font-medium text-cyan-400">控制卡設定</h4>
                                     
                                     <div className="flex items-center justify-between">
-                                        <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>顯示控制卡</label>
+                                        <label className="text-sm font-medium text-gray-300">顯示控制卡</label>
                                         <button
                                             onClick={() => props.onControlCardEnabledChange?.(!props.controlCardEnabled)}
                                             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
@@ -2329,12 +2290,11 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         <>
                                             {/* 配置模式切換 */}
                                             <div>
-                                                <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>配置模式</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">配置模式</label>
                                                 <select
                                                     value={props.vinylLayoutMode || 'horizontal'}
                                                     onChange={(e) => props.onVinylLayoutModeChange?.(e.target.value as 'horizontal' | 'vertical')}
-                                                    className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2"
-                                                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+                                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                                                 >
                                                     <option value="horizontal">↔️ 左右排列</option>
                                                     <option value="vertical">↕️ 上下排列</option>
@@ -2342,12 +2302,11 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>控制卡樣式</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">控制卡樣式</label>
                                                 <select
                                                     value={props.controlCardStyle}
                                                     onChange={(e) => props.onControlCardStyleChange?.(e.target.value as ControlCardStyle)}
-                                                    className="w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2"
-                                                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
+                                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                                                 >
                                                     <option value={ControlCardStyle.FILLED}>🎨 填充</option>
                                                     <option value={ControlCardStyle.OUTLINE}>📦 外框</option>
@@ -2463,7 +2422,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             <div className="space-y-6">
                                 {/* 背景圖片說明 */}
                                 <div className="space-y-3">
-                                    <label className="block text-sm font-medium" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300">
                                         背景圖片
                                     </label>
                                     <div className="bg-gray-800 rounded-lg p-3">
@@ -2478,7 +2437,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 歌名輸入 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         歌曲名稱
                                     </label>
                                     <input
@@ -2492,7 +2451,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 副標題輸入 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         副標題
                                     </label>
                                     <input
@@ -2551,7 +2510,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 字體大小控制 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         字體大小
                                     </label>
                                     <div className="flex items-center space-x-3">
@@ -2584,7 +2543,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 透明度控制 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         覆蓋層透明度
                                     </label>
                                     <div className="flex items-center space-x-3">
@@ -2630,7 +2589,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             <div className="space-y-4">
                                 {/* 中間方格透明度控制 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         中間方格透明度
                                     </label>
                                     <div className="flex items-center space-x-3">
@@ -2663,7 +2622,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 高斯模糊強度控制 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         高斯模糊強度
                                     </label>
                                     <div className="flex items-center space-x-3">
@@ -2696,7 +2655,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 貝茲曲線強度控制 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         貝茲曲線強度
                                     </label>
                                     <div className="flex items-center space-x-3">
@@ -2746,7 +2705,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     
                                     {/* 文字內容 */}
                                     <div>
-                                        <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
                                             文字內容
                                         </label>
                                         <input
@@ -2760,7 +2719,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                     {/* 文字顏色 */}
                                     <div>
-                                        <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
                                             文字顏色
                                         </label>
                                         <div className="flex items-center space-x-3">
@@ -2782,7 +2741,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                     {/* 字體選擇 */}
                                     <div>
-                                        <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
                                             字體
                                         </label>
                                         <select
@@ -2854,7 +2813,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                     {/* 文字背景透明度 */}
                                     <div>
-                                        <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
                                             文字背景透明度
                                         </label>
                                         <div className="flex items-center space-x-3">
@@ -2916,7 +2875,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             <div className="space-y-6">
                                 {/* 背景圖片上傳 */}
                                 <div className="space-y-3">
-                                    <label className="block text-sm font-medium" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300">
                                         背景圖片（圓形裁切）
                                     </label>
                                     <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
@@ -2984,7 +2943,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             <div className="space-y-6">
                                 {/* 歌手名稱 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         歌手名稱（可選）
                                     </label>
                                     <input
@@ -2998,7 +2957,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 歌曲名稱 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         歌曲名稱（可選）
                                     </label>
                                     <input
@@ -3057,7 +3016,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 文字顏色 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         文字顏色
                                     </label>
                                     <div className="flex items-center space-x-3">
@@ -3079,7 +3038,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 背景透明度 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         背景透明度
                                     </label>
                                     <div className="flex items-center space-x-3">
@@ -3112,7 +3071,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                                 {/* 字體大小 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         字體大小
                                     </label>
                                     <div className="flex items-center space-x-3">
@@ -3158,7 +3117,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             <div className="space-y-6">
                                 {/* 白色框透明度 */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
                                         白色框透明度
                                     </label>
                                     <div className="flex items-center space-x-3">
@@ -3194,7 +3153,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     <h4 className="text-sm font-medium text-cyan-400">第一組文字</h4>
                                     
                                     <div>
-                                        <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
                                             文字內容
                                         </label>
                                         <input
@@ -3252,7 +3211,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     />
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
                                             字體大小：{props.keYeCustomV2Text1Size || 40}px
                                         </label>
                                         <input
@@ -3272,7 +3231,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     <h4 className="text-sm font-medium text-cyan-400">第二組文字</h4>
                                     
                                     <div>
-                                        <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
                                             文字內容
                                         </label>
                                         <input
@@ -3330,7 +3289,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     />
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
                                             字體大小：{props.keYeCustomV2Text2Size || 30}px
                                         </label>
                                         <input
@@ -3421,7 +3380,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 <>
                                     {/* 濾鏡特效類型選擇 */}
                                     <div>
-                                        <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
                                             特效類型
                                         </label>
                                         <select
