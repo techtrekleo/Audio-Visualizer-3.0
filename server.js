@@ -123,7 +123,25 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                     padding: 3rem 0 2rem;
                     text-align: center;
                     border-top: 1px solid rgba(74, 74, 74, 0.2);
-                    margin-top: 2rem;
+                    margin-top: auto;
+                    position: relative;
+                    width: 100%;
+                    clear: both;
+                    z-index: 1;
+                  }
+                  
+                  /* 確保 body 和 root 容器正確布局 */
+                  body {
+                    display: flex !important;
+                    flex-direction: column !important;
+                    min-height: 100vh !important;
+                  }
+                  
+                  #root {
+                    flex: 1 0 auto !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    min-height: 0 !important;
                   }
                   .unified-footer .footer-content {
                     max-width: 1200px;
@@ -153,6 +171,16 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                   /* 純色設定 - 低亮度低彩度 */
                   body {
                     background-color: #1a1a1a !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    min-height: 100vh !important;
+                  }
+                  
+                  #root {
+                    flex: 1 0 auto !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    min-height: 0 !important;
                   }
                   
                   /* 為畫布添加低彩度邊框 */
@@ -703,12 +731,29 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
   modifiedHtml = modifiedHtml.replace('<body>', `<body>${unifiedHeader}`);
   
   // 注入頁尾到 body 結束（僅當 includeFooter 為 true 時）
+  // 對於 React 應用，頁尾應該在 </body> 之前，但在 root div 之後
   if (includeFooter) {
-    modifiedHtml = modifiedHtml.replace('</body>', `${unifiedFooter}</body>`);
+    // 嘗試在 </body> 之前插入頁尾，確保在 root div 之後
+    if (modifiedHtml.includes('</body>')) {
+      // 如果存在 </div></body>（root div 結束），在 </div> 之後插入頁尾
+      if (modifiedHtml.includes('</div></body>')) {
+        modifiedHtml = modifiedHtml.replace('</div></body>', `</div>${unifiedFooter}${modalHtml}</body>`);
+      } else {
+        // 否則在 </body> 之前插入
+        modifiedHtml = modifiedHtml.replace('</body>', `${unifiedFooter}${modalHtml}</body>`);
+      }
+    } else {
+      // 如果沒有 </body>，在文件末尾添加
+      modifiedHtml = modifiedHtml + unifiedFooter + modalHtml;
+    }
+  } else {
+    // 即使不包含頁尾，也要注入彈出視窗
+    if (modifiedHtml.includes('</body>')) {
+      modifiedHtml = modifiedHtml.replace('</body>', `${modalHtml}</body>`);
+    } else {
+      modifiedHtml = modifiedHtml + modalHtml;
+    }
   }
-  
-  // 注入彈出視窗到 body 最後
-  modifiedHtml = modifiedHtml.replace('</body>', `${modalHtml}</body>`);
   
   return modifiedHtml;
 }

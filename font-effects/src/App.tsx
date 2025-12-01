@@ -4,7 +4,7 @@ import { DraggableTextBlock } from './components/DraggableTextBlock';
 import { VisualCanvas } from './components/VisualCanvas';
 import { PresetManager } from './components/PresetManager';
 import { UnifiedHeader } from './components/UnifiedLayout';
-import { UnifiedFooter, ModalProvider } from '../../shared-components/dist';
+import { ModalProvider } from '../../shared-components/dist';
 import { renderComposition, getRandomItem, getRandomHexColor } from './utils/canvas';
 import { fonts, effects, canvasSizes, chineseFrames, DEFAULT_COLOR_1, DEFAULT_COLOR_2 } from './constants';
 import type { TextBlock, CanvasSizeId, EffectId, SavedPreset, ChineseFrameId } from './types';
@@ -487,8 +487,7 @@ const App: React.FC = () => {
         </div>
       </main>
       
-      {/* 統一的 Footer */}
-      <UnifiedFooter />
+      {/* 統一的 Footer 由 server.js 注入，不需要在這裡渲染 */}
     </div>
   </ModalProvider>
   );

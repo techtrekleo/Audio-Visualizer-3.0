@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { musicCategories } from './utils/musicCategories'
 import { generateAIContent } from './utils/geminiAI'
-import { UnifiedHeader, UnifiedFooter, ModalProvider } from '../../shared-components/dist'
+import { UnifiedHeader, ModalProvider } from '../../shared-components/dist'
 
 interface SEOContent {
   title: string
@@ -411,8 +411,7 @@ function App() {
           </div>
         </main>
         
-        {/* 統一的 Footer */}
-        <UnifiedFooter />
+        {/* 統一的 Footer 由 server.js 注入，不需要在這裡渲染 */}
       </div>
     </ModalProvider>
   )
