@@ -12,15 +12,15 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
   // 統一的頁首頁尾樣式
   const unifiedStyles = `
     <style>
-      /* 統一頁首樣式 - 與首頁一致 */
+      /* 統一頁首樣式 - 與首頁一致（莫蘭迪淺色系） */
       .unified-navbar {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
-        background: rgba(0, 0, 0, 0.95);
+        background: rgba(245, 245, 240, 0.95);
         backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(74, 74, 74, 0.2);
         z-index: 1000;
         padding: 1rem 0;
       }
@@ -43,11 +43,18 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
         height: 50px;
         border-radius: 50%;
         object-fit: cover;
+        border: 2px solid rgba(139, 157, 195, 0.5);
+        box-shadow: 0 4px 15px rgba(139, 157, 195, 0.3);
+        transition: all 0.3s ease;
+      }
+      .unified-navbar .logo-cat:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(139, 157, 195, 0.5);
       }
       .unified-navbar .logo-main {
         font-size: 1.8rem;
         font-weight: 900;
-        background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+        background: linear-gradient(45deg, #8B9DC3, #A8B5C4, #9CA3AF);
         background-size: 200% 200%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -57,7 +64,7 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
       .unified-navbar .logo-sub {
         font-size: 0.7rem;
         font-weight: 400;
-        color: #96ceb4;
+        color: #6B7280;
         margin-top: -2px;
       }
       .unified-navbar .nav-links {
@@ -68,14 +75,14 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
         padding: 0;
       }
       .unified-navbar .nav-links a {
-        color: #ffffff;
+        color: #4A4A4A;
         text-decoration: none;
         font-weight: 500;
         transition: color 0.3s ease;
         position: relative;
       }
       .unified-navbar .nav-links a:hover {
-        color: #4ecdc4;
+        color: #8B9DC3;
       }
       .unified-navbar .nav-links a::after {
         content: '';
@@ -84,7 +91,7 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
         left: 0;
         width: 0;
         height: 2px;
-        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        background: linear-gradient(45deg, #9CA3AF, #8B9DC3);
         transition: width 0.3s ease;
       }
       .unified-navbar .nav-links a:hover::after {
@@ -177,7 +184,7 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                     border-color: #4a5568 !important;
                   }
                   
-                  /* 彈出視窗樣式 */
+                  /* 彈出視窗樣式（莫蘭迪淺色系） */
                   .contact-modal, .privacy-modal, .terms-modal {
                     display: none;
                     position: fixed;
@@ -186,21 +193,21 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                     top: 0;
                     width: 100%;
                     height: 100%;
-                    background-color: rgba(0, 0, 0, 0.8);
+                    background-color: rgba(74, 74, 74, 0.7);
                     backdrop-filter: blur(5px);
                   }
                   .contact-modal-content, .privacy-modal-content, .terms-modal-content {
-                    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+                    background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 100%);
                     margin: 5% auto;
                     padding: 2rem;
-                    border: 1px solid #4ecdc4;
+                    border: 1px solid rgba(139, 157, 195, 0.3);
                     border-radius: 20px;
                     width: 90%;
                     max-width: 600px;
                     max-height: 80vh;
                     overflow-y: auto;
                     position: relative;
-                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+                    box-shadow: 0 20px 40px rgba(139, 157, 195, 0.3);
                   }
                   .contact-modal-header, .privacy-modal-header, .terms-modal-header {
                     display: flex;
@@ -208,23 +215,23 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                     align-items: center;
                     margin-bottom: 2rem;
                     padding-bottom: 1rem;
-                    border-bottom: 1px solid #4ecdc4;
+                    border-bottom: 1px solid rgba(139, 157, 195, 0.3);
                   }
                   .contact-modal-title, .privacy-modal-title, .terms-modal-title {
-                    color: #4ecdc4;
+                    color: #8B9DC3;
                     font-size: 1.5rem;
                     font-weight: bold;
                     margin: 0;
                   }
                   .contact-modal-close, .privacy-modal-close, .terms-modal-close {
-                    color: #aaa;
+                    color: #6B7280;
                     font-size: 2rem;
                     font-weight: bold;
                     cursor: pointer;
                     transition: color 0.3s ease;
                   }
                   .contact-modal-close:hover, .privacy-modal-close:hover, .terms-modal-close:hover {
-                    color: #4ecdc4;
+                    color: #8B9DC3;
                   }
                   .contact-options {
                     display: flex;
@@ -235,17 +242,17 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                     display: flex;
                     align-items: center;
                     padding: 1rem;
-                    background: rgba(78, 205, 196, 0.1);
-                    border: 1px solid rgba(78, 205, 196, 0.3);
+                    background: rgba(139, 157, 195, 0.15);
+                    border: 1px solid rgba(139, 157, 195, 0.3);
                     border-radius: 15px;
                     transition: all 0.3s ease;
                     cursor: pointer;
                     text-decoration: none;
-                    color: white;
+                    color: #4A4A4A;
                   }
                   .contact-option:hover {
-                    background: rgba(78, 205, 196, 0.2);
-                    border-color: #4ecdc4;
+                    background: rgba(139, 157, 195, 0.25);
+                    border-color: #8B9DC3;
                     transform: translateY(-2px);
                   }
                   .contact-option-icon {
@@ -266,20 +273,20 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                   }
                   .contact-option-desc {
                     font-size: 0.9rem;
-                    color: #b8b8b8;
+                    color: #5C5C5C;
                   }
                   
-                  /* 隱私政策和使用條款內容樣式 */
+                  /* 隱私政策和使用條款內容樣式（莫蘭迪淺色系） */
                   .privacy-content, .terms-content {
-                    color: #e5e7eb;
+                    color: #4A4A4A;
                     line-height: 1.6;
                   }
                   .privacy-content h3, .terms-content h3 {
-                    color: #4ecdc4;
+                    color: #8B9DC3;
                     font-size: 1.2rem;
                     margin-top: 2rem;
                     margin-bottom: 1rem;
-                    border-left: 3px solid #4ecdc4;
+                    border-left: 3px solid #8B9DC3;
                     padding-left: 1rem;
                   }
                   .privacy-content h3:first-child, .terms-content h3:first-child {
@@ -297,7 +304,7 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                     margin-bottom: 0.5rem;
                   }
                   .privacy-content strong, .terms-content strong {
-                    color: #4ecdc4;
+                    color: #3A3A4A;
                   }
                   
                   /* Buy Me a Coffee 按鈕樣式 */
@@ -351,7 +358,7 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                     height: 2.5rem;
                     border-radius: 50%;
                     object-fit: cover;
-                    border: 2px solid rgba(255, 255, 255, 0.3);
+                    border: 2px solid rgba(74, 74, 74, 0.2);
                     animation: coffeeSteam 2s ease-in-out infinite;
                   }
                   
@@ -798,10 +805,18 @@ const server = http.createServer((req, res) => {
         '.ico': 'image/x-icon'
       }[ext] || 'text/plain';
       
-    // 工具頁面現在完全使用 React 組件，不需要注入 HTML
-    // 只為首頁注入統一的頁首頁尾
-    if (ext === '.html' && req.url === '/') {
-      content = injectUnifiedLayout(content.toString(), true);
+    // 為所有 HTML 頁面注入統一的頁首頁尾（莫蘭迪淺色系）
+    if (ext === '.html') {
+      // 檢查是否為工具頁面的 index.html 或首頁
+      const isToolPage = (req.url.startsWith('/audio-visualizer') && (req.url.endsWith('/') || req.url.endsWith('/index.html') || !path.extname(req.url))) || 
+                        (req.url.startsWith('/font-effects') && (req.url.endsWith('/') || req.url.endsWith('/index.html') || !path.extname(req.url))) || 
+                        (req.url.startsWith('/youtube-seo') && (req.url.endsWith('/') || req.url.endsWith('/index.html') || !path.extname(req.url))) || 
+                        (req.url.startsWith('/srt-translator') && (req.url.endsWith('/') || req.url.endsWith('/index.html') || !path.extname(req.url))) ||
+                        req.url === '/' || req.url === '/index.html';
+      
+      if (isToolPage) {
+        content = injectUnifiedLayout(content.toString(), true);
+      }
     }
       
       res.writeHead(200, { 'Content-Type': mimeType });
