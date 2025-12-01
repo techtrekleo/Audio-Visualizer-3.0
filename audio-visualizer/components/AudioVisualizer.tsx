@@ -85,6 +85,7 @@ interface AudioVisualizerProps {
     subtitleFontSize: number;
     subtitleFontFamily: FontType;
     subtitleColor: string;
+    subtitleEffect?: GraphicEffectType;
     subtitleBgStyle: SubtitleBgStyle;
     effectScale: number;
     effectOffsetX: number;
@@ -145,6 +146,7 @@ interface AudioVisualizerProps {
     // Vinyl Record props
     vinylImage?: string | null;
     vinylRecordEnabled?: boolean;
+    vinylNeedleEnabled?: boolean;
     vinylLayoutMode?: 'horizontal' | 'vertical';
     vinylCenterFixed?: boolean;
     // Piano opacity
@@ -5068,7 +5070,9 @@ const drawVerticalSubtitle = (
     const startY = margin + (height - 2 * margin - totalHeight) * verticalPosition + dragOffset.y; // 根據垂直位置參數計算
     
     ctx.save();
-    ctx.font = `bold ${fontSize}px "${fontName}", sans-serif`;
+    // 根據特效決定字體粗細
+    const fontWeight = (effect === GraphicEffectType.BOLD) ? '900' : 'bold';
+    ctx.font = `${fontWeight} ${fontSize}px "${fontName}", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
@@ -5086,44 +5090,107 @@ const drawVerticalSubtitle = (
         ctx.fill();
     }
     
-    // 設定特效
+    // 重置陰影效果
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
     ctx.lineJoin = 'round';
-    ctx.lineWidth = fontSize * 0.1;
-    
-    switch (effect) {
-        case GraphicEffectType.GLOW:
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 15;
-            break;
-    }
-    
-    ctx.fillStyle = color;
+    ctx.lineWidth = Math.max(2, fontSize / 20);
+    ctx.miterLimit = 2;
     
     // 逐字繪製
     characters.forEach((char, index) => {
         const charY = startY + (index * charSpacing) + charSpacing / 2;
         
-        // 處理 Glitch 效果
+        // 1. 偽3D效果（先繪製，在後層）
+        if (effect === GraphicEffectType.FAUX_3D) {
+            const depth = Math.max(1, Math.floor(fontSize / 30));
+            const depthColor = color.replace('rgb', 'rgba').replace(')', ', 0.6)').replace('#', 'rgba(');
+            ctx.fillStyle = depthColor;
+            for (let i = 1; i <= depth; i++) {
+                ctx.fillText(char, startX + i, charY + i);
+            }
+        }
+        
+        // 2. 設定填充顏色
+        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+            ctx.fillStyle = '#FFFFFF';
+        } else {
+            ctx.fillStyle = color;
+        }
+        
+        // 3. 陰影設定
+        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 15;
+        } else if (effect === GraphicEffectType.SHADOW) {
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 5;
+            ctx.shadowOffsetY = 5;
+        }
+        
+        // 4. 描邊效果
+        if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = Math.max(2, fontSize / 20);
+            ctx.lineJoin = 'round';
+            ctx.miterLimit = 2;
+            // 多方向描邊
+            ctx.strokeText(char, startX - 1, charY - 1);
+            ctx.strokeText(char, startX + 1, charY - 1);
+            ctx.strokeText(char, startX - 1, charY + 1);
+            ctx.strokeText(char, startX + 1, charY + 1);
+            ctx.strokeText(char, startX, charY);
+        }
+        
+        // 5. 主要文字填充
+        ctx.fillText(char, startX, charY);
+        
+        // 5.1. 額外的霓虹光增強
+        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+            ctx.shadowBlur = 30;
+            ctx.fillText(char, startX, charY);
+        }
+        
+        // 重置陰影
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'transparent';
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        
+        // 6. 故障感效果（最後繪製，在最上層）
         if (effect === GraphicEffectType.GLITCH && isBeat) {
             ctx.save();
             ctx.globalCompositeOperation = 'lighter';
-            const glitchAmount = fontSize * 0.1;
-            ctx.fillStyle = 'rgba(255, 0, 100, 0.7)';
-            ctx.fillText(char, startX + (Math.random() - 0.5) * glitchAmount, charY + (Math.random() - 0.5) * glitchAmount);
-            ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
-            ctx.fillText(char, startX + (Math.random() - 0.5) * glitchAmount, charY + (Math.random() - 0.5) * glitchAmount);
+            const glitchIntensity = 8;
+            const glitchOffsetX = (Math.random() - 0.5) * glitchIntensity;
+            const glitchOffsetY = (Math.random() - 0.5) * glitchIntensity;
+            
+            // 紅色故障層
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+            ctx.fillText(char, startX + glitchOffsetX, charY + glitchOffsetY);
+            
+            // 藍色故障層
+            ctx.fillStyle = 'rgba(0, 0, 255, 0.7)';
+            ctx.fillText(char, startX - glitchOffsetX, charY - glitchOffsetY);
+            
+            // 綠色故障層
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
+            ctx.fillText(char, startX + glitchOffsetX * 0.5, charY - glitchOffsetY * 0.5);
+            
             ctx.globalCompositeOperation = 'source-over';
             ctx.restore();
-        }
-        
-        // 繪製主要文字
-        ctx.fillStyle = color;
-        ctx.fillText(char, startX, charY);
-        
-        // 描邊效果
-        if (effect === GraphicEffectType.STROKE) {
-            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-            ctx.strokeText(char, startX, charY);
+            
+            // 最後繪製正常文字
+            if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+                ctx.fillStyle = '#FFFFFF';
+            } else {
+                ctx.fillStyle = color;
+            }
+            ctx.fillText(char, startX, charY);
         }
     });
 
@@ -5154,7 +5221,9 @@ const drawSubtitles = (
     
     const fontSize = (fontSizeVw / 100) * width;
     const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
-    ctx.font = `bold ${fontSize}px "${actualFontName}", sans-serif`;
+    // 根據特效決定字體粗細
+    const fontWeight = (effect === GraphicEffectType.BOLD) ? '900' : 'bold';
+    ctx.font = `${fontWeight} ${fontSize}px "${actualFontName}", sans-serif`;
     
     // 直式顯示
     if (orientation === SubtitleOrientation.VERTICAL) {
@@ -5195,38 +5264,110 @@ const drawSubtitles = (
         ctx.fill();
     }
 
+    // 重置陰影效果
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
     ctx.lineJoin = 'round';
-    ctx.lineWidth = fontSize * 0.1;
+    ctx.lineWidth = Math.max(2, fontSize / 20);
+    ctx.miterLimit = 2;
     
     const drawTextWithEffect = (offsetX = 0, offsetY = 0) => {
         ctx.fillText(text, positionX + offsetX, positionY + offsetY);
-        if (effect === GraphicEffectType.STROKE) {
-            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-            ctx.strokeText(text, positionX + offsetX, positionY + offsetY);
-        }
     };
 
-    // Handle text effects
-    switch (effect) {
-        case GraphicEffectType.GLOW:
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 15;
-            break;
-        case GraphicEffectType.GLITCH:
-            if (isBeat) {
-                ctx.globalCompositeOperation = 'lighter';
-                const glitchAmount = fontSize * 0.1;
-                ctx.fillStyle = 'rgba(255, 0, 100, 0.7)';
-                drawTextWithEffect((Math.random() - 0.5) * glitchAmount, (Math.random() - 0.5) * glitchAmount);
-                ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
-                drawTextWithEffect((Math.random() - 0.5) * glitchAmount, (Math.random() - 0.5) * glitchAmount);
-                ctx.globalCompositeOperation = 'source-over';
-            }
-            break;
+    // 1. 偽3D效果（先繪製，在後層）
+    if (effect === GraphicEffectType.FAUX_3D) {
+        const depth = Math.max(1, Math.floor(fontSize / 30));
+        // 使用較暗的顏色作為3D深度
+        const depthColor = color.replace('rgb', 'rgba').replace(')', ', 0.6)').replace('#', 'rgba(');
+        ctx.fillStyle = depthColor;
+        for (let i = 1; i <= depth; i++) {
+            drawTextWithEffect(i, i);
+        }
+    }
+
+    // 2. 設定填充顏色
+    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        ctx.fillStyle = '#FFFFFF'; // 霓虹光文字通常是白色
+    } else {
+        ctx.fillStyle = color;
+    }
+
+    // 3. 陰影設定（在填充前設定，影響整個物件包括描邊）
+    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        ctx.shadowColor = color; // 發光顏色
+        ctx.shadowBlur = 15;
+    } else if (effect === GraphicEffectType.SHADOW) {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 5;
+        ctx.shadowOffsetY = 5;
+    }
+
+    // 4. 描邊效果
+    if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+        ctx.strokeStyle = color; // 使用主顏色作為描邊
+        ctx.lineWidth = Math.max(2, fontSize / 20);
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        // 多方向描邊增強效果
+        ctx.strokeText(text, positionX - 1, positionY - 1);
+        ctx.strokeText(text, positionX + 1, positionY - 1);
+        ctx.strokeText(text, positionX - 1, positionY + 1);
+        ctx.strokeText(text, positionX + 1, positionY + 1);
+        ctx.strokeText(text, positionX, positionY);
     }
     
-    ctx.fillStyle = color;
+    // 5. 主要文字填充
     drawTextWithEffect();
+
+    // 5.1. 額外的霓虹光增強
+    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        ctx.shadowBlur = 30; // 更強的發光
+        drawTextWithEffect();
+    }
+    
+    // 重置陰影
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+
+    // 6. 故障感效果（最後繪製，在最上層）
+    if (effect === GraphicEffectType.GLITCH) {
+        if (isBeat) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            const glitchIntensity = 8;
+            const glitchOffsetX = (Math.random() - 0.5) * glitchIntensity;
+            const glitchOffsetY = (Math.random() - 0.5) * glitchIntensity;
+            
+            // 紅色故障層
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+            drawTextWithEffect(glitchOffsetX, glitchOffsetY);
+            
+            // 藍色故障層
+            ctx.fillStyle = 'rgba(0, 0, 255, 0.7)';
+            drawTextWithEffect(-glitchOffsetX, -glitchOffsetY);
+            
+            // 綠色故障層
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
+            drawTextWithEffect(glitchOffsetX * 0.5, -glitchOffsetY * 0.5);
+            
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.restore();
+        }
+        // 最後繪製正常文字確保可見
+        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+            ctx.fillStyle = '#FFFFFF';
+        } else {
+            ctx.fillStyle = color;
+        }
+        drawTextWithEffect();
+    }
     
     ctx.restore();
 };
@@ -5253,7 +5394,9 @@ const drawWordByWordSubtitles = (
     
     const fontSize = (fontSizeVw / 100) * width;
     const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
-    ctx.font = `bold ${fontSize}px "${actualFontName}", sans-serif`;
+    // 根據特效決定字體粗細
+    const fontWeight = (effect === GraphicEffectType.BOLD) ? '900' : 'bold';
+    ctx.font = `${fontWeight} ${fontSize}px "${actualFontName}", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
     
@@ -5319,24 +5462,108 @@ const drawWordByWordSubtitles = (
         ctx.fill();
     }
     
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = fontSize * 0.1;
+    // 重置陰影效果
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
     
-    // Apply effects
-    if (effect === GraphicEffectType.GLOW && isBeat) {
-        ctx.shadowColor = color;
-        ctx.shadowBlur = fontSize * 0.5;
-    } else {
-        ctx.shadowBlur = 0;
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = Math.max(2, fontSize / 20);
+    ctx.miterLimit = 2;
+    
+    const drawTextWithEffect = (offsetX = 0, offsetY = 0) => {
+        ctx.fillText(displayText, positionX + offsetX, positionY + offsetY);
+    };
+    
+    // 1. 偽3D效果（先繪製，在後層）
+    if (effect === GraphicEffectType.FAUX_3D) {
+        const depth = Math.max(1, Math.floor(fontSize / 30));
+        const depthColor = color.replace('rgb', 'rgba').replace(')', ', 0.6)').replace('#', 'rgba(');
+        ctx.fillStyle = depthColor;
+        for (let i = 1; i <= depth; i++) {
+            drawTextWithEffect(i, i);
+        }
     }
     
-    // Draw text outline
-    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-    ctx.strokeText(displayText, positionX, positionY);
+    // 2. 設定填充顏色
+    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        ctx.fillStyle = '#FFFFFF';
+    } else {
+        ctx.fillStyle = color;
+    }
     
-    // Draw main text
-    ctx.fillStyle = color;
-    ctx.fillText(displayText, positionX, positionY);
+    // 3. 陰影設定
+    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        ctx.shadowColor = color;
+        ctx.shadowBlur = isBeat ? fontSize * 0.5 : 15;
+    } else if (effect === GraphicEffectType.SHADOW) {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 5;
+        ctx.shadowOffsetY = 5;
+    }
+    
+    // 4. 描邊效果
+    if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = Math.max(2, fontSize / 20);
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        // 多方向描邊
+        ctx.strokeText(displayText, positionX - 1, positionY - 1);
+        ctx.strokeText(displayText, positionX + 1, positionY - 1);
+        ctx.strokeText(displayText, positionX - 1, positionY + 1);
+        ctx.strokeText(displayText, positionX + 1, positionY + 1);
+        ctx.strokeText(displayText, positionX, positionY);
+    }
+    
+    // 5. 主要文字填充
+    drawTextWithEffect();
+    
+    // 5.1. 額外的霓虹光增強
+    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        ctx.shadowBlur = 30;
+        drawTextWithEffect();
+    }
+    
+    // 重置陰影
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
+    // 6. 故障感效果（最後繪製，在最上層）
+    if (effect === GraphicEffectType.GLITCH && isBeat) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const glitchIntensity = 8;
+        const glitchOffsetX = (Math.random() - 0.5) * glitchIntensity;
+        const glitchOffsetY = (Math.random() - 0.5) * glitchIntensity;
+        
+        // 紅色故障層
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+        drawTextWithEffect(glitchOffsetX, glitchOffsetY);
+        
+        // 藍色故障層
+        ctx.fillStyle = 'rgba(0, 0, 255, 0.7)';
+        drawTextWithEffect(-glitchOffsetX, -glitchOffsetY);
+        
+        // 綠色故障層
+        ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
+        drawTextWithEffect(glitchOffsetX * 0.5, -glitchOffsetY * 0.5);
+        
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.restore();
+        
+        // 最後繪製正常文字
+        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+            ctx.fillStyle = '#FFFFFF';
+        } else {
+            ctx.fillStyle = color;
+        }
+        drawTextWithEffect();
+    }
     
     // 打字機特效：為正在輸入的字添加特殊效果
     if (wordsToShow < words.length) {
@@ -5356,6 +5583,329 @@ const drawWordByWordSubtitles = (
         ctx.font = `bold ${fontSize * 1.1}px "${fontFamily}", sans-serif`;
         ctx.fillText(currentChar, charX, charY);
         ctx.restore();
+    }
+    
+    ctx.restore();
+};
+
+// 辅助函数：绘制单行字幕
+const drawSubtitleLine = (
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    textX: number,
+    textY: number,
+    fontSize: number,
+    fontName: string,
+    color: string,
+    bgStyle: SubtitleBgStyle,
+    maxWidth: number,
+    effect: GraphicEffectType,
+    isBeat?: boolean
+) => {
+    const metrics = ctx.measureText(text);
+    const textWidth = metrics.width;
+    const textHeight = fontSize;
+    
+    // 绘制背景
+    if (bgStyle !== SubtitleBgStyle.NONE) {
+        const bgPaddingX = fontSize * 0.3;
+        const bgPaddingY = fontSize * 0.15;
+        const bgWidth = Math.min(textWidth + bgPaddingX * 2, maxWidth * 0.95);
+        const bgHeight = textHeight + bgPaddingY * 2;
+        const bgX = textX - bgWidth / 2;
+        const bgY = textY - textHeight / 2 - bgPaddingY;
+        
+        if (bgStyle === SubtitleBgStyle.BLACK) {
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        } else if (bgStyle === SubtitleBgStyle.TRANSPARENT) {
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        }
+        
+        createRoundedRectPath(ctx, bgX, bgY, bgWidth, bgHeight, 8);
+        ctx.fill();
+    }
+    
+    // 重置陰影效果
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = Math.max(2, fontSize / 20);
+    ctx.miterLimit = 2;
+    
+    const drawTextWithEffect = (offsetX = 0, offsetY = 0) => {
+        ctx.fillText(text, textX + offsetX, textY + offsetY);
+    };
+    
+    // 1. 偽3D效果（先繪製，在後層）
+    if (effect === GraphicEffectType.FAUX_3D) {
+        const depth = Math.max(1, Math.floor(fontSize / 30));
+        const depthColor = color.replace('rgb', 'rgba').replace(')', ', 0.6)').replace('#', 'rgba(');
+        ctx.fillStyle = depthColor;
+        for (let i = 1; i <= depth; i++) {
+            drawTextWithEffect(i, i);
+        }
+    }
+    
+    // 2. 設定填充顏色
+    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        ctx.fillStyle = '#FFFFFF';
+    } else {
+        ctx.fillStyle = color;
+    }
+    
+    // 3. 陰影設定
+    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        ctx.shadowColor = color;
+        ctx.shadowBlur = isBeat ? fontSize * 0.4 : 15;
+    } else if (effect === GraphicEffectType.SHADOW) {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 5;
+        ctx.shadowOffsetY = 5;
+    }
+    
+    // 4. 描邊效果
+    if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = Math.max(2, fontSize / 20);
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        // 多方向描邊
+        ctx.strokeText(text, textX - 1, textY - 1);
+        ctx.strokeText(text, textX + 1, textY - 1);
+        ctx.strokeText(text, textX - 1, textY + 1);
+        ctx.strokeText(text, textX + 1, textY + 1);
+        ctx.strokeText(text, textX, textY);
+    }
+    
+    // 5. 主要文字填充
+    drawTextWithEffect();
+    
+    // 5.1. 額外的霓虹光增強
+    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        ctx.shadowBlur = 30;
+        drawTextWithEffect();
+    }
+    
+    // 重置陰影
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
+    // 6. 故障感效果（最後繪製，在最上層）
+    if (effect === GraphicEffectType.GLITCH && isBeat) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const glitchIntensity = 8;
+        const glitchOffsetX = (Math.random() - 0.5) * glitchIntensity;
+        const glitchOffsetY = (Math.random() - 0.5) * glitchIntensity;
+        
+        // 紅色故障層
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+        drawTextWithEffect(glitchOffsetX, glitchOffsetY);
+        
+        // 藍色故障層
+        ctx.fillStyle = 'rgba(0, 0, 255, 0.7)';
+        drawTextWithEffect(-glitchOffsetX, -glitchOffsetY);
+        
+        // 綠色故障層
+        ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
+        drawTextWithEffect(glitchOffsetX * 0.5, -glitchOffsetY * 0.5);
+        
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.restore();
+        
+        // 最後繪製正常文字
+        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+            ctx.fillStyle = '#FFFFFF';
+        } else {
+            ctx.fillStyle = color;
+        }
+        drawTextWithEffect();
+    }
+};
+
+// 滚动字幕组状态管理
+const slidingGroupState: {
+    currentGroupIndex: number;
+    visibleLines: number; // 当前组中已显示的行数 (0-3)
+    slideProgress: number; // 滑动进度 0-1
+    isSliding: boolean;
+    lastUpdateTime: number;
+    currentGroupSubtitles: Subtitle[];
+} = {
+    currentGroupIndex: 0,
+    visibleLines: 0,
+    slideProgress: 0,
+    isSliding: false,
+    lastUpdateTime: 0,
+    currentGroupSubtitles: []
+};
+
+// 滚动字幕组绘制函数
+const drawSlidingGroupSubtitles = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    subtitles: Subtitle[],
+    currentTime: number,
+    { fontFamily, bgStyle, fontSizeVw, color, effect, isBeat, dragOffset = { x: 0, y: 0 } }: { 
+        fontFamily: FontType; 
+        bgStyle: SubtitleBgStyle;
+        fontSizeVw: number;
+        color: string;
+        effect: GraphicEffectType;
+        isBeat?: boolean;
+        dragOffset?: { x: number; y: number };
+    }
+) => {
+    if (subtitles.length === 0) return;
+    
+    ctx.save();
+    
+    const fontSize = (fontSizeVw / 100) * width;
+    const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
+    // 根據特效決定字體粗細
+    const fontWeight = (effect === GraphicEffectType.BOLD) ? '900' : 'bold';
+    ctx.font = `${fontWeight} ${fontSize}px "${actualFontName}", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // 定义矩形区域（不绘制边框，只是逻辑区域）
+    const boxWidth = width * 0.6; // 矩形宽度为画布的60%
+    const boxHeight = height * 0.25; // 矩形高度为画布的25%
+    const boxX = (width - boxWidth) / 2 + dragOffset.x;
+    const boxY = height * 0.65 + dragOffset.y; // 位置在画布下方65%处
+    
+    const lineHeight = boxHeight / 3.5; // 每行高度，留一些间距
+    const padding = fontSize * 0.3;
+    
+    // 找到当前时间对应的字幕索引
+    let currentSubtitleIndex = -1;
+    for (let i = subtitles.length - 1; i >= 0; i--) {
+        const subtitle = subtitles[i];
+        if (currentTime >= subtitle.time) {
+            if (!subtitle.endTime || currentTime <= subtitle.endTime) {
+                currentSubtitleIndex = i;
+                break;
+            }
+        }
+    }
+    
+    if (currentSubtitleIndex === -1) {
+        ctx.restore();
+        return;
+    }
+    
+    // 计算当前应该显示的字幕组（每3句一组）
+    const targetGroupIndex = Math.floor(currentSubtitleIndex / 3);
+    const groupStartIndex = targetGroupIndex * 3;
+    const groupSubtitles = subtitles.slice(groupStartIndex, groupStartIndex + 3);
+    
+    // 计算当前组中应该显示的行数（逐句出现）
+    let visibleLines = 0;
+    for (let i = 0; i < groupSubtitles.length; i++) {
+        const subtitle = groupSubtitles[i];
+        if (currentTime >= subtitle.time) {
+            if (!subtitle.endTime || currentTime <= subtitle.endTime) {
+                visibleLines = i + 1;
+            }
+        }
+    }
+    
+    // 检查是否需要切换到下一组（当3句都显示完，且下一组应该开始时）
+    const slideDuration = 0.5; // 滑动动画持续时间（秒）
+    const shouldStartSliding = visibleLines >= 3 && targetGroupIndex < Math.floor((subtitles.length - 1) / 3);
+    
+    if (shouldStartSliding) {
+        const nextGroupStartIndex = (targetGroupIndex + 1) * 3;
+        if (nextGroupStartIndex < subtitles.length) {
+            const nextSubtitle = subtitles[nextGroupStartIndex];
+            // 当下一组的第一个字幕应该开始时，开始滑动
+            if (currentTime >= nextSubtitle.time - slideDuration * 0.3) {
+                if (!slidingGroupState.isSliding && targetGroupIndex === slidingGroupState.currentGroupIndex) {
+                    slidingGroupState.isSliding = true;
+                    slidingGroupState.slideProgress = 0;
+                }
+            }
+        }
+    }
+    
+    // 如果切换到新的组，更新状态
+    if (targetGroupIndex !== slidingGroupState.currentGroupIndex && !slidingGroupState.isSliding) {
+        slidingGroupState.currentGroupIndex = targetGroupIndex;
+        slidingGroupState.currentGroupSubtitles = groupSubtitles;
+    }
+    
+    // 更新滑动动画
+    if (slidingGroupState.isSliding) {
+        const timeDelta = Math.max(0, currentTime - slidingGroupState.lastUpdateTime);
+        if (timeDelta > 0) {
+            slidingGroupState.slideProgress = Math.min(1, slidingGroupState.slideProgress + timeDelta / slideDuration);
+            if (slidingGroupState.slideProgress >= 1) {
+                // 滑动完成，切换到新组
+                slidingGroupState.isSliding = false;
+                slidingGroupState.slideProgress = 0;
+                slidingGroupState.currentGroupIndex = targetGroupIndex;
+                slidingGroupState.currentGroupSubtitles = groupSubtitles;
+            }
+        }
+    }
+    slidingGroupState.lastUpdateTime = currentTime;
+    
+    // 计算滑动偏移量（使用缓动函数）
+    const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const slideOffsetX = slidingGroupState.isSliding 
+        ? width * (easeInOutCubic(slidingGroupState.slideProgress))
+        : 0;
+    
+    // 确定要绘制的组
+    const oldGroupIndex = slidingGroupState.currentGroupIndex;
+    const newGroupIndex = targetGroupIndex;
+    const oldGroupStartIndex = oldGroupIndex * 3;
+    const oldGroupSubtitles = subtitles.slice(oldGroupStartIndex, oldGroupStartIndex + 3);
+    
+    // 如果正在滑动，同时绘制旧组（滑出）和新组（滑入）
+    if (slidingGroupState.isSliding && oldGroupIndex !== newGroupIndex) {
+        // 绘制旧组（向左滑出）
+        const oldVisibleLines = Math.min(3, oldGroupSubtitles.length);
+        for (let i = 0; i < oldVisibleLines; i++) {
+            if (i >= oldGroupSubtitles.length) break;
+            const subtitle = oldGroupSubtitles[i];
+            const lineY = boxY + (i * lineHeight) + lineHeight / 2;
+            const textX = boxX + boxWidth / 2 - slideOffsetX;
+            const textY = lineY;
+            
+            drawSubtitleLine(ctx, subtitle.text, textX, textY, fontSize, actualFontName, color, bgStyle, boxWidth, effect, isBeat);
+        }
+        
+        // 绘制新组（从右侧滑入）
+        const newVisibleLines = Math.min(visibleLines, 3);
+        for (let i = 0; i < newVisibleLines; i++) {
+            if (i >= groupSubtitles.length) break;
+            const subtitle = groupSubtitles[i];
+            const lineY = boxY + (i * lineHeight) + lineHeight / 2;
+            // 新组从右侧（width）滑入到中心位置
+            const textX = boxX + boxWidth / 2 + (width * (1 - slidingGroupState.slideProgress));
+            const textY = lineY;
+            
+            drawSubtitleLine(ctx, subtitle.text, textX, textY, fontSize, actualFontName, color, bgStyle, boxWidth, effect, isBeat);
+        }
+    } else {
+        // 正常显示当前组
+        for (let i = 0; i < Math.min(visibleLines, 3); i++) {
+            if (i >= groupSubtitles.length) break;
+            const subtitle = groupSubtitles[i];
+            const lineY = boxY + (i * lineHeight) + lineHeight / 2;
+            const textX = boxX + boxWidth / 2;
+            const textY = lineY;
+            
+            drawSubtitleLine(ctx, subtitle.text, textX, textY, fontSize, actualFontName, color, bgStyle, boxWidth, effect, isBeat);
+        }
     }
     
     ctx.restore();
@@ -5431,7 +5981,9 @@ const drawLyricsDisplay = (
         const baseFontSize = width * (fontSize / 100); // 字體大小百分比
         const currentFontSize = isCurrentLine ? baseFontSize * 1.5 : baseFontSize; // 當前行放大1.5倍
         const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
-        ctx.font = `bold ${currentFontSize}px "${actualFontName}", sans-serif`;
+        // 根據特效決定字體粗細
+        const fontWeight = (effect === GraphicEffectType.BOLD) ? '900' : 'bold';
+        ctx.font = `${fontWeight} ${currentFontSize}px "${actualFontName}", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
@@ -5466,34 +6018,110 @@ const drawLyricsDisplay = (
         
         // 設置文字顏色和透明度
         if (isCurrentLine) {
-            // 當前歌詞：使用傳入的顏色，發光效果
+            // 當前歌詞：使用傳入的顏色
             ctx.fillStyle = color;
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 20;
         } else if (isPastLine) {
             // 過去歌詞：使用傳入顏色的60%透明度
             ctx.fillStyle = color + '99'; // 60% 透明度
-            ctx.shadowBlur = 0;
         } else {
             // 未來歌詞：使用傳入顏色的80%透明度
             ctx.fillStyle = color + 'CC'; // 80% 透明度
-            ctx.shadowBlur = 0;
         }
         
-        // 應用字幕效果
-        if (effect === GraphicEffectType.GLOW) {
+        // 應用字幕效果（根據用戶選擇，參考封面產生器）
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'transparent';
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        
+        // 1. 偽3D效果（先繪製，在後層）
+        if (effect === GraphicEffectType.FAUX_3D) {
+            const depth = Math.max(1, Math.floor(currentFontSize / 30));
+            const depthColor = color.replace('rgb', 'rgba').replace(')', ', 0.6)').replace('#', 'rgba(');
+            ctx.fillStyle = depthColor;
+            for (let i = 1; i <= depth; i++) {
+                ctx.fillText(line.text, x + i, y + i);
+            }
+        }
+        
+        // 2. 設定填充顏色
+        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+            ctx.fillStyle = '#FFFFFF'; // 霓虹光文字通常是白色
+        } else {
+            ctx.fillStyle = color;
+        }
+        
+        // 3. 陰影設定
+        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
             ctx.shadowColor = color;
-            ctx.shadowBlur = 15;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-        } else if (effect === GraphicEffectType.STROKE) {
-            ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-            ctx.lineWidth = 3;
+            ctx.shadowBlur = isCurrentLine ? 20 : 15;
+        } else if (effect === GraphicEffectType.SHADOW) {
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 5;
+            ctx.shadowOffsetY = 5;
+        }
+        
+        // 4. 描邊效果
+        if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = Math.max(2, currentFontSize / 20);
+            ctx.lineJoin = 'round';
+            ctx.miterLimit = 2;
+            // 多方向描邊
+            ctx.strokeText(line.text, x - 1, y - 1);
+            ctx.strokeText(line.text, x + 1, y - 1);
+            ctx.strokeText(line.text, x - 1, y + 1);
+            ctx.strokeText(line.text, x + 1, y + 1);
             ctx.strokeText(line.text, x, y);
         }
         
-        // 繪製文字
+        // 5. 主要文字填充
         ctx.fillText(line.text, x, y);
+        
+        // 5.1. 額外的霓虹光增強
+        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+            ctx.shadowBlur = 30;
+            ctx.fillText(line.text, x, y);
+        }
+        
+        // 重置陰影
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'transparent';
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        
+        // 6. 故障感效果（最後繪製，在最上層）
+        if (effect === GraphicEffectType.GLITCH && isCurrentLine) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            const glitchIntensity = 8;
+            const glitchOffsetX = (Math.random() - 0.5) * glitchIntensity;
+            const glitchOffsetY = (Math.random() - 0.5) * glitchIntensity;
+            
+            // 紅色故障層
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+            ctx.fillText(line.text, x + glitchOffsetX, y + glitchOffsetY);
+            
+            // 藍色故障層
+            ctx.fillStyle = 'rgba(0, 0, 255, 0.7)';
+            ctx.fillText(line.text, x - glitchOffsetX, y - glitchOffsetY);
+            
+            // 綠色故障層
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
+            ctx.fillText(line.text, x + glitchOffsetX * 0.5, y - glitchOffsetY * 0.5);
+            
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.restore();
+            
+            // 最後繪製正常文字
+            if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+                ctx.fillStyle = '#FFFFFF';
+            } else {
+                ctx.fillStyle = color;
+            }
+            ctx.fillText(line.text, x, y);
+        }
     });
     
     ctx.restore();
@@ -5767,6 +6395,7 @@ type DrawFunction = (
     geometricFrameImage?: HTMLImageElement | null,
     geometricSemicircleImage?: HTMLImageElement | null,
     vinylRecordEnabled?: boolean,
+    vinylNeedleEnabled?: boolean,
 ) => void;
 // 實驗款：Vinyl Record 旋轉唱片 + 控制卡
 const drawVinylRecord = (
@@ -5783,7 +6412,8 @@ const drawVinylRecord = (
     particles?: Particle[],
     geometricFrameImage?: HTMLImageElement | null,
     geometricSemicircleImage?: HTMLImageElement | null,
-    vinylRecordEnabled: boolean = true
+    vinylRecordEnabled: boolean = true,
+    vinylNeedleEnabled: boolean = true
 ) => {
     // 不在此重置或覆寫矩陣，讓外層全域 transform（effectScale/effectOffsetX/Y + visualizationTransform）生效
  
@@ -5904,8 +6534,8 @@ const drawVinylRecord = (
 
     ctx.restore();
 
-    // 唱臂與唱針（縮短、左上接觸，含折角）
-    {
+    // 唱臂與唱針（縮短、左上接觸，含折角）- 根據 vinylNeedleEnabled 決定是否顯示
+    if (vinylNeedleEnabled) {
         const baseX = centerX - discRadius * 0.92;
         const baseY = centerY - discRadius * 0.92;
         // 基座
@@ -5976,7 +6606,7 @@ const drawVinylRecord = (
         ctx.lineWidth = 8;
         ctx.stroke();
         ctx.globalAlpha = 1;
-    }
+    } // 關閉 vinylNeedleEnabled 條件判斷
     
     } // 關閉 vinylRecordEnabled 條件判斷
     
@@ -6667,7 +7297,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             sensitivity, smoothing, equalization, backgroundColor, colors, watermarkPosition, 
             waveformStroke, isTransitioning, transitionType, backgroundImages, currentImageIndex,
             subtitles, showSubtitles, subtitleFontSize, subtitleFontFamily, 
-            subtitleColor, subtitleBgStyle, effectScale, effectOffsetX, effectOffsetY,
+            subtitleColor, subtitleEffect, subtitleBgStyle, effectScale, effectOffsetX, effectOffsetY,
             filterEffectType, filterEffectIntensity, filterEffectOpacity, filterEffectSpeed, filterEffectEnabled,
             controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor
         } = propsRef.current;
@@ -6839,7 +7469,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         } else if (visualizationType === VisualizationType.VINYL_RECORD) {
             // 檢查是否啟用唱片顯示
             const vinylRecordEnabled = propsRef.current?.vinylRecordEnabled !== false;
-            drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, vinylRecordEnabled);
+            const vinylNeedleEnabled = propsRef.current?.vinylNeedleEnabled !== false;
+            drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, vinylRecordEnabled, vinylNeedleEnabled);
         } else if (visualizationType === VisualizationType.PHOTO_SHAKE) {
             // 相片晃動需要傳遞 props
             drawPhotoShake(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
@@ -6999,7 +7630,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 positionX: propsRef.current.lyricsPositionX + (dragOffset.x / width) * 100,
                 positionY: propsRef.current.lyricsPositionY + (dragOffset.y / height) * 100,
                 color: subtitleColor,
-                effect: GraphicEffectType.NONE
+                effect: subtitleEffect || GraphicEffectType.NONE
             });
         } else if (propsRef.current.subtitleDisplayMode === SubtitleDisplayMode.WORD_BY_WORD && subtitles.length > 0) {
             // 逐字顯示模式
@@ -7009,7 +7640,19 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 bgStyle: subtitleBgStyle,
                 fontSizeVw: subtitleFontSize,
                 color: subtitleColor,
-                effect: GraphicEffectType.NONE,
+                effect: subtitleEffect || GraphicEffectType.NONE,
+                isBeat,
+                dragOffset
+            });
+        } else if (propsRef.current.subtitleDisplayMode === SubtitleDisplayMode.SLIDING_GROUP && subtitles.length > 0) {
+            // 滚动字幕组模式
+            const dragOffset = dragState.current.draggedElement === 'subtitle' ? dragState.current.dragOffset : (propsRef.current.subtitleDragOffset || { x: 0, y: 0 });
+            drawSlidingGroupSubtitles(ctx, width, height, subtitles, currentTime, { 
+                fontFamily: subtitleFontFamily, 
+                bgStyle: subtitleBgStyle,
+                fontSizeVw: subtitleFontSize,
+                color: subtitleColor,
+                effect: subtitleEffect || GraphicEffectType.NONE,
                 isBeat,
                 dragOffset
             });
@@ -7020,7 +7663,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 fontSizeVw: subtitleFontSize, 
                 fontFamily: subtitleFontFamily, 
                 color: subtitleColor, 
-                effect: GraphicEffectType.NONE, 
+                effect: subtitleEffect || GraphicEffectType.NONE, 
                 bgStyle: subtitleBgStyle, 
                 isBeat,
                 dragOffset,

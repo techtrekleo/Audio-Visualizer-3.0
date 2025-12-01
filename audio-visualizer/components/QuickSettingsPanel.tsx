@@ -244,9 +244,9 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                 style={{
                                     background: `linear-gradient(to right,
-                                        #6b7280 0%,
-                                        #10b981 50%,
-                                        #f59e0b 100%)`
+                                        #E8E8E3 0%,
+                                        #D1D5DB 50%,
+                                        #9CAF9C 100%)`
                                 }}
                             />
                             <input
@@ -260,11 +260,12 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                 style={{ background: 'transparent' }}
                             />
                             <div
-                                className="absolute top-0 h-2 bg-white/20 rounded-lg pointer-events-none"
+                                className="absolute top-0 h-2 rounded-lg pointer-events-none"
                                 style={{
                                     left: 0,
                                     width: `${((effectScale - 0.1) / (2.0 - 0.1)) * 100}%`,
-                                    transition: 'width 0.1s ease'
+                                    transition: 'width 0.1s ease',
+                                    backgroundColor: 'rgba(156, 163, 175, 0.4)'
                                 }}
                             />
                         </div>
@@ -281,9 +282,9 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                 style={{
                                     background: `linear-gradient(to right,
-                                        #3b82f6 0%,
-                                        #8b5cf6 50%,
-                                        #ec4899 100%)`
+                                        #8B9DC3 0%,
+                                        #A5A0B0 50%,
+                                        #C4A5A5 100%)`
                                 }}
                             />
                             <input
@@ -297,11 +298,12 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                 style={{ background: 'transparent' }}
                             />
                             <div
-                                className="absolute top-0 h-2 bg-white/20 rounded-lg pointer-events-none"
+                                className="absolute top-0 h-2 rounded-lg pointer-events-none"
                                 style={{
                                     left: 0,
                                     width: `${((effectOffsetX - (-500)) / (500 - (-500))) * 100}%`,
-                                    transition: 'width 0.1s ease'
+                                    transition: 'width 0.1s ease',
+                                    backgroundColor: 'rgba(156, 163, 175, 0.4)'
                                 }}
                             />
                         </div>
@@ -318,9 +320,9 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                 style={{
                                     background: `linear-gradient(to right,
-                                        #3b82f6 0%,
-                                        #8b5cf6 50%,
-                                        #ec4899 100%)`
+                                        #8B9DC3 0%,
+                                        #A5A0B0 50%,
+                                        #C4A5A5 100%)`
                                 }}
                             />
                             <input
@@ -334,11 +336,12 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                 style={{ background: 'transparent' }}
                             />
                             <div
-                                className="absolute top-0 h-2 bg-white/20 rounded-lg pointer-events-none"
+                                className="absolute top-0 h-2 rounded-lg pointer-events-none"
                                 style={{
                                     left: 0,
                                     width: `${((effectOffsetY - (-1000)) / (1000 - (-1000))) * 100}%`,
-                                    transition: 'width 0.1s ease'
+                                    transition: 'width 0.1s ease',
+                                    backgroundColor: 'rgba(156, 163, 175, 0.4)'
                                 }}
                             />
                         </div>
@@ -360,11 +363,11 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                     className="w-full h-2 rounded-lg absolute top-0 left-0"
                                     style={{
                                         background: `linear-gradient(to right,
-                                            #ef4444 0%,
-                                            #f97316 25%,
-                                            #eab308 50%,
-                                            #22c55e 75%,
-                                            #10b981 100%)`
+                                            #D1B5B5 0%,
+                                            #C4A5A5 25%,
+                                            #B8B5A0 50%,
+                                            #A8B5A0 75%,
+                                            #9CAF9C 100%)`
                                     }}
                                 />
                                 <input
@@ -378,11 +381,12 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                     style={{ background: 'transparent' }}
                                 />
                                 <div
-                                    className="absolute top-0 h-2 bg-white/20 rounded-lg pointer-events-none"
+                                    className="absolute top-0 h-2 rounded-lg pointer-events-none"
                                     style={{
                                         left: 0,
                                         width: `${((sensitivity - 0.1) / (3.0 - 0.1)) * 100}%`,
-                                        transition: 'width 0.1s ease'
+                                        transition: 'width 0.1s ease',
+                                        backgroundColor: 'rgba(156, 163, 175, 0.4)'
                                     }}
                                 />
                             </div>
@@ -399,9 +403,9 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                     className="w-full h-2 rounded-lg absolute top-0 left-0"
                                     style={{
                                         background: `linear-gradient(to right,
-                                            #374151 0%,
-                                            #06b6d4 50%,
-                                            #8b5cf6 100%)`
+                                            #9CA3AF 0%,
+                                            #A5A0B0 50%,
+                                            #B8B5C0 100%)`
                                     }}
                                 />
                                 <input
@@ -415,11 +419,12 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                     style={{ background: 'transparent' }}
                                 />
                                 <div
-                                    className="absolute top-0 h-2 bg-white/20 rounded-lg pointer-events-none"
+                                    className="absolute top-0 h-2 rounded-lg pointer-events-none"
                                     style={{
                                         left: 0,
                                         width: `${(smoothing / 10) * 100}%`,
-                                        transition: 'width 0.1s ease'
+                                        transition: 'width 0.1s ease',
+                                        backgroundColor: 'rgba(156, 163, 175, 0.4)'
                                     }}
                                 />
                             </div>
@@ -436,9 +441,9 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                     className="w-full h-2 rounded-lg absolute top-0 left-0"
                                     style={{
                                         background: `linear-gradient(to right,
-                                            #374151 0%,
-                                            #06b6d4 50%,
-                                            #8b5cf6 100%)`
+                                            #9CA3AF 0%,
+                                            #A5A0B0 50%,
+                                            #B8B5C0 100%)`
                                     }}
                                 />
                                 <input
@@ -452,11 +457,12 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                     style={{ background: 'transparent' }}
                                 />
                                 <div
-                                    className="absolute top-0 h-2 bg-white/20 rounded-lg pointer-events-none"
+                                    className="absolute top-0 h-2 rounded-lg pointer-events-none"
                                     style={{
                                         left: 0,
                                         width: `${equalization * 100}%`,
-                                        transition: 'width 0.1s ease'
+                                        transition: 'width 0.1s ease',
+                                        backgroundColor: 'rgba(156, 163, 175, 0.4)'
                                     }}
                                 />
                             </div>

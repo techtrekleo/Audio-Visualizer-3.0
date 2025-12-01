@@ -37,11 +37,11 @@ input[type="range"].slider,
   outline: none !important;
 }
 
-/* 相片晃動滑桿專用樣式 - 強力覆蓋 */
+/* 相片晃動滑桿專用樣式 - 強力覆蓋 - 莫蘭迪色系 */
 input[type="range"] {
   -webkit-appearance: none !important;
   appearance: none !important;
-  background: linear-gradient(to right, #3B82F6 0%, #10B981 100%) !important;
+  background: linear-gradient(to right, #8B9DC3 0%, #9CAF9C 100%) !important;
   cursor: pointer !important;
   width: 100% !important;
   height: 12px !important;
@@ -49,89 +49,89 @@ input[type="range"] {
   outline: none !important;
 }
 
-/* 強力覆蓋 Webkit slider track */
+/* 強力覆蓋 Webkit slider track - 莫蘭迪色系 */
 input[type="range"]::-webkit-slider-track {
   -webkit-appearance: none !important;
   appearance: none !important;
-  background: linear-gradient(to right, #3B82F6 0%, #10B981 100%) !important;
+  background: linear-gradient(to right, #8B9DC3 0%, #9CAF9C 100%) !important;
   height: 12px !important;
   border-radius: 8px !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-/* 強力覆蓋 Mozilla slider track */
+/* 強力覆蓋 Mozilla slider track - 莫蘭迪色系 */
 input[type="range"]::-moz-range-track {
-  background: linear-gradient(to right, #3B82F6 0%, #10B981 100%) !important;
+  background: linear-gradient(to right, #8B9DC3 0%, #9CAF9C 100%) !important;
   height: 12px !important;
   border-radius: 8px !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-/* Webkit slider track */
+/* Webkit slider track - 莫蘭迪色系 */
 input[type="range"].slider::-webkit-slider-track,
 .slider::-webkit-slider-track {
   -webkit-appearance: none !important;
   appearance: none !important;
-  background: #374151 !important;
+  background: #E5E7EB !important;
   height: 8px !important;
   border-radius: 4px !important;
   border: none !important;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Webkit slider thumb */
+/* Webkit slider thumb - 莫蘭迪色系 */
 input[type="range"].slider::-webkit-slider-thumb,
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none !important;
   appearance: none !important;
-  background: #06b6d4 !important;
+  background: #9CA3AF !important;
   height: 20px !important;
   width: 20px !important;
   border-radius: 50% !important;
   cursor: pointer !important;
-  border: 2px solid #ffffff !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  border: 2px solid #F3F4F6 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
   transition: all 0.2s ease !important;
   margin-top: -6px !important;
 }
 
 input[type="range"].slider::-webkit-slider-thumb:hover,
 .slider::-webkit-slider-thumb:hover {
-  background: #0891b2 !important;
+  background: #8B9DC3 !important;
   transform: scale(1.1) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
-/* Mozilla slider track */
+/* Mozilla slider track - 莫蘭迪色系 */
 input[type="range"].slider::-moz-range-track,
 .slider::-moz-range-track {
-  background: #374151 !important;
+  background: #E5E7EB !important;
   height: 8px !important;
   border-radius: 4px !important;
   border: none !important;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Mozilla slider thumb */
+/* Mozilla slider thumb - 莫蘭迪色系 */
 input[type="range"].slider::-moz-range-thumb,
 .slider::-moz-range-thumb {
-  background: #06b6d4 !important;
+  background: #9CA3AF !important;
   height: 20px !important;
   width: 20px !important;
   border-radius: 50% !important;
   cursor: pointer !important;
-  border: 2px solid #ffffff !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  border: 2px solid #F3F4F6 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
   transition: all 0.2s ease !important;
 }
 
 input[type="range"].slider::-moz-range-thumb:hover,
 .slider::-moz-range-thumb:hover {
-  background: #0891b2 !important;
+  background: #8B9DC3 !important;
   transform: scale(1.1) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Enhanced button hover effects */
@@ -150,23 +150,23 @@ button:not(:disabled):active {
   transition-duration: 150ms;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - 莫蘭迪色系 */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #374151;
+  background: #E5E7EB;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #06b6d4;
+  background: #9CA3AF;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #0891b2;
+  background: #8B9DC3;
 }
 
 /* Focus ring improvements */

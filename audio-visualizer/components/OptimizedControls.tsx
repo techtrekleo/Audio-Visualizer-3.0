@@ -203,6 +203,8 @@ interface OptimizedControlsProps {
     onSubtitleFontFamilyChange: (font: FontType) => void;
     subtitleColor: string;
     onSubtitleColorChange: (color: string) => void;
+    subtitleEffect?: GraphicEffectType;
+    onSubtitleEffectChange?: (effect: GraphicEffectType) => void;
     subtitleBgStyle: SubtitleBgStyle;
     onSubtitleBgStyleChange: (style: SubtitleBgStyle) => void;
     subtitleFormat: SubtitleFormat;
@@ -309,6 +311,8 @@ interface OptimizedControlsProps {
     // 唱片設定（Vinyl）
     vinylRecordEnabled?: boolean;
     onVinylRecordEnabledChange?: (enabled: boolean) => void;
+    vinylNeedleEnabled?: boolean;
+    onVinylNeedleEnabledChange?: (enabled: boolean) => void;
     controlCardFontSize?: number;
     onControlCardFontSizeChange?: (size: number) => void;
     // Song management props
@@ -448,38 +452,38 @@ const SliderControl: React.FC<{
     // 計算滑桿的百分比位置
     const percentage = ((value - min) / (max - min)) * 100;
     
-    // 根據不同類型設置顏色
+    // 根據不同類型設置顏色 - 莫蘭迪色系
     const getSliderStyle = () => {
         switch (colorType) {
             case 'sensitivity':
                 return {
                     background: `linear-gradient(to right, 
-                        #ef4444 0%, 
-                        #f97316 25%, 
-                        #eab308 50%, 
-                        #22c55e 75%, 
-                        #10b981 100%)`
+                        #D1B5B5 0%, 
+                        #C4A5A5 25%, 
+                        #B8B5A0 50%, 
+                        #A8B5A0 75%, 
+                        #9CAF9C 100%)`
                 };
             case 'position':
                 return {
                     background: `linear-gradient(to right, 
-                        #3b82f6 0%, 
-                        #8b5cf6 50%, 
-                        #ec4899 100%)`
+                        #8B9DC3 0%, 
+                        #A5A0B0 50%, 
+                        #C4A5A5 100%)`
                 };
             case 'scale':
                 return {
                     background: `linear-gradient(to right, 
-                        #6b7280 0%, 
-                        #10b981 50%, 
-                        #f59e0b 100%)`
+                        #E8E8E3 0%, 
+                        #D1D5DB 50%, 
+                        #9CAF9C 100%)`
                 };
             default:
                 return {
                     background: `linear-gradient(to right, 
-                        #374151 0%, 
-                        #06b6d4 50%, 
-                        #8b5cf6 100%)`
+                        #9CA3AF 0%, 
+                        #A5A0B0 50%, 
+                        #B8B5C0 100%)`
                 };
         }
     };
@@ -509,13 +513,14 @@ const SliderControl: React.FC<{
                         background: 'transparent'
                     }}
                 />
-                {/* 當前值指示器 */}
+                {/* 當前值指示器 - 莫蘭迪色系 */}
                 <div 
-                    className="absolute top-0 h-2 bg-white/20 rounded-lg pointer-events-none"
+                    className="absolute top-0 h-2 bg-white/30 rounded-lg pointer-events-none"
                     style={{
                         left: 0,
                         width: `${percentage}%`,
-                        transition: 'width 0.1s ease'
+                        transition: 'width 0.1s ease',
+                        backgroundColor: 'rgba(156, 163, 175, 0.4)'
                     }}
                 />
             </div>
@@ -625,7 +630,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         subtitleFontSize: props.subtitleFontSize,
         subtitleFontFamily: props.subtitleFontFamily,
         subtitleColor: props.subtitleColor,
-        // subtitleEffect: props.subtitleEffect,
+        subtitleEffect: props.subtitleEffect,
         subtitleBgStyle: props.subtitleBgStyle,
         subtitleDisplayMode: props.subtitleDisplayMode,
         effectScale: props.effectScale,
@@ -655,7 +660,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.subtitleFontSize !== undefined) props.onSubtitleFontSizeChange(settings.subtitleFontSize);
         if (settings.subtitleFontFamily) props.onSubtitleFontFamilyChange(settings.subtitleFontFamily);
         if (settings.subtitleColor) props.onSubtitleColorChange(settings.subtitleColor);
-        // if (settings.subtitleEffect) props.onSubtitleEffectChange(settings.subtitleEffect);
+        if (settings.subtitleEffect && props.onSubtitleEffectChange) props.onSubtitleEffectChange(settings.subtitleEffect);
         if (settings.subtitleBgStyle) props.onSubtitleBgStyleChange(settings.subtitleBgStyle);
         if (settings.subtitleDisplayMode) props.onSubtitleDisplayModeChange(settings.subtitleDisplayMode);
         if (settings.effectScale !== undefined) props.onEffectScaleChange(settings.effectScale);
@@ -1518,6 +1523,12 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                     <span>逐字顯示</span>
                                                 </span>
                                             )}
+                                            {mode === SubtitleDisplayMode.SLIDING_GROUP && (
+                                                <span className="flex items-center space-x-2">
+                                                    <span>📜</span>
+                                                    <span>滾動字幕組</span>
+                                                </span>
+                                            )}
                                         </button>
                                     ))}
                                 </div>
@@ -1678,7 +1689,33 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             />
                                         ))}
                                     </div>
+                                    {/* 自定义颜色选择器 */}
+                                    <div className="mt-2">
+                                        <input
+                                            type="color"
+                                            value={props.subtitleColor}
+                                            onChange={(e) => props.onSubtitleColorChange(e.target.value)}
+                                            className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                        />
+                                    </div>
                                 </div>
+                                
+                                {props.subtitleEffect !== undefined && props.onSubtitleEffectChange && (
+                                    <SelectControl
+                                        label="字幕特效"
+                                        value={props.subtitleEffect}
+                                        onChange={(value) => props.onSubtitleEffectChange?.(value as GraphicEffectType)}
+                                        options={[
+                                            { value: GraphicEffectType.NONE, label: '無' },
+                                            { value: GraphicEffectType.BOLD, label: '粗體' },
+                                            { value: GraphicEffectType.SHADOW, label: '陰影' },
+                                            { value: GraphicEffectType.NEON, label: '霓虹光' },
+                                            { value: GraphicEffectType.OUTLINE, label: '描邊' },
+                                            { value: GraphicEffectType.FAUX_3D, label: '偽3D' },
+                                            { value: GraphicEffectType.GLITCH, label: '故障感' },
+                                        ]}
+                                    />
+                                )}
                                 
                                 <SelectControl
                                     label="字幕背景樣式"
@@ -1717,29 +1754,49 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     <SelectControl
                                         label="字體"
                                         value={props.lyricsFontFamily}
-                                        onChange={props.onLyricsFontFamilyChange}
-                                        options={[
-                                            // 中文字體
-                                            { value: FontType.NOTO_SANS_TC, label: '思源黑體' },
-                                            { value: FontType.SOURCE_HAN_SANS, label: '思源黑體 (TC)' },
-                                            { value: FontType.CW_TEX_KAI, label: 'cwTeXKai' },
-                                            { value: FontType.KLEE_ONE, label: 'Klee One' },
-                                            { value: FontType.QINGSONG_1, label: '清松手寫體1' },
-                                            { value: FontType.QINGSONG_2, label: '清松手寫體2' },
-                                            // 英文字體
-                                            { value: FontType.POPPINS, label: '現代 (Poppins)' },
-                                            { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
-                                            { value: FontType.PACIFICO, label: 'Pacifico' },
-                                            { value: FontType.LOBSTER, label: 'Lobster' },
-                                            { value: FontType.BUNGEE, label: 'Bungee' },
-                                            { value: FontType.ORBITRON, label: 'Orbitron' },
-                                            { value: FontType.PRESS_START_2P, label: 'Press Start 2P' },
-                                            { value: FontType.ROCKNROLL_ONE, label: '搖滾圓體 (RocknRoll One)' },
-                                            { value: FontType.REGGAE_ONE, label: 'Reggae One' },
-                                            { value: FontType.VT323, label: 'VT323' }
-                                        ]}
+                                        onChange={(value) => props.onLyricsFontFamilyChange(value as FontType)}
+                                        options={Object.entries(FONT_MAP).map(([value, label]) => ({ 
+                                            value, 
+                                            label: value === FontType.NOTO_SANS_TC ? '思源黑體' :
+                                                   value === FontType.SOURCE_HAN_SANS ? '思源黑體 (TC)' :
+                                                   value === FontType.CW_TEX_KAI ? 'cwTeXKai' :
+                                                   value === FontType.KLEE_ONE ? 'Klee One' :
+                                                   value === FontType.QINGSONG_1 ? '清松手寫體1' :
+                                                   value === FontType.QINGSONG_2 ? '清松手寫體2' :
+                                                   value === FontType.TAIPEI_SANS ? '台北黑體' :
+                                                   value === FontType.M_PLUS_ROUNDED ? '圓體' :
+                                                   value === FontType.HINA_MINCHO ? '日式明朝' :
+                                                   value === FontType.MA_SHAN_ZHENG ? '馬善政楷書' :
+                                                   value === FontType.ZHI_MANG_XING ? '志忙星楷書' :
+                                                   value === FontType.LONG_CANG ? '龍藏手書' :
+                                                   value === FontType.ZCOOL_KUAI_LE ? '站酷快樂體' :
+                                                   value === FontType.ZCOOL_QING_KE ? '站酷慶科黃油體' :
+                                                   value === FontType.LIU_JIAN_MAO_CAO ? '劉建毛草書' :
+                                                   value === FontType.ZCOOL_XIAO_WEI ? '站酷小薇LOGO體' :
+                                                   value === FontType.BAKUDAI ? '莫大毛筆字體' :
+                                                   value === FontType.POPPINS ? '現代 (Poppins)' :
+                                                   value === FontType.ROCKNROLL_ONE ? '搖滾圓體 (RocknRoll One)' :
+                                                   label
+                                        }))}
                                         className="sm:col-span-1 md:col-span-2"
                                     />
+                                    
+                                    {props.subtitleEffect !== undefined && props.onSubtitleEffectChange && (
+                                        <SelectControl
+                                            label="特效"
+                                            value={props.subtitleEffect}
+                                            onChange={(value) => props.onSubtitleEffectChange?.(value as GraphicEffectType)}
+                                            options={[
+                                                { value: GraphicEffectType.NONE, label: '無' },
+                                                { value: GraphicEffectType.BOLD, label: '粗體' },
+                                                { value: GraphicEffectType.SHADOW, label: '陰影' },
+                                                { value: GraphicEffectType.NEON, label: '霓虹光' },
+                                                { value: GraphicEffectType.OUTLINE, label: '描邊' },
+                                                { value: GraphicEffectType.FAUX_3D, label: '偽3D' },
+                                                { value: GraphicEffectType.GLITCH, label: '故障感' },
+                                            ]}
+                                        />
+                                    )}
                                     
                                     <SliderControl
                                         label="水平位置 (%)"
@@ -2195,6 +2252,18 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.vinylRecordEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
                                         </button>
                                     </div>
+                                    
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-gray-300">顯示指針</label>
+                                        <button
+                                            onClick={() => props.onVinylNeedleEnabledChange?.(!props.vinylNeedleEnabled)}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                                props.vinylNeedleEnabled !== false ? 'bg-cyan-500' : 'bg-gray-600'
+                                            }`}
+                                        >
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.vinylNeedleEnabled !== false ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* 控制卡設定 */}
@@ -2275,19 +2344,29 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                                 }}
                                                                 className="w-12 h-8 rounded border border-gray-600 cursor-pointer"
                                                             />
-                                                            {/* 透明度滑桿 */}
-                                                            <input
-                                                                id="vinyl-card-bg-alpha"
-                                                                type="range"
-                                                                min="0"
-                                                                max="1"
-                                                                step="0.01"
-                                                                defaultValue={(() => {
-                                                                    const c = props.controlCardBackgroundColor || 'rgba(240,244,248,0.92)';
-                                                                    const m = c.match(/rgba\(\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*([0-9.]+)\)/);
-                                                                    return m ? m[1] : '0.92';
-                                                                })()}
-                                                                onChange={(e) => {
+                                                            {/* 透明度滑桿 - 莫蘭迪色系 */}
+                                                            <div className="relative flex-1">
+                                                                <div
+                                                                    className="w-full h-2 rounded-lg absolute top-0 left-0"
+                                                                    style={{
+                                                                        background: `linear-gradient(to right,
+                                                                            #9CA3AF 0%,
+                                                                            #A5A0B0 50%,
+                                                                            #B8B5C0 100%)`
+                                                                    }}
+                                                                />
+                                                                <input
+                                                                    id="vinyl-card-bg-alpha"
+                                                                    type="range"
+                                                                    min="0"
+                                                                    max="1"
+                                                                    step="0.01"
+                                                                    defaultValue={(() => {
+                                                                        const c = props.controlCardBackgroundColor || 'rgba(240,244,248,0.92)';
+                                                                        const m = c.match(/rgba\(\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*([0-9.]+)\)/);
+                                                                        return m ? m[1] : '0.92';
+                                                                    })()}
+                                                                    onChange={(e) => {
             const c = props.controlCardBackgroundColor || 'rgba(240,244,248,0.92)';
             const m = c.match(/rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
             if (m) {
@@ -2296,9 +2375,24 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
               const b = Number(m[3]);
               props.onControlCardBackgroundColorChange?.(`rgba(${r},${g},${b},${e.target.value})`);
             }
-                                                                }}
-                                                                className="flex-1"
-                                                            />
+                                                                    }}
+                                                                    className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer slider-enhanced relative z-10"
+                                                                    style={{ background: 'transparent' }}
+                                                                />
+                                                                <div
+                                                                    className="absolute top-0 h-2 rounded-lg pointer-events-none"
+                                                                    style={{
+                                                                        left: 0,
+                                                                        width: `${(() => {
+                                                                            const c = props.controlCardBackgroundColor || 'rgba(240,244,248,0.92)';
+                                                                            const m = c.match(/rgba\(\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*([0-9.]+)\)/);
+                                                                            return (m ? parseFloat(m[1]) : 0.92) * 100;
+                                                                        })()}%`,
+                                                                        transition: 'width 0.1s ease',
+                                                                        backgroundColor: 'rgba(156, 163, 175, 0.4)'
+                                                                    }}
+                                                                />
+                                                            </div>
                                                             <span className="text-xs text-gray-400 w-10 text-right">透明</span>
                                                         </div>
                                                         <p className="text-xs text-gray-400 mt-1">用色盤選色，右側滑桿調整透明度</p>

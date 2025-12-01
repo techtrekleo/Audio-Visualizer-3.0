@@ -100,6 +100,7 @@ function App() {
     const [subtitleFontSize, setSubtitleFontSize] = useState<number>(4); // Relative vw unit
     const [subtitleFontFamily, setSubtitleFontFamily] = useState<FontType>(FontType.POPPINS);
     const [subtitleColor, setSubtitleColor] = useState<string>('#FFFFFF');
+    const [subtitleEffect, setSubtitleEffect] = useState<GraphicEffectType>(GraphicEffectType.NONE);
     const [subtitleBgStyle, setSubtitleBgStyle] = useState<SubtitleBgStyle>(SubtitleBgStyle.TRANSPARENT);
     const [subtitleDisplayMode, setSubtitleDisplayMode] = useState<SubtitleDisplayMode>(SubtitleDisplayMode.CLASSIC);
     const [subtitleFormat, setSubtitleFormat] = useState<SubtitleFormat>(SubtitleFormat.BRACKET);
@@ -115,6 +116,7 @@ function App() {
     const [vinylLayoutMode, setVinylLayoutMode] = useState<'horizontal' | 'vertical'>('horizontal');
     const [vinylCenterFixed, setVinylCenterFixed] = useState<boolean>(false); // 中心照片固定
     const [vinylRecordEnabled, setVinylRecordEnabled] = useState<boolean>(true); // 唱片開關
+    const [vinylNeedleEnabled, setVinylNeedleEnabled] = useState<boolean>(true); // 唱片指針開關
     
     // Chinese Control Card State
     const [chineseCardAlbumImage, setChineseCardAlbumImage] = useState<string | null>(null);
@@ -1588,6 +1590,7 @@ function App() {
                                     subtitleFontSize={subtitleFontSize}
                                     subtitleFontFamily={subtitleFontFamily}
                                     subtitleColor={subtitleColor}
+                                    subtitleEffect={subtitleEffect}
                                     subtitleBgStyle={subtitleBgStyle}
                                     effectScale={effectScale}
                                     effectOffsetX={effectOffsetX}
@@ -1644,6 +1647,7 @@ function App() {
                                     controlCardBackgroundColor={controlCardBackgroundColor}
                                     // Vinyl Record props
                                     vinylRecordEnabled={vinylRecordEnabled}
+                                    vinylNeedleEnabled={vinylNeedleEnabled}
                                     // Chinese Control Card props
                                     // chineseCardAlbumImage={chineseCardAlbumImage}
                                     // chineseCardSongTitle={chineseCardSongTitle}
@@ -1872,6 +1876,8 @@ function App() {
                             onSubtitleFontFamilyChange={setSubtitleFontFamily}
                             subtitleColor={subtitleColor}
                             onSubtitleColorChange={setSubtitleColor}
+                            subtitleEffect={subtitleEffect}
+                            onSubtitleEffectChange={setSubtitleEffect}
                             subtitleBgStyle={subtitleBgStyle}
                             onSubtitleBgStyleChange={setSubtitleBgStyle}
                             subtitleFormat={subtitleFormat}
@@ -1971,6 +1977,8 @@ function App() {
                             // Vinyl Record props
                             vinylRecordEnabled={vinylRecordEnabled}
                             onVinylRecordEnabledChange={setVinylRecordEnabled}
+                            vinylNeedleEnabled={vinylNeedleEnabled}
+                            onVinylNeedleEnabledChange={setVinylNeedleEnabled}
                             // Chinese Control Card props
                             // chineseCardAlbumImage={chineseCardAlbumImage}
                             // onChineseCardAlbumImageChange={setChineseCardAlbumImage}
