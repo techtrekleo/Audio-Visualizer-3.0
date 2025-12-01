@@ -70,11 +70,11 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
     onExitPictureInPicture,
 }) => {
     return (
-        <div className="quick-settings-panel bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-sm rounded-xl p-4 border border-cyan-400/30">
+        <div className="quick-settings-panel backdrop-blur-sm rounded-xl p-4 border" style={{ background: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
             <div className="flex items-center space-x-2 mb-4">
-                <Icon path={ICON_PATHS.STAR} className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-lg font-semibold text-gray-200">快速設置</h3>
-                <span className="px-2 py-1 text-xs font-medium bg-cyan-500/20 text-cyan-300 rounded-full">
+                <Icon path={ICON_PATHS.STAR} className="w-5 h-5" style={{ color: '#8B9DC3' }} />
+                <h3 className="text-lg font-semibold" style={{ color: '#4A4A4A' }}>快速設置</h3>
+                <span className="px-2 py-1 text-xs font-medium rounded-full" style={{ backgroundColor: 'rgba(139, 157, 195, 0.2)', color: '#4A4A4A' }}>
                     視覺效果
                 </span>
             </div>
@@ -82,7 +82,7 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
             <div className="space-y-4">
                 {/* 視覺效果選擇 */}
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-300">選擇視覺效果</label>
+                    <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>選擇視覺效果</label>
                     <CategorizedEffectSelector
                         currentType={visualizationType}
                         onTypeChange={onVisualizationChange}
@@ -91,11 +91,12 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
 
                 {/* 顏色主題 */}
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-300">顏色主題</label>
+                    <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>顏色主題</label>
                     <select
                         value={colorPalette}
                         onChange={(e) => onColorPaletteChange(e.target.value as ColorPaletteType)}
-                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+                        className="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+                        style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
                     >
                         <option value={ColorPaletteType.DEFAULT}>預設</option>
                         <option value={ColorPaletteType.CYBERPUNK}>賽博朋克</option>
@@ -110,59 +111,65 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                     
                     {/* 自選色彩選擇器 - 僅在選擇自選色彩時顯示 */}
                     {colorPalette === ColorPaletteType.CUSTOM && (
-                        <div className="mt-3 p-3 bg-gray-800/50 rounded-lg border border-cyan-400/30 space-y-3">
-                            <label className="text-xs font-medium text-cyan-300">自訂顏色</label>
+                        <div className="mt-3 p-3 rounded-lg border space-y-3" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
+                            <label className="text-xs font-medium" style={{ color: '#4A4A4A' }}>自訂顏色</label>
                             <div className="grid grid-cols-3 gap-3">
                                 <div className="space-y-1">
-                                    <label className="text-xs text-gray-400">主色</label>
+                                    <label className="text-xs" style={{ color: '#6B7280' }}>主色</label>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="color"
                                             value={customPrimaryColor}
                                             onChange={(e) => onCustomPrimaryColorChange?.(e.target.value)}
-                                            className="w-10 h-10 rounded border border-gray-600 cursor-pointer"
+                                            className="w-10 h-10 rounded cursor-pointer"
+                                            style={{ border: '1px solid rgba(139, 157, 195, 0.4)' }}
                                         />
                                         <input
                                             type="text"
                                             value={customPrimaryColor}
                                             onChange={(e) => onCustomPrimaryColorChange?.(e.target.value)}
-                                            className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                                            className="flex-1 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1"
+                                            style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
                                             placeholder="#67E8F9"
                                         />
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs text-gray-400">次色</label>
+                                    <label className="text-xs" style={{ color: '#6B7280' }}>次色</label>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="color"
                                             value={customSecondaryColor}
                                             onChange={(e) => onCustomSecondaryColorChange?.(e.target.value)}
-                                            className="w-10 h-10 rounded border border-gray-600 cursor-pointer"
+                                            className="w-10 h-10 rounded cursor-pointer"
+                                            style={{ border: '1px solid rgba(139, 157, 195, 0.4)' }}
                                         />
                                         <input
                                             type="text"
                                             value={customSecondaryColor}
                                             onChange={(e) => onCustomSecondaryColorChange?.(e.target.value)}
-                                            className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                                            className="flex-1 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1"
+                                            style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
                                             placeholder="#F472B6"
                                         />
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs text-gray-400">強調色</label>
+                                    <label className="text-xs" style={{ color: '#6B7280' }}>強調色</label>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="color"
                                             value={customAccentColor}
                                             onChange={(e) => onCustomAccentColorChange?.(e.target.value)}
-                                            className="w-10 h-10 rounded border border-gray-600 cursor-pointer"
+                                            className="w-10 h-10 rounded cursor-pointer"
+                                            style={{ border: '1px solid rgba(139, 157, 195, 0.4)' }}
                                         />
                                         <input
                                             type="text"
                                             value={customAccentColor}
                                             onChange={(e) => onCustomAccentColorChange?.(e.target.value)}
-                                            className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                                            className="flex-1 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1"
+                                            style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
                                             placeholder="#FFFFFF"
                                         />
                                     </div>
@@ -175,7 +182,7 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                 {/* Picture-in-Picture 控制 */}
                 <div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                        <label className="text-sm font-medium flex items-center gap-2" style={{ color: '#4A4A4A' }}>
                             <span className="text-lg">📺</span>
                             子母畫面
                         </label>
@@ -183,11 +190,21 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                             onClick={isPipActive ? onExitPictureInPicture : onEnterPictureInPicture}
                             disabled={isRecording}
                             type="button"
-                            className={`w-full py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed ${
-                                isPipActive 
-                                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-lg shadow-cyan-500/25' 
-                                    : 'bg-gray-700 text-gray-200 hover:bg-gray-600 hover:text-white'
-                            }`}
+                            className="w-full py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={isPipActive 
+                                ? { background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }
+                                : { backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)' }
+                            }
+                            onMouseEnter={(e) => {
+                                if (!isRecording && !isPipActive) {
+                                    e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (!isRecording && !isPipActive) {
+                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                                }
+                            }}
                             title={isPipActive ? '退出子母畫面' : '開啟子母畫面 (需要播放音頻)'}
                         >
                             <span className="flex items-center justify-center gap-2">
@@ -204,7 +221,7 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                 )}
                             </span>
                         </button>
-                        <p className="text-xs text-gray-400 leading-relaxed">
+                        <p className="text-xs leading-relaxed" style={{ color: '#6B7280' }}>
                             {isPipActive 
                                 ? '✅ 可視化已顯示在子母畫面中，可以拖拽調整位置' 
                                 : isPipSupported 
@@ -220,12 +237,13 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                     {/* 聲波描邊 - 僅在特殊款特效時顯示 */}
                     {(visualizationType === VisualizationType.CRT_GLITCH || visualizationType === VisualizationType.GLITCH_WAVE) && (
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-300">中間線條</label>
+                            <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>中間線條</label>
                             <button
                                 onClick={() => onWaveformStrokeChange(!waveformStroke)}
                                 disabled={isRecording}
                                 type="button"
-                                className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed ${waveformStroke ? 'bg-cyan-600' : 'bg-gray-600'}`}
+                                className="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                style={{ backgroundColor: waveformStroke ? '#8B9DC3' : 'rgba(156, 163, 175, 0.5)' }}
                                 aria-pressed={waveformStroke}
                             >
                                 <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${waveformStroke ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -236,8 +254,8 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                     {/* 特效大小 */}
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                            <label className="text-sm font-medium text-gray-300">特效大小</label>
-                            <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">{effectScale.toFixed(2)}</span>
+                            <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>特效大小</label>
+                            <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', color: '#6B7280' }}>{effectScale.toFixed(2)}</span>
                         </div>
                         <div className="relative">
                             <div
@@ -274,8 +292,8 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                     {/* 水平位移 */}
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                            <label className="text-sm font-medium text-gray-300">水平位移</label>
-                            <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">{effectOffsetX}</span>
+                            <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>水平位移</label>
+                            <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', color: '#6B7280' }}>{effectOffsetX}</span>
                         </div>
                         <div className="relative">
                             <div
@@ -312,8 +330,8 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                     {/* 垂直位移 */}
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                            <label className="text-sm font-medium text-gray-300">垂直位移</label>
-                            <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">{effectOffsetY}</span>
+                            <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>垂直位移</label>
+                            <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', color: '#6B7280' }}>{effectOffsetY}</span>
                         </div>
                         <div className="relative">
                             <div
@@ -350,13 +368,13 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
 
                 {/* 音頻響應設定 */}
                 <div className="space-y-4">
-                    <label className="text-sm font-medium text-gray-300">音頻響應設定</label>
+                    <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>音頻響應設定</label>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* 靈敏度 */}
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                                <label className="text-sm font-medium text-gray-300">靈敏度</label>
-                                <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">{sensitivity.toFixed(2)}</span>
+                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>靈敏度</label>
+                                <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', color: '#6B7280' }}>{sensitivity.toFixed(2)}</span>
                             </div>
                             <div className="relative">
                                 <div
@@ -395,8 +413,8 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                         {/* 平滑度 */}
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                                <label className="text-sm font-medium text-gray-300">平滑度</label>
-                                <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">{smoothing}</span>
+                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>平滑度</label>
+                                <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', color: '#6B7280' }}>{smoothing}</span>
                             </div>
                             <div className="relative">
                                 <div
@@ -433,8 +451,8 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                         {/* 均衡器 */}
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                                <label className="text-sm font-medium text-gray-300">均衡器</label>
-                                <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">{equalization.toFixed(2)}</span>
+                                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>均衡器</label>
+                                <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', color: '#6B7280' }}>{equalization.toFixed(2)}</span>
                             </div>
                             <div className="relative">
                                 <div
