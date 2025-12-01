@@ -1,0 +1,69 @@
+/* 莫兰迪色系样式 */
+.morandi-bg-light {
+  background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 50%, #F0E8E0 100%);
+}
+
+.morandi-card {
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(139, 157, 195, 0.3);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.morandi-text-dark {
+  color: #4A4A4A;
+}
+
+.morandi-text-medium {
+  color: #5C5C5C;
+}
+
+.morandi-text-light {
+  color: #6B7280;
+}
+
+.morandi-button-primary {
+  background: linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%);
+  color: #FFFFFF;
+  border: 1px solid rgba(139, 157, 195, 0.5);
+}
+
+.morandi-button-primary:hover {
+  background: linear-gradient(135deg, #9CA3AF 0%, #8B9DC3 100%);
+}
+
+.morandi-button-secondary {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #4A4A4A;
+  border: 1px solid rgba(139, 157, 195, 0.4);
+}
+
+.morandi-button-secondary:hover {
+  background-color: rgba(139, 157, 195, 0.2);
+}
+
+.morandi-input {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(139, 157, 195, 0.4);
+  color: #4A4A4A;
+}
+
+.morandi-input:focus {
+  outline: none;
+  border-color: rgba(139, 157, 195, 0.6);
+  box-shadow: 0 0 0 3px rgba(139, 157, 195, 0.2);
+}
+
+.morandi-slider {
+  background: rgba(139, 157, 195, 0.2);
+}
+
+.morandi-slider::-webkit-slider-thumb {
+  background: #8B9DC3;
+  border: 2px solid #FFFFFF;
+}
+
+.morandi-slider::-moz-range-thumb {
+  background: #8B9DC3;
+  border: 2px solid #FFFFFF;
+}
+

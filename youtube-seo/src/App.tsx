@@ -115,19 +115,19 @@ function App() {
 
   return (
     <ModalProvider>
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 50%, #F0E8E0 100%)' }}>
         <UnifiedHeader />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <div className="space-y-6">
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
-            <h1 className="text-3xl font-bold text-white mb-2">Seo高分標題模板產生器</h1>
-            <h2 className="text-xl font-semibold text-gray-100 mb-6">
+          <div className="backdrop-blur-sm rounded-lg shadow-lg border p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
+            <h1 className="text-3xl font-bold mb-2" style={{ color: '#4A4A4A' }}>Seo高分標題模板產生器</h1>
+            <h2 className="text-xl font-semibold mb-6" style={{ color: '#5C5C5C' }}>
               Generate SEO-friendly titles and tags for your music covers
             </h2>
             
             <div className="space-y-4">
               <div>
-                <label htmlFor="songName" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="songName" className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
                   Song Name *
                 </label>
                 <input
@@ -136,12 +136,13 @@ function App() {
                   value={songName}
                   onChange={(e) => setSongName(e.target.value)}
                   placeholder="e.g., Shape of You, Bohemian Rhapsody"
-                  className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                  className="w-full px-3 py-2 rounded-lg focus:ring-2 transition"
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
                 />
               </div>
 
               <div>
-                <label htmlFor="artist" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="artist" className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
                   Original Artist (Optional)
                 </label>
                 <div className="relative">
@@ -152,7 +153,8 @@ function App() {
                     onChange={(e) => setArtist(e.target.value)}
                     onFocus={() => setShowArtistHistory(artistHistory.length > 0)}
                     placeholder="e.g., Ed Sheeran, Queen"
-                    className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                    className="w-full px-3 py-2 rounded-lg focus:ring-2 transition"
+                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
                   />
                   
                   {/* 歷史記錄按鈕 */}
@@ -170,14 +172,23 @@ function App() {
 
                 {/* 歌手歷史記錄 */}
                 {showArtistHistory && artistHistory.length > 0 && (
-                  <div className="mt-2 p-3 bg-gray-800 rounded-lg border border-gray-600">
-                    <h4 className="text-sm font-medium text-gray-300 mb-3">歌手歷史記錄</h4>
+                  <div className="mt-2 p-3 rounded-lg border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
+                    <h4 className="text-sm font-medium mb-3" style={{ color: '#4A4A4A' }}>歌手歷史記錄</h4>
                     <div className="flex flex-wrap gap-2">
                       {artistHistory.map((artistName, index) => (
                         <button
                           key={index}
                           onClick={() => addArtistFromHistory(artistName)}
-                          className="px-3 py-1 text-xs bg-gray-700 hover:bg-cyan-600 text-gray-300 hover:text-white rounded-full transition-colors duration-200"
+                          className="px-3 py-1 text-xs rounded-full transition-colors duration-200"
+                          style={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)' }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.3)';
+                            e.currentTarget.style.color = '#FFFFFF';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                            e.currentTarget.style.color = '#4A4A4A';
+                          }}
                         >
                           {artistName}
                         </button>
@@ -188,7 +199,7 @@ function App() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
                   Language (語言) *
                 </label>
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
@@ -196,11 +207,21 @@ function App() {
                     <button
                       key={lang.id}
                       onClick={() => setSelectedLanguage(lang.id)}
-                      className={`p-3 rounded-lg border-2 transition-all duration-200 text-center ${
-                        selectedLanguage === lang.id
-                          ? 'border-cyan-500 bg-cyan-500/20 text-cyan-300'
-                          : 'border-black bg-gray-800 hover:border-gray-800 hover:bg-gray-700'
-                      }`}
+                      className="p-3 rounded-lg border-2 transition-all duration-200 text-center"
+                      style={selectedLanguage === lang.id
+                        ? { borderColor: '#8B9DC3', backgroundColor: 'rgba(139, 157, 195, 0.2)', color: '#4A4A4A' }
+                        : { borderColor: 'rgba(139, 157, 195, 0.4)', backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A' }
+                      }
+                      onMouseEnter={(e) => {
+                        if (selectedLanguage !== lang.id) {
+                          e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.15)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (selectedLanguage !== lang.id) {
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                        }
+                      }}
                     >
                       <div className="font-medium text-sm">
                         {lang.flag} {lang.name}
@@ -211,7 +232,7 @@ function App() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>
                   Music Style * (可多選)
                 </label>
                 
@@ -221,16 +242,26 @@ function App() {
                     <button
                       key={category.id}
                       onClick={() => toggleStyle(category.id)}
-                      className={`p-3 rounded-lg border-2 transition-all duration-200 text-left ${
-                        selectedStyles.includes(category.id)
-                          ? 'border-cyan-500 bg-cyan-500/20 text-cyan-300'
-                          : 'border-black bg-gray-800 hover:border-gray-800 hover:bg-gray-700'
-                      }`}
+                      className="p-3 rounded-lg border-2 transition-all duration-200 text-left"
+                      style={selectedStyles.includes(category.id)
+                        ? { borderColor: '#8B9DC3', backgroundColor: 'rgba(139, 157, 195, 0.2)', color: '#4A4A4A' }
+                        : { borderColor: 'rgba(139, 157, 195, 0.4)', backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A' }
+                      }
+                      onMouseEnter={(e) => {
+                        if (!selectedStyles.includes(category.id)) {
+                          e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.15)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!selectedStyles.includes(category.id)) {
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                        }
+                      }}
                     >
                       <div className="font-medium text-sm">
                         {category.name}
                         {category.englishName && (
-                          <span className="block text-xs text-gray-400 mt-1">
+                          <span className="block text-xs mt-1" style={{ color: '#6B7280' }}>
                             {category.englishName}
                           </span>
                         )}
@@ -244,7 +275,14 @@ function App() {
                   {/* 自定義輸入按鈕 */}
                   <button
                     onClick={() => setShowCustomInput(!showCustomInput)}
-                    className="w-full p-3 rounded-lg border-2 border-dashed border-gray-600 bg-gray-800 hover:border-gray-500 hover:bg-gray-700 transition-all duration-200 text-gray-300"
+                    className="w-full p-3 rounded-lg border-2 border-dashed transition-all duration-200"
+                    style={{ borderColor: 'rgba(139, 157, 195, 0.4)', backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                    }}
                   >
                     <div className="flex items-center justify-center">
                       <span className="mr-2">+</span>
@@ -254,20 +292,25 @@ function App() {
 
                   {/* 自定義輸入框 */}
                   {showCustomInput && (
-                    <div className="p-4 bg-gray-800 rounded-lg border border-gray-600">
+                    <div className="p-4 rounded-lg border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
                       <div className="flex gap-2">
                         <input
                           type="text"
                           value={customStyle}
                           onChange={(e) => setCustomStyle(e.target.value)}
                           placeholder="輸入自定義音樂風格..."
-                          className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500"
+                          className="flex-1 px-3 py-2 rounded-lg focus:outline-none"
+                          style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
                           onKeyPress={(e) => e.key === 'Enter' && addCustomStyle()}
                         />
                         <button
                           onClick={addCustomStyle}
                           disabled={!customStyle.trim()}
-                          className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-4 py-2 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          style={!customStyle.trim() 
+                            ? { background: 'rgba(156, 163, 175, 0.5)', color: '#9CA3AF', cursor: 'not-allowed' }
+                            : { background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF' }
+                          }
                         >
                           添加
                         </button>
@@ -277,15 +320,31 @@ function App() {
 
                   {/* 歷史記錄 */}
                   {styleHistory.length > 0 && (
-                    <div className="p-4 bg-gray-800 rounded-lg border border-gray-600">
-                      <h4 className="text-sm font-medium text-gray-300 mb-3">歷史記錄</h4>
+                    <div className="p-4 rounded-lg border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
+                      <h4 className="text-sm font-medium mb-3" style={{ color: '#4A4A4A' }}>歷史記錄</h4>
                       <div className="flex flex-wrap gap-2">
                         {styleHistory.map((style, index) => (
                           <button
                             key={index}
                             onClick={() => addFromHistory(style)}
                             disabled={selectedStyles.includes(style)}
-                            className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-3 py-1 text-xs rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={selectedStyles.includes(style)
+                              ? { backgroundColor: 'rgba(156, 163, 175, 0.3)', color: '#9CA3AF', cursor: 'not-allowed' }
+                              : { backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)' }
+                            }
+                            onMouseEnter={(e) => {
+                              if (!selectedStyles.includes(style)) {
+                                e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.3)';
+                                e.currentTarget.style.color = '#FFFFFF';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!selectedStyles.includes(style)) {
+                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                                e.currentTarget.style.color = '#4A4A4A';
+                              }
+                            }}
                           >
                             {style}
                           </button>
@@ -297,8 +356,8 @@ function App() {
 
                 {/* 已選擇的風格顯示 */}
                 {selectedStyles.length > 0 && (
-                  <div className="mt-4 p-3 bg-gray-800 rounded-lg">
-                    <h4 className="text-sm font-medium text-gray-300 mb-2">已選擇的風格:</h4>
+                  <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.3)' }}>
+                    <h4 className="text-sm font-medium mb-2" style={{ color: '#4A4A4A' }}>已選擇的風格:</h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedStyles.map((styleId) => {
                         const category = musicCategories.find(c => c.id === styleId)
@@ -306,12 +365,14 @@ function App() {
                         return (
                           <span
                             key={styleId}
-                            className="inline-flex items-center px-3 py-1 bg-cyan-600 text-white text-sm rounded-full"
+                            className="inline-flex items-center px-3 py-1 text-sm rounded-full"
+                            style={{ background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF' }}
                           >
                             {displayName}
                             <button
                               onClick={() => removeStyle(styleId)}
-                              className="ml-2 text-cyan-200 hover:text-white"
+                              className="ml-2 hover:opacity-70"
+                              style={{ color: '#FFFFFF' }}
                             >
                               ×
                             </button>
@@ -326,14 +387,18 @@ function App() {
               <button
                 onClick={generateSEO}
                 disabled={!songName.trim() || selectedStyles.length === 0 || isGenerating}
-                className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full font-medium py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={(!songName.trim() || selectedStyles.length === 0 || isGenerating)
+                  ? { background: 'rgba(156, 163, 175, 0.5)', color: '#9CA3AF', cursor: 'not-allowed' }
+                  : { background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF' }
+                }
               >
                 {isGenerating ? '🤖 AI is generating...' : 'Generate with AI'}
               </button>
 
               {error && (
-                <div className="bg-red-900/50 border border-red-700 rounded-lg p-4">
-                  <p className="text-red-300 text-sm">{error}</p>
+                <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(212, 165, 165, 0.2)', border: '1px solid rgba(200, 155, 155, 0.4)' }}>
+                  <p className="text-sm" style={{ color: '#C89B9B' }}>{error}</p>
                 </div>
               )}
             </div>
@@ -341,58 +406,80 @@ function App() {
 
           {seoContent && (
             <div className="space-y-6">
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
+              <div className="backdrop-blur-sm rounded-lg shadow-lg border p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-100">Title (標題)</h3>
+                  <h3 className="text-lg font-semibold" style={{ color: '#4A4A4A' }}>Title (標題)</h3>
                   <button
                     onClick={() => copyToClipboard(seoContent.title)}
-                    className="bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                    className="font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                    style={{ background: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                    }}
                   >
                     Copy Title
                   </button>
                 </div>
-                <div className="bg-gray-900/50 p-4 rounded-lg">
-                  <p className="text-lg font-medium text-gray-100">{seoContent.title}</p>
-                  <p className="text-sm text-gray-400 mt-2">
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)' }}>
+                  <p className="text-lg font-medium" style={{ color: '#4A4A4A' }}>{seoContent.title}</p>
+                  <p className="text-sm mt-2" style={{ color: '#6B7280' }}>
                     Length: {seoContent.title.length} characters
                   </p>
                 </div>
               </div>
 
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
+              <div className="backdrop-blur-sm rounded-lg shadow-lg border p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-100">Description (歌曲說明)</h3>
+                  <h3 className="text-lg font-semibold" style={{ color: '#4A4A4A' }}>Description (歌曲說明)</h3>
                   <button
                     onClick={() => copyToClipboard(seoContent.description)}
-                    className="bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                    className="font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                    style={{ background: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                    }}
                   >
                     Copy Description
                   </button>
                 </div>
-                <div className="bg-gray-900/50 p-4 rounded-lg">
-                  <pre className="whitespace-pre-wrap text-sm text-gray-100 font-sans">{seoContent.description}</pre>
-                  <p className="text-sm text-gray-400 mt-2">
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)' }}>
+                  <pre className="whitespace-pre-wrap text-sm font-sans" style={{ color: '#4A4A4A' }}>{seoContent.description}</pre>
+                  <p className="text-sm mt-2" style={{ color: '#6B7280' }}>
                     Length: {seoContent.description.length} characters
                   </p>
                 </div>
               </div>
 
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
+              <div className="backdrop-blur-sm rounded-lg shadow-lg border p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-100">Tags (標籤)</h3>
+                  <h3 className="text-lg font-semibold" style={{ color: '#4A4A4A' }}>Tags (標籤)</h3>
                   <button
                     onClick={() => copyToClipboard(seoContent.tags.join(', '))}
-                    className="bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                    className="font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                    style={{ background: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                    }}
                   >
                     Copy Tags
                   </button>
                 </div>
-                <div className="bg-gray-900/50 p-4 rounded-lg">
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)' }}>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {seoContent.tags.map((tag, index) => (
                       <span 
                         key={index}
-                        className="px-3 py-1 bg-cyan-500/20 text-cyan-300 text-sm rounded-full"
+                        className="px-3 py-1 text-sm rounded-full"
+                        style={{ background: 'rgba(139, 157, 195, 0.2)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.3)' }}
                       >
                         {tag}
                       </span>

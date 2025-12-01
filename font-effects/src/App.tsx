@@ -233,15 +233,15 @@ const App: React.FC = () => {
 
   return (
     <ModalProvider>
-      <div className="text-white flex flex-col items-center p-4 sm:p-6 lg:p-8" style={{ fontFamily: "'Noto Sans TC', sans-serif", background: '#000000' }}>
+      <div className="flex flex-col items-center p-4 sm:p-6 lg:p-8" style={{ fontFamily: "'Noto Sans TC', sans-serif", background: 'linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 50%, #F0E8E0 100%)', color: '#4A4A4A', minHeight: '100vh' }}>
         <UnifiedHeader />
       <main className="w-full max-w-7xl space-y-8 pt-24">
         {/* 頂部預覽區域 - 佔滿一整行 */}
-        <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
+        <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
           <div className="text-center mb-4">
-            <h1 className="text-3xl text-white mb-2">封面產生器</h1>
-            <h2 className="text-xl text-gray-100">即時預覽</h2>
-            <p className="text-sm text-gray-300">點擊文字區塊進行編輯</p>
+            <h1 className="text-3xl mb-2" style={{ color: '#4A4A4A' }}>封面產生器</h1>
+            <h2 className="text-xl" style={{ color: '#5C5C5C' }}>即時預覽</h2>
+            <p className="text-sm" style={{ color: '#6B7280' }}>點擊文字區塊進行編輯</p>
           </div>
           <div className="flex justify-center">
             <VisualCanvas
@@ -267,18 +267,32 @@ const App: React.FC = () => {
           {/* 左側設定面板 */}
           <div className="space-y-6">
             {/* 基礎設置 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
+            <div className="backdrop-blur-sm rounded-lg shadow-lg border p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-3">
-                  <label className="block text-lg text-gray-300">選擇畫布尺寸</label>
+                  <label className="block text-lg" style={{ color: '#4A4A4A' }}>選擇畫布尺寸</label>
                   <div className="grid grid-cols-2 gap-3">
                     {canvasSizes.map(size => (
                       <button
                         key={size.id}
                         onClick={() => setCanvasSizeId(size.id)}
                         className={`py-2 px-3 rounded-lg text-center transition-all duration-200 border-2 text-sm truncate ${
-                          canvasSizeId === size.id ? 'bg-cyan-600 border-cyan-400' : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
+                          canvasSizeId === size.id ? '' : ''
                         }`}
+                        style={canvasSizeId === size.id 
+                          ? { backgroundColor: '#8B9DC3', borderColor: '#9CA3AF', color: '#FFFFFF' }
+                          : { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderColor: 'rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }
+                        }
+                        onMouseEnter={(e) => {
+                          if (canvasSizeId !== size.id) {
+                            e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (canvasSizeId !== size.id) {
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                          }
+                        }}
                         title={`${size.name} (${size.width}x${size.height})`}
                       >
                         {size.name}
@@ -288,14 +302,15 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                  <label className="block text-lg text-gray-300">中國風邊框</label>
+                  <label className="block text-lg" style={{ color: '#4A4A4A' }}>中國風邊框</label>
                   <select
                     value={chineseFrameId}
                     onChange={(e) => {
                       console.log('邊框選擇變更:', e.target.value);
                       setChineseFrameId(e.target.value as ChineseFrameId);
                     }}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                    className="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
                   >
                     {chineseFrames.map(frame => (
                       <option key={frame.id} value={frame.id}>
@@ -307,7 +322,7 @@ const App: React.FC = () => {
                   {chineseFrameId !== 'none' && (
                     <div className="space-y-4 mt-4">
                       <div className="flex flex-col gap-2">
-                        <label className="text-sm text-gray-400">邊框寬度</label>
+                        <label className="text-sm" style={{ color: '#6B7280' }}>邊框寬度</label>
                         <input
                           type="range"
                           min="0.05"
@@ -315,13 +330,14 @@ const App: React.FC = () => {
                           step="0.05"
                           value={frameSize.width}
                           onChange={(e) => setFrameSize(prev => ({ ...prev, width: parseFloat(e.target.value) }))}
-                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                          className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                          style={{ background: 'rgba(139, 157, 195, 0.2)' }}
                         />
-                        <span className="text-xs text-gray-500">{Math.round(frameSize.width * 100)}%</span>
+                        <span className="text-xs" style={{ color: '#6B7280' }}>{Math.round(frameSize.width * 100)}%</span>
                       </div>
                       
                       <div className="flex flex-col gap-2">
-                        <label className="text-sm text-gray-400">邊框高度</label>
+                        <label className="text-sm" style={{ color: '#6B7280' }}>邊框高度</label>
                         <input
                           type="range"
                           min="0.05"
@@ -329,13 +345,14 @@ const App: React.FC = () => {
                           step="0.05"
                           value={frameSize.height}
                           onChange={(e) => setFrameSize(prev => ({ ...prev, height: parseFloat(e.target.value) }))}
-                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                          className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                          style={{ background: 'rgba(139, 157, 195, 0.2)' }}
                         />
-                        <span className="text-xs text-gray-500">{Math.round(frameSize.height * 100)}%</span>
+                        <span className="text-xs" style={{ color: '#6B7280' }}>{Math.round(frameSize.height * 100)}%</span>
                       </div>
                       
                       <div className="flex flex-col gap-2">
-                        <label className="text-sm text-gray-400">水平位置</label>
+                        <label className="text-sm" style={{ color: '#6B7280' }}>水平位置</label>
                         <input
                           type="range"
                           min="0"
@@ -343,13 +360,14 @@ const App: React.FC = () => {
                           step="0.05"
                           value={framePosition.x}
                           onChange={(e) => setFramePosition(prev => ({ ...prev, x: parseFloat(e.target.value) }))}
-                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                          className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                          style={{ background: 'rgba(139, 157, 195, 0.2)' }}
                         />
-                        <span className="text-xs text-gray-500">{Math.round(framePosition.x * 100)}%</span>
+                        <span className="text-xs" style={{ color: '#6B7280' }}>{Math.round(framePosition.x * 100)}%</span>
                       </div>
                       
                       <div className="flex flex-col gap-2">
-                        <label className="text-sm text-gray-400">垂直位置</label>
+                        <label className="text-sm" style={{ color: '#6B7280' }}>垂直位置</label>
                         <input
                           type="range"
                           min="0"
@@ -357,32 +375,35 @@ const App: React.FC = () => {
                           step="0.05"
                           value={framePosition.y}
                           onChange={(e) => setFramePosition(prev => ({ ...prev, y: parseFloat(e.target.value) }))}
-                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                          className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                          style={{ background: 'rgba(139, 157, 195, 0.2)' }}
                         />
-                        <span className="text-xs text-gray-500">{Math.round(framePosition.y * 100)}%</span>
+                        <span className="text-xs" style={{ color: '#6B7280' }}>{Math.round(framePosition.y * 100)}%</span>
                       </div>
                       
                       <div className="flex flex-col gap-2">
-                        <label className="text-sm text-gray-400">邊框顏色</label>
+                        <label className="text-sm" style={{ color: '#6B7280' }}>邊框顏色</label>
                         <div className="flex items-center gap-3">
                           <input
                             type="color"
                             value={frameColor}
                             onChange={(e) => setFrameColor(e.target.value)}
-                            className="w-16 h-10 bg-gray-700 border border-gray-600 rounded cursor-pointer"
+                            className="w-16 h-10 rounded cursor-pointer"
+                            style={{ border: '1px solid rgba(139, 157, 195, 0.4)' }}
                           />
                           <input
                             type="text"
                             value={frameColor}
                             onChange={(e) => setFrameColor(e.target.value)}
-                            className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            className="flex-1 rounded px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2"
+                            style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
                             placeholder="#2C3E50"
                           />
                         </div>
                       </div>
                       
                       <div className="flex flex-col gap-2">
-                        <label className="text-sm text-gray-400">邊框透明度</label>
+                        <label className="text-sm" style={{ color: '#6B7280' }}>邊框透明度</label>
                         <input
                           type="range"
                           min="0"
@@ -390,9 +411,10 @@ const App: React.FC = () => {
                           step="0.05"
                           value={frameOpacity}
                           onChange={(e) => setFrameOpacity(parseFloat(e.target.value))}
-                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                          className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                          style={{ background: 'rgba(139, 157, 195, 0.2)' }}
                         />
-                        <span className="text-xs text-gray-500">{Math.round(frameOpacity * 100)}%</span>
+                        <span className="text-xs" style={{ color: '#6B7280' }}>{Math.round(frameOpacity * 100)}%</span>
                       </div>
                     </div>
                   )}
@@ -400,16 +422,16 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
+            <div className="backdrop-blur-sm rounded-lg shadow-lg border p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
               <div className="flex flex-col gap-3">
-                <label className="block text-lg text-gray-300">上傳背景 (選用)</label>
+                <label className="block text-lg" style={{ color: '#4A4A4A' }}>上傳背景 (選用)</label>
                 <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
                 <div className="flex gap-3">
-                  <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-4 rounded-lg transition">
+                  <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg transition" style={{ background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF' }}>
                     <PhotoIcon /> 上傳圖片
                   </button>
                   {backgroundImage && (
-                    <button onClick={handleClearImage} className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition">
+                    <button onClick={handleClearImage} className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg transition" style={{ background: 'linear-gradient(135deg, #D4A5A5 0%, #C89B9B 100%)', color: '#FFFFFF' }}>
                       <ClearIcon /> 清除圖片
                     </button>
                   )}
@@ -418,17 +440,29 @@ const App: React.FC = () => {
             </div>
 
             {/* 文字區塊選擇 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
+            <div className="backdrop-blur-sm rounded-lg shadow-lg border p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
               <div className="flex flex-col gap-3">
-                <label className="block text-lg text-gray-300">選擇文字區塊</label>
+                <label className="block text-lg" style={{ color: '#4A4A4A' }}>選擇文字區塊</label>
                 <div className="grid grid-cols-3 gap-2">
                   {textBlocks.map(textBlock => (
                     <button
                       key={textBlock.id}
                       onClick={() => setSelectedTextBlockId(textBlock.id)}
-                      className={`py-2 px-3 rounded-lg transition-colors text-sm ${
-                        selectedTextBlockId === textBlock.id ? 'bg-cyan-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
-                      }`}
+                      className="py-2 px-3 rounded-lg transition-colors text-sm"
+                      style={selectedTextBlockId === textBlock.id 
+                        ? { background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF' }
+                        : { backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)' }
+                      }
+                      onMouseEnter={(e) => {
+                        if (selectedTextBlockId !== textBlock.id) {
+                          e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (selectedTextBlockId !== textBlock.id) {
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                        }
+                      }}
                     >
                       {textBlock.type === 'main' ? '主標題' : textBlock.type === 'sub1' ? '副標題一' : '副標題二'}
                     </button>
@@ -438,9 +472,9 @@ const App: React.FC = () => {
             </div>
 
             {/* 預設管理 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
+            <div className="backdrop-blur-sm rounded-lg shadow-lg border p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
               <div className="flex flex-col gap-4">
-                <h3 className="text-lg text-gray-300">預設管理</h3>
+                <h3 className="text-lg" style={{ color: '#4A4A4A' }}>預設管理</h3>
                 <PresetManager
                   textBlocks={textBlocks}
                   backgroundImage={backgroundImage}
@@ -453,16 +487,16 @@ const App: React.FC = () => {
             </div>
 
             {/* 操作按鈕 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
+            <div className="backdrop-blur-sm rounded-lg shadow-lg border p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
               <div className="flex flex-col gap-4">
-                <button onClick={handleInspiration} className="w-full flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg">
+                <button onClick={handleInspiration} className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg" style={{ background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF' }}>
                   <InspirationIcon /> 給我靈感！
                 </button>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <button onClick={handleDownload} disabled={!outputImage} className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg">
+                  <button onClick={handleDownload} disabled={!outputImage} className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg disabled:cursor-not-allowed" style={!outputImage ? { background: 'rgba(156, 163, 175, 0.5)', color: '#9CA3AF', cursor: 'not-allowed' } : { background: 'linear-gradient(135deg, #A8B5C4 0%, #9CA3AF 100%)', color: '#FFFFFF' }}>
                     <DownloadIcon /> 下載圖片
                   </button>
-                  <button onClick={handleClear} disabled={isPristine} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed">
+                  <button onClick={handleClear} disabled={isPristine} className="w-full sm:w-auto flex items-center justify-center gap-2 py-3 px-6 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg disabled:cursor-not-allowed" style={isPristine ? { background: 'rgba(156, 163, 175, 0.5)', color: '#9CA3AF', cursor: 'not-allowed' } : { background: 'linear-gradient(135deg, #D4A5A5 0%, #C89B9B 100%)', color: '#FFFFFF' }}>
                     <ClearIcon /> 全部清除
                   </button>
                 </div>
@@ -474,8 +508,8 @@ const App: React.FC = () => {
           <div className="space-y-6">
             {/* 文字編輯面板 */}
             {selectedTextBlockId && (
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-2xl border border-black p-6">
-                <h3 className="text-lg text-gray-300 mb-4">編輯選中文字區塊</h3>
+              <div className="backdrop-blur-sm rounded-lg shadow-lg border p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
+                <h3 className="text-lg mb-4" style={{ color: '#4A4A4A' }}>編輯選中文字區塊</h3>
                 <DraggableTextBlock
                   textBlock={textBlocks.find(tb => tb.id === selectedTextBlockId)!}
                   onUpdate={handleTextBlockUpdate}
