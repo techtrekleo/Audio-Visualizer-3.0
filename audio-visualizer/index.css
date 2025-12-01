@@ -6,7 +6,11 @@
 @tailwind utilities;
 
 /* Base styles for the entire application */
-html, body, #root {
+html {
+  height: 100%;
+}
+
+body {
   height: 100%;
   background-color: #000000; /* Pure black background */
   color: #f3f4f6; /* Light text color */
@@ -15,13 +19,17 @@ html, body, #root {
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
-}
-
-/* Ensure the root element takes full height */
-#root {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Ensure the root element takes full height but allows footer below */
+#root {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* Custom slider styles - Enhanced with stronger specificity */

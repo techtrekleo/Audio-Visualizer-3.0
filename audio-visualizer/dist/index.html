@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="./assets/cat-avatar.png" />
+    <link rel="shortcut icon" type="image/png" href="./assets/cat-avatar.png" />
+    <link rel="apple-touch-icon" href="./assets/cat-avatar.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>音訊可視化工程 - Sonic Pulse</title>
+    <meta name="description" content="專業音訊可視化工具，支援多種視覺效果和自定義設定" />
+    <meta name="keywords" content="音訊可視化,音樂視覺化,音頻分析,視覺效果" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="音訊可視化工程 - Sonic Pulse" />
+    <meta property="og:description" content="專業音訊可視化工具，支援多種視覺效果和自定義設定" />
+    <meta property="og:image" content="/assets/cat-avatar.png" />
+    <meta property="og:url" content="https://sonicpulse.qzz.io/audio-visualizer/" />
+    <meta property="og:type" content="website" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="音訊可視化工程 - Sonic Pulse" />
+    <meta name="twitter:description" content="專業音訊可視化工具，支援多種視覺效果和自定義設定" />
+    <meta name="twitter:image" content="/assets/cat-avatar.png" />
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7718548739614199"
+    crossorigin="anonymous"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=Lobster:wght@400&family=Bungee:wght@400&family=Press+Start+2P&family=Pacifico:wght@400&family=Dancing+Script:wght@400;500;600;700&family=RocknRoll+One&family=Reggae+One&family=VT323&family=Rampart+One&family=Roboto+Mono:wght@300;400;500;700&family=Open+Sans:wght@300;400;500;600;700;800&family=Lato:wght@300;400;700;900&family=Montserrat:wght@300;400;500;600;700;800;900&family=Source+Sans+Pro:wght@300;400;600;700;900&family=Raleway:wght@300;400;500;600;700;800;900&family=Ubuntu:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600;700;800;900&family=Merriweather:wght@300;400;700;900&family=Oswald:wght@300;400;500;600;700&family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Comfortaa:wght@300;400;500;600;700&family=Fredoka+One&family=Nunito:wght@300;400;500;600;700;800;900&family=Quicksand:wght@300;400;500;600;700&family=Rubik:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Noto+Serif+TC:wght@300;400;500;700;900&family=Source+Han+Sans+TC:wght@300;400;500;700;900&family=cwTeXKai&family=Klee+One&family=M+PLUS+Rounded+1c:wght@300;400;500;700;800;900&family=Hina+Mincho&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=Long+Cang&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=Liu+Jian+Mao+Cao&family=ZCOOL+XiaoWei&family=QingSong+Handwriting:wght@400&family=Jason+Handwriting:wght@400&display=swap" rel="stylesheet">
+    
+    <style>
+      @font-face {
+        font-family: 'Jason Handwriting 1';
+        src: url('https://cdn.jsdelivr.net/gh/jasonhandwriting/JasonHandwriting/JasonHandwriting1.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Jason Handwriting 2';
+        src: url('https://cdn.jsdelivr.net/gh/jasonhandwriting/JasonHandwriting/JasonHandwriting2.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      
+      /* 莫大毛筆字體 */
+      @font-face {
+        font-family: 'Bakudai';
+        src: url('/audio-visualizer/fonts/Bakudai-Regular.woff2') format('woff2'),
+             url('/audio-visualizer/fonts/Bakudai-Regular.woff') format('woff'),
+             url('/audio-visualizer/fonts/Bakudai-Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      
+      /* 正風毛筆字體 Masa Font */
+      @font-face {
+        font-family: 'Masa Font';
+        src: url('https://cdn.jsdelivr.net/gh/max32002/masafont@master/webfont/MasaFont-Regular.woff2') format('woff2'),
+             url('https://cdn.jsdelivr.net/gh/max32002/masafont@master/webfont/MasaFont-Regular.woff') format('woff'),
+             url('https://cdn.jsdelivr.net/gh/max32002/masafont@master/webfont/MasaFont-Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+    
+    <!-- 統一的頁頭頁尾樣式 -->
+    <!-- 統一主題設定 -->
+    <script type="module" crossorigin src="/audio-visualizer/assets/index.js"></script>
+    <link rel="stylesheet" crossorigin href="/audio-visualizer/assets/main.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

@@ -123,18 +123,26 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                     padding: 3rem 0 2rem;
                     text-align: center;
                     border-top: 1px solid rgba(74, 74, 74, 0.2);
-                    margin-top: auto;
-                    position: relative;
-                    width: 100%;
-                    clear: both;
-                    z-index: 1;
+                    margin-top: auto !important;
+                    position: relative !important;
+                    width: 100% !important;
+                    clear: both !important;
+                    z-index: 1 !important;
+                    flex-shrink: 0 !important;
                   }
                   
                   /* 確保 body 和 root 容器正確布局 */
+                  html {
+                    height: 100% !important;
+                  }
+                  
                   body {
                     display: flex !important;
                     flex-direction: column !important;
                     min-height: 100vh !important;
+                    height: 100% !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
                   }
                   
                   #root {
@@ -142,6 +150,13 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                     display: flex !important;
                     flex-direction: column !important;
                     min-height: 0 !important;
+                    position: relative !important;
+                  }
+                  
+                  /* 確保頁尾在底部 */
+                  .unified-footer {
+                    flex-shrink: 0 !important;
+                    margin-top: auto !important;
                   }
                   .unified-footer .footer-content {
                     max-width: 1200px;
@@ -735,9 +750,12 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
   if (includeFooter) {
     // 嘗試在 </body> 之前插入頁尾，確保在 root div 之後
     if (modifiedHtml.includes('</body>')) {
-      // 如果存在 </div></body>（root div 結束），在 </div> 之後插入頁尾
-      if (modifiedHtml.includes('</div></body>')) {
-        modifiedHtml = modifiedHtml.replace('</div></body>', `</div>${unifiedFooter}${modalHtml}</body>`);
+      // 對於 React 應用，root div 通常是 <div id="root"></div>，頁尾應該在 </div> 之後但在 </body> 之前
+      // 使用正則表達式匹配 </div></body> 或 </div>\n</body> 等情況
+      const rootDivPattern = /(<\/div>\s*<\/body>)/;
+      if (rootDivPattern.test(modifiedHtml)) {
+        // 在 </div> 之後插入頁尾
+        modifiedHtml = modifiedHtml.replace(rootDivPattern, `</div>${unifiedFooter}${modalHtml}</body>`);
       } else {
         // 否則在 </body> 之前插入
         modifiedHtml = modifiedHtml.replace('</body>', `${unifiedFooter}${modalHtml}</body>`);
