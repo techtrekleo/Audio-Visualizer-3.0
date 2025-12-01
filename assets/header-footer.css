@@ -108,10 +108,10 @@
 
 /* 頁腳 */
 .footer {
-    background: rgba(26, 26, 26, 0.8);
+    background: rgba(232, 232, 227, 0.8);
     padding: 3rem 0 2rem;
     text-align: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(74, 74, 74, 0.2);
 }
 
 .footer-content {
@@ -129,25 +129,25 @@
 }
 
 .footer-links a {
-    color: #b8b8b8;
+    color: #5C5C5C;
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .footer-links a:hover {
-    color: #4ecdc4;
+    color: #8B9DC3;
 }
 
 .footer-bottom {
-    color: #666;
+    color: #6B7280;
     font-size: 0.9rem;
 }
 
 /* Buy Me a Coffee 按鈕樣式 */
 .btn-coffee {
-    background: linear-gradient(135deg, #ff6b9d 0%, #4ecdc4 100%);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #A8B5C4 0%, #8B9DC3 100%);
+    color: #FFFFFF;
+    border: 1px solid rgba(74, 74, 74, 0.2);
     border-radius: 15px;
     padding: 1rem 2rem;
     font-weight: 600;
@@ -156,7 +156,7 @@
     align-items: center;
     gap: 1rem;
     transition: all 0.3s ease;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 25px rgba(139, 157, 195, 0.3);
     position: relative;
     overflow: hidden;
     font-family: 'Poppins', sans-serif;
@@ -164,9 +164,9 @@
 }
 
 .btn-coffee:hover {
-    background: linear-gradient(135deg, #ff8fb3 0%, #5dd5d5 100%);
+    background: linear-gradient(135deg, #B8C5D4 0%, #9BADCD 100%);
     transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 15px 35px rgba(139, 157, 195, 0.4);
     color: white;
 }
 
@@ -180,7 +180,7 @@
     height: 2.5rem;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(74, 74, 74, 0.2);
 }
 
 .coffee-text {

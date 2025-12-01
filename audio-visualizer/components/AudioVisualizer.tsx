@@ -52,6 +52,7 @@ const FONT_MAP: Record<FontType, string> = {
     [FontType.LIU_JIAN_MAO_CAO]: 'Liu Jian Mao Cao',
     [FontType.ZCOOL_XIAO_WEI]: 'ZCOOL XiaoWei',
     [FontType.BAKUDAI]: 'Bakudai',
+    [FontType.MASA_FONT]: 'Masa Font',
 };
 
 interface AudioVisualizerProps {

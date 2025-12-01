@@ -719,9 +719,10 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         [FontType.ZCOOL_KUAI_LE]: 'ZCOOL KuaiLe',
         [FontType.ZCOOL_QING_KE]: 'ZCOOL QingKe HuangYou',
         [FontType.LIU_JIAN_MAO_CAO]: 'Liu Jian Mao Cao',
-        [FontType.ZCOOL_XIAO_WEI]: 'ZCOOL XiaoWei',
-        [FontType.BAKUDAI]: 'Bakudai',
-    };
+    [FontType.ZCOOL_XIAO_WEI]: 'ZCOOL XiaoWei',
+    [FontType.BAKUDAI]: 'Bakudai',
+    [FontType.MASA_FONT]: 'Masa Font',
+};
 
     const handleBackgroundImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -940,6 +941,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             { value: FontType.LIU_JIAN_MAO_CAO, label: '劉建毛草' },
                                             { value: FontType.ZCOOL_XIAO_WEI, label: '站酷小薇' },
                                             { value: FontType.BAKUDAI, label: '莫大毛筆' },
+                                            { value: FontType.MASA_FONT, label: '正風毛筆字體' },
                                             // 英文字體
                                             { value: FontType.POPPINS, label: '現代 (Poppins)' },
                                             { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
@@ -1645,6 +1647,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         { value: FontType.LIU_JIAN_MAO_CAO, label: '劉建毛草書' },
                                         { value: FontType.ZCOOL_XIAO_WEI, label: '站酷小薇LOGO體' },
                                         { value: FontType.BAKUDAI, label: '莫大毛筆字體' },
+                                        { value: FontType.MASA_FONT, label: '正風毛筆字體' },
                                         // 英文字體
                                         { value: FontType.POPPINS, label: '現代 (Poppins)' },
                                         { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
@@ -1774,6 +1777,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                    value === FontType.LIU_JIAN_MAO_CAO ? '劉建毛草書' :
                                                    value === FontType.ZCOOL_XIAO_WEI ? '站酷小薇LOGO體' :
                                                    value === FontType.BAKUDAI ? '莫大毛筆字體' :
+                                                   value === FontType.MASA_FONT ? '正風毛筆字體' :
                                                    value === FontType.POPPINS ? '現代 (Poppins)' :
                                                    value === FontType.ROCKNROLL_ONE ? '搖滾圓體 (RocknRoll One)' :
                                                    label
@@ -3186,6 +3190,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             { value: FontType.LIU_JIAN_MAO_CAO, label: '劉建毛草' },
                                             { value: FontType.ZCOOL_XIAO_WEI, label: '站酷小薇' },
                                             { value: FontType.BAKUDAI, label: '莫大毛筆' },
+                                            { value: FontType.MASA_FONT, label: '正風毛筆字體' },
                                             // 英文字體
                                             { value: FontType.POPPINS, label: '現代 (Poppins)' },
                                             { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
@@ -3263,6 +3268,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             { value: FontType.LIU_JIAN_MAO_CAO, label: '劉建毛草' },
                                             { value: FontType.ZCOOL_XIAO_WEI, label: '站酷小薇' },
                                             { value: FontType.BAKUDAI, label: '莫大毛筆' },
+                                            { value: FontType.MASA_FONT, label: '正風毛筆字體' },
                                             // 英文字體
                                             { value: FontType.POPPINS, label: '現代 (Poppins)' },
                                             { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },

@@ -120,6 +120,7 @@ export enum FontType {
     LIU_JIAN_MAO_CAO = 'Liu Jian Mao Cao',
     ZCOOL_XIAO_WEI = 'ZCOOL XiaoWei',
     BAKUDAI = 'Bakudai',
+    MASA_FONT = 'Masa Font',
 }
 
 export enum BackgroundColorType {

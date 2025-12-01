@@ -27,9 +27,9 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 50%, #F0E8E0 100%);
             min-height: 100vh;
-            color: #333;
+            color: #4A4A4A;
         }
         
         .container {
@@ -41,19 +41,19 @@
         .header {
             text-align: center;
             margin-bottom: 40px;
-            color: white;
+            color: #4A4A4A;
         }
         
         .header h1 {
             font-size: 3rem;
             font-weight: 700;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: #4A4A4A;
         }
         
         .header p {
             font-size: 1.2rem;
-            opacity: 0.9;
+            color: #5C5C5C;
         }
         
         .creators-grid {
@@ -64,17 +64,18 @@
         }
         
         .creator-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.8);
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(139, 157, 195, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(74, 74, 74, 0.2);
         }
         
         .creator-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 40px rgba(139, 157, 195, 0.3);
         }
         
         .creator-header {
@@ -86,42 +87,42 @@
         .creator-info h3 {
             font-size: 1.5rem;
             font-weight: 600;
-            color: #2c3e50;
+            color: #4A4A4A;
             margin-bottom: 5px;
         }
         
         .creator-info p {
             font-size: 1.1rem;
-            color: #7f8c8d;
+            color: #5C5C5C;
             font-weight: 500;
         }
         
         .creator-date {
             font-size: 0.9rem;
-            color: #95a5a6;
+            color: #5C5C5C;
             margin-bottom: 20px;
             padding: 10px;
-            background: rgba(52, 152, 219, 0.1);
+            background: rgba(139, 157, 195, 0.15);
             border-radius: 10px;
-            border-left: 4px solid #3498db;
+            border-left: 4px solid #8B9DC3;
         }
         
         .creator-button {
             display: inline-block;
-            background: #ff0000;
-            color: #ffffff;
+            background: linear-gradient(45deg, #8B9DC3, #A8B5C4);
+            color: #FFFFFF;
             padding: 12px 24px;
             border-radius: 25px;
             text-decoration: none;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(139, 157, 195, 0.3);
         }
         
         .creator-button:hover {
-            background: #cc0000;
+            background: linear-gradient(45deg, #9BADCD, #B8C5D4);
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 0, 0, 0.3);
+            box-shadow: 0 10px 20px rgba(139, 157, 195, 0.4);
         }
         
         .creator-button i {
@@ -137,23 +138,25 @@
             width: 100%;
             max-width: 500px;
             padding: 15px 20px;
-            border: none;
+            border: 1px solid rgba(74, 74, 74, 0.2);
             border-radius: 25px;
             font-size: 1.1rem;
             background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(139, 157, 195, 0.1);
             transition: all 0.3s ease;
+            color: #4A4A4A;
         }
         
         .search-input:focus {
             outline: none;
             background: rgba(255, 255, 255, 1);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 25px rgba(139, 157, 195, 0.2);
+            border-color: #8B9DC3;
         }
         
         .no-results {
             text-align: center;
-            color: white;
+            color: #4A4A4A;
             font-size: 1.2rem;
             margin-top: 40px;
         }
@@ -182,23 +185,24 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(74, 74, 74, 0.7);
             backdrop-filter: blur(5px);
         }
         
         .description-modal-content {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 100%);
             margin: 5% auto;
             padding: 0;
             border-radius: 20px;
             width: 90%;
             max-width: 600px;
             max-height: 80vh;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 60px rgba(139, 157, 195, 0.3);
             animation: modalSlideIn 0.3s ease;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            border: 1px solid rgba(74, 74, 74, 0.2);
         }
         
         @keyframes modalSlideIn {
@@ -214,23 +218,23 @@
         
         .description-header {
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid rgba(74, 74, 74, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.5);
         }
         
         .description-header h3 {
             margin: 0;
-            color: #ffffff;
+            color: #4A4A4A;
             font-family: 'Poppins', sans-serif;
             font-size: 1.3rem;
             font-weight: 600;
         }
         
         .description-header .close {
-            color: rgba(255, 255, 255, 0.8);
+            color: #6B7280;
             font-size: 2rem;
             font-weight: bold;
             cursor: pointer;
@@ -238,7 +242,7 @@
         }
         
         .description-header .close:hover {
-            color: #ffffff;
+            color: #8B9DC3;
         }
         
         .description-body {
@@ -255,9 +259,9 @@
         }
         
         .tab-button {
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.6);
+            color: #5C5C5C;
+            border: 1px solid rgba(74, 74, 74, 0.2);
             padding: 0.5rem 1rem;
             border-radius: 25px;
             cursor: pointer;
@@ -266,24 +270,24 @@
         }
         
         .tab-button.active {
-            background: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(139, 157, 195, 0.3);
+            color: #4A4A4A;
+            border-color: rgba(139, 157, 195, 0.4);
         }
         
         .tab-button:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: #ffffff;
+            background: rgba(139, 157, 195, 0.2);
+            color: #4A4A4A;
         }
         
         .description-text {
-            color: #ffffff;
+            color: #4A4A4A;
             line-height: 1.8;
             font-size: 1rem;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.6);
             padding: 1.5rem;
             border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(74, 74, 74, 0.2);
         }
         
         /* 自定義滾動條 */
@@ -292,17 +296,17 @@
         }
         
         .description-body::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(74, 74, 74, 0.1);
             border-radius: 4px;
         }
         
         .description-body::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(139, 157, 195, 0.3);
             border-radius: 4px;
         }
         
         .description-body::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(139, 157, 195, 0.5);
         }
         
         /* 響應式設計 */
@@ -629,7 +633,7 @@ If you're looking for your own spiritual background music, this is the best plac
                     channelButtons += `
                         <button onclick="showChannelDescription('${creator.id}')" 
                                 class="creator-button" 
-                                style="margin-top: 10px; background: linear-gradient(45deg, #667eea, #764ba2);">
+                                style="margin-top: 10px; background: linear-gradient(45deg, #8B9DC3, #A8B5C4);">
                             <i class="fas fa-info-circle"></i> 查看頻道說明
                         </button>
                     `;

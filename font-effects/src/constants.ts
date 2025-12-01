@@ -41,6 +41,7 @@ export const fonts = [
   { id: 'liu-jian-mao-cao', name: '劉建毛草書', family: 'Liu Jian Mao Cao', weight: 400 },
   { id: 'zcool-xiao-wei', name: '站酷小薇LOGO體', family: 'ZCOOL XiaoWei', weight: 400 },
   { id: 'bakudai-font', name: '莫大毛筆字體', family: 'Bakudai', weight: 400 },
+  { id: 'masa-font', name: '正風毛筆字體', family: 'Masa Font', weight: 400 },
 ] as const;
 
 

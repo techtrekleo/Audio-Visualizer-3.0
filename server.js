@@ -110,12 +110,12 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
         }
       }
       
-                  /* 統一頁尾樣式 - 工具頁面使用純色背景 */
+                  /* 統一頁尾樣式 - 工具頁面使用莫蘭迪淺色背景 */
                   .unified-footer {
-                    background: #000000;
+                    background: rgba(232, 232, 227, 0.8);
                     padding: 3rem 0 2rem;
                     text-align: center;
-                    border-top: 1px solid #000000;
+                    border-top: 1px solid rgba(74, 74, 74, 0.2);
                     margin-top: 2rem;
                   }
                   .unified-footer .footer-content {
@@ -131,15 +131,15 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                     flex-wrap: wrap;
                   }
                   .unified-footer .footer-links a {
-                    color: #b8b8b8;
+                    color: #5C5C5C;
                     text-decoration: none;
                     transition: color 0.3s ease;
                   }
                   .unified-footer .footer-links a:hover {
-                    color: #4ecdc4;
+                    color: #8B9DC3;
                   }
                   .unified-footer .footer-bottom {
-                    color: #666;
+                    color: #6B7280;
                     font-size: 0.9rem;
                   }
                   
@@ -302,9 +302,9 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                   
                   /* Buy Me a Coffee 按鈕樣式 */
                   .btn-coffee {
-                    background: linear-gradient(135deg, #ff6b9d 0%, #4ecdc4 100%);
-                    color: white;
-                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    background: linear-gradient(135deg, #A8B5C4 0%, #8B9DC3 100%);
+                    color: #FFFFFF;
+                    border: 1px solid rgba(74, 74, 74, 0.2);
                     border-radius: 15px;
                     padding: 1rem 2rem;
                     font-weight: 600;
@@ -313,7 +313,7 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                     align-items: center;
                     gap: 1rem;
                     transition: all 0.3s ease;
-                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+                    box-shadow: 0 8px 25px rgba(139, 157, 195, 0.3);
                     position: relative;
                     overflow: hidden;
                     font-family: 'Poppins', sans-serif;
@@ -336,9 +336,9 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                   }
                   
                   .btn-coffee:hover {
-                    background: linear-gradient(135deg, #ff8fb3 0%, #5dd5d5 100%);
+                    background: linear-gradient(135deg, #B8C5D4 0%, #9BADCD 100%);
                     transform: translateY(-3px);
-                    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+                    box-shadow: 0 15px 35px rgba(139, 157, 195, 0.4);
                     color: white;
                   }
                   
@@ -444,7 +444,7 @@ function injectUnifiedLayout(htmlContent, includeFooter = true) {
                     
                     <!-- Buy Me a Coffee 按鈕 -->
                     <div style="margin: 2rem 0; text-align: center;">
-                      <p style="color: #b8b8b8; margin-bottom: 1rem;">喜歡我的工具嗎？請我喝杯咖啡吧！</p>
+                      <p style="color: #5C5C5C; margin-bottom: 1rem;">喜歡我的工具嗎？請我喝杯咖啡吧！</p>
                       <a href="https://buymeacoffee.com/sonicpulse2025" target="_blank" class="btn btn-coffee btn-coffee-large">
                         <img src="/assets/cat-avatar.png" alt="口袋裡的貓" class="coffee-cat-icon">
                         <div class="coffee-text">
