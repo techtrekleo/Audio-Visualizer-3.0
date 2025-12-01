@@ -1301,6 +1301,8 @@ function App() {
         setVinylImage(null);
     };
 
+    const { analyser, initializeAudio, isAudioInitialized, getAudioStream, resetAudioAnalysis } = useAudioAnalysis();
+
     const handleRecordingComplete = useCallback((url: string, extension: string) => {
         setVideoUrl(url);
         setVideoExtension(extension);
@@ -1308,7 +1310,6 @@ function App() {
         setShowWarning(false);
     }, []);
 
-    const { analyser, initializeAudio, isAudioInitialized, getAudioStream, resetAudioAnalysis } = useAudioAnalysis();
     const { isRecording, startRecording, stopRecording } = useMediaRecorder(handleRecordingComplete);
 
     const handleFileSelect = (file: File) => {
@@ -1354,6 +1355,7 @@ function App() {
         resetAudioAnalysis();
 
     }, [audioUrl, videoUrl, isPlaying, resetAudioAnalysis]);
+
 
 
 

@@ -3343,23 +3343,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                 </div>
             </div>
-            
-            {/* 批量上传管理 - 整合到控制面板中 */}
-            {props.showBatchUpload && props.onBatchSongsChange && (
-                <div className="mt-6">
-                    <BatchUploadManager
-                        songs={props.batchSongs || []}
-                        onSongsChange={props.onBatchSongsChange}
-                        onSongSelect={props.onBatchSongSelect || (() => {})}
-                        currentSongId={props.currentBatchSongId}
-                        isBatchMode={props.isBatchMode}
-                        currentBatchIndex={props.currentBatchIndex}
-                        onStartBatchRecording={props.onStartBatchRecording}
-                        onStopBatchRecording={props.onStopBatchRecording}
-                        isRecording={props.isRecording}
-                    />
-                </div>
-            )}
         </div>
     );
 };
