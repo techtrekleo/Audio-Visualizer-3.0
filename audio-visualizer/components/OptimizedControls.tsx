@@ -404,19 +404,30 @@ interface OptimizedControlsProps {
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
-    const baseClasses = 'px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800';
+    const baseClasses = 'px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2';
     
-    const variantClasses = {
-        primary: 'bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg hover:shadow-xl focus:ring-cyan-400',
-        secondary: 'bg-gray-600 hover:bg-gray-700 text-white shadow-md hover:shadow-lg focus:ring-gray-400',
-        danger: 'bg-red-500 hover:bg-red-600 text-white shadow-lg hover:shadow-xl focus:ring-red-400'
+    const variantStyles = {
+        primary: { background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' },
+        secondary: { backgroundColor: 'rgba(255, 255, 255, 0.8)', color: '#4A4A4A', border: '1px solid rgba(139, 157, 195, 0.4)', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' },
+        danger: { background: 'linear-gradient(135deg, #D4A5A5 0%, #C89B9B 100%)', color: '#FFFFFF', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }
     };
     
     return (
         <button 
             onClick={onClick} 
             disabled={disabled} 
-            className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+            className={`${baseClasses} ${className}`}
+            style={variantStyles[variant]}
+            onMouseEnter={(e) => {
+                if (!disabled && variant === 'secondary') {
+                    e.currentTarget.style.backgroundColor = 'rgba(139, 157, 195, 0.2)';
+                }
+            }}
+            onMouseLeave={(e) => {
+                if (!disabled && variant === 'secondary') {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                }
+            }}
         >
             {children}
         </button>
@@ -491,8 +502,8 @@ const SliderControl: React.FC<{
     return (
         <div className={`space-y-2 ${className}`}>
             <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-gray-300">{label}</label>
-                <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">{value.toFixed(2)}</span>
+                <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>{label}</label>
+                <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', color: '#6B7280' }}>{value.toFixed(2)}</span>
             </div>
             <div className="relative">
                 {/* 背景漸變條 */}
@@ -536,11 +547,12 @@ const SelectControl: React.FC<{
     className?: string;
 }> = ({ label, value, onChange, options, className = '' }) => (
     <div className={`space-y-2 ${className}`}>
-        <label className="text-sm font-medium text-gray-300">{label}</label>
+        <label className="text-sm font-medium" style={{ color: '#4A4A4A' }}>{label}</label>
         <select
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+            className="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid rgba(139, 157, 195, 0.4)', color: '#4A4A4A' }}
         >
             {options.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -572,7 +584,7 @@ const ProgressBar: React.FC<{
 
     return (
         <div className={`space-y-2 ${className}`}>
-            <div className="flex justify-between items-center text-sm text-gray-300">
+            <div className="flex justify-between items-center text-sm" style={{ color: '#4A4A4A' }}>
                 <span>{formatTime(currentTime)}</span>
                 <span>{formatTime(duration)}</span>
             </div>
@@ -776,26 +788,28 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
             )}
 
             {/* 主要控制面板 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl shadow-2xl p-6">
+            <div className="backdrop-blur-sm border rounded-2xl shadow-2xl p-6" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(139, 157, 195, 0.3)' }}>
                 {/* 額外開關 */}
                 <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="flex items-center justify-between bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3">
-                        <span className="text-sm text-gray-200">顯示可視化</span>
+                    <div className="flex items-center justify-between rounded-lg px-4 py-3" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', border: '1px solid rgba(139, 157, 195, 0.3)' }}>
+                        <span className="text-sm" style={{ color: '#4A4A4A' }}>顯示可視化</span>
                         <button
                             onClick={() => props.onShowVisualizerChange(!props.showVisualizer)}
                             type="button"
-                            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${props.showVisualizer ? 'bg-cyan-600' : 'bg-gray-500'}`}
+                            className="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2"
+                            style={{ backgroundColor: props.showVisualizer ? '#8B9DC3' : 'rgba(156, 163, 175, 0.5)' }}
                             aria-pressed={props.showVisualizer}
                         >
                             <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${props.showVisualizer ? 'translate-x-6' : 'translate-x-1'}`} />
                         </button>
                     </div>
-                    <div className="flex items-center justify-between bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3">
-                        <span className="text-sm text-gray-200">顯示背景圖片</span>
+                    <div className="flex items-center justify-between rounded-lg px-4 py-3" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', border: '1px solid rgba(139, 157, 195, 0.3)' }}>
+                        <span className="text-sm" style={{ color: '#4A4A4A' }}>顯示背景圖片</span>
                         <button
                             onClick={() => props.onShowBackgroundImageChange(!props.showBackgroundImage)}
                             type="button"
-                            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${props.showBackgroundImage ? 'bg-cyan-600' : 'bg-gray-500'}`}
+                            className="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2"
+                            style={{ backgroundColor: props.showBackgroundImage ? '#8B9DC3' : 'rgba(156, 163, 175, 0.5)' }}
                             aria-pressed={props.showBackgroundImage}
                         >
                             <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${props.showBackgroundImage ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -806,8 +820,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                 {/* 播放控制 - 始終顯示 */}
                 <div className="mb-6">
                     <div className="flex items-center space-x-2 mb-4">
-                        <Icon path={ICON_PATHS.PLAY} className="w-5 h-5 text-cyan-400" />
-                        <h3 className="text-lg font-semibold text-gray-200">播放控制</h3>
+                        <Icon path={ICON_PATHS.PLAY} className="w-5 h-5" style={{ color: '#8B9DC3' }} />
+                        <h3 className="text-lg font-semibold" style={{ color: '#4A4A4A' }}>播放控制</h3>
                     </div>
                     <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex items-center space-x-3">
@@ -850,7 +864,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         )}
                         
                         <div className="flex items-center space-x-3 flex-wrap">
-                            <label className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white shadow-lg hover:shadow-xl cursor-pointer">
+                            <label className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl cursor-pointer" style={{ background: 'linear-gradient(135deg, #8B9DC3 0%, #9CA3AF 100%)', color: '#FFFFFF' }}>
                                 <Icon path={ICON_PATHS.UPLOAD} className="w-5 h-5"/>
                                 <span>{props.audioFile ? '更換音樂' : '上傳音樂'}</span>
                                 <input 
@@ -869,12 +883,13 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             </label>
                             
                             {/* CTA 動畫控制 */}
-                            <div className="flex items-center justify-between bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3">
-                                <span className="text-sm text-gray-200">加入 CTA 動畫</span>
+                            <div className="flex items-center justify-between rounded-lg px-4 py-3" style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', border: '1px solid rgba(139, 157, 195, 0.3)' }}>
+                                <span className="text-sm" style={{ color: '#4A4A4A' }}>加入 CTA 動畫</span>
                                 <button
                                     onClick={() => props.onShowCtaAnimationChange?.(!props.showCtaAnimation)}
                                     type="button"
-                                    className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${props.showCtaAnimation ? 'bg-cyan-600' : 'bg-gray-500'}`}
+                                    className="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2"
+                                    style={{ backgroundColor: props.showCtaAnimation ? '#8B9DC3' : 'rgba(156, 163, 175, 0.5)' }}
                                     aria-pressed={props.showCtaAnimation}
                                 >
                                     <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${props.showCtaAnimation ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -887,13 +902,13 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 </Button>
                             )}
                             {props.audioFile && (
-                                <a href={URL.createObjectURL(props.audioFile)} download={props.audioFile.name} className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-500 text-white shadow-lg hover:shadow-xl">
+                                <a href={URL.createObjectURL(props.audioFile)} download={props.audioFile.name} className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl" style={{ background: 'linear-gradient(135deg, #A8B5C4 0%, #9CA3AF 100%)', color: '#FFFFFF' }}>
                                     <Icon path={ICON_PATHS.DOWNLOAD} />
                                     <span>下載音樂</span>
                                 </a>
                             )}
                             {props.videoUrl && (
-                                <a href={props.videoUrl} download={`${props.audioFile?.name.replace(/\.[^/.]+$/, "") || 'visualization'}.${props.videoExtension}`} className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-500 text-white shadow-lg hover:shadow-xl">
+                                <a href={props.videoUrl} download={`${props.audioFile?.name.replace(/\.[^/.]+$/, "") || 'visualization'}.${props.videoExtension}`} className="px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl" style={{ background: 'linear-gradient(135deg, #9CA3AF 0%, #8B9DC3 100%)', color: '#FFFFFF' }}>
                                     <Icon path={ICON_PATHS.DOWNLOAD} />
                                     <span>下載 {props.videoExtension.toUpperCase()}</span>
                                 </a>
