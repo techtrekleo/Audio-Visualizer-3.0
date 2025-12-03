@@ -244,9 +244,9 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                 className="w-full h-2 rounded-lg absolute top-0 left-0"
                                 style={{
                                     background: `linear-gradient(to right,
-                                        #E8E8E3 0%,
-                                        #D1D5DB 50%,
-                                        #9CAF9C 100%)`
+                                        #374151 0%,
+                                        #4B5563 50%,
+                                        #6B7280 100%)`
                                 }}
                             />
                             <input

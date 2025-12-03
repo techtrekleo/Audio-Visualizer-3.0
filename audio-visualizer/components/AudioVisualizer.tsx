@@ -86,6 +86,7 @@ interface AudioVisualizerProps {
     subtitleFontSize: number;
     subtitleFontFamily: FontType;
     subtitleColor: string;
+    subtitleStrokeColor?: string;
     subtitleEffect?: GraphicEffectType;
     subtitleBgStyle: SubtitleBgStyle;
     effectScale: number;
@@ -5059,7 +5060,8 @@ const drawVerticalSubtitle = (
     isBeat: boolean | undefined,
     dragOffset: { x: number; y: number },
     horizontalPosition: number = 0.5, // 0.0 = 左側, 1.0 = 右側
-    verticalPosition: number = 0.5 // 0.0 = 上方, 1.0 = 下方
+    verticalPosition: number = 0.5, // 0.0 = 上方, 1.0 = 下方
+    strokeColor?: string // 描邊顏色
 ) => {
     const characters = text.split('');
     const charSpacing = fontSize * 1.2; // 字元間距
@@ -5135,7 +5137,7 @@ const drawVerticalSubtitle = (
         
         // 4. 描邊效果
         if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
-            ctx.strokeStyle = color;
+            ctx.strokeStyle = strokeColor || color; // 使用自定義描邊顏色，如果沒有則使用主顏色
             ctx.lineWidth = Math.max(2, fontSize / 20);
             ctx.lineJoin = 'round';
             ctx.miterLimit = 2;
@@ -5203,7 +5205,7 @@ const drawSubtitles = (
     width: number,
     height: number,
     currentSubtitle: Subtitle | undefined,
-    { fontSizeVw, fontFamily, color, effect, bgStyle, isBeat, dragOffset = { x: 0, y: 0 }, orientation = SubtitleOrientation.HORIZONTAL }: {
+    { fontSizeVw, fontFamily, color, effect, bgStyle, isBeat, dragOffset = { x: 0, y: 0 }, orientation = SubtitleOrientation.HORIZONTAL, strokeColor }: {
         fontSizeVw: number;
         fontFamily: FontType;
         color: string;
@@ -5212,6 +5214,7 @@ const drawSubtitles = (
         isBeat?: boolean;
         dragOffset?: { x: number; y: number };
         orientation?: SubtitleOrientation;
+        strokeColor?: string;
     }
 ) => {
     if (!currentSubtitle || !currentSubtitle.text) return;
@@ -5230,7 +5233,7 @@ const drawSubtitles = (
     if (orientation === SubtitleOrientation.VERTICAL) {
         const verticalHorizontalPos = (latestPropsRef as any)?.verticalSubtitlePosition ?? 0.5;
         const verticalVerticalPos = (latestPropsRef as any)?.verticalSubtitleVerticalPosition ?? 0.5;
-        drawVerticalSubtitle(ctx, width, height, text, fontSize, actualFontName, color, effect, bgStyle, isBeat, dragOffset, verticalHorizontalPos, verticalVerticalPos);
+        drawVerticalSubtitle(ctx, width, height, text, fontSize, actualFontName, color, effect, bgStyle, isBeat, dragOffset, verticalHorizontalPos, verticalVerticalPos, strokeColor);
         ctx.restore();
         return;
     }
@@ -5310,7 +5313,7 @@ const drawSubtitles = (
 
     // 4. 描邊效果
     if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
-        ctx.strokeStyle = color; // 使用主顏色作為描邊
+        ctx.strokeStyle = strokeColor || color; // 使用自定義描邊顏色，如果沒有則使用主顏色
         ctx.lineWidth = Math.max(2, fontSize / 20);
         ctx.lineJoin = 'round';
         ctx.miterLimit = 2;
@@ -5379,7 +5382,7 @@ const drawWordByWordSubtitles = (
     height: number,
     subtitles: Subtitle[],
     currentTime: number,
-    { fontFamily, bgStyle, fontSizeVw, color, effect, isBeat, dragOffset = { x: 0, y: 0 } }: { 
+    { fontFamily, bgStyle, fontSizeVw, color, effect, isBeat, dragOffset = { x: 0, y: 0 }, strokeColor }: { 
         fontFamily: FontType; 
         bgStyle: SubtitleBgStyle;
         fontSizeVw: number;
@@ -5387,6 +5390,7 @@ const drawWordByWordSubtitles = (
         effect: GraphicEffectType;
         isBeat?: boolean;
         dragOffset?: { x: number; y: number };
+        strokeColor?: string;
     }
 ) => {
     if (subtitles.length === 0) return;
@@ -5507,7 +5511,7 @@ const drawWordByWordSubtitles = (
     
     // 4. 描邊效果
     if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = strokeColor || color; // 使用自定義描邊顏色，如果沒有則使用主顏色
         ctx.lineWidth = Math.max(2, fontSize / 20);
         ctx.lineJoin = 'round';
         ctx.miterLimit = 2;
@@ -7643,7 +7647,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 color: subtitleColor,
                 effect: subtitleEffect || GraphicEffectType.NONE,
                 isBeat,
-                dragOffset
+                dragOffset,
+                strokeColor: propsRef.current.subtitleStrokeColor
             });
         } else if (propsRef.current.subtitleDisplayMode === SubtitleDisplayMode.SLIDING_GROUP && subtitles.length > 0) {
             // 滚动字幕组模式
@@ -7668,7 +7673,8 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 bgStyle: subtitleBgStyle, 
                 isBeat,
                 dragOffset,
-                orientation: propsRef.current.subtitleOrientation
+                orientation: propsRef.current.subtitleOrientation,
+                strokeColor: propsRef.current.subtitleStrokeColor
             });
         }
         // 無字幕模式：不顯示任何字幕

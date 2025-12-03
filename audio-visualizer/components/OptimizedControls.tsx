@@ -203,6 +203,8 @@ interface OptimizedControlsProps {
     onSubtitleFontFamilyChange: (font: FontType) => void;
     subtitleColor: string;
     onSubtitleColorChange: (color: string) => void;
+    subtitleStrokeColor?: string;
+    onSubtitleStrokeColorChange?: (color: string) => void;
     subtitleEffect?: GraphicEffectType;
     onSubtitleEffectChange?: (effect: GraphicEffectType) => void;
     subtitleBgStyle: SubtitleBgStyle;
@@ -474,9 +476,9 @@ const SliderControl: React.FC<{
             case 'scale':
                 return {
                     background: `linear-gradient(to right, 
-                        #E8E8E3 0%, 
-                        #D1D5DB 50%, 
-                        #9CAF9C 100%)`
+                        #374151 0%, 
+                        #4B5563 50%, 
+                        #6B7280 100%)`
                 };
             default:
                 return {
@@ -610,7 +612,19 @@ const ProgressBar: React.FC<{
 
 const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
     const [showQuickSettings, setShowQuickSettings] = useState(true);
-    const PRESET_COLORS = ['#FFFFFF', '#67E8F9', '#F472B6', '#FFD700', '#FF4500', '#A78BFA'];
+    // 字幕和描邊顏色預設選項：黑色、白色和莫蘭迪色系
+    const PRESET_COLORS = [
+        '#000000', // 黑色
+        '#FFFFFF', // 白色
+        '#8B9DC3', // 莫蘭迪藍
+        '#A8B5C4', // 淺莫蘭迪藍
+        '#9CA3AF', // 莫蘭迪灰
+        '#C4A5A5', // 莫蘭迪粉
+        '#6B7280', // 深莫蘭迪灰
+        '#4A4A4A', // 深灰
+        '#E8E8E3', // 淺莫蘭迪米色
+        '#D1D5DB'  // 淺灰
+    ];
 
     // 獲取當前設置
     const getCurrentSettings = (): Partial<SavedSettings> => ({
@@ -1702,6 +1716,31 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         />
                                     </div>
                                 </div>
+                                
+                                {props.subtitleStrokeColor !== undefined && props.onSubtitleStrokeColorChange && (
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-300">描邊顏色</label>
+                                        <div className="flex space-x-2">
+                                            {PRESET_COLORS.map(color => (
+                                                <SwatchButton
+                                                    key={color}
+                                                    color={color}
+                                                    onClick={props.onSubtitleStrokeColorChange!}
+                                                    isActive={props.subtitleStrokeColor === color}
+                                                />
+                                            ))}
+                                        </div>
+                                        {/* 自定义颜色选择器 */}
+                                        <div className="mt-2">
+                                            <input
+                                                type="color"
+                                                value={props.subtitleStrokeColor}
+                                                onChange={(e) => props.onSubtitleStrokeColorChange!(e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                                 
                                 {props.subtitleEffect !== undefined && props.onSubtitleEffectChange && (
                                     <SelectControl

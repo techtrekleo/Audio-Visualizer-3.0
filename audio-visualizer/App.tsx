@@ -99,7 +99,8 @@ function App() {
     const [showSubtitles, setShowSubtitles] = useState<boolean>(true);
     const [subtitleFontSize, setSubtitleFontSize] = useState<number>(4); // Relative vw unit
     const [subtitleFontFamily, setSubtitleFontFamily] = useState<FontType>(FontType.POPPINS);
-    const [subtitleColor, setSubtitleColor] = useState<string>('#FFFFFF');
+    const [subtitleColor, setSubtitleColor] = useState<string>('#FFFFFF'); // 字幕顏色預設為白色
+    const [subtitleStrokeColor, setSubtitleStrokeColor] = useState<string>('#000000'); // 字幕描邊顏色預設為黑色
     const [subtitleEffect, setSubtitleEffect] = useState<GraphicEffectType>(GraphicEffectType.NONE);
     const [subtitleBgStyle, setSubtitleBgStyle] = useState<SubtitleBgStyle>(SubtitleBgStyle.TRANSPARENT);
     const [subtitleDisplayMode, setSubtitleDisplayMode] = useState<SubtitleDisplayMode>(SubtitleDisplayMode.CLASSIC);
@@ -1590,6 +1591,7 @@ function App() {
                                     subtitleFontSize={subtitleFontSize}
                                     subtitleFontFamily={subtitleFontFamily}
                                     subtitleColor={subtitleColor}
+                                    subtitleStrokeColor={subtitleStrokeColor}
                                     subtitleEffect={subtitleEffect}
                                     subtitleBgStyle={subtitleBgStyle}
                                     effectScale={effectScale}
@@ -1876,6 +1878,8 @@ function App() {
                             onSubtitleFontFamilyChange={setSubtitleFontFamily}
                             subtitleColor={subtitleColor}
                             onSubtitleColorChange={setSubtitleColor}
+                            subtitleStrokeColor={subtitleStrokeColor}
+                            onSubtitleStrokeColorChange={setSubtitleStrokeColor}
                             subtitleEffect={subtitleEffect}
                             onSubtitleEffectChange={setSubtitleEffect}
                             subtitleBgStyle={subtitleBgStyle}
