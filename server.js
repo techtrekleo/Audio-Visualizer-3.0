@@ -748,6 +748,15 @@ const server = http.createServer((req, res) => {
     if (filePath.endsWith('/') || !path.extname(filePath)) {
       filePath = path.join(filePath, 'index.html');
     }
+  } else if (req.url.startsWith('/video-merger')) {
+    const distPath = path.join(__dirname, 'video-merger', 'dist');
+    const relativePath = req.url.replace('/video-merger', '');
+    filePath = path.join(distPath, relativePath);
+    
+    // 如果是目錄，添加 index.html
+    if (filePath.endsWith('/') || !path.extname(filePath)) {
+      filePath = path.join(filePath, 'index.html');
+    }
   } else if (req.url.startsWith('/srt-translator')) {
     const distPath = path.join(__dirname, 'srt-translator', 'dist');
     const relativePath = req.url.replace('/srt-translator', '');
@@ -770,6 +779,14 @@ const server = http.createServer((req, res) => {
     // 處理 YouTube SEO 的 assets 請求
     const distPath = path.join(__dirname, 'youtube-seo', 'dist');
     filePath = path.join(distPath, req.url);
+  } else if (req.url.startsWith('/video-merger/assets/')) {
+    // 處理 Video Merger 的 assets 請求
+    const distPath = path.join(__dirname, 'video-merger', 'dist');
+    const assetPath = req.url.replace('/video-merger', '');
+    filePath = path.join(distPath, assetPath);
+  } else if (req.url === '/vite.svg' && req.url.startsWith('/video-merger')) {
+    // 處理 Video Merger 的 vite.svg
+    filePath = path.join(__dirname, 'video-merger', 'dist', 'vite.svg');
   } else {
     // 其他路由服務根目錄
     filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
