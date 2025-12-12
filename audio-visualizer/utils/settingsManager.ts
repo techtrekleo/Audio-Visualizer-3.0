@@ -51,6 +51,14 @@ export interface SavedSettings {
     controlCardFontFamily: FontType;
     controlCardTextEffect: GraphicEffectType;
     controlCardStrokeColor: string;
+
+    // Ke Ye Custom V2 (可夜訂製版二號) text styling
+    keYeCustomV2Text1Color: string;
+    keYeCustomV2Text2Color: string;
+    keYeCustomV2Text1Effect: GraphicEffectType;
+    keYeCustomV2Text2Effect: GraphicEffectType;
+    keYeCustomV2Text1StrokeColor: string;
+    keYeCustomV2Text2StrokeColor: string;
 }
 
 export class SettingsManager {

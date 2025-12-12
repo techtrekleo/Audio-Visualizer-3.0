@@ -211,6 +211,12 @@ interface AudioVisualizerProps {
     keYeCustomV2Text2Font?: FontType;
     keYeCustomV2Text1Size?: number;
     keYeCustomV2Text2Size?: number;
+    keYeCustomV2Text1Color?: string;
+    keYeCustomV2Text2Color?: string;
+    keYeCustomV2Text1Effect?: GraphicEffectType;
+    keYeCustomV2Text2Effect?: GraphicEffectType;
+    keYeCustomV2Text1StrokeColor?: string;
+    keYeCustomV2Text2StrokeColor?: string;
 }
 
 // 讓繪圖函式能取得當前屬性（不改動所有函式簽名）
@@ -3378,6 +3384,12 @@ const drawKeYeCustomV2 = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
     const text2FontFamily = props?.keYeCustomV2Text2Font || FontType.POPPINS;
     const text1Size = typeof props?.keYeCustomV2Text1Size === 'number' ? props.keYeCustomV2Text1Size : 40;
     const text2Size = typeof props?.keYeCustomV2Text2Size === 'number' ? props.keYeCustomV2Text2Size : 30;
+    const text1Color = props?.keYeCustomV2Text1Color || '#000000';
+    const text2Color = props?.keYeCustomV2Text2Color || '#000000';
+    const text1Effect = props?.keYeCustomV2Text1Effect || GraphicEffectType.NONE;
+    const text2Effect = props?.keYeCustomV2Text2Effect || GraphicEffectType.NONE;
+    const text1Stroke = props?.keYeCustomV2Text1StrokeColor || '#FFFFFF';
+    const text2Stroke = props?.keYeCustomV2Text2StrokeColor || '#FFFFFF';
     
     // 白色框的大小和位置
     const boxWidth = width * 0.8;
@@ -3425,22 +3437,86 @@ const drawKeYeCustomV2 = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
     
     // 文字區域（上方）
     const textAreaPadding = 30;
-    ctx.fillStyle = '#000000';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+
+    const drawKyeText = (
+        text: string,
+        x: number,
+        y: number,
+        size: number,
+        fontFamily: FontType,
+        color: string,
+        effect: GraphicEffectType,
+        strokeColor: string
+    ) => {
+        if (!text) return;
+        ctx.save();
+
+        const fontName = FONT_MAP[fontFamily] || 'Poppins';
+        const weight = effect === GraphicEffectType.BOLD ? '900' : '800';
+        ctx.font = `${weight} ${size}px "${fontName}", "Noto Sans TC", sans-serif`;
+        ctx.fillStyle = color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+
+        // shadow/glow
+        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 18;
+        } else if (effect === GraphicEffectType.SHADOW) {
+            ctx.shadowColor = 'rgba(0,0,0,0.6)';
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetX = 4;
+            ctx.shadowOffsetY = 4;
+        }
+
+        // outline
+        if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = Math.max(2, size / 18);
+            ctx.strokeText(text, x, y);
+        }
+
+        // faux 3D
+        if (effect === GraphicEffectType.FAUX_3D) {
+            const depth = Math.max(1, Math.floor(size / 28));
+            ctx.fillStyle = 'rgba(0,0,0,0.35)';
+            for (let i = 1; i <= depth; i++) ctx.fillText(text, x + i, y + i);
+            ctx.fillStyle = color;
+        }
+
+        // fill
+        ctx.fillText(text, x, y);
+
+        // glitch (only when beat to reduce noise)
+        if (effect === GraphicEffectType.GLITCH && isBeat) {
+            const jitter = Math.max(2, size / 20);
+            const ox = (Math.random() - 0.5) * jitter;
+            const oy = (Math.random() - 0.5) * jitter;
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.fillStyle = 'rgba(255,0,0,0.55)';
+            ctx.fillText(text, x + ox, y + oy);
+            ctx.fillStyle = 'rgba(0,255,255,0.55)';
+            ctx.fillText(text, x - ox, y - oy);
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        ctx.restore();
+    };
     
     // 第一組文字（上方區域）
     if (text1) {
         const text1Y = boxY + boxHeight * 0.2; // 框頂部20%位置
-        ctx.font = `bold ${text1Size}px "${FONT_MAP[text1FontFamily]}", "Noto Sans TC", sans-serif`;
-        ctx.fillText(text1, centerX, text1Y);
+        drawKyeText(text1, centerX, text1Y, text1Size, text1FontFamily, text1Color, text1Effect, text1Stroke);
     }
     
     // 第二組文字（上方區域）
     if (text2) {
         const text2Y = boxY + boxHeight * 0.6; // 框頂部60%位置
-        ctx.font = `bold ${text2Size}px "${FONT_MAP[text2FontFamily]}", "Noto Sans TC", sans-serif`;
-        ctx.fillText(text2, centerX, text2Y);
+        drawKyeText(text2, centerX, text2Y, text2Size, text2FontFamily, text2Color, text2Effect, text2Stroke);
     }
     
     // 柱狀可視化區域（最底部）

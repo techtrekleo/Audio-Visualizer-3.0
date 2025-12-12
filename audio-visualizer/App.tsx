@@ -153,6 +153,12 @@ function App() {
     const [keYeCustomV2Text2Font, setKeYeCustomV2Text2Font] = useState<FontType>(FontType.POPPINS);
     const [keYeCustomV2Text1Size, setKeYeCustomV2Text1Size] = useState<number>(40);
     const [keYeCustomV2Text2Size, setKeYeCustomV2Text2Size] = useState<number>(30);
+    const [keYeCustomV2Text1Color, setKeYeCustomV2Text1Color] = useState<string>('#000000');
+    const [keYeCustomV2Text2Color, setKeYeCustomV2Text2Color] = useState<string>('#000000');
+    const [keYeCustomV2Text1Effect, setKeYeCustomV2Text1Effect] = useState<GraphicEffectType>(GraphicEffectType.NONE);
+    const [keYeCustomV2Text2Effect, setKeYeCustomV2Text2Effect] = useState<GraphicEffectType>(GraphicEffectType.NONE);
+    const [keYeCustomV2Text1StrokeColor, setKeYeCustomV2Text1StrokeColor] = useState<string>('#FFFFFF');
+    const [keYeCustomV2Text2StrokeColor, setKeYeCustomV2Text2StrokeColor] = useState<string>('#FFFFFF');
     
   // Bass Enhancement State (重低音強化)
   const [bassEnhancementBlurIntensity, setBassEnhancementBlurIntensity] = useState<number>(0.5);
@@ -1791,6 +1797,12 @@ function App() {
                                     keYeCustomV2Text2Font={keYeCustomV2Text2Font}
                                     keYeCustomV2Text1Size={keYeCustomV2Text1Size}
                                     keYeCustomV2Text2Size={keYeCustomV2Text2Size}
+                                    keYeCustomV2Text1Color={keYeCustomV2Text1Color}
+                                    keYeCustomV2Text2Color={keYeCustomV2Text2Color}
+                                    keYeCustomV2Text1Effect={keYeCustomV2Text1Effect}
+                                    keYeCustomV2Text2Effect={keYeCustomV2Text2Effect}
+                                    keYeCustomV2Text1StrokeColor={keYeCustomV2Text1StrokeColor}
+                                    keYeCustomV2Text2StrokeColor={keYeCustomV2Text2StrokeColor}
                                 />
                             </div>
                         </div>
@@ -1880,6 +1892,18 @@ function App() {
                             onKeYeCustomV2Text1SizeChange={setKeYeCustomV2Text1Size}
                             keYeCustomV2Text2Size={keYeCustomV2Text2Size}
                             onKeYeCustomV2Text2SizeChange={setKeYeCustomV2Text2Size}
+                            keYeCustomV2Text1Color={keYeCustomV2Text1Color}
+                            onKeYeCustomV2Text1ColorChange={setKeYeCustomV2Text1Color}
+                            keYeCustomV2Text2Color={keYeCustomV2Text2Color}
+                            onKeYeCustomV2Text2ColorChange={setKeYeCustomV2Text2Color}
+                            keYeCustomV2Text1Effect={keYeCustomV2Text1Effect}
+                            onKeYeCustomV2Text1EffectChange={setKeYeCustomV2Text1Effect}
+                            keYeCustomV2Text2Effect={keYeCustomV2Text2Effect}
+                            onKeYeCustomV2Text2EffectChange={setKeYeCustomV2Text2Effect}
+                            keYeCustomV2Text1StrokeColor={keYeCustomV2Text1StrokeColor}
+                            onKeYeCustomV2Text1StrokeColorChange={setKeYeCustomV2Text1StrokeColor}
+                            keYeCustomV2Text2StrokeColor={keYeCustomV2Text2StrokeColor}
+                            onKeYeCustomV2Text2StrokeColorChange={setKeYeCustomV2Text2StrokeColor}
                             // Bass Enhancement controls (重低音強化)
                             bassEnhancementBlurIntensity={bassEnhancementBlurIntensity}
                             onBassEnhancementBlurIntensityChange={setBassEnhancementBlurIntensity}

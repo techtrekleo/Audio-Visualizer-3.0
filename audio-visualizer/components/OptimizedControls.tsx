@@ -446,6 +446,18 @@ interface OptimizedControlsProps {
     onKeYeCustomV2Text1SizeChange?: (size: number) => void;
     keYeCustomV2Text2Size?: number;
     onKeYeCustomV2Text2SizeChange?: (size: number) => void;
+    keYeCustomV2Text1Color?: string;
+    onKeYeCustomV2Text1ColorChange?: (color: string) => void;
+    keYeCustomV2Text2Color?: string;
+    onKeYeCustomV2Text2ColorChange?: (color: string) => void;
+    keYeCustomV2Text1Effect?: GraphicEffectType;
+    onKeYeCustomV2Text1EffectChange?: (effect: GraphicEffectType) => void;
+    keYeCustomV2Text2Effect?: GraphicEffectType;
+    onKeYeCustomV2Text2EffectChange?: (effect: GraphicEffectType) => void;
+    keYeCustomV2Text1StrokeColor?: string;
+    onKeYeCustomV2Text1StrokeColorChange?: (color: string) => void;
+    keYeCustomV2Text2StrokeColor?: string;
+    onKeYeCustomV2Text2StrokeColorChange?: (color: string) => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled=false, variant = 'primary' }) => {
@@ -703,6 +715,21 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         controlCardTextEffect: props.controlCardTextEffect || GraphicEffectType.NONE,
         controlCardStrokeColor: props.controlCardStrokeColor || '#000000',
 
+        // Ke Ye Custom V2
+        keYeCustomV2BoxOpacity: props.keYeCustomV2BoxOpacity ?? 0.5,
+        keYeCustomV2Text1: props.keYeCustomV2Text1 || '',
+        keYeCustomV2Text2: props.keYeCustomV2Text2 || '',
+        keYeCustomV2Text1Font: props.keYeCustomV2Text1Font || FontType.POPPINS,
+        keYeCustomV2Text2Font: props.keYeCustomV2Text2Font || FontType.POPPINS,
+        keYeCustomV2Text1Size: props.keYeCustomV2Text1Size ?? 40,
+        keYeCustomV2Text2Size: props.keYeCustomV2Text2Size ?? 30,
+        keYeCustomV2Text1Color: props.keYeCustomV2Text1Color || '#000000',
+        keYeCustomV2Text2Color: props.keYeCustomV2Text2Color || '#000000',
+        keYeCustomV2Text1Effect: props.keYeCustomV2Text1Effect || GraphicEffectType.NONE,
+        keYeCustomV2Text2Effect: props.keYeCustomV2Text2Effect || GraphicEffectType.NONE,
+        keYeCustomV2Text1StrokeColor: props.keYeCustomV2Text1StrokeColor || '#FFFFFF',
+        keYeCustomV2Text2StrokeColor: props.keYeCustomV2Text2StrokeColor || '#FFFFFF',
+
         // Intro Overlay
         showIntroOverlay: !!props.showIntroOverlay,
         introTitle: props.introTitle || '',
@@ -775,6 +802,21 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.controlCardFontFamily !== undefined) props.onControlCardFontFamilyChange?.(settings.controlCardFontFamily);
         if (settings.controlCardTextEffect !== undefined) props.onControlCardTextEffectChange?.(settings.controlCardTextEffect);
         if (settings.controlCardStrokeColor !== undefined) props.onControlCardStrokeColorChange?.(settings.controlCardStrokeColor);
+
+        // Ke Ye Custom V2
+        if (settings.keYeCustomV2BoxOpacity !== undefined) props.onKeYeCustomV2BoxOpacityChange?.(settings.keYeCustomV2BoxOpacity);
+        if (settings.keYeCustomV2Text1 !== undefined) props.onKeYeCustomV2Text1Change?.(settings.keYeCustomV2Text1);
+        if (settings.keYeCustomV2Text2 !== undefined) props.onKeYeCustomV2Text2Change?.(settings.keYeCustomV2Text2);
+        if (settings.keYeCustomV2Text1Font !== undefined) props.onKeYeCustomV2Text1FontChange?.(settings.keYeCustomV2Text1Font);
+        if (settings.keYeCustomV2Text2Font !== undefined) props.onKeYeCustomV2Text2FontChange?.(settings.keYeCustomV2Text2Font);
+        if (settings.keYeCustomV2Text1Size !== undefined) props.onKeYeCustomV2Text1SizeChange?.(settings.keYeCustomV2Text1Size);
+        if (settings.keYeCustomV2Text2Size !== undefined) props.onKeYeCustomV2Text2SizeChange?.(settings.keYeCustomV2Text2Size);
+        if (settings.keYeCustomV2Text1Color !== undefined) props.onKeYeCustomV2Text1ColorChange?.(settings.keYeCustomV2Text1Color);
+        if (settings.keYeCustomV2Text2Color !== undefined) props.onKeYeCustomV2Text2ColorChange?.(settings.keYeCustomV2Text2Color);
+        if (settings.keYeCustomV2Text1Effect !== undefined) props.onKeYeCustomV2Text1EffectChange?.(settings.keYeCustomV2Text1Effect);
+        if (settings.keYeCustomV2Text2Effect !== undefined) props.onKeYeCustomV2Text2EffectChange?.(settings.keYeCustomV2Text2Effect);
+        if (settings.keYeCustomV2Text1StrokeColor !== undefined) props.onKeYeCustomV2Text1StrokeColorChange?.(settings.keYeCustomV2Text1StrokeColor);
+        if (settings.keYeCustomV2Text2StrokeColor !== undefined) props.onKeYeCustomV2Text2StrokeColorChange?.(settings.keYeCustomV2Text2StrokeColor);
     };
 
     const FONT_MAP: Record<FontType, string> = {
@@ -3625,19 +3667,73 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         ]}
                                     />
 
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">文字顏色</label>
+                                            <input
+                                                type="color"
+                                                value={props.keYeCustomV2Text1Color || '#000000'}
+                                                onChange={(e) => props.onKeYeCustomV2Text1ColorChange?.(e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                            />
+                                        </div>
+                                        <SelectControl
+                                            label="文字特效"
+                                            value={props.keYeCustomV2Text1Effect || GraphicEffectType.NONE}
+                                            onChange={(value) => props.onKeYeCustomV2Text1EffectChange?.(value as GraphicEffectType)}
+                                            options={[
+                                                { value: GraphicEffectType.NONE, label: '無' },
+                                                { value: GraphicEffectType.BOLD, label: '粗體' },
+                                                { value: GraphicEffectType.SHADOW, label: '陰影' },
+                                                { value: GraphicEffectType.NEON, label: '霓虹光' },
+                                                { value: GraphicEffectType.GLOW, label: '發光' },
+                                                { value: GraphicEffectType.OUTLINE, label: '描邊' },
+                                                { value: GraphicEffectType.FAUX_3D, label: '偽3D' },
+                                                { value: GraphicEffectType.GLITCH, label: '故障感' },
+                                            ]}
+                                        />
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">描邊顏色</label>
+                                            <input
+                                                type="color"
+                                                value={props.keYeCustomV2Text1StrokeColor || '#FFFFFF'}
+                                                onChange={(e) => props.onKeYeCustomV2Text1StrokeColorChange?.(e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                            />
+                                        </div>
+                                    </div>
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-300 mb-2">
                                             字體大小：{props.keYeCustomV2Text1Size || 40}px
                                         </label>
-                                        <input
-                                            type="range"
-                                            min="20"
-                                            max="150"
-                                            step="1"
-                                            value={props.keYeCustomV2Text1Size || 40}
-                                            onChange={(e) => props.onKeYeCustomV2Text1SizeChange?.(parseInt(e.target.value))}
-                                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-                                        />
+                                        <div className="relative">
+                                            <div
+                                                className="w-full h-2 rounded-lg absolute top-0 left-0"
+                                                style={{
+                                                    background: `linear-gradient(to right, rgba(156, 163, 175, 0.4) 0%, rgba(168, 181, 196, 0.45) 50%, rgba(139, 157, 195, 0.5) 100%)`
+                                                }}
+                                            />
+                                            <input
+                                                type="range"
+                                                min="20"
+                                                max="150"
+                                                step="1"
+                                                value={props.keYeCustomV2Text1Size || 40}
+                                                onChange={(e) => props.onKeYeCustomV2Text1SizeChange?.(parseInt(e.target.value))}
+                                                className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
+                                                style={{ background: 'transparent' }}
+                                            />
+                                            <div
+                                                className="absolute top-0 h-2 rounded-lg pointer-events-none"
+                                                style={{
+                                                    left: 0,
+                                                    width: `${(((props.keYeCustomV2Text1Size || 40) - 20) / (150 - 20)) * 100}%`,
+                                                    transition: 'width 0.1s ease',
+                                                    backgroundColor: 'rgba(156, 163, 175, 0.35)'
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -3703,19 +3799,73 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         ]}
                                     />
 
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">文字顏色</label>
+                                            <input
+                                                type="color"
+                                                value={props.keYeCustomV2Text2Color || '#000000'}
+                                                onChange={(e) => props.onKeYeCustomV2Text2ColorChange?.(e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                            />
+                                        </div>
+                                        <SelectControl
+                                            label="文字特效"
+                                            value={props.keYeCustomV2Text2Effect || GraphicEffectType.NONE}
+                                            onChange={(value) => props.onKeYeCustomV2Text2EffectChange?.(value as GraphicEffectType)}
+                                            options={[
+                                                { value: GraphicEffectType.NONE, label: '無' },
+                                                { value: GraphicEffectType.BOLD, label: '粗體' },
+                                                { value: GraphicEffectType.SHADOW, label: '陰影' },
+                                                { value: GraphicEffectType.NEON, label: '霓虹光' },
+                                                { value: GraphicEffectType.GLOW, label: '發光' },
+                                                { value: GraphicEffectType.OUTLINE, label: '描邊' },
+                                                { value: GraphicEffectType.FAUX_3D, label: '偽3D' },
+                                                { value: GraphicEffectType.GLITCH, label: '故障感' },
+                                            ]}
+                                        />
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">描邊顏色</label>
+                                            <input
+                                                type="color"
+                                                value={props.keYeCustomV2Text2StrokeColor || '#FFFFFF'}
+                                                onChange={(e) => props.onKeYeCustomV2Text2StrokeColorChange?.(e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                            />
+                                        </div>
+                                    </div>
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-300 mb-2">
                                             字體大小：{props.keYeCustomV2Text2Size || 30}px
                                         </label>
-                                        <input
-                                            type="range"
-                                            min="20"
-                                            max="150"
-                                            step="1"
-                                            value={props.keYeCustomV2Text2Size || 30}
-                                            onChange={(e) => props.onKeYeCustomV2Text2SizeChange?.(parseInt(e.target.value))}
-                                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-                                        />
+                                        <div className="relative">
+                                            <div
+                                                className="w-full h-2 rounded-lg absolute top-0 left-0"
+                                                style={{
+                                                    background: `linear-gradient(to right, rgba(156, 163, 175, 0.4) 0%, rgba(168, 181, 196, 0.45) 50%, rgba(139, 157, 195, 0.5) 100%)`
+                                                }}
+                                            />
+                                            <input
+                                                type="range"
+                                                min="20"
+                                                max="150"
+                                                step="1"
+                                                value={props.keYeCustomV2Text2Size || 30}
+                                                onChange={(e) => props.onKeYeCustomV2Text2SizeChange?.(parseInt(e.target.value))}
+                                                className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10"
+                                                style={{ background: 'transparent' }}
+                                            />
+                                            <div
+                                                className="absolute top-0 h-2 rounded-lg pointer-events-none"
+                                                style={{
+                                                    left: 0,
+                                                    width: `${(((props.keYeCustomV2Text2Size || 30) - 20) / (150 - 20)) * 100}%`,
+                                                    transition: 'width 0.1s ease',
+                                                    backgroundColor: 'rgba(156, 163, 175, 0.35)'
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
