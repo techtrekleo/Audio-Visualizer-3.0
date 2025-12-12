@@ -57,6 +57,7 @@ function App() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [customText, setCustomText] = useState<string>('Sonic Pulse');
     const [textColor, setTextColor] = useState<string>('#67E8F9');
+    const [textStrokeColor, setTextStrokeColor] = useState<string>('#000000'); // 自訂文字描邊顏色
     const [fontFamily, setFontFamily] = useState<FontType>(FontType.ROCKNROLL_ONE);
     const [graphicEffect, setGraphicEffect] = useState<GraphicEffectType>(GraphicEffectType.GLOW);
     const [textSize, setTextSize] = useState<number>(4); // 字體大小 (vw 單位)
@@ -1652,6 +1653,7 @@ function App() {
                                     isPlaying={isPlaying}
                                     customText={customText}
                                     textColor={textColor}
+                                    textStrokeColor={textStrokeColor}
                                     fontFamily={fontFamily}
                                     graphicEffect={graphicEffect}
                                     textSize={textSize}
@@ -1936,6 +1938,8 @@ function App() {
                             onTextChange={handleTextChange}
                             textColor={textColor}
                             onTextColorChange={setTextColor}
+                            textStrokeColor={textStrokeColor}
+                            onTextStrokeColorChange={setTextStrokeColor}
                             fontFamily={fontFamily}
                             onFontFamilyChange={setFontFamily}
                             graphicEffect={graphicEffect}

@@ -62,6 +62,7 @@ interface AudioVisualizerProps {
     isPlaying: boolean;
     customText: string;
     textColor: string;
+    textStrokeColor?: string;
     fontFamily: FontType;
     graphicEffect: GraphicEffectType;
     textSize: number;
@@ -6675,10 +6676,11 @@ const drawCustomText = (
     ctx: CanvasRenderingContext2D,
     text: string,
     dataArray: Uint8Array,
-    { width, height, color, fontFamily, graphicEffect, position, textSize, textPositionX, textPositionY, isBeat }: {
+    { width, height, color, strokeColor, fontFamily, graphicEffect, position, textSize, textPositionX, textPositionY, isBeat }: {
         width: number;
         height: number;
         color: string;
+        strokeColor?: string;
         fontFamily: string;
         graphicEffect: GraphicEffectType;
         position: WatermarkPosition;
@@ -6747,10 +6749,10 @@ const drawCustomText = (
     positionX += offsetX;
     positionY += offsetY;
 
-    const drawText = (offsetX = 0, offsetY = 0, customColor?: string) => {
+    const drawText = (offsetX = 0, offsetY = 0) => {
         ctx.fillText(text, positionX + offsetX, positionY + offsetY);
-        if (graphicEffect === GraphicEffectType.STROKE) {
-            ctx.strokeStyle = customColor ? applyAlphaToColor(customColor, 0.5) : 'rgba(0,0,0,0.5)';
+        if (graphicEffect === GraphicEffectType.STROKE || graphicEffect === GraphicEffectType.OUTLINE) {
+            ctx.strokeStyle = strokeColor ? applyAlphaToColor(strokeColor, 0.8) : 'rgba(0,0,0,0.6)';
             ctx.strokeText(text, positionX + offsetX, positionY + offsetY);
         }
     };
@@ -8122,6 +8124,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 width, 
                 height, 
                 color: textColor, 
+                strokeColor: propsRef.current.textStrokeColor,
                 fontFamily: actualFontName, 
                 graphicEffect, 
                 position: watermarkPosition, 

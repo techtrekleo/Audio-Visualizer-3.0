@@ -4,6 +4,7 @@ export interface SavedSettings {
     visualizationType: VisualizationType;
     customText: string;
     textColor: string;
+    textStrokeColor: string;
     fontFamily: FontType;
     graphicEffect: GraphicEffectType;
     sensitivity: number;

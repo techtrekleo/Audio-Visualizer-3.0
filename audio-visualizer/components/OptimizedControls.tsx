@@ -135,6 +135,8 @@ interface OptimizedControlsProps {
     onTextChange: (text: string) => void;
     textColor: string;
     onTextColorChange: (color: string) => void;
+    textStrokeColor?: string;
+    onTextStrokeColorChange?: (color: string) => void;
     fontFamily: FontType;
     onFontFamilyChange: (font: FontType) => void;
     graphicEffect: GraphicEffectType;
@@ -686,6 +688,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         visualizationType: props.visualizationType,
         customText: props.customText,
         textColor: props.textColor,
+        textStrokeColor: props.textStrokeColor || '#000000',
         fontFamily: props.fontFamily,
         graphicEffect: props.graphicEffect,
         sensitivity: props.sensitivity,
@@ -755,6 +758,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.visualizationType) props.onVisualizationChange(settings.visualizationType);
         if (settings.customText !== undefined) props.onTextChange(settings.customText);
         if (settings.textColor) props.onTextColorChange(settings.textColor);
+        if (settings.textStrokeColor !== undefined) props.onTextStrokeColorChange?.(settings.textStrokeColor);
         if (settings.fontFamily) props.onFontFamilyChange(settings.fontFamily);
         if (settings.graphicEffect) props.onGraphicEffectChange(settings.graphicEffect);
         if (settings.sensitivity !== undefined) props.onSensitivityChange(settings.sensitivity);
@@ -1667,7 +1671,55 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         />
                                     ))}
                                 </div>
+                                <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <input
+                                        type="color"
+                                        value={props.textColor}
+                                        onChange={(e) => props.onTextColorChange(e.target.value)}
+                                        className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={props.textColor}
+                                        onChange={(e) => props.onTextColorChange(e.target.value)}
+                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
+                                        placeholder="#RRGGBB"
+                                    />
+                                </div>
                             </div>
+
+                            {/* 描邊顏色（只在描邊特效時顯示） */}
+                            {(props.graphicEffect === GraphicEffectType.OUTLINE || props.graphicEffect === GraphicEffectType.STROKE) && (
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300">描邊顏色</label>
+                                    <div className="flex space-x-2">
+                                        {PRESET_COLORS.map(color => (
+                                            <SwatchButton
+                                                key={`custom-text-stroke-${color}`}
+                                                color={color}
+                                                onClick={(c) => props.onTextStrokeColorChange?.(c)}
+                                                isActive={(props.textStrokeColor || '#000000') === color}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <input
+                                            type="color"
+                                            value={props.textStrokeColor || '#000000'}
+                                            onChange={(e) => props.onTextStrokeColorChange?.(e.target.value)}
+                                            className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={props.textStrokeColor || '#000000'}
+                                            onChange={(e) => props.onTextStrokeColorChange?.(e.target.value)}
+                                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
+                                            placeholder="#RRGGBB"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-400">提示：把「視覺效果」選成「描邊」才會套用這個顏色。</p>
+                                </div>
+                            )}
                         </div>
                         
                         {/* 文字大小和位置控制 */}
