@@ -252,6 +252,9 @@ function App() {
     // 可夜訂製版控制卡狀態
     const [controlCardEnabled, setControlCardEnabled] = useState<boolean>(true); // 控制卡開關
     const [controlCardFontSize, setControlCardFontSize] = useState<number>(24); // 控制卡字體大小 (24-50px)
+    const [controlCardFontFamily, setControlCardFontFamily] = useState<FontType>(FontType.POPPINS); // 控制卡字體
+    const [controlCardTextEffect, setControlCardTextEffect] = useState<GraphicEffectType>(GraphicEffectType.NONE); // 控制卡文字特效
+    const [controlCardStrokeColor, setControlCardStrokeColor] = useState<string>('#000000'); // 控制卡描邊顏色
     
     
     // API Key 管理狀態
@@ -1742,6 +1745,9 @@ function App() {
                                     controlCardStyle={controlCardStyle}
                                     controlCardColor={controlCardColor}
                                     controlCardBackgroundColor={controlCardBackgroundColor}
+                                    controlCardFontFamily={controlCardFontFamily}
+                                    controlCardTextEffect={controlCardTextEffect}
+                                    controlCardStrokeColor={controlCardStrokeColor}
                                     // Vinyl Record props
                                     vinylRecordEnabled={vinylRecordEnabled}
                                     vinylNeedleEnabled={vinylNeedleEnabled}
@@ -2109,6 +2115,12 @@ function App() {
                             onControlCardColorChange={setControlCardColor}
                             controlCardBackgroundColor={controlCardBackgroundColor}
                             onControlCardBackgroundColorChange={setControlCardBackgroundColor}
+                            controlCardFontFamily={controlCardFontFamily}
+                            onControlCardFontFamilyChange={setControlCardFontFamily}
+                            controlCardTextEffect={controlCardTextEffect}
+                            onControlCardTextEffectChange={setControlCardTextEffect}
+                            controlCardStrokeColor={controlCardStrokeColor}
+                            onControlCardStrokeColorChange={setControlCardStrokeColor}
                             // Vinyl Record props
                             vinylRecordEnabled={vinylRecordEnabled}
                             onVinylRecordEnabledChange={setVinylRecordEnabled}

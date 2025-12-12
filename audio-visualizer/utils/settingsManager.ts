@@ -46,6 +46,11 @@ export interface SavedSettings {
     introBgOpacity: number;
     introPositionX: number;
     introPositionY: number;
+
+    // Control Card (text)
+    controlCardFontFamily: FontType;
+    controlCardTextEffect: GraphicEffectType;
+    controlCardStrokeColor: string;
 }
 
 export class SettingsManager {

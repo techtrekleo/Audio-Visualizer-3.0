@@ -165,6 +165,9 @@ interface AudioVisualizerProps {
     controlCardStyle?: ControlCardStyle;
     controlCardColor?: string;
     controlCardBackgroundColor?: string;
+    controlCardFontFamily?: FontType;
+    controlCardTextEffect?: GraphicEffectType;
+    controlCardStrokeColor?: string;
     // Vinyl Record props
     vinylImage?: string | null;
     vinylRecordEnabled?: boolean;
@@ -4465,7 +4468,7 @@ const drawAudioLandscape = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array
     ctx.restore();
 };
 // 可夜特別訂製版可視化
-const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[], geometricFrameImage?: HTMLImageElement | null, geometricSemicircleImage?: HTMLImageElement | null, props?: any, controlCardEnabled?: boolean, controlCardFontSize?: number, controlCardStyle?: ControlCardStyle, controlCardColor?: string, controlCardBackgroundColor?: string) => {
+const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null, width: number, height: number, frame: number, sensitivity: number, colors: Palette, graphicEffect: GraphicEffectType, isBeat?: boolean, waveformStroke?: boolean, particles?: Particle[], geometricFrameImage?: HTMLImageElement | null, geometricSemicircleImage?: HTMLImageElement | null, props?: any, controlCardEnabled?: boolean, controlCardFontSize?: number, controlCardStyle?: ControlCardStyle, controlCardColor?: string, controlCardBackgroundColor?: string, controlCardFontFamily?: FontType, controlCardTextEffect?: GraphicEffectType, controlCardStrokeColor?: string) => {
     if (!dataArray) return;
     ctx.save();
     
@@ -4865,10 +4868,14 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         const infoY = playerY + (playerHeight * 0.18); // 18% 位置
         const dynamicSpacing = playerHeight * 0.08; // 8% 行距
         
-        // 歌曲名稱 - 使用百分比字體大小
+        // 歌曲名稱 - 使用百分比字體大小（支援字體/特效/描邊）
         ctx.fillStyle = cardColor;
         const songFontSize = Math.min(clampedFontSize + 2, playerHeight * 0.2); // 20% 高度
-        ctx.font = `bold ${songFontSize}px Arial`;
+        const cardFont = FONT_MAP[controlCardFontFamily || FontType.POPPINS] || 'Poppins';
+        const effect = controlCardTextEffect || GraphicEffectType.NONE;
+        const stroke = controlCardStrokeColor || '#000000';
+        const fontWeight = (effect === GraphicEffectType.BOLD) ? '900' : 'bold';
+        ctx.font = `${fontWeight} ${songFontSize}px "${cardFont}", sans-serif`;
         ctx.textAlign = 'left';
         const songName = props.geometricSongName || 'Name of the song';
         const songNameY = infoY + Math.cos(frame * 0.03) * 0.3;
@@ -4878,11 +4885,57 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         const minSongNameY = playerY + songNameHeight + 15; // 控制卡頂部 + 字體高度 + 15px間距
         const adjustedSongNameY = Math.max(songNameY, minSongNameY);
         
-        ctx.fillText(songName, infoX + Math.sin(frame * 0.02) * 0.5, adjustedSongNameY);
+        // Text effect helpers (reuse subtitle style)
+        const drawCardText = (text: string, x: number, y: number, size: number) => {
+            ctx.save();
+            ctx.lineJoin = 'round';
+            ctx.miterLimit = 2;
+            // glow/shadow
+            if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+                ctx.shadowColor = cardColor;
+                ctx.shadowBlur = 16;
+            } else if (effect === GraphicEffectType.SHADOW) {
+                ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                ctx.shadowBlur = 12;
+                ctx.shadowOffsetX = 4;
+                ctx.shadowOffsetY = 4;
+            }
+            // outline
+            if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+                ctx.strokeStyle = stroke;
+                ctx.lineWidth = Math.max(2, size / 18);
+                ctx.strokeText(text, x, y);
+            }
+            // faux 3D
+            if (effect === GraphicEffectType.FAUX_3D) {
+                const depth = Math.max(1, Math.floor(size / 28));
+                ctx.fillStyle = 'rgba(0,0,0,0.35)';
+                for (let i = 1; i <= depth; i++) ctx.fillText(text, x + i, y + i);
+                ctx.fillStyle = cardColor;
+            }
+            // fill
+            ctx.fillStyle = (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) ? '#FFFFFF' : cardColor;
+            ctx.fillText(text, x, y);
+            // glitch (lightweight on beat)
+            if (effect === GraphicEffectType.GLITCH && isBeat) {
+                ctx.globalCompositeOperation = 'lighter';
+                const jitter = Math.max(2, size / 20);
+                const ox = (Math.random() - 0.5) * jitter;
+                const oy = (Math.random() - 0.5) * jitter;
+                ctx.fillStyle = 'rgba(255,0,0,0.55)';
+                ctx.fillText(text, x + ox, y + oy);
+                ctx.fillStyle = 'rgba(0,255,255,0.55)';
+                ctx.fillText(text, x - ox, y - oy);
+                ctx.globalCompositeOperation = 'source-over';
+            }
+            ctx.restore();
+        };
+
+        drawCardText(songName, infoX + Math.sin(frame * 0.02) * 0.5, adjustedSongNameY, songFontSize);
         
-        // 歌手名稱 - 使用百分比字體大小
+        // 歌手名稱 - 使用百分比字體大小（支援字體/特效/描邊）
         const artistFontSize = Math.min(clampedFontSize, playerHeight * 0.15); // 15% 高度
-        ctx.font = `${artistFontSize}px Arial`;
+        ctx.font = `${(effect === GraphicEffectType.BOLD) ? '800' : '600'} ${artistFontSize}px "${cardFont}", sans-serif`;
         ctx.fillStyle = cardStyle === ControlCardStyle.OUTLINE ? cardColor : 'rgba(255, 255, 255, 0.8)';
         const artistName = props.geometricArtistName || 'Artist';
         const artistNameY = adjustedSongNameY + dynamicSpacing + Math.cos(frame * 0.035) * 0.2;
@@ -4892,7 +4945,9 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
         const minArtistNameY = playerY + songNameHeight + artistNameHeight + 25; // 控制卡頂部 + 歌名高度 + 歌手高度 + 25px間距
         const adjustedArtistNameY = Math.max(artistNameY, minArtistNameY);
         
-        ctx.fillText(artistName, infoX + Math.sin(frame * 0.025) * 0.3, adjustedArtistNameY);
+        // temporarily use cardColor for effect fill consistency
+        const artistFillBackup = cardColor;
+        drawCardText(artistName, infoX + Math.sin(frame * 0.025) * 0.3, adjustedArtistNameY, artistFontSize);
     
         // 右上角圖標 - 調整位置避免與文字和進度條重疊
         const iconSpacing = Math.max(80, clampedFontSize * 1.5); // 根據字體大小調整右邊距，最小80px
@@ -6958,6 +7013,9 @@ const drawVinylRecord = (
         const style = (latestPropsRef as any)?.controlCardStyle as any;
         const color = (latestPropsRef as any)?.controlCardColor || '#111827';
          const bg = (latestPropsRef as any)?.controlCardBackgroundColor || 'rgba(0, 0, 0, 0.5)'; // 黑色背景，50%透明度
+        const cardFont = FONT_MAP[(latestPropsRef as any)?.controlCardFontFamily || FontType.POPPINS] || 'Poppins';
+        const effect = (latestPropsRef as any)?.controlCardTextEffect || GraphicEffectType.NONE;
+        const stroke = (latestPropsRef as any)?.controlCardStrokeColor || '#000000';
 
         // 卡片底
         if (style !== 'transparent') {
@@ -6992,8 +7050,9 @@ const drawVinylRecord = (
             const s = Math.floor(t % 60);
             return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
         };
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 16px Poppins, sans-serif';
+        // 文字樣式（支援字體/特效/描邊）
+        ctx.fillStyle = color;
+        ctx.font = `bold 16px "${cardFont}", sans-serif`;
         ctx.textBaseline = 'middle';
         // 將時間與進度條一起上移，避免貼底
         const barY = cardY + cardH - 140; // 從底部往上 140px
@@ -7607,7 +7666,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             subtitles, showSubtitles, subtitleFontSize, subtitleFontFamily, 
             subtitleColor, subtitleEffect, subtitleBgStyle, effectScale, effectOffsetX, effectOffsetY,
             filterEffectType, filterEffectIntensity, filterEffectOpacity, filterEffectSpeed, filterEffectEnabled,
-            controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor
+            controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor, controlCardFontFamily, controlCardTextEffect, controlCardStrokeColor
         } = propsRef.current;
 
         const canvas = (ref as React.RefObject<HTMLCanvasElement>).current;
@@ -7769,7 +7828,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             }
             if (visualizationType === VisualizationType.GEOMETRIC_BARS) {
                 // 可夜特別訂製版需要特殊處理，傳遞額外參數
-                drawGeometricBars(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, propsRef.current, controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor);
+                drawGeometricBars(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, propsRef.current, controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor, (latestPropsRef as any)?.controlCardFontFamily, (latestPropsRef as any)?.controlCardTextEffect, (latestPropsRef as any)?.controlCardStrokeColor);
             } else if (visualizationType === VisualizationType.Z_CUSTOM) {
                 // Z總訂製款需要特殊處理，傳遞額外參數
                 const currentFrame = typeof frame.current === 'number' ? frame.current : 0;

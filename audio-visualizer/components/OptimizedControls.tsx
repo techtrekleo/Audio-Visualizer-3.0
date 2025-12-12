@@ -347,6 +347,12 @@ interface OptimizedControlsProps {
     onControlCardColorChange?: (c: string) => void;
     controlCardBackgroundColor?: string;
     onControlCardBackgroundColorChange?: (c: string) => void;
+    controlCardFontFamily?: FontType;
+    onControlCardFontFamilyChange?: (f: FontType) => void;
+    controlCardTextEffect?: GraphicEffectType;
+    onControlCardTextEffectChange?: (e: GraphicEffectType) => void;
+    controlCardStrokeColor?: string;
+    onControlCardStrokeColorChange?: (c: string) => void;
     // 唱片設定（Vinyl）
     vinylRecordEnabled?: boolean;
     onVinylRecordEnabledChange?: (enabled: boolean) => void;
@@ -692,6 +698,11 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         lyricsPositionX: props.lyricsPositionX,
         lyricsPositionY: props.lyricsPositionY,
 
+        // Control Card (text)
+        controlCardFontFamily: props.controlCardFontFamily || FontType.POPPINS,
+        controlCardTextEffect: props.controlCardTextEffect || GraphicEffectType.NONE,
+        controlCardStrokeColor: props.controlCardStrokeColor || '#000000',
+
         // Intro Overlay
         showIntroOverlay: !!props.showIntroOverlay,
         introTitle: props.introTitle || '',
@@ -759,6 +770,11 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.introBgOpacity !== undefined) props.onIntroBgOpacityChange?.(settings.introBgOpacity);
         if (settings.introPositionX !== undefined) props.onIntroPositionXChange?.(settings.introPositionX);
         if (settings.introPositionY !== undefined) props.onIntroPositionYChange?.(settings.introPositionY);
+
+        // Control Card (text)
+        if (settings.controlCardFontFamily !== undefined) props.onControlCardFontFamilyChange?.(settings.controlCardFontFamily);
+        if (settings.controlCardTextEffect !== undefined) props.onControlCardTextEffectChange?.(settings.controlCardTextEffect);
+        if (settings.controlCardStrokeColor !== undefined) props.onControlCardStrokeColorChange?.(settings.controlCardStrokeColor);
     };
 
     const FONT_MAP: Record<FontType, string> = {
@@ -2340,6 +2356,40 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 </div>
                                             </div>
 
+                                            {/* 字體/特效/描邊（文字） */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <SelectControl
+                                                    label="文字字體"
+                                                    value={props.controlCardFontFamily || FontType.POPPINS}
+                                                    onChange={(value) => props.onControlCardFontFamilyChange?.(value as FontType)}
+                                                    options={Object.entries(FONT_MAP).map(([value, label]) => ({ value, label }))}
+                                                />
+                                                <SelectControl
+                                                    label="文字特效"
+                                                    value={props.controlCardTextEffect || GraphicEffectType.NONE}
+                                                    onChange={(value) => props.onControlCardTextEffectChange?.(value as GraphicEffectType)}
+                                                    options={[
+                                                        { value: GraphicEffectType.NONE, label: '無' },
+                                                        { value: GraphicEffectType.BOLD, label: '粗體' },
+                                                        { value: GraphicEffectType.SHADOW, label: '陰影' },
+                                                        { value: GraphicEffectType.NEON, label: '霓虹光' },
+                                                        { value: GraphicEffectType.GLOW, label: '發光' },
+                                                        { value: GraphicEffectType.OUTLINE, label: '描邊' },
+                                                        { value: GraphicEffectType.FAUX_3D, label: '偽3D' },
+                                                        { value: GraphicEffectType.GLITCH, label: '故障感' },
+                                                    ]}
+                                                />
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium text-gray-300">描邊顏色</label>
+                                                    <input
+                                                        type="color"
+                                                        value={props.controlCardStrokeColor || '#000000'}
+                                                        onChange={(e) => props.onControlCardStrokeColorChange?.(e.target.value)}
+                                                        className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                                    />
+                                                </div>
+                                            </div>
+
                                             {/* 背景顏色 (僅填充模式) */}
                                             {props.controlCardStyle === ControlCardStyle.FILLED && (
                                                 <div>
@@ -2643,6 +2693,18 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                     <label className="block text-sm font-medium text-gray-300 mb-1">文字/圖示顏色</label>
                                                     <input type="color" value={props.controlCardColor || '#111827'} onChange={(e) => props.onControlCardColorChange?.(e.target.value)} className="w-12 h-8 rounded border border-gray-600 cursor-pointer" />
                                                 </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-1">文字字體</label>
+                                                    <select
+                                                        value={props.controlCardFontFamily || FontType.POPPINS}
+                                                        onChange={(e) => props.onControlCardFontFamilyChange?.(e.target.value as FontType)}
+                                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                                    >
+                                                        {Object.entries(FONT_MAP).map(([value, label]) => (
+                                                            <option key={value} value={value}>{label}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
                                                 {props.controlCardStyle !== ControlCardStyle.TRANSPARENT && (
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-300 mb-1">背景顏色</label>
@@ -2726,6 +2788,35 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                         <p className="text-xs text-gray-400 mt-1">用色盤選色，右側滑桿調整透明度</p>
                                                     </div>
                                                 )}
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-1">文字特效</label>
+                                                    <select
+                                                        value={props.controlCardTextEffect || GraphicEffectType.NONE}
+                                                        onChange={(e) => props.onControlCardTextEffectChange?.(e.target.value as GraphicEffectType)}
+                                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                                    >
+                                                        <option value={GraphicEffectType.NONE}>無</option>
+                                                        <option value={GraphicEffectType.BOLD}>粗體</option>
+                                                        <option value={GraphicEffectType.SHADOW}>陰影</option>
+                                                        <option value={GraphicEffectType.NEON}>霓虹光</option>
+                                                        <option value={GraphicEffectType.GLOW}>發光</option>
+                                                        <option value={GraphicEffectType.OUTLINE}>描邊</option>
+                                                        <option value={GraphicEffectType.FAUX_3D}>偽3D</option>
+                                                        <option value={GraphicEffectType.GLITCH}>故障感</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-1">描邊顏色</label>
+                                                    <input
+                                                        type="color"
+                                                        value={props.controlCardStrokeColor || '#000000'}
+                                                        onChange={(e) => props.onControlCardStrokeColorChange?.(e.target.value)}
+                                                        className="w-12 h-8 rounded border border-gray-600 cursor-pointer"
+                                                    />
+                                                </div>
                                             </div>
                                         </>
                                     )}
