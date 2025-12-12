@@ -231,6 +231,8 @@ interface OptimizedControlsProps {
     onEffectOffsetXChange: (value: number) => void;
     effectOffsetY: number;
     onEffectOffsetYChange: (value: number) => void;
+    effectRotation: number;
+    onEffectRotationChange: (value: number) => void;
     // Lyrics Display props
     showLyricsDisplay: boolean;
     onShowLyricsDisplayChange: (show: boolean) => void;
@@ -286,6 +288,12 @@ interface OptimizedControlsProps {
     onCtaChannelNameChange?: (name: string) => void;
     ctaFontFamily?: FontType;
     onCtaFontFamilyChange?: (font: FontType) => void;
+    ctaTextColor?: string;
+    onCtaTextColorChange?: (color: string) => void;
+    ctaStrokeColor?: string;
+    onCtaStrokeColorChange?: (color: string) => void;
+    ctaTextEffect?: GraphicEffectType;
+    onCtaTextEffectChange?: (effect: GraphicEffectType) => void;
     ctaPositionX?: number;
     onCtaPositionXChange?: (value: number) => void;
     ctaPositionY?: number;
@@ -727,10 +735,21 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         effectScale: props.effectScale,
         effectOffsetX: props.effectOffsetX,
         effectOffsetY: props.effectOffsetY,
+        effectRotation: props.effectRotation,
         lyricsFontSize: props.lyricsFontSize,
         lyricsFontFamily: props.lyricsFontFamily,
         lyricsPositionX: props.lyricsPositionX,
         lyricsPositionY: props.lyricsPositionY,
+
+        // CTA Animation
+        showCtaAnimation: !!props.showCtaAnimation,
+        ctaChannelName: props.ctaChannelName || '',
+        ctaFontFamily: props.ctaFontFamily || FontType.POPPINS,
+        ctaTextColor: props.ctaTextColor || '#FFFFFF',
+        ctaStrokeColor: props.ctaStrokeColor || '#000000',
+        ctaTextEffect: props.ctaTextEffect || GraphicEffectType.NONE,
+        ctaPositionX: props.ctaPositionX ?? 50,
+        ctaPositionY: props.ctaPositionY ?? 50,
 
         // Control Card (text)
         controlCardFontFamily: props.controlCardFontFamily || FontType.POPPINS,
@@ -804,10 +823,21 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.effectScale !== undefined) props.onEffectScaleChange(settings.effectScale);
         if (settings.effectOffsetX !== undefined) props.onEffectOffsetXChange(settings.effectOffsetX);
         if (settings.effectOffsetY !== undefined) props.onEffectOffsetYChange(settings.effectOffsetY);
+        if (settings.effectRotation !== undefined) props.onEffectRotationChange(settings.effectRotation);
         if (settings.lyricsFontSize !== undefined) props.onLyricsFontSizeChange(settings.lyricsFontSize);
         if (settings.lyricsFontFamily !== undefined) props.onLyricsFontFamilyChange(settings.lyricsFontFamily);
         if (settings.lyricsPositionX !== undefined) props.onLyricsPositionXChange(settings.lyricsPositionX);
         if (settings.lyricsPositionY !== undefined) props.onLyricsPositionYChange(settings.lyricsPositionY);
+
+        // CTA Animation
+        if (settings.showCtaAnimation !== undefined) props.onShowCtaAnimationChange?.(settings.showCtaAnimation);
+        if (settings.ctaChannelName !== undefined) props.onCtaChannelNameChange?.(settings.ctaChannelName);
+        if (settings.ctaFontFamily !== undefined) props.onCtaFontFamilyChange?.(settings.ctaFontFamily);
+        if (settings.ctaTextColor !== undefined) props.onCtaTextColorChange?.(settings.ctaTextColor);
+        if (settings.ctaStrokeColor !== undefined) props.onCtaStrokeColorChange?.(settings.ctaStrokeColor);
+        if (settings.ctaTextEffect !== undefined) props.onCtaTextEffectChange?.(settings.ctaTextEffect);
+        if (settings.ctaPositionX !== undefined) props.onCtaPositionXChange?.(settings.ctaPositionX);
+        if (settings.ctaPositionY !== undefined) props.onCtaPositionYChange?.(settings.ctaPositionY);
 
         // Intro Overlay
         if (settings.showIntroOverlay !== undefined) props.onShowIntroOverlayChange?.(settings.showIntroOverlay);
@@ -931,6 +961,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         onEffectOffsetXChange={props.onEffectOffsetXChange}
                         effectOffsetY={props.effectOffsetY}
                         onEffectOffsetYChange={props.onEffectOffsetYChange}
+                        effectRotation={props.effectRotation}
+                        onEffectRotationChange={props.onEffectRotationChange}
                         isRecording={props.isRecording}
                         colorPalette={props.colorPalette}
                         onColorPaletteChange={props.onColorPaletteChange}
@@ -1173,6 +1205,86 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             { value: FontType.RUBIK, label: 'Rubik' }
                                         ]}
                                     />
+                                </div>
+
+                                {/* CTA 文字特效 */}
+                                <div>
+                                    <SelectControl
+                                        label="文字特效"
+                                        value={props.ctaTextEffect || GraphicEffectType.NONE}
+                                        onChange={(value) => props.onCtaTextEffectChange?.(value as GraphicEffectType)}
+                                        options={[
+                                            { value: GraphicEffectType.NONE, label: '無' },
+                                            { value: GraphicEffectType.BOLD, label: '粗體' },
+                                            { value: GraphicEffectType.SHADOW, label: '陰影' },
+                                            { value: GraphicEffectType.NEON, label: '霓虹光' },
+                                            { value: GraphicEffectType.OUTLINE, label: '描邊' },
+                                            { value: GraphicEffectType.GLITCH, label: '故障感' },
+                                        ]}
+                                    />
+                                </div>
+
+                                {/* CTA 文字顏色 */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-300">文字顏色</label>
+                                    <div className="flex space-x-2">
+                                        {PRESET_COLORS.map(color => (
+                                            <SwatchButton
+                                                key={`cta-text-${color}`}
+                                                color={color}
+                                                onClick={(c) => props.onCtaTextColorChange?.(c)}
+                                                isActive={(props.ctaTextColor || '#FFFFFF') === color}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <input
+                                            type="color"
+                                            value={props.ctaTextColor || '#FFFFFF'}
+                                            onChange={(e) => props.onCtaTextColorChange?.(e.target.value)}
+                                            className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={props.ctaTextColor || '#FFFFFF'}
+                                            onChange={(e) => props.onCtaTextColorChange?.(e.target.value)}
+                                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
+                                            placeholder="#RRGGBB"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* CTA 描邊顏色 */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-300">描邊顏色</label>
+                                    <div className="flex space-x-2">
+                                        {PRESET_COLORS.map(color => (
+                                            <SwatchButton
+                                                key={`cta-stroke-${color}`}
+                                                color={color}
+                                                onClick={(c) => props.onCtaStrokeColorChange?.(c)}
+                                                isActive={(props.ctaStrokeColor || '#000000') === color}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <input
+                                            type="color"
+                                            value={props.ctaStrokeColor || '#000000'}
+                                            onChange={(e) => props.onCtaStrokeColorChange?.(e.target.value)}
+                                            className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={props.ctaStrokeColor || '#000000'}
+                                            onChange={(e) => props.onCtaStrokeColorChange?.(e.target.value)}
+                                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
+                                            placeholder="#RRGGBB"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-400">
+                                        會套用到 CTA 三行文字；若要關閉描邊可把顏色設成與文字相同或設成透明色。
+                                    </p>
                                 </div>
                                 <div>
                                     <SliderControl

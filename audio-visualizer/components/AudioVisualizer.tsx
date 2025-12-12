@@ -44,9 +44,9 @@ const FONT_MAP: Record<FontType, string> = {
     [FontType.QUICKSAND]: 'Quicksand',
     [FontType.RUBIK]: 'Rubik',
     [FontType.NOTO_SERIF_TC]: 'Noto Serif TC',
-    [FontType.MA_SHAN_ZHENG]: 'Poppins',
-    [FontType.ZHI_MANG_XING]: 'Poppins',
-    [FontType.LONG_CANG]: 'Poppins',
+    [FontType.MA_SHAN_ZHENG]: 'Ma Shan Zheng',
+    [FontType.ZHI_MANG_XING]: 'Zhi Mang Xing',
+    [FontType.LONG_CANG]: 'Long Cang',
     [FontType.ZCOOL_KUAI_LE]: 'ZCOOL KuaiLe',
     [FontType.ZCOOL_QING_KE]: 'ZCOOL QingKe HuangYou',
     [FontType.LIU_JIAN_MAO_CAO]: 'Liu Jian Mao Cao',
@@ -99,6 +99,7 @@ interface AudioVisualizerProps {
     effectScale: number;
     effectOffsetX: number;
     effectOffsetY: number;
+    effectRotation?: number; // degrees
     // Lyrics Display props
     showLyricsDisplay: boolean;
     currentTime: number;
@@ -133,6 +134,9 @@ interface AudioVisualizerProps {
     showCtaAnimation?: boolean;
     ctaChannelName?: string;
     ctaFontFamily?: FontType;
+    ctaTextColor?: string;
+    ctaStrokeColor?: string;
+    ctaTextEffect?: GraphicEffectType;
     ctaPosition?: { x: number; y: number };
     onCtaPositionUpdate?: (position: { x: number; y: number }) => void;
     // Intro Overlay（開場文字動畫）
@@ -258,6 +262,11 @@ let basicWaveBufferSize: { w: number; h: number } | null = null;
 let basicWaveDecayBuffer: number[] = [];
 let basicWaveDecayTime = 0.1; // 0.1秒衰減時間
 let basicWaveLastUpdateTime = 0;
+
+// --- Lyric Pulse Line Decay System (dotted baseline + spikes) ---
+let lyricPulseDecayBuffer: number[] = [];
+let lyricPulseDecayTime = 0.08; // seconds
+let lyricPulseLastUpdateTime = 0;
 
 
 const createRoundedRectPath = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) => {
@@ -3792,6 +3801,106 @@ const drawMonstercatV2 = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
         drawBaseLineDot(leftX);
     }
     
+    ctx.restore();
+};
+
+/**
+ * Lyric Pulse Line: dotted baseline + audio-reactive spikes.
+ * Inspired by lyric videos that show a thin dotted waveform line.
+ */
+const drawLyricPulseLine = (
+    ctx: CanvasRenderingContext2D,
+    dataArray: Uint8Array | null,
+    width: number,
+    height: number,
+    frame: number,
+    sensitivity: number,
+    colors: Palette,
+    graphicEffect: GraphicEffectType,
+    isBeat?: boolean,
+    waveformStroke?: boolean
+) => {
+    if (!dataArray) return;
+    ctx.save();
+
+    // Placement similar to lyric video overlays (slightly below center).
+    const baseLineY = height * 0.62;
+
+    // Visual density (dots count). Keep cheap enough for 4K.
+    const dotRadius = 1.6;
+    const dotSpacing = Math.max(5, Math.floor(width / 240)); // auto-scale with resolution
+    const numDots = Math.floor(width / dotSpacing);
+
+    // Initialize decay buffer
+    if (lyricPulseDecayBuffer.length !== numDots) {
+        lyricPulseDecayBuffer = new Array(numDots).fill(0);
+        lyricPulseLastUpdateTime = performance.now() / 1000;
+    }
+
+    const now = performance.now() / 1000;
+    const dt = Math.max(0, now - lyricPulseLastUpdateTime);
+    lyricPulseLastUpdateTime = now;
+    const decayFactor = Math.exp(-dt / lyricPulseDecayTime);
+
+    // Choose a "lyric-video" friendly color: use palette primary (SUNSET looks golden).
+    const lineColor = colors.primary || '#FFD700';
+    const glowColor = colors.secondary || lineColor;
+
+    // Use more mid-low frequencies for a "pulse" feel (not too noisy).
+    const dataStart = Math.floor(dataArray.length * 0.05);
+    const dataEnd = Math.floor(dataArray.length * 0.45);
+    const dataSpan = Math.max(1, dataEnd - dataStart);
+
+    // Spike geometry
+    const maxSpike = height * 0.10;
+    const minSpikeToDraw = 2.0;
+
+    // Baseline dots
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = applyAlphaToColor(lineColor, 0.85);
+
+    for (let i = 0; i < numDots; i++) {
+        const x = i * dotSpacing + (dotSpacing * 0.5);
+        ctx.beginPath();
+        ctx.arc(x, baseLineY, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Spikes (audio-reactive)
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = glowColor;
+    ctx.strokeStyle = applyAlphaToColor(lineColor, 0.9);
+
+    for (let i = 0; i < numDots; i++) {
+        const progress = i / Math.max(1, numDots - 1);
+        const idx = dataStart + Math.floor(progress * dataSpan);
+        const v = dataArray[Math.min(dataArray.length - 1, idx)] / 255;
+
+        // Compress so spikes are occasional, like the reference.
+        const compressed = Math.pow(Math.max(0, v - 0.03), 2.2);
+        const target = Math.min(maxSpike, compressed * maxSpike * sensitivity * 2.2);
+
+        const prev = lyricPulseDecayBuffer[i] || 0;
+        lyricPulseDecayBuffer[i] = target > prev ? target : prev * decayFactor;
+
+        const spike = lyricPulseDecayBuffer[i];
+        if (spike < minSpikeToDraw) continue;
+
+        const x = i * dotSpacing + (dotSpacing * 0.5);
+
+        // Slight asymmetry looks more "lyric video": mostly above baseline, a bit below.
+        const up = spike;
+        const down = spike * 0.35;
+
+        ctx.beginPath();
+        ctx.moveTo(x, baseLineY - up);
+        ctx.lineTo(x, baseLineY + down);
+        ctx.stroke();
+    }
+
     ctx.restore();
 };
 
@@ -7538,6 +7647,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.Z_CUSTOM]: drawGeometricBars, // 暫時使用 drawGeometricBars，稍後會替換
     [VisualizationType.VINYL_RECORD]: drawVinylRecord,
     [VisualizationType.BASIC_WAVE]: drawBasicWave,
+    [VisualizationType.LYRIC_PULSE_LINE]: drawLyricPulseLine,
     [VisualizationType.CHINESE_CONTROL_CARD]: drawBasicWave, // 暫時使用 drawBasicWave
     [VisualizationType.DYNAMIC_CONTROL_CARD]: drawDynamicControlCard,
     [VisualizationType.FRAME_PIXELATION]: drawFramePixelation,
@@ -7987,7 +8097,12 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 const currentTransform = propsRef.current.visualizationTransform || { x: 0, y: 0, scale: 1.0 };
                 const dragOffset = dragState.current.draggedElement === 'visualization' ? dragState.current.dragOffset : { x: 0, y: 0 };
                 const scale = propsRef.current.visualizationScale || 1.0;
+                const rotationDeg = typeof propsRef.current.effectRotation === 'number' ? propsRef.current.effectRotation : 0;
+                const rotationRad = (rotationDeg * Math.PI) / 180;
                 ctx.translate(centerX + effectOffsetX + currentTransform.x + dragOffset.x, centerY + effectOffsetY + currentTransform.y + dragOffset.y);
+                if (rotationRad !== 0) {
+                    ctx.rotate(rotationRad);
+                }
                 ctx.scale(effectScale * scale, effectScale * scale);
                 ctx.translate(-centerX, -centerY);
             }
@@ -8267,7 +8382,18 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 y: basePosition.y + (dragOffset.y / height) * 100
             };
             
-            drawCtaAnimation(ctx, width, height, propsRef.current.ctaChannelName, ctaPosition, propsRef.current.ctaFontFamily);
+            drawCtaAnimation(
+                ctx,
+                width,
+                height,
+                propsRef.current.ctaChannelName,
+                ctaPosition,
+                propsRef.current.ctaFontFamily,
+                propsRef.current.ctaTextColor,
+                propsRef.current.ctaStrokeColor,
+                propsRef.current.ctaTextEffect,
+                isBeat
+            );
         }
 
         // 繪製開場文字動畫（Intro Overlay）— 放在 CTA 之後，確保最上層
@@ -8548,7 +8674,18 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         }
     };
     // 繪製 CTA 動畫
-    const drawCtaAnimation = (ctx: CanvasRenderingContext2D, width: number, height: number, channelName: string, position: { x: number; y: number }, fontFamily?: FontType) => {
+    const drawCtaAnimation = (
+        ctx: CanvasRenderingContext2D,
+        width: number,
+        height: number,
+        channelName: string,
+        position: { x: number; y: number },
+        fontFamily?: FontType,
+        textColor?: string,
+        strokeColor?: string,
+        textEffect?: GraphicEffectType,
+        isBeat?: boolean
+    ) => {
         const currentTime = Date.now();
         const audioCurrentTime = propsRef.current.audioRef?.current?.currentTime || 0;
         
@@ -8642,35 +8779,77 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             
             ctx.restore();
             
-            // 中央文字
+            // 中央文字（樣式與其他區塊一致：字型/顏色/描邊/特效）
             ctx.save();
             ctx.translate(ctaX, ctaY);
             ctx.scale(scale, scale);
             ctx.translate(-ctaX, -ctaY);
-            
-            // 文字陰影效果
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-            ctx.shadowBlur = 3;
-            ctx.shadowOffsetX = 1;
-            ctx.shadowOffsetY = 1;
-            
-            // 訂閱文字（中文）- 使用動態字體
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+
             const actualFontName = FONT_MAP[fontFamily || FontType.POPPINS] || 'Poppins';
-            ctx.font = `bold 36px "${actualFontName}", "Noto Sans TC", sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('訂閱', ctaX, ctaY - 35);
-            
-            // 訂閱文字（英文）- 使用動態字體
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-            ctx.font = `bold 28px "${actualFontName}", "Noto Sans TC", sans-serif`;
-            ctx.fillText('SUBSCRIBE', ctaX, ctaY + 5);
-            
-            // 頻道名稱，使用動態字體
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-            ctx.font = `bold 22px "${actualFontName}", "Noto Sans TC", sans-serif`;
-            ctx.fillText(channelName, ctaX, ctaY + 50);
+            const color = (textColor || '#FFFFFF');
+            const stroke = (strokeColor || '#000000');
+            const effect = textEffect || GraphicEffectType.NONE;
+
+            const drawLine = (text: string, sizePx: number, y: number, opacity: number) => {
+                ctx.save();
+                ctx.globalAlpha *= opacity;
+                const fontWeight = effect === GraphicEffectType.BOLD ? '900' : 'bold';
+                ctx.font = `${fontWeight} ${sizePx}px "${actualFontName}", "Noto Sans TC", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                // shadow/glow
+                if (effect === GraphicEffectType.SHADOW) {
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                } else if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                } else {
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                }
+
+                // stroke first (if any)
+                if (stroke && stroke !== 'transparent') {
+                    const strokeW = Math.max(2, Math.round(sizePx * 0.12));
+                    ctx.lineWidth = strokeW;
+                    ctx.strokeStyle = stroke;
+                    ctx.strokeText(text, ctaX, y);
+                }
+
+                // main fill
+                ctx.fillStyle = color;
+                ctx.fillText(text, ctaX, y);
+
+                // glitch overlay on beat
+                if (effect === GraphicEffectType.GLITCH && isBeat) {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'lighter';
+                    const intensity = Math.max(3, Math.round(sizePx * 0.08));
+                    const ox = (Math.random() - 0.5) * intensity;
+                    const oy = (Math.random() - 0.5) * intensity;
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+                    ctx.fillText(text, ctaX + ox, y + oy);
+                    ctx.fillStyle = 'rgba(0, 0, 255, 0.7)';
+                    ctx.fillText(text, ctaX - ox, y - oy);
+                    ctx.fillStyle = 'rgba(0, 255, 0, 0.6)';
+                    ctx.fillText(text, ctaX + ox * 0.5, y - oy * 0.5);
+                    ctx.restore();
+                }
+
+                ctx.restore();
+            };
+
+            drawLine('訂閱', 36, ctaY - 35, 0.95);
+            drawLine('SUBSCRIBE', 28, ctaY + 5, 0.88);
+            drawLine(channelName, 22, ctaY + 50, 0.78);
             
             ctx.restore();
             

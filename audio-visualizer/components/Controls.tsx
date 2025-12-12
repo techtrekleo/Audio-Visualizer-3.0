@@ -66,6 +66,8 @@ interface ControlsProps {
     onEffectOffsetXChange: (value: number) => void;
     effectOffsetY: number;
     onEffectOffsetYChange: (value: number) => void;
+    effectRotation: number;
+    onEffectRotationChange: (value: number) => void;
     // Lyrics Display props (測試中)
     showLyricsDisplay: boolean;
     onShowLyricsDisplayChange: (show: boolean) => void;
@@ -319,6 +321,8 @@ const Controls: React.FC<ControlsProps> = ({
     onEffectOffsetXChange,
     effectOffsetY,
     onEffectOffsetYChange,
+    effectRotation,
+    onEffectRotationChange,
     // Lyrics Display props (測試中)
     showLyricsDisplay,
     onShowLyricsDisplayChange,
@@ -876,7 +880,7 @@ const Controls: React.FC<ControlsProps> = ({
             
             {/* --- Advanced Controls --- */}
             <ControlSection title="進階設定" className="mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-300">聲波描邊</label>
                         <button
@@ -915,6 +919,15 @@ const Controls: React.FC<ControlsProps> = ({
                         min={-500}
                         max={500}
                         step={10}
+                    />
+
+                    <SliderControl
+                        label="旋轉角度 (°)"
+                        value={effectRotation}
+                        onChange={onEffectRotationChange}
+                        min={-180}
+                        max={180}
+                        step={1}
                     />
                 </div>
             </ControlSection>

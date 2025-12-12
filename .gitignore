@@ -103,3 +103,6 @@ temp/
 
 # Netlify
 .netlify
+
+# Playwright MCP artifacts
+.playwright-mcp/

@@ -29,6 +29,7 @@ export interface SavedSettings {
     effectScale: number;
     effectOffsetX: number;
     effectOffsetY: number;
+    effectRotation: number;
     lyricsFontSize: number;
     lyricsFontFamily: FontType;
     lyricsPositionX: number;
@@ -52,6 +53,16 @@ export interface SavedSettings {
     introBgOpacity: number;
     introPositionX: number;
     introPositionY: number;
+
+    // CTA Animation
+    showCtaAnimation: boolean;
+    ctaChannelName: string;
+    ctaFontFamily: FontType;
+    ctaTextColor: string;
+    ctaStrokeColor: string;
+    ctaTextEffect: GraphicEffectType;
+    ctaPositionX: number;
+    ctaPositionY: number;
 
     // Control Card (text)
     controlCardFontFamily: FontType;

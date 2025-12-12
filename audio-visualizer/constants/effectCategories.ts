@@ -52,6 +52,14 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         tags: ['純白', '平滑', '衰減', '訂製', '歐皇']
     },
     {
+        type: VisualizationType.LYRIC_PULSE_LINE,
+        category: EffectCategory.BASIC,
+        description: '點狀基線 + 音訊脈衝尖峰（類似 Lyric Video 的細線波形）',
+        difficulty: 'easy',
+        performance: 'low',
+        tags: ['點狀', '基線', '脈衝', 'Lyric', '簡潔', '細線']
+    },
+    {
         type: VisualizationType.CIRCULAR_WAVE,
         category: EffectCategory.BASIC,
         description: '圓形波形效果，中間圓形圖片加上周圍四組1/4圓音訊線條',

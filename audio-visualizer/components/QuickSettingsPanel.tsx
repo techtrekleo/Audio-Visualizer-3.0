@@ -15,6 +15,8 @@ interface QuickSettingsPanelProps {
     onEffectOffsetXChange: (value: number) => void;
     effectOffsetY: number;
     onEffectOffsetYChange: (value: number) => void;
+    effectRotation: number;
+    onEffectRotationChange: (value: number) => void;
     isRecording: boolean;
     colorPalette: ColorPaletteType;
     onColorPaletteChange: (palette: ColorPaletteType) => void;
@@ -49,6 +51,8 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
     onEffectOffsetXChange,
     effectOffsetY,
     onEffectOffsetYChange,
+    effectRotation,
+    onEffectRotationChange,
     isRecording,
     colorPalette,
     onColorPaletteChange,
@@ -345,6 +349,47 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                 }}
                             />
                         </div>
+                    </div>
+
+                    {/* 旋轉角度 */}
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                            <label className="text-sm font-medium text-gray-300">旋轉角度</label>
+                            <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">{Math.round(effectRotation)}°</span>
+                        </div>
+                        <div className="relative">
+                            <div
+                                className="w-full h-2 rounded-lg absolute top-0 left-0"
+                                style={{
+                                    background: `linear-gradient(to right,
+                                        #8B9DC3 0%,
+                                        #A5A0B0 50%,
+                                        #C4A5A5 100%)`
+                                }}
+                            />
+                            <input
+                                type="range"
+                                min={-180}
+                                max={180}
+                                step={1}
+                                value={effectRotation}
+                                onChange={(e) => onEffectRotationChange(parseFloat(e.target.value))}
+                                className="w-full h-2 bg-transparent rounded-lg appearance-none cursor-pointer slider-enhanced relative z-10"
+                                style={{ background: 'transparent' }}
+                            />
+                            <div
+                                className="absolute top-0 h-2 rounded-lg pointer-events-none"
+                                style={{
+                                    left: 0,
+                                    width: `${((effectRotation - (-180)) / (180 - (-180))) * 100}%`,
+                                    transition: 'width 0.1s ease',
+                                    backgroundColor: 'rgba(156, 163, 175, 0.4)'
+                                }}
+                            />
+                        </div>
+                        <p className="text-xs text-gray-400">
+                            旋轉可視化特效（部分故障/實驗特效會自動跳過旋轉）
+                        </p>
                     </div>
                 </div>
 

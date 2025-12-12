@@ -92,6 +92,7 @@ function App() {
     const [effectScale, setEffectScale] = useState<number>(1.0);
     const [effectOffsetX, setEffectOffsetX] = useState<number>(0);
     const [effectOffsetY, setEffectOffsetY] = useState<number>(0);
+    const [effectRotation, setEffectRotation] = useState<number>(0); // degrees
 
     // Subtitle State
     const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
@@ -206,6 +207,9 @@ function App() {
     const [ctaChannelName, setCtaChannelName] = useState<string>('口袋裡的貓');
     const [ctaPosition, setCtaPosition] = useState<{ x: number; y: number }>({ x: 50, y: 50 }); // 百分比位置
     const [ctaFontFamily, setCtaFontFamily] = useState<FontType>(FontType.POPPINS); // CTA 字體
+    const [ctaTextColor, setCtaTextColor] = useState<string>('#FFFFFF');
+    const [ctaStrokeColor, setCtaStrokeColor] = useState<string>('#000000');
+    const [ctaTextEffect, setCtaTextEffect] = useState<GraphicEffectType>(GraphicEffectType.NONE);
     const [ctaPositionX, setCtaPositionX] = useState<number>(50); // CTA 水平位置 (0-100)
     const [ctaPositionY, setCtaPositionY] = useState<number>(50); // CTA 垂直位置 (0-100)
 
@@ -1696,6 +1700,7 @@ function App() {
                                     effectScale={effectScale}
                                     effectOffsetX={effectOffsetX}
                                     effectOffsetY={effectOffsetY}
+                                    effectRotation={effectRotation}
                                     showLyricsDisplay={showLyricsDisplay}
                                     currentTime={currentTime}
                                     lyricsFontSize={lyricsFontSize}
@@ -1720,6 +1725,9 @@ function App() {
                                     showCtaAnimation={showCtaAnimation}
                                     ctaChannelName={ctaChannelName}
                                     ctaFontFamily={ctaFontFamily}
+                                    ctaTextColor={ctaTextColor}
+                                    ctaStrokeColor={ctaStrokeColor}
+                                    ctaTextEffect={ctaTextEffect}
                                     ctaPosition={ctaPosition}
                                     onCtaPositionUpdate={setCtaPosition}
                                     // Intro Overlay props
@@ -2052,6 +2060,8 @@ function App() {
                             onEffectOffsetXChange={setEffectOffsetX}
                             effectOffsetY={effectOffsetY}
                             onEffectOffsetYChange={setEffectOffsetY}
+                            effectRotation={effectRotation}
+                            onEffectRotationChange={setEffectRotation}
                             showLyricsDisplay={showLyricsDisplay}
                             onShowLyricsDisplayChange={setShowLyricsDisplay}
                             lyricsFontSize={lyricsFontSize}
@@ -2101,6 +2111,12 @@ function App() {
                             onCtaChannelNameChange={setCtaChannelName}
                             ctaFontFamily={ctaFontFamily}
                             onCtaFontFamilyChange={setCtaFontFamily}
+                            ctaTextColor={ctaTextColor}
+                            onCtaTextColorChange={setCtaTextColor}
+                            ctaStrokeColor={ctaStrokeColor}
+                            onCtaStrokeColorChange={setCtaStrokeColor}
+                            ctaTextEffect={ctaTextEffect}
+                            onCtaTextEffectChange={setCtaTextEffect}
                             ctaPositionX={ctaPositionX}
                             onCtaPositionXChange={handleCtaPositionXChange}
                             ctaPositionY={ctaPositionY}

@@ -26,6 +26,7 @@ export enum VisualizationType {
     VINYL_RECORD = '唱片加控制卡',
     CHINESE_CONTROL_CARD = '中國風控制卡',
     BASIC_WAVE = '歐皇訂製版',
+    LYRIC_PULSE_LINE = '歌詞脈衝線 (Lyric Pulse Line)',
     DYNAMIC_CONTROL_CARD = '重低音強化',
     FRAME_PIXELATION = '方框 像素化',
     PHOTO_SHAKE = '相片晃動',
@@ -276,6 +277,7 @@ export interface AudioVisualizerProps {
     effectScale: number;
     effectOffsetX: number;
     effectOffsetY: number;
+    effectRotation: number; // degrees
     // Lyrics Display props
     showLyricsDisplay: boolean;
     currentTime: number;
@@ -308,6 +310,10 @@ export interface AudioVisualizerProps {
     // CTA 動畫狀態
     showCtaAnimation?: boolean;
     ctaChannelName?: string;
+    ctaFontFamily?: FontType;
+    ctaTextColor?: string;
+    ctaStrokeColor?: string;
+    ctaTextEffect?: GraphicEffectType;
     ctaPosition?: { x: number; y: number };
     onCtaPositionUpdate?: (position: { x: number; y: number }) => void;
     // Z總訂製款狀態
