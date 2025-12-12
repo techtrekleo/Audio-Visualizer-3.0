@@ -198,6 +198,7 @@ export enum SubtitleDisplayMode {
     LYRICS_SCROLL = '捲軸歌詞',
     WORD_BY_WORD = '逐字顯示',
     SLIDING_GROUP = '滾動字幕組',
+    FADE_LINES = '淡入淡出（上下線）',
 }
 
 export enum SubtitleFormat {

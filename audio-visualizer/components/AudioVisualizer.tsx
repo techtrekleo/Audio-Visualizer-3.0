@@ -90,6 +90,12 @@ interface AudioVisualizerProps {
     subtitleStrokeColor?: string;
     subtitleEffect?: GraphicEffectType;
     subtitleBgStyle: SubtitleBgStyle;
+    // Fade subtitles with top/bottom lines
+    subtitleFadeInSeconds?: number;
+    subtitleFadeOutSeconds?: number;
+    subtitleLineColor?: string;
+    subtitleLineThickness?: number;
+    subtitleLineGap?: number;
     effectScale: number;
     effectOffsetX: number;
     effectOffsetY: number;
@@ -5531,6 +5537,149 @@ const drawSubtitles = (
     ctx.restore();
 };
 
+// 淡入淡出字幕 + 上下線包夾（橫式）
+const drawFadeLinesSubtitle = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    subtitles: Subtitle[],
+    currentSubtitleIndex: number,
+    currentSubtitle: Subtitle | undefined,
+    currentTime: number,
+    {
+        fontSizeVw,
+        fontFamily,
+        color,
+        effect,
+        bgStyle,
+        isBeat,
+        dragOffset = { x: 0, y: 0 },
+        orientation = SubtitleOrientation.HORIZONTAL,
+        strokeColor,
+        fadeInSeconds = 0.25,
+        fadeOutSeconds = 0.25,
+        lineColor = '#FFFFFF',
+        lineThickness = 3,
+        lineGap = 10,
+    }: {
+        fontSizeVw: number;
+        fontFamily: FontType;
+        color: string;
+        effect: GraphicEffectType;
+        bgStyle: SubtitleBgStyle;
+        isBeat?: boolean;
+        dragOffset?: { x: number; y: number };
+        orientation?: SubtitleOrientation;
+        strokeColor?: string;
+        fadeInSeconds?: number;
+        fadeOutSeconds?: number;
+        lineColor?: string;
+        lineThickness?: number;
+        lineGap?: number;
+    }
+) => {
+    if (!currentSubtitle || !currentSubtitle.text) return;
+
+    // 直式先沿用原本字幕，不畫上下線（避免方向衝突）
+    if (orientation === SubtitleOrientation.VERTICAL) {
+        drawSubtitles(ctx, width, height, currentSubtitle, {
+            fontSizeVw,
+            fontFamily,
+            color,
+            effect,
+            bgStyle,
+            isBeat,
+            dragOffset,
+            orientation,
+            strokeColor,
+        });
+        return;
+    }
+
+    const start = currentSubtitle.time;
+    const nextTime = subtitles[currentSubtitleIndex + 1]?.time;
+    const end = (typeof currentSubtitle.endTime === 'number' ? currentSubtitle.endTime : nextTime) ?? (start + 2.5);
+    const fi = Math.max(0, fadeInSeconds);
+    const fo = Math.max(0, fadeOutSeconds);
+    const dur = Math.max(0.001, end - start);
+
+    const alphaAt = (t: number) => {
+        if (t < start || t > end) return 0;
+        if (fi > 0 && t < start + fi) return (t - start) / fi;
+        if (fo > 0 && t > end - fo) return Math.max(0, (end - t) / fo);
+        return 1;
+    };
+
+    const alpha = Math.max(0, Math.min(1, alphaAt(currentTime)));
+    if (alpha <= 0) return;
+
+    // 先畫字幕（背景/描邊/特效沿用），再畫上下線
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    drawSubtitles(ctx, width, height, currentSubtitle, {
+        fontSizeVw,
+        fontFamily,
+        color,
+        effect,
+        bgStyle,
+        isBeat,
+        dragOffset,
+        orientation,
+        strokeColor,
+    });
+
+    // 計算字幕位置（複製 drawSubtitles 的橫式定位邏輯）
+    const fontSize = (fontSizeVw / 100) * width;
+    const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
+    const fontWeight = effect === GraphicEffectType.BOLD ? '900' : 'bold';
+    ctx.font = `${fontWeight} ${fontSize}px "${actualFontName}", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+
+    const horizontalPos = (latestPropsRef as any)?.horizontalSubtitlePosition ?? 0.5;
+    const horizontalVerticalPos = (latestPropsRef as any)?.horizontalSubtitleVerticalPosition ?? 0.2;
+    const margin = width * 0.1;
+    const positionX = margin + (width - 2 * margin) * horizontalPos + dragOffset.x;
+    const positionY = margin + (height - 2 * margin) * horizontalVerticalPos + dragOffset.y;
+
+    const metrics = ctx.measureText(currentSubtitle.text);
+    const textHeight = metrics.fontBoundingBoxAscent ?? fontSize;
+    const textWidth = metrics.width;
+
+    // 線條尺寸（用 1080p 作為基準縮放）
+    const scale = Math.max(width / 1920, height / 1080);
+    const thick = Math.max(1, lineThickness * scale);
+    const gap = Math.max(0, lineGap * scale);
+    const pad = fontSize * 0.45;
+    const lineW = textWidth + pad * 2;
+    const x1 = positionX - lineW / 2;
+    const x2 = positionX + lineW / 2;
+
+    const yTop = (positionY - textHeight) - gap;
+    const yBottom = positionY + gap;
+
+    ctx.save();
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = thick;
+    ctx.lineCap = 'round';
+    ctx.shadowColor = (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) ? lineColor : 'transparent';
+    ctx.shadowBlur = (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) ? 10 * scale : 0;
+
+    ctx.beginPath();
+    ctx.moveTo(x1, yTop);
+    ctx.lineTo(x2, yTop);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x1, yBottom);
+    ctx.lineTo(x2, yBottom);
+    ctx.stroke();
+
+    ctx.restore();
+    ctx.restore();
+};
+
 // 開場文字動畫：淡入 → 停留 → 淡出
 const drawIntroOverlay = (
     ctx: CanvasRenderingContext2D,
@@ -8001,6 +8150,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         // 字幕和自定義文字最後繪製，確保在最上層
         const currentTime = audioRef.current?.currentTime ?? 0;
         let currentSubtitle: Subtitle | undefined = undefined;
+        let currentSubtitleIndex = -1;
         if (showSubtitles && subtitles.length > 0) {
             for (let i = subtitles.length - 1; i >= 0; i--) {
                 const subtitle = subtitles[i];
@@ -8008,6 +8158,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                     // 檢查結束時間
                     if (!subtitle.endTime || currentTime <= subtitle.endTime) {
                         currentSubtitle = subtitle;
+                        currentSubtitleIndex = i;
                     break;
                     }
                 }
@@ -8064,6 +8215,25 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 dragOffset,
                 orientation: propsRef.current.subtitleOrientation,
                 strokeColor: propsRef.current.subtitleStrokeColor
+            });
+        } else if (propsRef.current.subtitleDisplayMode === SubtitleDisplayMode.FADE_LINES && currentSubtitle && currentSubtitleIndex >= 0) {
+            // 淡入淡出字幕（上下線）
+            const dragOffset = dragState.current.draggedElement === 'subtitle' ? dragState.current.dragOffset : (propsRef.current.subtitleDragOffset || { x: 0, y: 0 });
+            drawFadeLinesSubtitle(ctx, width, height, subtitles, currentSubtitleIndex, currentSubtitle, currentTime, {
+                fontSizeVw: subtitleFontSize,
+                fontFamily: subtitleFontFamily,
+                color: subtitleColor,
+                effect: subtitleEffect || GraphicEffectType.NONE,
+                bgStyle: subtitleBgStyle,
+                isBeat,
+                dragOffset,
+                orientation: propsRef.current.subtitleOrientation,
+                strokeColor: propsRef.current.subtitleStrokeColor,
+                fadeInSeconds: propsRef.current.subtitleFadeInSeconds ?? 0.25,
+                fadeOutSeconds: propsRef.current.subtitleFadeOutSeconds ?? 0.25,
+                lineColor: propsRef.current.subtitleLineColor ?? '#FFFFFF',
+                lineThickness: propsRef.current.subtitleLineThickness ?? 3,
+                lineGap: propsRef.current.subtitleLineGap ?? 10,
             });
         }
         // 無字幕模式：不顯示任何字幕

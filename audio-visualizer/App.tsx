@@ -105,6 +105,12 @@ function App() {
     const [subtitleEffect, setSubtitleEffect] = useState<GraphicEffectType>(GraphicEffectType.NONE);
     const [subtitleBgStyle, setSubtitleBgStyle] = useState<SubtitleBgStyle>(SubtitleBgStyle.TRANSPARENT);
     const [subtitleDisplayMode, setSubtitleDisplayMode] = useState<SubtitleDisplayMode>(SubtitleDisplayMode.CLASSIC);
+    // Fade subtitles with top/bottom lines
+    const [subtitleFadeInSeconds, setSubtitleFadeInSeconds] = useState<number>(0.25);
+    const [subtitleFadeOutSeconds, setSubtitleFadeOutSeconds] = useState<number>(0.25);
+    const [subtitleLineColor, setSubtitleLineColor] = useState<string>('#FFFFFF');
+    const [subtitleLineThickness, setSubtitleLineThickness] = useState<number>(3);
+    const [subtitleLineGap, setSubtitleLineGap] = useState<number>(10);
     const [subtitleFormat, setSubtitleFormat] = useState<SubtitleFormat>(SubtitleFormat.BRACKET);
     const [subtitleLanguage, setSubtitleLanguage] = useState<SubtitleLanguage>(SubtitleLanguage.CHINESE);
     const [subtitleOrientation, setSubtitleOrientation] = useState<SubtitleOrientation>(() => SubtitleOrientation.HORIZONTAL);
@@ -1682,6 +1688,11 @@ function App() {
                                     subtitleStrokeColor={subtitleStrokeColor}
                                     subtitleEffect={subtitleEffect}
                                     subtitleBgStyle={subtitleBgStyle}
+                                    subtitleFadeInSeconds={subtitleFadeInSeconds}
+                                    subtitleFadeOutSeconds={subtitleFadeOutSeconds}
+                                    subtitleLineColor={subtitleLineColor}
+                                    subtitleLineThickness={subtitleLineThickness}
+                                    subtitleLineGap={subtitleLineGap}
                                     effectScale={effectScale}
                                     effectOffsetX={effectOffsetX}
                                     effectOffsetY={effectOffsetY}
@@ -2053,6 +2064,16 @@ function App() {
                             onLyricsPositionYChange={setLyricsPositionY}
                             subtitleDisplayMode={subtitleDisplayMode}
                             onSubtitleDisplayModeChange={setSubtitleDisplayMode}
+                            subtitleFadeInSeconds={subtitleFadeInSeconds}
+                            onSubtitleFadeInSecondsChange={setSubtitleFadeInSeconds}
+                            subtitleFadeOutSeconds={subtitleFadeOutSeconds}
+                            onSubtitleFadeOutSecondsChange={setSubtitleFadeOutSeconds}
+                            subtitleLineColor={subtitleLineColor}
+                            onSubtitleLineColorChange={setSubtitleLineColor}
+                            subtitleLineThickness={subtitleLineThickness}
+                            onSubtitleLineThicknessChange={setSubtitleLineThickness}
+                            subtitleLineGap={subtitleLineGap}
+                            onSubtitleLineGapChange={setSubtitleLineGap}
                             currentTime={currentTime}
                             audioDuration={audioDuration}
                             onSeek={handleSeek}

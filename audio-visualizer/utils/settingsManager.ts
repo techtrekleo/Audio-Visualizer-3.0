@@ -21,6 +21,11 @@ export interface SavedSettings {
     subtitleEffect: GraphicEffectType;
     subtitleBgStyle: SubtitleBgStyle;
     subtitleDisplayMode: SubtitleDisplayMode;
+    subtitleFadeInSeconds: number;
+    subtitleFadeOutSeconds: number;
+    subtitleLineColor: string;
+    subtitleLineThickness: number;
+    subtitleLineGap: number;
     effectScale: number;
     effectOffsetX: number;
     effectOffsetY: number;

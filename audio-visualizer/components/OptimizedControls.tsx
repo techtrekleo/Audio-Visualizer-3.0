@@ -244,6 +244,16 @@ interface OptimizedControlsProps {
     onLyricsPositionYChange: (value: number) => void;
     subtitleDisplayMode: SubtitleDisplayMode;
     onSubtitleDisplayModeChange: (mode: SubtitleDisplayMode) => void;
+    subtitleFadeInSeconds?: number;
+    onSubtitleFadeInSecondsChange?: (v: number) => void;
+    subtitleFadeOutSeconds?: number;
+    onSubtitleFadeOutSecondsChange?: (v: number) => void;
+    subtitleLineColor?: string;
+    onSubtitleLineColorChange?: (v: string) => void;
+    subtitleLineThickness?: number;
+    onSubtitleLineThicknessChange?: (v: number) => void;
+    subtitleLineGap?: number;
+    onSubtitleLineGapChange?: (v: number) => void;
     // Progress bar props
     currentTime: number;
     audioDuration: number;
@@ -709,6 +719,11 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         subtitleEffect: props.subtitleEffect,
         subtitleBgStyle: props.subtitleBgStyle,
         subtitleDisplayMode: props.subtitleDisplayMode,
+        subtitleFadeInSeconds: props.subtitleFadeInSeconds ?? 0.25,
+        subtitleFadeOutSeconds: props.subtitleFadeOutSeconds ?? 0.25,
+        subtitleLineColor: props.subtitleLineColor || '#FFFFFF',
+        subtitleLineThickness: props.subtitleLineThickness ?? 3,
+        subtitleLineGap: props.subtitleLineGap ?? 10,
         effectScale: props.effectScale,
         effectOffsetX: props.effectOffsetX,
         effectOffsetY: props.effectOffsetY,
@@ -781,6 +796,11 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.subtitleEffect && props.onSubtitleEffectChange) props.onSubtitleEffectChange(settings.subtitleEffect);
         if (settings.subtitleBgStyle) props.onSubtitleBgStyleChange(settings.subtitleBgStyle);
         if (settings.subtitleDisplayMode) props.onSubtitleDisplayModeChange(settings.subtitleDisplayMode);
+        if (settings.subtitleFadeInSeconds !== undefined) props.onSubtitleFadeInSecondsChange?.(settings.subtitleFadeInSeconds);
+        if (settings.subtitleFadeOutSeconds !== undefined) props.onSubtitleFadeOutSecondsChange?.(settings.subtitleFadeOutSeconds);
+        if (settings.subtitleLineColor !== undefined) props.onSubtitleLineColorChange?.(settings.subtitleLineColor);
+        if (settings.subtitleLineThickness !== undefined) props.onSubtitleLineThicknessChange?.(settings.subtitleLineThickness);
+        if (settings.subtitleLineGap !== undefined) props.onSubtitleLineGapChange?.(settings.subtitleLineGap);
         if (settings.effectScale !== undefined) props.onEffectScaleChange(settings.effectScale);
         if (settings.effectOffsetX !== undefined) props.onEffectOffsetXChange(settings.effectOffsetX);
         if (settings.effectOffsetY !== undefined) props.onEffectOffsetYChange(settings.effectOffsetY);
@@ -1948,10 +1968,97 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                     <span>滾動字幕組</span>
                                                 </span>
                                             )}
+                                            {mode === SubtitleDisplayMode.FADE_LINES && (
+                                                <span className="flex items-center space-x-2">
+                                                    <span>〰️</span>
+                                                    <span>淡入淡出</span>
+                                                </span>
+                                            )}
                                         </button>
                                     ))}
                                 </div>
                             </div>
+                            
+                            {/* 淡入淡出（上下線）模式設定 */}
+                            {props.subtitleDisplayMode === SubtitleDisplayMode.FADE_LINES && (
+                                <div className="mt-4 p-4 rounded-lg border border-gray-600 bg-gray-800/40 space-y-4">
+                                    <div className="text-sm font-medium text-cyan-300">淡入淡出字幕（上下線）設定</div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <SliderControl
+                                            label="淡入時間 (秒)"
+                                            value={props.subtitleFadeInSeconds ?? 0.25}
+                                            onChange={(v) => props.onSubtitleFadeInSecondsChange?.(v)}
+                                            min={0}
+                                            max={2}
+                                            step={0.05}
+                                            colorType="scale"
+                                        />
+                                        <SliderControl
+                                            label="淡出時間 (秒)"
+                                            value={props.subtitleFadeOutSeconds ?? 0.25}
+                                            onChange={(v) => props.onSubtitleFadeOutSecondsChange?.(v)}
+                                            min={0}
+                                            max={2}
+                                            step={0.05}
+                                            colorType="scale"
+                                        />
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-300">上下線顏色</label>
+                                            <div className="flex space-x-2 flex-wrap">
+                                                {PRESET_COLORS.map(color => (
+                                                    <SwatchButton
+                                                        key={`fade-lines-color-${color}`}
+                                                        color={color}
+                                                        onClick={(c) => props.onSubtitleLineColorChange?.(c)}
+                                                        isActive={(props.subtitleLineColor || '#FFFFFF') === color}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <input
+                                                    type="color"
+                                                    value={props.subtitleLineColor || '#FFFFFF'}
+                                                    onChange={(e) => props.onSubtitleLineColorChange?.(e.target.value)}
+                                                    className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={props.subtitleLineColor || '#FFFFFF'}
+                                                    onChange={(e) => props.onSubtitleLineColorChange?.(e.target.value)}
+                                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
+                                                    placeholder="#RRGGBB"
+                                                />
+                                            </div>
+                                        </div>
+                                        
+                                        <SliderControl
+                                            label="線條粗細 (px)"
+                                            value={props.subtitleLineThickness ?? 3}
+                                            onChange={(v) => props.onSubtitleLineThicknessChange?.(v)}
+                                            min={1}
+                                            max={12}
+                                            step={1}
+                                            colorType="scale"
+                                        />
+                                        <SliderControl
+                                            label="線條距離字幕 (px)"
+                                            value={props.subtitleLineGap ?? 10}
+                                            onChange={(v) => props.onSubtitleLineGapChange?.(v)}
+                                            min={0}
+                                            max={40}
+                                            step={1}
+                                            colorType="position"
+                                        />
+                                    </div>
+                                    
+                                    <p className="text-xs text-gray-400">
+                                        文字的顏色/字體/特效/描邊，仍沿用上方「字幕」的既有設定。
+                                    </p>
+                                </div>
+                            )}
                             
                             {/* 字幕方向選擇器 */}
                             <div className="space-y-2">
