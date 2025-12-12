@@ -5611,52 +5611,6 @@ const drawIntroOverlay = (
         ctx.restore();
     }
 
-    // ===== 上下動態特效（在整個 intro 期間啟用） =====
-    // 霓虹掃光：上/下邊緣的流動光帶，增強視覺效果
-    {
-        const bandH = Math.max(10, Math.floor(height * 0.035));
-        const speed = 0.9; // 越大越快
-        const phase = (nowSeconds - startTime) * speed;
-        const glow = 0.55 * alpha; // 跟著 intro 透明度
-        const baseColor = color || '#FFFFFF';
-
-        const drawBand = (y: number, flip: boolean) => {
-            ctx.save();
-            ctx.globalAlpha = glow;
-            // 背景柔光
-            const grad = ctx.createLinearGradient(0, y, 0, y + bandH);
-            grad.addColorStop(0, 'rgba(0,0,0,0)');
-            grad.addColorStop(0.5, 'rgba(0,0,0,0.35)');
-            grad.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, y, width, bandH);
-
-            // 流動亮點（掃光條）
-            const stripeW = Math.max(120, Math.floor(width * 0.25));
-            const x = ((phase * width * 0.35) % (width + stripeW)) - stripeW;
-            const stripe = ctx.createLinearGradient(x, 0, x + stripeW, 0);
-            stripe.addColorStop(0, 'rgba(255,255,255,0)');
-            stripe.addColorStop(0.35, baseColor);
-            stripe.addColorStop(0.5, 'rgba(255,255,255,0.95)');
-            stripe.addColorStop(0.65, baseColor);
-            stripe.addColorStop(1, 'rgba(255,255,255,0)');
-
-            ctx.globalCompositeOperation = 'lighter';
-            ctx.shadowColor = baseColor;
-            ctx.shadowBlur = 18;
-            ctx.fillStyle = stripe;
-            // 加一點波動感
-            const wobble = Math.sin(phase * 2.2) * (bandH * 0.18);
-            const yy = y + (flip ? -wobble : wobble);
-            ctx.fillRect(0, yy, width, bandH);
-
-            ctx.restore();
-        };
-
-        drawBand(0, false);
-        drawBand(height - bandH, true);
-    }
-
     ctx.globalAlpha = alpha;
 
     // Position (0-100%)
@@ -5696,6 +5650,46 @@ const drawIntroOverlay = (
     ctx.fillStyle = `rgba(0, 0, 0, ${Math.max(0, Math.min(1, bgOpacity))})`;
     createRoundedRectPath(ctx, bgX, bgY, bgW, bgH, 12);
     ctx.fill();
+
+    // ===== A 版：更細更乾淨的霓虹掃光（包住文字卡片上下）=====
+    // 只保留細的掃光條本體，不做厚能量帶底色；位置是卡片上緣/下緣附近
+    {
+        const baseColor = color || '#FFFFFF';
+        const speed = 0.9;
+        const phase = (nowSeconds - startTime) * speed;
+        const bandH = Math.max(3, Math.floor(height * 0.012)); // 變細
+        const gap = Math.max(6, Math.floor(bandH * 1.6));
+
+        const x1 = Math.max(0, bgX);
+        const x2 = Math.min(width, bgX + bgW);
+        const bandW = Math.max(0, x2 - x1);
+        if (bandW > 0) {
+            const stripeW = Math.max(80, Math.floor(bandW * 0.45));
+            const stripeX = x1 + ((phase * bandW * 0.9) % (bandW + stripeW)) - stripeW;
+            const stripe = ctx.createLinearGradient(stripeX, 0, stripeX + stripeW, 0);
+            stripe.addColorStop(0, 'rgba(255,255,255,0)');
+            stripe.addColorStop(0.35, baseColor);
+            stripe.addColorStop(0.5, 'rgba(255,255,255,0.95)');
+            stripe.addColorStop(0.65, baseColor);
+            stripe.addColorStop(1, 'rgba(255,255,255,0)');
+
+            const drawThinBand = (y: number) => {
+                if (y + bandH < 0 || y > height) return;
+                ctx.save();
+                ctx.globalAlpha = 0.7 * alpha;
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.shadowColor = baseColor;
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = stripe;
+                createRoundedRectPath(ctx, x1, y, bandW, bandH, 999);
+                ctx.fill();
+                ctx.restore();
+            };
+
+            drawThinBand(bgY - gap - bandH);
+            drawThinBand(bgY + bgH + gap);
+        }
+    }
 
     // ===== 只填「歌名」時：自動加強視覺（不需要你多設參數） =====
     // 若只有一行文字（通常只填 title），額外增加：脈衝光暈 + 動態底線掃光，避免只有上下霓虹條時顯得單調
