@@ -5562,6 +5562,59 @@ const drawIntroOverlay = (
     createRoundedRectPath(ctx, bgX, bgY, bgW, bgH, 12);
     ctx.fill();
 
+    // ===== 只填「歌名」時：自動加強視覺（不需要你多設參數） =====
+    // 若只有一行文字（通常只填 title），額外增加：脈衝光暈 + 動態底線掃光，避免只有上下霓虹條時顯得單調
+    if (lines.length === 1) {
+        const baseColor = color || '#FFFFFF';
+        const phase = (nowSeconds - startTime);
+
+        // 1) 脈衝光暈（文字背後的柔光）
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = 0.45 * alpha;
+        const pulse = 0.5 + 0.5 * Math.sin(phase * 3.0);
+        const r = Math.max(bgW, bgH) * (0.55 + 0.12 * pulse);
+        const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
+        glow.addColorStop(0, baseColor);
+        glow.addColorStop(0.35, baseColor.replace('#', 'rgba(').includes('rgba(') ? baseColor : baseColor);
+        glow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = glow;
+        ctx.fillRect(x - r, y - r, r * 2, r * 2);
+        ctx.restore();
+
+        // 2) 動態底線掃光
+        ctx.save();
+        const underlineW = Math.min(width * 0.82, bgW * 0.95);
+        const underlineH = Math.max(3, Math.floor(titlePx * 0.08));
+        const underlineX = x - underlineW / 2;
+        const underlineY = bgY + bgH - padY * 0.55;
+
+        // 底線底色
+        ctx.globalAlpha = 0.35 * alpha;
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        createRoundedRectPath(ctx, underlineX, underlineY, underlineW, underlineH, 999);
+        ctx.fill();
+
+        // 掃光條（來回）
+        const stripeW = Math.max(120, underlineW * 0.35);
+        const pingpong = 0.5 + 0.5 * Math.sin(phase * 1.6);
+        const sx = underlineX + pingpong * (underlineW - stripeW);
+        const stripe = ctx.createLinearGradient(sx, 0, sx + stripeW, 0);
+        stripe.addColorStop(0, 'rgba(255,255,255,0)');
+        stripe.addColorStop(0.35, baseColor);
+        stripe.addColorStop(0.5, 'rgba(255,255,255,0.95)');
+        stripe.addColorStop(0.65, baseColor);
+        stripe.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.globalAlpha = 0.7 * alpha;
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.shadowColor = baseColor;
+        ctx.shadowBlur = 14;
+        ctx.fillStyle = stripe;
+        createRoundedRectPath(ctx, underlineX, underlineY, underlineW, underlineH, 999);
+        ctx.fill();
+        ctx.restore();
+    }
+
     // Text effect setup
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
