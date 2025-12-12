@@ -27,6 +27,25 @@ export interface SavedSettings {
     lyricsFontFamily: FontType;
     lyricsPositionX: number;
     lyricsPositionY: number;
+
+    // Intro Overlay（開場文字動畫）
+    showIntroOverlay: boolean;
+    introTitle: string;
+    introArtist: string;
+    introDescription: string;
+    introFontFamily: FontType;
+    introEffect: GraphicEffectType;
+    introColor: string;
+    introStrokeColor: string;
+    introTitleSize: number;
+    introArtistSize: number;
+    introDescriptionSize: number;
+    introFadeIn: number;
+    introHold: number;
+    introFadeOut: number;
+    introBgOpacity: number;
+    introPositionX: number;
+    introPositionY: number;
 }
 
 export class SettingsManager {

@@ -128,6 +128,26 @@ interface AudioVisualizerProps {
     ctaFontFamily?: FontType;
     ctaPosition?: { x: number; y: number };
     onCtaPositionUpdate?: (position: { x: number; y: number }) => void;
+    // Intro Overlay（開場文字動畫）
+    showIntroOverlay?: boolean;
+    introTitle?: string;
+    introArtist?: string;
+    introDescription?: string;
+    introFontFamily?: FontType;
+    introEffect?: GraphicEffectType;
+    introColor?: string;
+    introStrokeColor?: string;
+    introTitleSize?: number;
+    introArtistSize?: number;
+    introDescriptionSize?: number;
+    introFadeIn?: number;
+    introHold?: number;
+    introFadeOut?: number;
+    introBgOpacity?: number;
+    introPositionX?: number;
+    introPositionY?: number;
+    introStartTime?: number;
+    introTriggerId?: number;
     // Z總訂製款狀態
     zCustomCenterImage?: string | null;
     zCustomScale?: number;
@@ -5375,6 +5395,179 @@ const drawSubtitles = (
     
     ctx.restore();
 };
+
+// 開場文字動畫：淡入 → 停留 → 淡出
+const drawIntroOverlay = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    nowSeconds: number,
+    {
+        enabled,
+        startTime,
+        fadeIn,
+        hold,
+        fadeOut,
+        positionX,
+        positionY,
+        bgOpacity,
+        title,
+        artist,
+        description,
+        fontFamily,
+        effect,
+        color,
+        strokeColor,
+        titleSizeVw,
+        artistSizeVw,
+        descriptionSizeVw,
+    }: {
+        enabled: boolean;
+        startTime: number;
+        fadeIn: number;
+        hold: number;
+        fadeOut: number;
+        positionX: number;
+        positionY: number;
+        bgOpacity: number;
+        title: string;
+        artist: string;
+        description: string;
+        fontFamily: FontType;
+        effect: GraphicEffectType;
+        color: string;
+        strokeColor: string;
+        titleSizeVw: number;
+        artistSizeVw: number;
+        descriptionSizeVw: number;
+    }
+) => {
+    if (!enabled) return;
+    const hasAnyText = (title || '').trim() || (artist || '').trim() || (description || '').trim();
+    if (!hasAnyText) return;
+
+    const t = Math.max(0, nowSeconds - startTime);
+    const fi = Math.max(0, fadeIn);
+    const ho = Math.max(0, hold);
+    const fo = Math.max(0, fadeOut);
+    const total = fi + ho + fo;
+    if (total <= 0) return;
+    if (t > total) return;
+
+    // opacity curve
+    let alpha = 1;
+    if (fi > 0 && t < fi) {
+        alpha = t / fi;
+    } else if (fo > 0 && t > fi + ho) {
+        alpha = Math.max(0, 1 - (t - (fi + ho)) / fo);
+    } else {
+        alpha = 1;
+    }
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    // Position (0-100%)
+    const x = (positionX / 100) * width;
+    const y = (positionY / 100) * height;
+
+    const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
+    const titlePx = (titleSizeVw / 100) * width;
+    const artistPx = (artistSizeVw / 100) * width;
+    const descPx = (descriptionSizeVw / 100) * width;
+    const lineGap = Math.max(8, titlePx * 0.25);
+
+    // Collect lines (centered)
+    const lines: Array<{ text: string; size: number; weight: string }> = [];
+    if ((title || '').trim()) lines.push({ text: title, size: titlePx, weight: '800' });
+    if ((artist || '').trim()) lines.push({ text: artist, size: artistPx, weight: '700' });
+    if ((description || '').trim()) lines.push({ text: description, size: descPx, weight: '600' });
+
+    // Measure max width/height
+    let maxW = 0;
+    let totalH = 0;
+    lines.forEach((l, idx) => {
+        ctx.font = `${l.weight} ${l.size}px "${actualFontName}", sans-serif`;
+        const m = ctx.measureText(l.text);
+        maxW = Math.max(maxW, m.width);
+        totalH += l.size;
+        if (idx < lines.length - 1) totalH += lineGap;
+    });
+
+    // Background panel
+    const padX = Math.max(16, width * 0.03);
+    const padY = Math.max(12, height * 0.02);
+    const bgW = maxW + padX * 2;
+    const bgH = totalH + padY * 2;
+    const bgX = x - bgW / 2;
+    const bgY = y - bgH / 2;
+    ctx.fillStyle = `rgba(0, 0, 0, ${Math.max(0, Math.min(1, bgOpacity))})`;
+    createRoundedRectPath(ctx, bgX, bgY, bgW, bgH, 12);
+    ctx.fill();
+
+    // Text effect setup
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Shadow/Glow
+    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 18;
+    } else if (effect === GraphicEffectType.SHADOW) {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetX = 4;
+        ctx.shadowOffsetY = 4;
+    }
+
+    // Draw lines
+    let cursorY = y - totalH / 2;
+    for (const l of lines) {
+        ctx.font = `${l.weight} ${l.size}px "${actualFontName}", sans-serif`;
+
+        // Outline / Stroke
+        if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+            ctx.lineJoin = 'round';
+            ctx.miterLimit = 2;
+            ctx.lineWidth = Math.max(2, l.size / 18);
+            ctx.strokeStyle = strokeColor;
+            ctx.strokeText(l.text, x, cursorY + l.size / 2);
+        }
+
+        // Fill
+        ctx.fillStyle = (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) ? '#FFFFFF' : color;
+        ctx.fillText(l.text, x, cursorY + l.size / 2);
+
+        // Faux 3D
+        if (effect === GraphicEffectType.FAUX_3D) {
+            const depth = Math.max(1, Math.floor(l.size / 28));
+            ctx.fillStyle = 'rgba(0,0,0,0.35)';
+            for (let i = 1; i <= depth; i++) {
+                ctx.fillText(l.text, x + i, cursorY + l.size / 2 + i);
+            }
+            ctx.fillStyle = color;
+            ctx.fillText(l.text, x, cursorY + l.size / 2);
+        }
+
+        // Glitch (lightweight)
+        if (effect === GraphicEffectType.GLITCH) {
+            const jitter = Math.max(2, l.size / 20);
+            const ox = (Math.random() - 0.5) * jitter;
+            const oy = (Math.random() - 0.5) * jitter;
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.fillStyle = 'rgba(255,0,0,0.55)';
+            ctx.fillText(l.text, x + ox, cursorY + l.size / 2 + oy);
+            ctx.fillStyle = 'rgba(0,255,255,0.55)';
+            ctx.fillText(l.text, x - ox, cursorY + l.size / 2 - oy);
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        cursorY += l.size + lineGap;
+    }
+
+    // Reset
+    ctx.restore();
+};
 // 逐字顯示字幕函數（打字機風格）
 const drawWordByWordSubtitles = (
     ctx: CanvasRenderingContext2D,
@@ -7708,6 +7901,31 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             };
             
             drawCtaAnimation(ctx, width, height, propsRef.current.ctaChannelName, ctaPosition, propsRef.current.ctaFontFamily);
+        }
+
+        // 繪製開場文字動畫（Intro Overlay）— 放在 CTA 之後，確保最上層
+        if (propsRef.current.showIntroOverlay) {
+            const nowSeconds = audioRef.current?.currentTime ?? 0;
+            drawIntroOverlay(ctx, width, height, nowSeconds, {
+                enabled: !!propsRef.current.showIntroOverlay,
+                startTime: propsRef.current.introStartTime ?? 0,
+                fadeIn: propsRef.current.introFadeIn ?? 0.8,
+                hold: propsRef.current.introHold ?? 1.6,
+                fadeOut: propsRef.current.introFadeOut ?? 0.8,
+                positionX: propsRef.current.introPositionX ?? 50,
+                positionY: propsRef.current.introPositionY ?? 50,
+                bgOpacity: propsRef.current.introBgOpacity ?? 0.35,
+                title: propsRef.current.introTitle ?? '',
+                artist: propsRef.current.introArtist ?? '',
+                description: propsRef.current.introDescription ?? '',
+                fontFamily: propsRef.current.introFontFamily ?? FontType.POPPINS,
+                effect: propsRef.current.introEffect ?? GraphicEffectType.GLOW,
+                color: propsRef.current.introColor ?? '#FFFFFF',
+                strokeColor: propsRef.current.introStrokeColor ?? '#000000',
+                titleSizeVw: propsRef.current.introTitleSize ?? 6,
+                artistSizeVw: propsRef.current.introArtistSize ?? 4,
+                descriptionSizeVw: propsRef.current.introDescriptionSize ?? 2.8,
+            });
         }
         
         if (propsRef.current.isPlaying) {

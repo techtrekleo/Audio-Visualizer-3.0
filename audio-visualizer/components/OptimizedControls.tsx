@@ -278,6 +278,43 @@ interface OptimizedControlsProps {
     onCtaPositionXChange?: (value: number) => void;
     ctaPositionY?: number;
     onCtaPositionYChange?: (value: number) => void;
+
+    // Intro Overlay controls
+    showIntroOverlay?: boolean;
+    onShowIntroOverlayChange?: (show: boolean) => void;
+    introTitle?: string;
+    onIntroTitleChange?: (v: string) => void;
+    introArtist?: string;
+    onIntroArtistChange?: (v: string) => void;
+    introDescription?: string;
+    onIntroDescriptionChange?: (v: string) => void;
+    introFontFamily?: FontType;
+    onIntroFontFamilyChange?: (v: FontType) => void;
+    introEffect?: GraphicEffectType;
+    onIntroEffectChange?: (v: GraphicEffectType) => void;
+    introColor?: string;
+    onIntroColorChange?: (v: string) => void;
+    introStrokeColor?: string;
+    onIntroStrokeColorChange?: (v: string) => void;
+    introTitleSize?: number;
+    onIntroTitleSizeChange?: (v: number) => void;
+    introArtistSize?: number;
+    onIntroArtistSizeChange?: (v: number) => void;
+    introDescriptionSize?: number;
+    onIntroDescriptionSizeChange?: (v: number) => void;
+    introFadeIn?: number;
+    onIntroFadeInChange?: (v: number) => void;
+    introHold?: number;
+    onIntroHoldChange?: (v: number) => void;
+    introFadeOut?: number;
+    onIntroFadeOutChange?: (v: number) => void;
+    introBgOpacity?: number;
+    onIntroBgOpacityChange?: (v: number) => void;
+    introPositionX?: number;
+    onIntroPositionXChange?: (v: number) => void;
+    introPositionY?: number;
+    onIntroPositionYChange?: (v: number) => void;
+    onPreviewIntro?: () => void;
     // Z總訂製款控制
     showZCustomControls?: boolean;
     onShowZCustomControlsChange?: (show: boolean) => void;
@@ -654,6 +691,25 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         lyricsFontFamily: props.lyricsFontFamily,
         lyricsPositionX: props.lyricsPositionX,
         lyricsPositionY: props.lyricsPositionY,
+
+        // Intro Overlay
+        showIntroOverlay: !!props.showIntroOverlay,
+        introTitle: props.introTitle || '',
+        introArtist: props.introArtist || '',
+        introDescription: props.introDescription || '',
+        introFontFamily: props.introFontFamily || FontType.POPPINS,
+        introEffect: props.introEffect || GraphicEffectType.GLOW,
+        introColor: props.introColor || '#FFFFFF',
+        introStrokeColor: props.introStrokeColor || '#000000',
+        introTitleSize: props.introTitleSize ?? 6,
+        introArtistSize: props.introArtistSize ?? 4,
+        introDescriptionSize: props.introDescriptionSize ?? 2.8,
+        introFadeIn: props.introFadeIn ?? 0.8,
+        introHold: props.introHold ?? 1.6,
+        introFadeOut: props.introFadeOut ?? 0.8,
+        introBgOpacity: props.introBgOpacity ?? 0.35,
+        introPositionX: props.introPositionX ?? 50,
+        introPositionY: props.introPositionY ?? 50,
     });
 
     // 載入設置
@@ -684,6 +740,25 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.lyricsFontFamily !== undefined) props.onLyricsFontFamilyChange(settings.lyricsFontFamily);
         if (settings.lyricsPositionX !== undefined) props.onLyricsPositionXChange(settings.lyricsPositionX);
         if (settings.lyricsPositionY !== undefined) props.onLyricsPositionYChange(settings.lyricsPositionY);
+
+        // Intro Overlay
+        if (settings.showIntroOverlay !== undefined) props.onShowIntroOverlayChange?.(settings.showIntroOverlay);
+        if (settings.introTitle !== undefined) props.onIntroTitleChange?.(settings.introTitle);
+        if (settings.introArtist !== undefined) props.onIntroArtistChange?.(settings.introArtist);
+        if (settings.introDescription !== undefined) props.onIntroDescriptionChange?.(settings.introDescription);
+        if (settings.introFontFamily !== undefined) props.onIntroFontFamilyChange?.(settings.introFontFamily);
+        if (settings.introEffect !== undefined) props.onIntroEffectChange?.(settings.introEffect);
+        if (settings.introColor !== undefined) props.onIntroColorChange?.(settings.introColor);
+        if (settings.introStrokeColor !== undefined) props.onIntroStrokeColorChange?.(settings.introStrokeColor);
+        if (settings.introTitleSize !== undefined) props.onIntroTitleSizeChange?.(settings.introTitleSize);
+        if (settings.introArtistSize !== undefined) props.onIntroArtistSizeChange?.(settings.introArtistSize);
+        if (settings.introDescriptionSize !== undefined) props.onIntroDescriptionSizeChange?.(settings.introDescriptionSize);
+        if (settings.introFadeIn !== undefined) props.onIntroFadeInChange?.(settings.introFadeIn);
+        if (settings.introHold !== undefined) props.onIntroHoldChange?.(settings.introHold);
+        if (settings.introFadeOut !== undefined) props.onIntroFadeOutChange?.(settings.introFadeOut);
+        if (settings.introBgOpacity !== undefined) props.onIntroBgOpacityChange?.(settings.introBgOpacity);
+        if (settings.introPositionX !== undefined) props.onIntroPositionXChange?.(settings.introPositionX);
+        if (settings.introPositionY !== undefined) props.onIntroPositionYChange?.(settings.introPositionY);
     };
 
     const FONT_MAP: Record<FontType, string> = {
@@ -870,12 +945,20 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 <input 
                                     type="file" 
                                     className="hidden" 
-                                    accept="audio/*" 
+                                    accept="audio/*,video/mp4,video/*,.mp4" 
                                     onChange={(e) => {
                                         console.log('文件輸入變化:', e.target.files);
                                         if (e.target.files && e.target.files[0]) {
-                                            console.log('選擇文件:', e.target.files[0]);
-                                            props.onFileSelect(e.target.files[0]);
+                                            const file = e.target.files[0];
+                                            // 验证文件类型
+                                            if (file.type.startsWith('audio/') || 
+                                                file.type.startsWith('video/') || 
+                                                file.name.toLowerCase().endsWith('.mp4')) {
+                                                console.log('選擇文件:', file);
+                                                props.onFileSelect(file);
+                                            } else {
+                                                alert('請上傳有效的音訊檔案或 MP4 影片檔案。');
+                                            }
                                         }
                                         e.target.value = '';
                                     }} 
@@ -892,6 +975,19 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     aria-pressed={props.showCtaAnimation}
                                 >
                                     <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${props.showCtaAnimation ? 'translate-x-6' : 'translate-x-1'}`} />
+                                </button>
+                            </div>
+                            
+                            {/* 開場文字動畫控制 */}
+                            <div className="flex items-center justify-between bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3">
+                                <span className="text-sm text-gray-200">開場文字動畫</span>
+                                <button
+                                    onClick={() => props.onShowIntroOverlayChange?.(!props.showIntroOverlay)}
+                                    type="button"
+                                    className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${props.showIntroOverlay ? 'bg-cyan-600' : 'bg-gray-500'}`}
+                                    aria-pressed={props.showIntroOverlay}
+                                >
+                                    <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${props.showIntroOverlay ? 'translate-x-6' : 'translate-x-1'}`} />
                                 </button>
                             </div>
                             {props.audioFile && (
@@ -1008,6 +1104,195 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         step={1}
                                     />
                                 </div>
+                            </div>
+                        )}
+                        
+                        {/* Intro Overlay 設定 */}
+                        {props.showIntroOverlay && (
+                            <div className="mt-4 space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Icon path={ICON_PATHS.INTRO} className="w-5 h-5 text-cyan-400" />
+                                        <span className="text-sm font-medium text-gray-200">開場文字內容</span>
+                                    </div>
+                                    <Button
+                                        onClick={() => props.onPreviewIntro?.()}
+                                        variant="secondary"
+                                        className="bg-indigo-600 hover:bg-indigo-500"
+                                        disabled={!props.audioFile}
+                                    >
+                                        <span>預覽</span>
+                                    </Button>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">歌名</label>
+                                        <input
+                                            type="text"
+                                            value={props.introTitle || ''}
+                                            onChange={(e) => props.onIntroTitleChange?.(e.target.value)}
+                                            placeholder="輸入歌名..."
+                                            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">歌手</label>
+                                        <input
+                                            type="text"
+                                            value={props.introArtist || ''}
+                                            onChange={(e) => props.onIntroArtistChange?.(e.target.value)}
+                                            placeholder="輸入歌手..."
+                                            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">說明</label>
+                                        <input
+                                            type="text"
+                                            value={props.introDescription || ''}
+                                            onChange={(e) => props.onIntroDescriptionChange?.(e.target.value)}
+                                            placeholder="輸入說明..."
+                                            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <SelectControl
+                                        label="字體"
+                                        value={props.introFontFamily || FontType.POPPINS}
+                                        onChange={(value) => props.onIntroFontFamilyChange?.(value as FontType)}
+                                        options={Object.entries(FONT_MAP).map(([value, label]) => ({ value, label }))}
+                                    />
+                                    <SelectControl
+                                        label="特效"
+                                        value={props.introEffect || GraphicEffectType.GLOW}
+                                        onChange={(value) => props.onIntroEffectChange?.(value as GraphicEffectType)}
+                                        options={[
+                                            { value: GraphicEffectType.NONE, label: '無' },
+                                            { value: GraphicEffectType.BOLD, label: '粗體' },
+                                            { value: GraphicEffectType.SHADOW, label: '陰影' },
+                                            { value: GraphicEffectType.NEON, label: '霓虹光' },
+                                            { value: GraphicEffectType.OUTLINE, label: '描邊' },
+                                            { value: GraphicEffectType.FAUX_3D, label: '偽3D' },
+                                            { value: GraphicEffectType.GLITCH, label: '故障感' },
+                                            { value: GraphicEffectType.GLOW, label: '發光' },
+                                        ]}
+                                    />
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-300">文字顏色</label>
+                                        <input
+                                            type="color"
+                                            value={props.introColor || '#FFFFFF'}
+                                            onChange={(e) => props.onIntroColorChange?.(e.target.value)}
+                                            className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-300">描邊顏色</label>
+                                        <input
+                                            type="color"
+                                            value={props.introStrokeColor || '#000000'}
+                                            onChange={(e) => props.onIntroStrokeColorChange?.(e.target.value)}
+                                            className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                        />
+                                    </div>
+                                    <SliderControl
+                                        label="歌名大小 (vw)"
+                                        value={props.introTitleSize ?? 6}
+                                        onChange={(v) => props.onIntroTitleSizeChange?.(v)}
+                                        min={1}
+                                        max={12}
+                                        step={0.2}
+                                        colorType="scale"
+                                    />
+                                    <SliderControl
+                                        label="歌手大小 (vw)"
+                                        value={props.introArtistSize ?? 4}
+                                        onChange={(v) => props.onIntroArtistSizeChange?.(v)}
+                                        min={1}
+                                        max={10}
+                                        step={0.2}
+                                        colorType="scale"
+                                    />
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <SliderControl
+                                        label="說明大小 (vw)"
+                                        value={props.introDescriptionSize ?? 2.8}
+                                        onChange={(v) => props.onIntroDescriptionSizeChange?.(v)}
+                                        min={0.8}
+                                        max={8}
+                                        step={0.2}
+                                        colorType="scale"
+                                    />
+                                    <SliderControl
+                                        label="水平位置 (%)"
+                                        value={props.introPositionX ?? 50}
+                                        onChange={(v) => props.onIntroPositionXChange?.(v)}
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                        colorType="position"
+                                    />
+                                    <SliderControl
+                                        label="垂直位置 (%)"
+                                        value={props.introPositionY ?? 50}
+                                        onChange={(v) => props.onIntroPositionYChange?.(v)}
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                        colorType="position"
+                                    />
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <SliderControl
+                                        label="淡入 (秒)"
+                                        value={props.introFadeIn ?? 0.8}
+                                        onChange={(v) => props.onIntroFadeInChange?.(v)}
+                                        min={0}
+                                        max={5}
+                                        step={0.1}
+                                        colorType="scale"
+                                    />
+                                    <SliderControl
+                                        label="停留 (秒)"
+                                        value={props.introHold ?? 1.6}
+                                        onChange={(v) => props.onIntroHoldChange?.(v)}
+                                        min={0}
+                                        max={10}
+                                        step={0.1}
+                                        colorType="scale"
+                                    />
+                                    <SliderControl
+                                        label="淡出 (秒)"
+                                        value={props.introFadeOut ?? 0.8}
+                                        onChange={(v) => props.onIntroFadeOutChange?.(v)}
+                                        min={0}
+                                        max={5}
+                                        step={0.1}
+                                        colorType="scale"
+                                    />
+                                    <SliderControl
+                                        label="背景透明度"
+                                        value={props.introBgOpacity ?? 0.35}
+                                        onChange={(v) => props.onIntroBgOpacityChange?.(v)}
+                                        min={0}
+                                        max={1}
+                                        step={0.05}
+                                        colorType="scale"
+                                    />
+                                </div>
+                                
+                                <p className="text-xs text-gray-400">
+                                    💡 提示：按「播放」從 0 開始或「開始錄製」時，會自動播放一次開場動畫；也可用「預覽」在目前時間點播放一次。
+                                </p>
                             </div>
                         )}
                     </div>

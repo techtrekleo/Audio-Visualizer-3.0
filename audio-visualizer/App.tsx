@@ -193,6 +193,27 @@ function App() {
     const [ctaFontFamily, setCtaFontFamily] = useState<FontType>(FontType.POPPINS); // CTA 字體
     const [ctaPositionX, setCtaPositionX] = useState<number>(50); // CTA 水平位置 (0-100)
     const [ctaPositionY, setCtaPositionY] = useState<number>(50); // CTA 垂直位置 (0-100)
+
+    // 開場文字動畫（Intro Overlay）
+    const [showIntroOverlay, setShowIntroOverlay] = useState<boolean>(false);
+    const [introTitle, setIntroTitle] = useState<string>('');
+    const [introArtist, setIntroArtist] = useState<string>('');
+    const [introDescription, setIntroDescription] = useState<string>('');
+    const [introFontFamily, setIntroFontFamily] = useState<FontType>(FontType.POPPINS);
+    const [introEffect, setIntroEffect] = useState<GraphicEffectType>(GraphicEffectType.GLOW);
+    const [introColor, setIntroColor] = useState<string>('#FFFFFF');
+    const [introStrokeColor, setIntroStrokeColor] = useState<string>('#000000');
+    const [introTitleSize, setIntroTitleSize] = useState<number>(6); // vw
+    const [introArtistSize, setIntroArtistSize] = useState<number>(4); // vw
+    const [introDescriptionSize, setIntroDescriptionSize] = useState<number>(2.8); // vw
+    const [introFadeIn, setIntroFadeIn] = useState<number>(0.8); // sec
+    const [introHold, setIntroHold] = useState<number>(1.6); // sec
+    const [introFadeOut, setIntroFadeOut] = useState<number>(0.8); // sec
+    const [introBgOpacity, setIntroBgOpacity] = useState<number>(0.35); // 0-1
+    const [introPositionX, setIntroPositionX] = useState<number>(50); // 0-100
+    const [introPositionY, setIntroPositionY] = useState<number>(50); // 0-100
+    const [introStartTime, setIntroStartTime] = useState<number>(0); // seconds in audio timeline
+    const [introTriggerId, setIntroTriggerId] = useState<number>(0); // force re-trigger
     
     // CTA 位置變更處理函數
     const handleCtaPositionXChange = (value: number) => {
@@ -1316,7 +1337,8 @@ function App() {
     const { isRecording, startRecording, stopRecording } = useMediaRecorder(handleRecordingComplete);
 
     const handleFileSelect = (file: File) => {
-        console.log('選擇音訊文件:', { name: file.name, type: file.type, size: file.size });
+        const isVideo = file.type.startsWith('video/') || file.name.toLowerCase().endsWith('.mp4');
+        console.log(`選擇${isVideo ? '影片' : '音訊'}文件:`, { name: file.name, type: file.type, size: file.size });
         
         // 停止當前播放
         if (isPlaying && audioRef.current) {
@@ -1327,9 +1349,26 @@ function App() {
         // 重置音頻分析
         resetAudioAnalysis();
         
+        // 清除舊的背景視頻（如果有）
+        if (backgroundVideo) {
+            URL.revokeObjectURL(backgroundVideo);
+            setBackgroundVideo(null);
+        }
+        
         setAudioFile(file);
         const url = URL.createObjectURL(file);
         setAudioUrl(url);
+        
+        // 如果是视频文件，自動設置為背景視頻
+        if (isVideo) {
+            console.log('已選擇 MP4 影片檔案，將使用其音訊軌道進行可視化，並顯示影片畫面');
+            setBackgroundVideo(url);
+            // 自動啟用背景顯示
+            setShowBackgroundImage(true);
+        } else {
+            // 如果是音頻文件，清除背景視頻
+            setBackgroundVideo(null);
+        }
     };
 
     const handleClearAudio = useCallback(() => {
@@ -1340,9 +1379,28 @@ function App() {
             setIsPlaying(false);
         }
        
-        if (audioUrl) {
-            URL.revokeObjectURL(audioUrl);
+        // 保存當前的 URL 用於比較
+        const currentAudioUrl = audioUrl;
+        const currentBackgroundVideo = backgroundVideo;
+       
+        // 如果背景視頻和音頻 URL 相同（即從 MP4 文件自動設置的），只需要清除一次
+        if (currentBackgroundVideo && currentBackgroundVideo === currentAudioUrl) {
+            // 清除共享的 URL
+            if (currentAudioUrl) {
+                URL.revokeObjectURL(currentAudioUrl);
+            }
+            setBackgroundVideo(null);
+        } else {
+            // 分別清除
+            if (currentAudioUrl) {
+                URL.revokeObjectURL(currentAudioUrl);
+            }
+            if (currentBackgroundVideo) {
+                URL.revokeObjectURL(currentBackgroundVideo);
+                setBackgroundVideo(null);
+            }
         }
+        
         if (videoUrl) {
             URL.revokeObjectURL(videoUrl);
         }
@@ -1376,6 +1434,11 @@ function App() {
             audioRef.current.play().then(() => {
                 console.log('音頻播放成功');
                 setIsPlaying(true);
+                // 若從頭開始播放，觸發一次開場動畫
+                if (showIntroOverlay && (audioRef.current?.currentTime ?? 0) < 0.1) {
+                    setIntroStartTime(0);
+                    setIntroTriggerId((v) => v + 1);
+                }
             }).catch(e => {
                 console.error("Audio play failed:", e);
                 setIsPlaying(false);
@@ -1385,7 +1448,7 @@ function App() {
             console.log('音頻暫停');
             setIsPlaying(false);
         }
-    }, [isPlaying, isAudioInitialized, initializeAudio]);
+    }, [isPlaying, isAudioInitialized, initializeAudio, showIntroOverlay]);
     
     const handleMetadataLoaded = () => {
         if (audioRef.current) {
@@ -1436,12 +1499,24 @@ function App() {
                 const isTransparent = backgroundColor === BackgroundColorType.TRANSPARENT;
                 startRecording(canvasRef.current, audioStream, isTransparent);
                 audioRef.current.currentTime = 0;
+                // 錄影一定從 0 開始，因此可觸發開場動畫
+                if (showIntroOverlay) {
+                    setIntroStartTime(0);
+                    setIntroTriggerId((v) => v + 1);
+                }
                 audioRef.current.play().then(() => setIsPlaying(true));
             } else {
                  alert("無法開始錄製。請確認音訊已載入並準備就緒。");
             }
         }
     };
+
+    // 手動預覽開場動畫（不重置音樂，從當前時間開始播放一次）
+    const handlePreviewIntro = useCallback(() => {
+        const t = audioRef.current?.currentTime ?? 0;
+        setIntroStartTime(t);
+        setIntroTriggerId((v) => v + 1);
+    }, []);
     
     const resValue = RESOLUTION_MAP[resolution];
     const visualizerContainerStyle = {
@@ -1623,6 +1698,26 @@ function App() {
                                     ctaFontFamily={ctaFontFamily}
                                     ctaPosition={ctaPosition}
                                     onCtaPositionUpdate={setCtaPosition}
+                                    // Intro Overlay props
+                                    showIntroOverlay={showIntroOverlay}
+                                    introTitle={introTitle}
+                                    introArtist={introArtist}
+                                    introDescription={introDescription}
+                                    introFontFamily={introFontFamily}
+                                    introEffect={introEffect}
+                                    introColor={introColor}
+                                    introStrokeColor={introStrokeColor}
+                                    introTitleSize={introTitleSize}
+                                    introArtistSize={introArtistSize}
+                                    introDescriptionSize={introDescriptionSize}
+                                    introFadeIn={introFadeIn}
+                                    introHold={introHold}
+                                    introFadeOut={introFadeOut}
+                                    introBgOpacity={introBgOpacity}
+                                    introPositionX={introPositionX}
+                                    introPositionY={introPositionY}
+                                    introStartTime={introStartTime}
+                                    introTriggerId={introTriggerId}
                                     zCustomCenterImage={zCustomCenterImage}
                                     zCustomScale={zCustomScale}
                                     zCustomPosition={zCustomPosition}
@@ -1947,6 +2042,42 @@ function App() {
                             onCtaPositionXChange={handleCtaPositionXChange}
                             ctaPositionY={ctaPositionY}
                             onCtaPositionYChange={handleCtaPositionYChange}
+                            // Intro Overlay props
+                            showIntroOverlay={showIntroOverlay}
+                            onShowIntroOverlayChange={setShowIntroOverlay}
+                            introTitle={introTitle}
+                            onIntroTitleChange={setIntroTitle}
+                            introArtist={introArtist}
+                            onIntroArtistChange={setIntroArtist}
+                            introDescription={introDescription}
+                            onIntroDescriptionChange={setIntroDescription}
+                            introFontFamily={introFontFamily}
+                            onIntroFontFamilyChange={setIntroFontFamily}
+                            introEffect={introEffect}
+                            onIntroEffectChange={setIntroEffect}
+                            introColor={introColor}
+                            onIntroColorChange={setIntroColor}
+                            introStrokeColor={introStrokeColor}
+                            onIntroStrokeColorChange={setIntroStrokeColor}
+                            introTitleSize={introTitleSize}
+                            onIntroTitleSizeChange={setIntroTitleSize}
+                            introArtistSize={introArtistSize}
+                            onIntroArtistSizeChange={setIntroArtistSize}
+                            introDescriptionSize={introDescriptionSize}
+                            onIntroDescriptionSizeChange={setIntroDescriptionSize}
+                            introFadeIn={introFadeIn}
+                            onIntroFadeInChange={setIntroFadeIn}
+                            introHold={introHold}
+                            onIntroHoldChange={setIntroHold}
+                            introFadeOut={introFadeOut}
+                            onIntroFadeOutChange={setIntroFadeOut}
+                            introBgOpacity={introBgOpacity}
+                            onIntroBgOpacityChange={setIntroBgOpacity}
+                            introPositionX={introPositionX}
+                            onIntroPositionXChange={setIntroPositionX}
+                            introPositionY={introPositionY}
+                            onIntroPositionYChange={setIntroPositionY}
+                            onPreviewIntro={handlePreviewIntro}
                             showZCustomControls={showZCustomControls}
                             onShowZCustomControlsChange={setShowZCustomControls}
                             zCustomCenterImage={zCustomCenterImage}
