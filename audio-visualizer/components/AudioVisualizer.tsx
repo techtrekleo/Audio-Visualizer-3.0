@@ -206,6 +206,8 @@ interface AudioVisualizerProps {
     blurredEdgeFontSize?: number;
     // Ke Ye Custom V2 props (可夜訂製版二號)
     keYeCustomV2BoxOpacity?: number;
+    keYeCustomV2BoxColor?: string;
+    keYeCustomV2VisualizerColor?: string;
     keYeCustomV2Text1?: string;
     keYeCustomV2Text2?: string;
     keYeCustomV2Text1Font?: FontType;
@@ -3379,6 +3381,8 @@ const drawKeYeCustomV2 = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
     
     // 獲取配置參數
     const boxOpacity = typeof props?.keYeCustomV2BoxOpacity === 'number' ? props.keYeCustomV2BoxOpacity : 0.5;
+    const boxColor = props?.keYeCustomV2BoxColor || '#FFFFFF';
+    const visualizerColor = props?.keYeCustomV2VisualizerColor || '#FFFFFF';
     const text1 = props?.keYeCustomV2Text1 || '';
     const text2 = props?.keYeCustomV2Text2 || '';
     const text1FontFamily = props?.keYeCustomV2Text1Font || FontType.POPPINS;
@@ -3400,7 +3404,7 @@ const drawKeYeCustomV2 = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
     const cornerRadius = boxHeight / 2; // 半圓：圓角半徑為高度的一半
     
     // 繪製白色圓角框（半圓形）
-    ctx.fillStyle = `rgba(255, 255, 255, ${boxOpacity})`;
+    ctx.fillStyle = applyAlphaToColor(boxColor, boxOpacity);
     ctx.beginPath();
     ctx.moveTo(boxX + cornerRadius, boxY);
     ctx.lineTo(boxX + boxWidth - cornerRadius, boxY);
@@ -3546,16 +3550,15 @@ const drawKeYeCustomV2 = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
             return (dataArray[idx] || 0) / 255;
         };
         
-        // 主色調（根據顏色主題）
+        // 主色調（可自訂：底部「白色特效」）
         let barColor: string;
-        
         if (colors.name === ColorPaletteType.RAINBOW) {
             // 彩虹主題使用動態顏色
             const [startHue, endHue] = colors.hueRange;
             const hueRangeSpan = endHue - startHue;
             barColor = `hsl(${startHue + (frame * 0.5) % hueRangeSpan}, 70%, 50%)`;
         } else {
-            barColor = colors.accent || colors.primary || '#000000';
+            barColor = (visualizerColor || '').trim() ? visualizerColor : (colors.accent || colors.primary || '#000000');
         }
         
         // 繪製柱狀圖
@@ -3603,14 +3606,14 @@ const drawKeYeCustomV2 = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
         const actualBarWidth = barWidth - barSpacing;
         const dotSize = 3;
         
-        // 使用顏色主題
+        // 使用顏色主題（可自訂）
         let dotColor: string;
         if (colors.name === ColorPaletteType.RAINBOW) {
             const [startHue, endHue] = colors.hueRange;
             const hueRangeSpan = endHue - startHue;
             dotColor = `hsl(${startHue + (frame * 0.5) % hueRangeSpan}, 70%, 50%)`;
         } else {
-            dotColor = colors.accent || colors.primary || '#000000';
+            dotColor = (visualizerColor || '').trim() ? visualizerColor : (colors.accent || colors.primary || '#000000');
         }
         
         ctx.fillStyle = dotColor;

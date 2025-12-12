@@ -436,6 +436,10 @@ interface OptimizedControlsProps {
     // Ke Ye Custom V2 props (可夜訂製版二號)
     keYeCustomV2BoxOpacity?: number;
     onKeYeCustomV2BoxOpacityChange?: (opacity: number) => void;
+    keYeCustomV2BoxColor?: string;
+    onKeYeCustomV2BoxColorChange?: (color: string) => void;
+    keYeCustomV2VisualizerColor?: string;
+    onKeYeCustomV2VisualizerColorChange?: (color: string) => void;
     keYeCustomV2Text1?: string;
     onKeYeCustomV2Text1Change?: (text: string) => void;
     keYeCustomV2Text2?: string;
@@ -720,6 +724,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
         // Ke Ye Custom V2
         keYeCustomV2BoxOpacity: props.keYeCustomV2BoxOpacity ?? 0.5,
+        keYeCustomV2BoxColor: props.keYeCustomV2BoxColor || '#FFFFFF',
+        keYeCustomV2VisualizerColor: props.keYeCustomV2VisualizerColor || '#FFFFFF',
         keYeCustomV2Text1: props.keYeCustomV2Text1 || '',
         keYeCustomV2Text2: props.keYeCustomV2Text2 || '',
         keYeCustomV2Text1Font: props.keYeCustomV2Text1Font || FontType.POPPINS,
@@ -809,6 +815,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
         // Ke Ye Custom V2
         if (settings.keYeCustomV2BoxOpacity !== undefined) props.onKeYeCustomV2BoxOpacityChange?.(settings.keYeCustomV2BoxOpacity);
+        if (settings.keYeCustomV2BoxColor !== undefined) props.onKeYeCustomV2BoxColorChange?.(settings.keYeCustomV2BoxColor);
+        if (settings.keYeCustomV2VisualizerColor !== undefined) props.onKeYeCustomV2VisualizerColorChange?.(settings.keYeCustomV2VisualizerColor);
         if (settings.keYeCustomV2Text1 !== undefined) props.onKeYeCustomV2Text1Change?.(settings.keYeCustomV2Text1);
         if (settings.keYeCustomV2Text2 !== undefined) props.onKeYeCustomV2Text2Change?.(settings.keYeCustomV2Text2);
         if (settings.keYeCustomV2Text1Font !== undefined) props.onKeYeCustomV2Text1FontChange?.(settings.keYeCustomV2Text1Font);
@@ -3655,6 +3663,67 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     <p className="text-xs text-gray-400 mt-1">
                                         調整白色框的透明度，0% 為完全透明，100% 為完全不透明
                                     </p>
+                                </div>
+
+                                {/* 底框/底部可視化顏色 */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-300">底框顏色（半透明底）</label>
+                                        <div className="flex space-x-2">
+                                            {PRESET_COLORS.map(color => (
+                                                <SwatchButton
+                                                    key={`keye-v2-box-${color}`}
+                                                    color={color}
+                                                    onClick={(c) => props.onKeYeCustomV2BoxColorChange?.(c)}
+                                                    isActive={(props.keYeCustomV2BoxColor || '#FFFFFF') === color}
+                                                />
+                                            ))}
+                                        </div>
+                                        <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <input
+                                                type="color"
+                                                value={props.keYeCustomV2BoxColor || '#FFFFFF'}
+                                                onChange={(e) => props.onKeYeCustomV2BoxColorChange?.(e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={props.keYeCustomV2BoxColor || '#FFFFFF'}
+                                                onChange={(e) => props.onKeYeCustomV2BoxColorChange?.(e.target.value)}
+                                                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
+                                                placeholder="#RRGGBB"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-300">底部音訊可視化顏色（白色特效）</label>
+                                        <div className="flex space-x-2">
+                                            {PRESET_COLORS.map(color => (
+                                                <SwatchButton
+                                                    key={`keye-v2-vis-${color}`}
+                                                    color={color}
+                                                    onClick={(c) => props.onKeYeCustomV2VisualizerColorChange?.(c)}
+                                                    isActive={(props.keYeCustomV2VisualizerColor || '#FFFFFF') === color}
+                                                />
+                                            ))}
+                                        </div>
+                                        <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <input
+                                                type="color"
+                                                value={props.keYeCustomV2VisualizerColor || '#FFFFFF'}
+                                                onChange={(e) => props.onKeYeCustomV2VisualizerColorChange?.(e.target.value)}
+                                                className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={props.keYeCustomV2VisualizerColor || '#FFFFFF'}
+                                                onChange={(e) => props.onKeYeCustomV2VisualizerColorChange?.(e.target.value)}
+                                                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
+                                                placeholder="#RRGGBB"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* 第一組文字 */}

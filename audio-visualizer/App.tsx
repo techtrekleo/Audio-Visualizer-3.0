@@ -148,6 +148,8 @@ function App() {
     
     // Ke Ye Custom V2 State (可夜訂製版二號)
     const [keYeCustomV2BoxOpacity, setKeYeCustomV2BoxOpacity] = useState<number>(0.5);
+    const [keYeCustomV2BoxColor, setKeYeCustomV2BoxColor] = useState<string>('#FFFFFF');
+    const [keYeCustomV2VisualizerColor, setKeYeCustomV2VisualizerColor] = useState<string>('#FFFFFF');
     const [keYeCustomV2Text1, setKeYeCustomV2Text1] = useState<string>('');
     const [keYeCustomV2Text2, setKeYeCustomV2Text2] = useState<string>('');
     const [keYeCustomV2Text1Font, setKeYeCustomV2Text1Font] = useState<FontType>(FontType.POPPINS);
@@ -1793,6 +1795,8 @@ function App() {
                                     blurredEdgeFontSize={blurredEdgeFontSize}
                                     // Ke Ye Custom V2 props (可夜訂製版二號)
                                     keYeCustomV2BoxOpacity={keYeCustomV2BoxOpacity}
+                                    keYeCustomV2BoxColor={keYeCustomV2BoxColor}
+                                    keYeCustomV2VisualizerColor={keYeCustomV2VisualizerColor}
                                     keYeCustomV2Text1={keYeCustomV2Text1}
                                     keYeCustomV2Text2={keYeCustomV2Text2}
                                     keYeCustomV2Text1Font={keYeCustomV2Text1Font}
@@ -1882,6 +1886,10 @@ function App() {
                             // Ke Ye Custom V2 controls (可夜訂製版二號)
                             keYeCustomV2BoxOpacity={keYeCustomV2BoxOpacity}
                             onKeYeCustomV2BoxOpacityChange={setKeYeCustomV2BoxOpacity}
+                            keYeCustomV2BoxColor={keYeCustomV2BoxColor}
+                            onKeYeCustomV2BoxColorChange={setKeYeCustomV2BoxColor}
+                            keYeCustomV2VisualizerColor={keYeCustomV2VisualizerColor}
+                            onKeYeCustomV2VisualizerColorChange={setKeYeCustomV2VisualizerColor}
                             keYeCustomV2Text1={keYeCustomV2Text1}
                             onKeYeCustomV2Text1Change={setKeYeCustomV2Text1}
                             keYeCustomV2Text2={keYeCustomV2Text2}
