@@ -6248,107 +6248,59 @@ const drawSlidingGroupSubtitles = (
     const targetGroupIndex = Math.floor(currentSubtitleIndex / 3);
     const groupStartIndex = targetGroupIndex * 3;
     const groupSubtitles = subtitles.slice(groupStartIndex, groupStartIndex + 3);
-    
-    // 计算当前组中应该显示的行数（逐句出现）
-    let visibleLines = 0;
-    for (let i = 0; i < groupSubtitles.length; i++) {
-        const subtitle = groupSubtitles[i];
-        if (currentTime >= subtitle.time) {
-            if (!subtitle.endTime || currentTime <= subtitle.endTime) {
-                visibleLines = i + 1;
-            }
-        }
-    }
-    
-    // 检查是否需要切换到下一组（当3句都显示完，且下一组应该开始时）
-    const slideDuration = 0.5; // 滑动动画持续时间（秒）
-    const shouldStartSliding = visibleLines >= 3 && targetGroupIndex < Math.floor((subtitles.length - 1) / 3);
-    
-    if (shouldStartSliding) {
-        const nextGroupStartIndex = (targetGroupIndex + 1) * 3;
-        if (nextGroupStartIndex < subtitles.length) {
-            const nextSubtitle = subtitles[nextGroupStartIndex];
-            // 当下一组的第一个字幕应该开始时，开始滑动
-            if (currentTime >= nextSubtitle.time - slideDuration * 0.3) {
-                if (!slidingGroupState.isSliding && targetGroupIndex === slidingGroupState.currentGroupIndex) {
-                    slidingGroupState.isSliding = true;
-                    slidingGroupState.slideProgress = 0;
-                }
-            }
-        }
-    }
-    
-    // 如果切换到新的组，更新状态
-    if (targetGroupIndex !== slidingGroupState.currentGroupIndex && !slidingGroupState.isSliding) {
-        slidingGroupState.currentGroupIndex = targetGroupIndex;
-        slidingGroupState.currentGroupSubtitles = groupSubtitles;
-    }
-    
-    // 更新滑动动画
-    if (slidingGroupState.isSliding) {
-        const timeDelta = Math.max(0, currentTime - slidingGroupState.lastUpdateTime);
-        if (timeDelta > 0) {
-            slidingGroupState.slideProgress = Math.min(1, slidingGroupState.slideProgress + timeDelta / slideDuration);
-            if (slidingGroupState.slideProgress >= 1) {
-                // 滑动完成，切换到新组
-                slidingGroupState.isSliding = false;
-                slidingGroupState.slideProgress = 0;
-                slidingGroupState.currentGroupIndex = targetGroupIndex;
-                slidingGroupState.currentGroupSubtitles = groupSubtitles;
-            }
-        }
-    }
-    slidingGroupState.lastUpdateTime = currentTime;
-    
-    // 计算滑动偏移量（使用缓动函数）
+
+    // ===== 新行為：組內每行依序滑入、整組一起滑出 =====
+    const clamp01 = (t: number) => Math.max(0, Math.min(1, t));
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
     const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    const slideOffsetX = slidingGroupState.isSliding 
-        ? width * (easeInOutCubic(slidingGroupState.slideProgress))
-        : 0;
-    
-    // 确定要绘制的组
-    const oldGroupIndex = slidingGroupState.currentGroupIndex;
-    const newGroupIndex = targetGroupIndex;
-    const oldGroupStartIndex = oldGroupIndex * 3;
-    const oldGroupSubtitles = subtitles.slice(oldGroupStartIndex, oldGroupStartIndex + 3);
-    
-    // 如果正在滑动，同时绘制旧组（滑出）和新组（滑入）
-    if (slidingGroupState.isSliding && oldGroupIndex !== newGroupIndex) {
-        // 绘制旧组（向左滑出）
-        const oldVisibleLines = Math.min(3, oldGroupSubtitles.length);
-        for (let i = 0; i < oldVisibleLines; i++) {
-            if (i >= oldGroupSubtitles.length) break;
-            const subtitle = oldGroupSubtitles[i];
-            const lineY = boxY + (i * lineHeight) + lineHeight / 2;
-            const textX = boxX + boxWidth / 2 - slideOffsetX;
-            const textY = lineY;
-            
-            drawSubtitleLine(ctx, subtitle.text, textX, textY, fontSize, actualFontName, color, bgStyle, boxWidth, effect, isBeat);
-        }
-        
-        // 绘制新组（从右侧滑入）
-        const newVisibleLines = Math.min(visibleLines, 3);
-        for (let i = 0; i < newVisibleLines; i++) {
-            if (i >= groupSubtitles.length) break;
-            const subtitle = groupSubtitles[i];
-            const lineY = boxY + (i * lineHeight) + lineHeight / 2;
-            // 新组从右侧（width）滑入到中心位置
-            const textX = boxX + boxWidth / 2 + (width * (1 - slidingGroupState.slideProgress));
-            const textY = lineY;
-            
-            drawSubtitleLine(ctx, subtitle.text, textX, textY, fontSize, actualFontName, color, bgStyle, boxWidth, effect, isBeat);
-        }
-    } else {
-        // 正常显示当前组
-        for (let i = 0; i < Math.min(visibleLines, 3); i++) {
-            if (i >= groupSubtitles.length) break;
-            const subtitle = groupSubtitles[i];
-            const lineY = boxY + (i * lineHeight) + lineHeight / 2;
-            const textX = boxX + boxWidth / 2;
-            const textY = lineY;
-            
-            drawSubtitleLine(ctx, subtitle.text, textX, textY, fontSize, actualFontName, color, bgStyle, boxWidth, effect, isBeat);
-        }
+
+    const enterDuration = 0.45; // 每行滑入時長
+    const exitDuration = 0.5;   // 整組滑出時長
+    const enterOffset = width * 0.65; // 從右側滑入的距離
+    const exitOffset = width * 0.65;  // 向左滑出的距離
+
+    // group end time：優先用下一組第一句的 time，否則用本組最後一句 endTime（若存在）
+    const nextGroupStartIndex = (targetGroupIndex + 1) * 3;
+    const nextGroupStartTime =
+        nextGroupStartIndex < subtitles.length ? subtitles[nextGroupStartIndex]?.time : undefined;
+
+    let groupEndTime: number | undefined = nextGroupStartTime;
+    if (groupEndTime === undefined) {
+        const endCandidates = groupSubtitles
+            .map(s => (typeof s.endTime === 'number' ? s.endTime : undefined))
+            .filter((t): t is number => typeof t === 'number');
+        groupEndTime = endCandidates.length ? Math.max(...endCandidates) : undefined;
+    }
+
+    // 整組滑出進度（如果沒有 groupEndTime，就不滑出）
+    let groupExitP = 0;
+    if (typeof groupEndTime === 'number' && groupEndTime > 0) {
+        const exitStart = groupEndTime - exitDuration;
+        groupExitP = clamp01((currentTime - exitStart) / exitDuration);
+    }
+    const groupExitX = easeInOutCubic(groupExitP) * exitOffset;
+
+    // 逐行繪製（只要時間到了就出現，且各自滑入；到 groupEndTime 三行一起滑出）
+    for (let i = 0; i < Math.min(3, groupSubtitles.length); i++) {
+        const subtitle = groupSubtitles[i];
+        if (!subtitle) continue;
+
+        // 行可見條件：時間到就顯示，直到整組結束（或沒有 groupEndTime 則一直顯示）
+        const isAfterStart = currentTime >= subtitle.time;
+        const isBeforeGroupEnd = typeof groupEndTime === 'number' ? currentTime <= groupEndTime : true;
+        if (!isAfterStart || !isBeforeGroupEnd) continue;
+
+        const lineY = boxY + (i * lineHeight) + lineHeight / 2;
+        const baseX = boxX + boxWidth / 2;
+
+        // 每行滑入：依照各自 subtitle.time 開始滑入
+        const enterP = clamp01((currentTime - subtitle.time) / enterDuration);
+        const lineEnterX = (1 - easeOutCubic(enterP)) * enterOffset;
+
+        const textX = baseX + lineEnterX - groupExitX;
+        const textY = lineY;
+
+        drawSubtitleLine(ctx, subtitle.text, textX, textY, fontSize, actualFontName, color, bgStyle, boxWidth, effect, isBeat);
     }
     
     ctx.restore();
