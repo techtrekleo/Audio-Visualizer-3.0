@@ -187,6 +187,11 @@ interface AudioVisualizerProps {
     vinylCenterFixed?: boolean;
     // Piano opacity
     pianoOpacity?: number;
+    // Fusion center effect opacity (blue+pink middle waves)
+    fusionCenterOpacity?: number;
+    // Stellar Core (進階款) opacities
+    stellarCoreInnerOpacity?: number;
+    stellarCoreTentaclesOpacity?: number;
     // Photo Shake props
     photoShakeImage?: string | null;
     photoShakeSongTitle?: string;
@@ -1167,6 +1172,7 @@ const drawFusion = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null,
     const centerX = width / 2;
     const [startHue, endHue] = colors.hueRange;
     const hueRangeSpan = endHue - startHue;
+    const fusionCenterOpacity = (latestPropsRef as any)?.fusionCenterOpacity ?? 1.0;
 
     // --- 1. Draw dotted columns from the bottom ---
     const numColumns = 128;
@@ -1222,6 +1228,9 @@ const drawFusion = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null,
     const full_wave_data = [...wave_base_data, ...right_half];
 
     // --- 3. Draw waves ---
+    // Apply opacity only to the middle (blue+pink) waves. Bottom dotted columns remain unchanged.
+    ctx.save();
+    ctx.globalAlpha *= Math.max(0, Math.min(1, fusionCenterOpacity));
     const solidWaveAmpMultiplier = 0.6;
     const dottedWaveAmpMultiplier = 1.2;
 
@@ -1295,6 +1304,7 @@ const drawFusion = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | null,
         ctx.arc(p.x, y_bottom, 1.5, 0, Math.PI * 2);
         ctx.fill();
     }
+    ctx.restore();
     
     ctx.restore();
 };
@@ -1808,6 +1818,9 @@ const drawStellarCore = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | 
     ctx.save();
     const centerX = width / 2;
     const centerY = height / 2;
+
+    const stellarCoreInnerOpacity = (latestPropsRef as any)?.stellarCoreInnerOpacity ?? 1.0;
+    const stellarCoreTentaclesOpacity = (latestPropsRef as any)?.stellarCoreTentaclesOpacity ?? 1.0;
     
     const bass = dataArray.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
     const mid = dataArray.slice(32, 128).reduce((a, b) => a + b, 0) / 96;
@@ -1929,6 +1942,8 @@ const drawStellarCore = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | 
     }
 
     // 4. 優化頻率觸鬚 - Optimized Frequency "Tendrils"
+    ctx.save();
+    ctx.globalAlpha *= Math.max(0, Math.min(1, stellarCoreTentaclesOpacity));
     const spikes = 90; // 減少觸鬚數量從180到90
     const spikeBaseRadius = Math.min(width, height) * 0.12;
     
@@ -1987,9 +2002,11 @@ const drawStellarCore = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | 
             ctx.stroke();
         }
     }
-    ctx.restore(); // Restore from tendril shadow/glow effect
+    ctx.restore(); // Restore tentacles opacity
     
     // 5. 優化中央核心 - Optimized Central Core
+    ctx.save();
+    ctx.globalAlpha *= Math.max(0, Math.min(1, stellarCoreInnerOpacity));
     const coreRadius = Math.min(width, height) * 0.05 + normalizedBass * 40; // 減少核心大小
     const coreGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, coreRadius);
     coreGradient.addColorStop(0, colors.accent);
@@ -2044,6 +2061,7 @@ const drawStellarCore = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array | 
             }
         }
     }
+    ctx.restore(); // Restore inner core opacity
     
     ctx.restore();
 };

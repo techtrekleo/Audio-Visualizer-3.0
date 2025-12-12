@@ -333,6 +333,10 @@ export interface AudioVisualizerProps {
     chineseCardFontFamily?: FontType;
     chineseCardPrimaryColor?: string;
     chineseCardBackgroundOpacity?: number;
+
+    // Stellar Core (進階款) opacities
+    stellarCoreInnerOpacity?: number; // 0-1
+    stellarCoreTentaclesOpacity?: number; // 0-1
 }
 
 export type Palette = {

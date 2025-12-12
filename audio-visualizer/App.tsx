@@ -267,6 +267,13 @@ function App() {
     
     // 鋼琴演奏家透明度
     const [pianoOpacity, setPianoOpacity] = useState<number>(1.0); // 鋼琴透明度 (0-1)
+
+    // Fusion 中間特效透明度（藍+粉紅波形）
+    const [fusionCenterOpacity, setFusionCenterOpacity] = useState<number>(1.0); // (0-1)
+
+    // Stellar Core 透明度（核心 / 觸手）
+    const [stellarCoreInnerOpacity, setStellarCoreInnerOpacity] = useState<number>(1.0);
+    const [stellarCoreTentaclesOpacity, setStellarCoreTentaclesOpacity] = useState<number>(1.0);
     
     // 可夜訂製版控制卡狀態
     const [controlCardEnabled, setControlCardEnabled] = useState<boolean>(true); // 控制卡開關
@@ -1758,6 +1765,9 @@ function App() {
                                     vinylLayoutMode={vinylLayoutMode}
                                     vinylCenterFixed={vinylCenterFixed}
                                     pianoOpacity={pianoOpacity}
+                                    fusionCenterOpacity={fusionCenterOpacity}
+                                    stellarCoreInnerOpacity={stellarCoreInnerOpacity}
+                                    stellarCoreTentaclesOpacity={stellarCoreTentaclesOpacity}
                                     geometricFrameImage={geometricFrameImage}
                                     geometricSemicircleImage={geometricSemicircleImage}
                                     geometricSongName={geometricSongName}
@@ -1961,6 +1971,12 @@ function App() {
                             onVinylCenterFixedChange={setVinylCenterFixed}
                             pianoOpacity={pianoOpacity}
                             onPianoOpacityChange={setPianoOpacity}
+                            fusionCenterOpacity={fusionCenterOpacity}
+                            onFusionCenterOpacityChange={setFusionCenterOpacity}
+                            stellarCoreInnerOpacity={stellarCoreInnerOpacity}
+                            onStellarCoreInnerOpacityChange={setStellarCoreInnerOpacity}
+                            stellarCoreTentaclesOpacity={stellarCoreTentaclesOpacity}
+                            onStellarCoreTentaclesOpacityChange={setStellarCoreTentaclesOpacity}
                             customText={customText}
                             onTextChange={handleTextChange}
                             textColor={textColor}

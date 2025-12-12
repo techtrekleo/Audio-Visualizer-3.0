@@ -78,6 +78,13 @@ export interface SavedSettings {
     keYeCustomV2Text2Effect: GraphicEffectType;
     keYeCustomV2Text1StrokeColor: string;
     keYeCustomV2Text2StrokeColor: string;
+
+    // Fusion
+    fusionCenterOpacity: number;
+
+    // Stellar Core
+    stellarCoreInnerOpacity: number;
+    stellarCoreTentaclesOpacity: number;
 }
 
 export class SettingsManager {

@@ -358,6 +358,14 @@ interface OptimizedControlsProps {
     // Piano opacity
     pianoOpacity?: number;
     onPianoOpacityChange?: (opacity: number) => void;
+    // Fusion center (blue+pink) opacity
+    fusionCenterOpacity?: number;
+    onFusionCenterOpacityChange?: (opacity: number) => void;
+    // Stellar Core opacities (inner core / outer tentacles)
+    stellarCoreInnerOpacity?: number;
+    onStellarCoreInnerOpacityChange?: (opacity: number) => void;
+    stellarCoreTentaclesOpacity?: number;
+    onStellarCoreTentaclesOpacityChange?: (opacity: number) => void;
     // 控制卡設定（Vinyl）
     controlCardEnabled?: boolean;
     onControlCardEnabledChange?: (v: boolean) => void;
@@ -751,6 +759,13 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         ctaPositionX: props.ctaPositionX ?? 50,
         ctaPositionY: props.ctaPositionY ?? 50,
 
+        // Fusion
+        fusionCenterOpacity: props.fusionCenterOpacity ?? 1.0,
+
+        // Stellar Core
+        stellarCoreInnerOpacity: props.stellarCoreInnerOpacity ?? 1.0,
+        stellarCoreTentaclesOpacity: props.stellarCoreTentaclesOpacity ?? 1.0,
+
         // Control Card (text)
         controlCardFontFamily: props.controlCardFontFamily || FontType.POPPINS,
         controlCardTextEffect: props.controlCardTextEffect || GraphicEffectType.NONE,
@@ -838,6 +853,12 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.ctaTextEffect !== undefined) props.onCtaTextEffectChange?.(settings.ctaTextEffect);
         if (settings.ctaPositionX !== undefined) props.onCtaPositionXChange?.(settings.ctaPositionX);
         if (settings.ctaPositionY !== undefined) props.onCtaPositionYChange?.(settings.ctaPositionY);
+
+        // Fusion
+        if (settings.fusionCenterOpacity !== undefined) props.onFusionCenterOpacityChange?.(settings.fusionCenterOpacity);
+        // Stellar Core
+        if (settings.stellarCoreInnerOpacity !== undefined) props.onStellarCoreInnerOpacityChange?.(settings.stellarCoreInnerOpacity);
+        if (settings.stellarCoreTentaclesOpacity !== undefined) props.onStellarCoreTentaclesOpacityChange?.(settings.stellarCoreTentaclesOpacity);
 
         // Intro Overlay
         if (settings.showIntroOverlay !== undefined) props.onShowIntroOverlayChange?.(settings.showIntroOverlay);
@@ -4233,6 +4254,64 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 />
                                 <p className="text-xs text-gray-400 leading-relaxed">
                                     調整鋼琴鍵盤的透明度，飄出的音符不會受到影響。
+                                </p>
+                            </div>
+                        </CollapsibleControlSection>
+                    )}
+
+                    {/* Fusion 專用控制面板 */}
+                    {props.visualizationType === VisualizationType.FUSION && (
+                        <CollapsibleControlSection
+                            title="Fusion"
+                            icon="🧬"
+                            priority="high"
+                            defaultExpanded={true}
+                            badge="特殊款"
+                        >
+                            <div className="space-y-4">
+                                <SliderControl
+                                    label="中間特效透明度"
+                                    value={props.fusionCenterOpacity ?? 1.0}
+                                    onChange={props.onFusionCenterOpacityChange || (() => {})}
+                                    min={0}
+                                    max={1}
+                                    step={0.01}
+                                />
+                                <p className="text-xs text-gray-400 leading-relaxed">
+                                    調整 Fusion 中間藍色/粉紅色波形的透明度（不影響下方點陣柱狀）。
+                                </p>
+                            </div>
+                        </CollapsibleControlSection>
+                    )}
+
+                    {/* Stellar Core 專用控制面板 */}
+                    {props.visualizationType === VisualizationType.STELLAR_CORE && (
+                        <CollapsibleControlSection
+                            title="Stellar Core"
+                            icon="⭐"
+                            priority="high"
+                            defaultExpanded={true}
+                            badge="進階款"
+                        >
+                            <div className="space-y-4">
+                                <SliderControl
+                                    label="核心透明度"
+                                    value={props.stellarCoreInnerOpacity ?? 1.0}
+                                    onChange={props.onStellarCoreInnerOpacityChange || (() => {})}
+                                    min={0}
+                                    max={1}
+                                    step={0.01}
+                                />
+                                <SliderControl
+                                    label="外圈觸手透明度"
+                                    value={props.stellarCoreTentaclesOpacity ?? 1.0}
+                                    onChange={props.onStellarCoreTentaclesOpacityChange || (() => {})}
+                                    min={0}
+                                    max={1}
+                                    step={0.01}
+                                />
+                                <p className="text-xs text-gray-400 leading-relaxed">
+                                    分別調整 Stellar Core 最內層核心與外圈觸手（頻率觸鬚）的透明度。
                                 </p>
                             </div>
                         </CollapsibleControlSection>
