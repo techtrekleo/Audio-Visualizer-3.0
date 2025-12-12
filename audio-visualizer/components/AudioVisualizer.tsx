@@ -5454,7 +5454,7 @@ const drawIntroOverlay = (
     if (total <= 0) return;
     if (t > total) return;
 
-    // opacity curve
+    // opacity curve (for text/panel)
     let alpha = 1;
     if (fi > 0 && t < fi) {
         alpha = t / fi;
@@ -5465,6 +5465,63 @@ const drawIntroOverlay = (
     }
 
     ctx.save();
+    // ===== 整體畫面淡入（只在開頭淡入階段啟用） =====
+    // 在 intro 的 fade-in 階段，整個畫面從黑色淡入
+    if (fi > 0 && t < fi) {
+        const sceneAlpha = Math.max(0, Math.min(1, alpha));
+        ctx.save();
+        ctx.globalAlpha = 1 - sceneAlpha;
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, width, height);
+        ctx.restore();
+    }
+
+    // ===== 上下動態特效（在整個 intro 期間啟用） =====
+    // 霓虹掃光：上/下邊緣的流動光帶，增強視覺效果
+    {
+        const bandH = Math.max(10, Math.floor(height * 0.035));
+        const speed = 0.9; // 越大越快
+        const phase = (nowSeconds - startTime) * speed;
+        const glow = 0.55 * alpha; // 跟著 intro 透明度
+        const baseColor = color || '#FFFFFF';
+
+        const drawBand = (y: number, flip: boolean) => {
+            ctx.save();
+            ctx.globalAlpha = glow;
+            // 背景柔光
+            const grad = ctx.createLinearGradient(0, y, 0, y + bandH);
+            grad.addColorStop(0, 'rgba(0,0,0,0)');
+            grad.addColorStop(0.5, 'rgba(0,0,0,0.35)');
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, y, width, bandH);
+
+            // 流動亮點（掃光條）
+            const stripeW = Math.max(120, Math.floor(width * 0.25));
+            const x = ((phase * width * 0.35) % (width + stripeW)) - stripeW;
+            const stripe = ctx.createLinearGradient(x, 0, x + stripeW, 0);
+            stripe.addColorStop(0, 'rgba(255,255,255,0)');
+            stripe.addColorStop(0.35, baseColor);
+            stripe.addColorStop(0.5, 'rgba(255,255,255,0.95)');
+            stripe.addColorStop(0.65, baseColor);
+            stripe.addColorStop(1, 'rgba(255,255,255,0)');
+
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.shadowColor = baseColor;
+            ctx.shadowBlur = 18;
+            ctx.fillStyle = stripe;
+            // 加一點波動感
+            const wobble = Math.sin(phase * 2.2) * (bandH * 0.18);
+            const yy = y + (flip ? -wobble : wobble);
+            ctx.fillRect(0, yy, width, bandH);
+
+            ctx.restore();
+        };
+
+        drawBand(0, false);
+        drawBand(height - bandH, true);
+    }
+
     ctx.globalAlpha = alpha;
 
     // Position (0-100%)
