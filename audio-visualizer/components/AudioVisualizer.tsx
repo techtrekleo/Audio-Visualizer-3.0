@@ -5798,21 +5798,24 @@ const drawPartialBlurSubtitle = (
     const outlineColor = strokeColor || color;
     const outlineWidth = Math.max(2, fontSize / 20);
 
-    // random blur cadence: 7~9 updates per second, per subtitle
+    // random blur cadence (SLOW): avoid rapid flicker.
+    // Goal: per line only blur ~2-3 chars at a time, and not every frame.
     const localT = Math.max(0, currentTime - start);
-    const bucket = Math.floor(localT * 8);
+    const intervalSec = 1.15; // ~0.87 Hz (was ~8 Hz)
+    const bucket = Math.floor(localT / intervalSec);
     const seedBase = (Math.floor(start * 1000) ^ (currentSubtitleIndex * 1000003)) | 0;
 
-    // pick random contiguous segments (1~3 chars) to blur, not sequential
+    // Pick ONE contiguous segment (length 2~3) to blur, or none (duty cycle).
     const activeMask = new Array<boolean>(text.length).fill(false);
-    for (let i = 0; i < text.length; i++) {
-        const h = hash32(seedBase ^ (bucket * 131) ^ (i * 911));
-        const isStart = (h % 100) < 16; // ~16% chance to start a blurred segment
-        if (!isStart) continue;
-        const segLen = 1 + ((h >>> 8) % 3); // 1..3
+    const lineHash = hash32(seedBase ^ (bucket * 131));
+    const duty = lineHash % 100;
+    const shouldBlurNow = duty < 45; // ~45% of the time blurred, otherwise fully crisp
+    if (shouldBlurNow && text.length > 0) {
+        const segLen = Math.min(text.length, 2 + ((lineHash >>> 8) % 2)); // 2..3 (or shorter if text is short)
+        const maxStart = Math.max(0, text.length - segLen);
+        const segStart = maxStart > 0 ? ((lineHash >>> 16) % (maxStart + 1)) : 0;
         for (let j = 0; j < segLen; j++) {
-            const k = i + j;
-            if (k >= 0 && k < activeMask.length) activeMask[k] = true;
+            activeMask[segStart + j] = true;
         }
     }
 
