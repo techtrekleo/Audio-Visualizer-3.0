@@ -7,6 +7,15 @@ import CategorizedEffectSelector from './CategorizedEffectSelector';
 interface QuickSettingsPanelProps {
     visualizationType: VisualizationType;
     onVisualizationChange: (type: VisualizationType) => void;
+    // Multi-visualization (composite) mode
+    multiEffectEnabled?: boolean;
+    onMultiEffectEnabledChange?: (enabled: boolean) => void;
+    selectedVisualizationTypes?: VisualizationType[];
+    onToggleVisualizationType?: (type: VisualizationType) => void;
+    multiEffectOffsets?: Partial<Record<VisualizationType, { x: number; y: number }>>;
+    onActiveMultiEffectNudge?: (dx: number, dy: number) => void;
+    onActiveMultiEffectOffsetChange?: (next: { x: number; y: number }) => void;
+    onActiveMultiEffectOffsetReset?: () => void;
     waveformStroke: boolean;
     onWaveformStrokeChange: (value: boolean) => void;
     effectScale: number;
@@ -43,6 +52,14 @@ interface QuickSettingsPanelProps {
 const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
     visualizationType,
     onVisualizationChange,
+    multiEffectEnabled = false,
+    onMultiEffectEnabledChange,
+    selectedVisualizationTypes = [],
+    onToggleVisualizationType,
+    multiEffectOffsets = {},
+    onActiveMultiEffectNudge,
+    onActiveMultiEffectOffsetChange,
+    onActiveMultiEffectOffsetReset,
     waveformStroke,
     onWaveformStrokeChange,
     effectScale,
@@ -86,11 +103,123 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
             <div className="space-y-4">
                 {/* 視覺效果選擇 */}
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-300">選擇視覺效果</label>
+                    <div className="flex items-center justify-between gap-3">
+                        <label className="text-sm font-medium text-gray-300">選擇視覺效果</label>
+                        <label className="flex items-center gap-2 text-xs text-gray-300 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={multiEffectEnabled}
+                                onChange={(e) => onMultiEffectEnabledChange?.(e.target.checked)}
+                                className="w-4 h-4 text-red-500 bg-gray-700 border-gray-600 rounded focus:ring-red-500 focus:ring-2"
+                            />
+                            多重疊加（高耗能）
+                        </label>
+                    </div>
+                    {multiEffectEnabled && (
+                        <div className="text-xs text-red-200 bg-red-500/10 border border-red-400/30 rounded-lg px-3 py-2">
+                            ⚠️ 已啟用多重疊加：會大量消耗電腦效能，可能造成掉禎或當機。
+                        </div>
+                    )}
                     <CategorizedEffectSelector
                         currentType={visualizationType}
                         onTypeChange={onVisualizationChange}
+                        multiSelectEnabled={multiEffectEnabled}
+                        selectedTypes={selectedVisualizationTypes}
+                        onToggleType={onToggleVisualizationType}
                     />
+                    {multiEffectEnabled && (
+                        <div className="mt-3 p-3 bg-gray-800/50 rounded-lg border border-red-400/30 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="text-xs font-medium text-red-200">
+                                    疊加位置調整（目前：{visualizationType}）
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => onActiveMultiEffectOffsetReset?.()}
+                                    className="text-xs px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600"
+                                >
+                                    重置
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 items-center justify-items-center">
+                                <div />
+                                <button
+                                    type="button"
+                                    onClick={() => onActiveMultiEffectNudge?.(0, -20)}
+                                    className="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+                                    title="上移"
+                                >
+                                    ↑
+                                </button>
+                                <div />
+                                <button
+                                    type="button"
+                                    onClick={() => onActiveMultiEffectNudge?.(-20, 0)}
+                                    className="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+                                    title="左移"
+                                >
+                                    ←
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => onActiveMultiEffectNudge?.(0, 0)}
+                                    className="w-10 h-10 rounded-lg bg-gray-700 text-gray-300 border border-gray-600 cursor-default"
+                                    title="使用方向鍵移動"
+                                >
+                                    +
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => onActiveMultiEffectNudge?.(20, 0)}
+                                    className="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+                                    title="右移"
+                                >
+                                    →
+                                </button>
+                                <div />
+                                <button
+                                    type="button"
+                                    onClick={() => onActiveMultiEffectNudge?.(0, 20)}
+                                    className="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+                                    title="下移"
+                                >
+                                    ↓
+                                </button>
+                                <div />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-300">X</label>
+                                    <input
+                                        type="number"
+                                        value={(multiEffectOffsets?.[visualizationType]?.x ?? 0)}
+                                        onChange={(e) => {
+                                            const x = Number(e.target.value || 0);
+                                            const y = multiEffectOffsets?.[visualizationType]?.y ?? 0;
+                                            onActiveMultiEffectOffsetChange?.({ x, y });
+                                        }}
+                                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-300">Y</label>
+                                    <input
+                                        type="number"
+                                        value={(multiEffectOffsets?.[visualizationType]?.y ?? 0)}
+                                        onChange={(e) => {
+                                            const y = Number(e.target.value || 0);
+                                            const x = multiEffectOffsets?.[visualizationType]?.x ?? 0;
+                                            onActiveMultiEffectOffsetChange?.({ x, y });
+                                        }}
+                                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
+                                    />
+                                </div>
+                            </div>
+                            <div className="text-[11px] text-gray-400">
+                                提示：點選任一特效卡片會切換「目前」特效，方向鍵控制只影響目前特效的位置。
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* 顏色主題 */}

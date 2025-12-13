@@ -54,12 +54,16 @@ function App() {
     const [videoExtension, setVideoExtension] = useState<string>('webm');
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
     const [visualizationType, setVisualizationType] = useState<VisualizationType>(VisualizationType.MONSTERCAT);
+    // Multi-visualization (composite) mode
+    const [multiEffectEnabled, setMultiEffectEnabled] = useState<boolean>(false);
+    const [selectedVisualizationTypes, setSelectedVisualizationTypes] = useState<VisualizationType[]>([VisualizationType.MONSTERCAT]);
+    const [multiEffectOffsets, setMultiEffectOffsets] = useState<Partial<Record<VisualizationType, { x: number; y: number }>>>({});
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [customText, setCustomText] = useState<string>('Sonic Pulse');
     const [textColor, setTextColor] = useState<string>('#67E8F9');
     const [textStrokeColor, setTextStrokeColor] = useState<string>('#000000'); // 自訂文字描邊顏色
     const [fontFamily, setFontFamily] = useState<FontType>(FontType.ROCKNROLL_ONE);
-    const [graphicEffect, setGraphicEffect] = useState<GraphicEffectType>(GraphicEffectType.GLOW);
+    const [graphicEffect, setGraphicEffect] = useState<GraphicEffectType>(GraphicEffectType.NEON);
     const [textSize, setTextSize] = useState<number>(4); // 字體大小 (vw 單位)
     const [textPositionX, setTextPositionX] = useState<number>(0); // 水平位置偏移 (-50 到 50)
     const [textPositionY, setTextPositionY] = useState<number>(0); // 垂直位置偏移 (-50 到 50)
@@ -219,7 +223,7 @@ function App() {
     const [introArtist, setIntroArtist] = useState<string>('');
     const [introDescription, setIntroDescription] = useState<string>('');
     const [introFontFamily, setIntroFontFamily] = useState<FontType>(FontType.POPPINS);
-    const [introEffect, setIntroEffect] = useState<GraphicEffectType>(GraphicEffectType.GLOW);
+    const [introEffect, setIntroEffect] = useState<GraphicEffectType>(GraphicEffectType.NEON);
     const [introColor, setIntroColor] = useState<string>('#FFFFFF');
     const [introStrokeColor, setIntroStrokeColor] = useState<string>('#000000');
     const [introTitleSize, setIntroTitleSize] = useState<number>(6); // vw
@@ -1155,6 +1159,84 @@ function App() {
     
     const handleSetVisualization = (newVis: VisualizationType) => {
         setVisualizationType(newVis);
+        // Keep selection list in sync when multi mode is enabled (and ensure list is never empty)
+        setSelectedVisualizationTypes((prev) => {
+            if (!multiEffectEnabled) return [newVis];
+            if (prev.includes(newVis)) return prev;
+            return [...prev, newVis];
+        });
+    };
+
+    const handleMultiEffectEnabledChange = (enabled: boolean) => {
+        if (enabled && !multiEffectEnabled) {
+            const ok = window.confirm(
+                '⚠️ 警告：開啟「複數可視化特效疊加」會大量消耗電腦效能，可能造成掉禎或當機。\n\n確定要開啟嗎？'
+            );
+            if (!ok) return;
+        }
+        setMultiEffectEnabled(enabled);
+        // When disabling, collapse back to a single active visualizationType.
+        if (!enabled) {
+            setSelectedVisualizationTypes([visualizationType]);
+        } else {
+            setSelectedVisualizationTypes((prev) => (prev.length > 0 ? prev : [visualizationType]));
+        }
+    };
+
+    const handleToggleVisualizationType = (type: VisualizationType) => {
+        if (!multiEffectEnabled) {
+            handleSetVisualization(type);
+            return;
+        }
+
+        setSelectedVisualizationTypes((prev) => {
+            const has = prev.includes(type);
+            if (has) {
+                // Don't allow removing the last one (avoid "no visualizer" confusion)
+                if (prev.length === 1) return prev;
+                const next = prev.filter((t) => t !== type);
+                // If we removed the active one, switch active to the first remaining.
+                if (visualizationType === type) {
+                    setVisualizationType(next[0]);
+                }
+                return next;
+            }
+            // Add and make it active so effect-specific controls show up.
+            setVisualizationType(type);
+            return [...prev, type];
+        });
+    };
+
+    const handleSelectedVisualizationTypesChange = (types: VisualizationType[]) => {
+        const list = (types || []).filter(Boolean);
+        if (list.length === 0) return;
+        setSelectedVisualizationTypes(list);
+        // Keep active type consistent with the list
+        if (!list.includes(visualizationType)) {
+            setVisualizationType(list[list.length - 1]);
+        }
+    };
+
+    const handleSetActiveMultiEffectOffset = (type: VisualizationType, next: { x: number; y: number }) => {
+        setMultiEffectOffsets((prev) => ({ ...prev, [type]: { x: next.x, y: next.y } }));
+    };
+
+    const handleNudgeActiveMultiEffect = (dx: number, dy: number) => {
+        const type = visualizationType;
+        setMultiEffectOffsets((prev) => {
+            const current = prev[type] || { x: 0, y: 0 };
+            return { ...prev, [type]: { x: current.x + dx, y: current.y + dy } };
+        });
+    };
+
+    const handleResetActiveMultiEffectOffset = () => {
+        const type = visualizationType;
+        setMultiEffectOffsets((prev) => ({ ...prev, [type]: { x: 0, y: 0 } }));
+    };
+
+    const handleMultiEffectOffsetsChange = (next: Partial<Record<VisualizationType, { x: number; y: number }>>) => {
+        if (!next) return;
+        setMultiEffectOffsets(next);
     };
     
     const handleSetColorPalette = (newPalette: ColorPaletteType) => {
@@ -1669,6 +1751,9 @@ function App() {
                                     analyser={analyser} 
                                     audioRef={audioRef}
                                     visualizationType={visualizationType} 
+                                    multiEffectEnabled={multiEffectEnabled}
+                                    selectedVisualizationTypes={selectedVisualizationTypes}
+                                    multiEffectOffsets={multiEffectOffsets}
                                     isPlaying={isPlaying}
                                     customText={customText}
                                     textColor={textColor}
@@ -1961,6 +2046,16 @@ function App() {
                             isLoading={isLoading}
                             visualizationType={visualizationType}
                             onVisualizationChange={handleSetVisualization}
+                            multiEffectEnabled={multiEffectEnabled}
+                            onMultiEffectEnabledChange={handleMultiEffectEnabledChange}
+                            selectedVisualizationTypes={selectedVisualizationTypes}
+                            onToggleVisualizationType={handleToggleVisualizationType}
+                            onSelectedVisualizationTypesChange={handleSelectedVisualizationTypesChange}
+                            multiEffectOffsets={multiEffectOffsets}
+                            onMultiEffectOffsetsChange={handleMultiEffectOffsetsChange}
+                            onActiveMultiEffectNudge={handleNudgeActiveMultiEffect}
+                            onActiveMultiEffectOffsetChange={(next) => handleSetActiveMultiEffectOffset(visualizationType, next)}
+                            onActiveMultiEffectOffsetReset={handleResetActiveMultiEffectOffset}
                             // Vinyl Record controls
                             vinylImage={vinylImage}
                             onVinylImageUpload={handleVinylImageUpload}

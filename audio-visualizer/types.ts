@@ -151,9 +151,6 @@ export enum GraphicEffectType {
     OUTLINE = '描邊',
     FAUX_3D = '偽3D',
     GLITCH = '故障感',
-    // 保持向后兼容
-    GLOW = '霓虹光', // 等同于 NEON
-    STROKE = '描邊', // 等同于 OUTLINE
 }
 
 // 字幕特效類型（參考封面產生器）
@@ -200,6 +197,7 @@ export enum SubtitleDisplayMode {
     WORD_BY_WORD = '逐字顯示',
     SLIDING_GROUP = '滾動字幕組',
     FADE_LINES = '淡入淡出（上下線）',
+    PARTIAL_BLUR = '局部模糊',
 }
 
 export enum SubtitleFormat {
@@ -247,6 +245,11 @@ export interface AudioVisualizerProps {
     analyser: AnalyserNode | null;
     audioRef: React.RefObject<HTMLAudioElement>;
     visualizationType: VisualizationType;
+    // When enabled, the visualizer will draw multiple selected visualization types sequentially in one frame.
+    multiEffectEnabled?: boolean;
+    selectedVisualizationTypes?: VisualizationType[];
+    // Per-effect offsets used in multi-effect mode (pixels)
+    multiEffectOffsets?: Partial<Record<VisualizationType, { x: number; y: number }>>;
     isPlaying: boolean;
     customText: string;
     textColor: string;

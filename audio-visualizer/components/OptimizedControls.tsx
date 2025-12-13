@@ -131,6 +131,17 @@ interface OptimizedControlsProps {
     isLoading: boolean;
     visualizationType: VisualizationType;
     onVisualizationChange: (type: VisualizationType) => void;
+    // Multi-visualization (composite) mode
+    multiEffectEnabled?: boolean;
+    onMultiEffectEnabledChange?: (enabled: boolean) => void;
+    selectedVisualizationTypes?: VisualizationType[];
+    onToggleVisualizationType?: (type: VisualizationType) => void;
+    onSelectedVisualizationTypesChange?: (types: VisualizationType[]) => void;
+    multiEffectOffsets?: Partial<Record<VisualizationType, { x: number; y: number }>>;
+    onMultiEffectOffsetsChange?: (offsets: Partial<Record<VisualizationType, { x: number; y: number }>>) => void;
+    onActiveMultiEffectNudge?: (dx: number, dy: number) => void;
+    onActiveMultiEffectOffsetChange?: (next: { x: number; y: number }) => void;
+    onActiveMultiEffectOffsetReset?: () => void;
     customText: string;
     onTextChange: (text: string) => void;
     textColor: string;
@@ -716,6 +727,9 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
     // 獲取當前設置
     const getCurrentSettings = (): Partial<SavedSettings> => ({
         visualizationType: props.visualizationType,
+        multiEffectEnabled: !!props.multiEffectEnabled,
+        selectedVisualizationTypes: props.selectedVisualizationTypes || [],
+        multiEffectOffsets: props.multiEffectOffsets || {},
         customText: props.customText,
         textColor: props.textColor,
         textStrokeColor: props.textStrokeColor || '#000000',
@@ -794,7 +808,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         introArtist: props.introArtist || '',
         introDescription: props.introDescription || '',
         introFontFamily: props.introFontFamily || FontType.POPPINS,
-        introEffect: props.introEffect || GraphicEffectType.GLOW,
+        introEffect: props.introEffect || GraphicEffectType.NEON,
         introColor: props.introColor || '#FFFFFF',
         introStrokeColor: props.introStrokeColor || '#000000',
         introTitleSize: props.introTitleSize ?? 6,
@@ -811,6 +825,16 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
     // 載入設置
     const handleLoadSettings = (settings: Partial<SavedSettings>) => {
         if (settings.visualizationType) props.onVisualizationChange(settings.visualizationType);
+        if (settings.multiEffectEnabled !== undefined) props.onMultiEffectEnabledChange?.(!!settings.multiEffectEnabled);
+        if (Array.isArray(settings.selectedVisualizationTypes)) {
+            const list = settings.selectedVisualizationTypes.filter(Boolean) as VisualizationType[];
+            if (list.length > 0) {
+                props.onSelectedVisualizationTypesChange?.(list);
+            }
+        }
+        if (settings.multiEffectOffsets && typeof settings.multiEffectOffsets === 'object') {
+            props.onMultiEffectOffsetsChange?.(settings.multiEffectOffsets as any);
+        }
         if (settings.customText !== undefined) props.onTextChange(settings.customText);
         if (settings.textColor) props.onTextColorChange(settings.textColor);
         if (settings.textStrokeColor !== undefined) props.onTextStrokeColorChange?.(settings.textStrokeColor);
@@ -974,6 +998,14 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                     <QuickSettingsPanel
                         visualizationType={props.visualizationType}
                         onVisualizationChange={props.onVisualizationChange}
+                        multiEffectEnabled={props.multiEffectEnabled}
+                        onMultiEffectEnabledChange={props.onMultiEffectEnabledChange}
+                        selectedVisualizationTypes={props.selectedVisualizationTypes}
+                        onToggleVisualizationType={props.onToggleVisualizationType}
+                        multiEffectOffsets={props.multiEffectOffsets}
+                        onActiveMultiEffectNudge={props.onActiveMultiEffectNudge}
+                        onActiveMultiEffectOffsetChange={props.onActiveMultiEffectOffsetChange}
+                        onActiveMultiEffectOffsetReset={props.onActiveMultiEffectOffsetReset}
                         waveformStroke={props.waveformStroke}
                         onWaveformStrokeChange={props.onWaveformStrokeChange}
                         effectScale={props.effectScale}
@@ -1390,7 +1422,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     />
                                     <SelectControl
                                         label="特效"
-                                        value={props.introEffect || GraphicEffectType.GLOW}
+                                        value={props.introEffect || GraphicEffectType.NEON}
                                         onChange={(value) => props.onIntroEffectChange?.(value as GraphicEffectType)}
                                         options={[
                                             { value: GraphicEffectType.NONE, label: '無' },
@@ -1400,7 +1432,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             { value: GraphicEffectType.OUTLINE, label: '描邊' },
                                             { value: GraphicEffectType.FAUX_3D, label: '偽3D' },
                                             { value: GraphicEffectType.GLITCH, label: '故障感' },
-                                            { value: GraphicEffectType.GLOW, label: '發光' },
+                                            { value: GraphicEffectType.NEON, label: '發光' },
                                         ]}
                                     />
                                     <div className="space-y-2">
@@ -1850,7 +1882,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             </div>
 
                             {/* 描邊顏色（只在描邊特效時顯示） */}
-                            {(props.graphicEffect === GraphicEffectType.OUTLINE || props.graphicEffect === GraphicEffectType.STROKE) && (
+                            {(props.graphicEffect === GraphicEffectType.OUTLINE) && (
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-gray-300">描邊顏色</label>
                                     <div className="flex space-x-2">
@@ -2105,6 +2137,12 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 <span className="flex items-center space-x-2">
                                                     <span>〰️</span>
                                                     <span>淡入淡出</span>
+                                                </span>
+                                            )}
+                                            {mode === SubtitleDisplayMode.PARTIAL_BLUR && (
+                                                <span className="flex items-center space-x-2">
+                                                    <span>🫥</span>
+                                                    <span>局部模糊</span>
                                                 </span>
                                             )}
                                         </button>
@@ -2715,7 +2753,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                         { value: GraphicEffectType.BOLD, label: '粗體' },
                                                         { value: GraphicEffectType.SHADOW, label: '陰影' },
                                                         { value: GraphicEffectType.NEON, label: '霓虹光' },
-                                                        { value: GraphicEffectType.GLOW, label: '發光' },
+                                                        { value: GraphicEffectType.NEON, label: '發光' },
                                                         { value: GraphicEffectType.OUTLINE, label: '描邊' },
                                                         { value: GraphicEffectType.FAUX_3D, label: '偽3D' },
                                                         { value: GraphicEffectType.GLITCH, label: '故障感' },
@@ -3144,7 +3182,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                         <option value={GraphicEffectType.BOLD}>粗體</option>
                                                         <option value={GraphicEffectType.SHADOW}>陰影</option>
                                                         <option value={GraphicEffectType.NEON}>霓虹光</option>
-                                                        <option value={GraphicEffectType.GLOW}>發光</option>
+                                                        <option value={GraphicEffectType.NEON}>發光</option>
                                                         <option value={GraphicEffectType.OUTLINE}>描邊</option>
                                                         <option value={GraphicEffectType.FAUX_3D}>偽3D</option>
                                                         <option value={GraphicEffectType.GLITCH}>故障感</option>
@@ -4047,7 +4085,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 { value: GraphicEffectType.BOLD, label: '粗體' },
                                                 { value: GraphicEffectType.SHADOW, label: '陰影' },
                                                 { value: GraphicEffectType.NEON, label: '霓虹光' },
-                                                { value: GraphicEffectType.GLOW, label: '發光' },
+                                                { value: GraphicEffectType.NEON, label: '發光' },
                                                 { value: GraphicEffectType.OUTLINE, label: '描邊' },
                                                 { value: GraphicEffectType.FAUX_3D, label: '偽3D' },
                                                 { value: GraphicEffectType.GLITCH, label: '故障感' },
@@ -4179,7 +4217,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 { value: GraphicEffectType.BOLD, label: '粗體' },
                                                 { value: GraphicEffectType.SHADOW, label: '陰影' },
                                                 { value: GraphicEffectType.NEON, label: '霓虹光' },
-                                                { value: GraphicEffectType.GLOW, label: '發光' },
+                                                { value: GraphicEffectType.NEON, label: '發光' },
                                                 { value: GraphicEffectType.OUTLINE, label: '描邊' },
                                                 { value: GraphicEffectType.FAUX_3D, label: '偽3D' },
                                                 { value: GraphicEffectType.GLITCH, label: '故障感' },

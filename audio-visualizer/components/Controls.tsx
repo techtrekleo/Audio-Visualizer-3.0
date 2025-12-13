@@ -12,6 +12,11 @@ interface ControlsProps {
     isLoading: boolean;
     visualizationType: VisualizationType;
     onVisualizationChange: (type: VisualizationType) => void;
+    // Multi-visualization (composite) mode
+    multiEffectEnabled?: boolean;
+    onMultiEffectEnabledChange?: (enabled: boolean) => void;
+    selectedVisualizationTypes?: VisualizationType[];
+    onToggleVisualizationType?: (type: VisualizationType) => void;
     customText: string;
     onTextChange: (text: string) => void;
     textColor: string;
@@ -268,6 +273,10 @@ const Controls: React.FC<ControlsProps> = ({
     isLoading,
     visualizationType,
     onVisualizationChange,
+    multiEffectEnabled = false,
+    onMultiEffectEnabledChange,
+    selectedVisualizationTypes = [],
+    onToggleVisualizationType,
     customText,
     onTextChange,
     textColor,
@@ -425,10 +434,30 @@ const Controls: React.FC<ControlsProps> = ({
             
             {/* --- Visual Style Controls --- */}
             <ControlSection title="視覺風格設定" className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                    <div className="text-sm text-gray-300 font-medium">特效模式</div>
+                    <label className="flex items-center gap-2 text-sm text-gray-200 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={multiEffectEnabled}
+                            onChange={(e) => onMultiEffectEnabledChange?.(e.target.checked)}
+                            className="w-4 h-4 text-red-500 bg-gray-700 border-gray-600 rounded focus:ring-red-500 focus:ring-2"
+                        />
+                        多重疊加（高耗能）
+                    </label>
+                </div>
+                {multiEffectEnabled && (
+                    <div className="mb-3 text-xs text-red-200 bg-red-500/10 border border-red-400/30 rounded-lg px-3 py-2">
+                        ⚠️ 已啟用多重疊加：會大量消耗電腦效能，可能造成掉禎或當機。
+                    </div>
+                )}
                 {/* 分類特效選擇器 */}
                 <CategorizedEffectSelector
                     currentType={visualizationType}
                     onTypeChange={onVisualizationChange}
+                    multiSelectEnabled={multiEffectEnabled}
+                    selectedTypes={selectedVisualizationTypes}
+                    onToggleType={onToggleVisualizationType}
                 />
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
@@ -710,6 +739,11 @@ const Controls: React.FC<ControlsProps> = ({
                                                     <span className="text-white text-xs">✨</span>
                                                 </div>
                                             )}
+                                            {mode === SubtitleDisplayMode.PARTIAL_BLUR && (
+                                                <div className="w-8 h-5 bg-black/50 border border-gray-400 rounded flex items-center justify-center">
+                                                    <span className="text-white text-xs">🫥</span>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="text-center text-xs font-medium">{mode}</div>
                                         {mode === SubtitleDisplayMode.LYRICS_SCROLL && (
@@ -717,6 +751,9 @@ const Controls: React.FC<ControlsProps> = ({
                                         )}
                                         {mode === SubtitleDisplayMode.WORD_BY_WORD && (
                                             <div className="text-xs text-cyan-400">🎵 邊唱邊顯示</div>
+                                        )}
+                                        {mode === SubtitleDisplayMode.PARTIAL_BLUR && (
+                                            <div className="text-xs text-purple-300">🫥 隨機模糊</div>
                                         )}
                                     </div>
                                 </button>

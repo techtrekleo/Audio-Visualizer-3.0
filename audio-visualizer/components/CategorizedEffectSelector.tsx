@@ -5,11 +5,18 @@ import { EFFECTS_BY_CATEGORY, getCategoryName, getEffectInfo } from '../constant
 interface CategorizedEffectSelectorProps {
   currentType: VisualizationType;
   onTypeChange: (type: VisualizationType) => void;
+  // Multi-select mode
+  multiSelectEnabled?: boolean;
+  selectedTypes?: VisualizationType[];
+  onToggleType?: (type: VisualizationType) => void;
 }
 
 const CategorizedEffectSelector: React.FC<CategorizedEffectSelectorProps> = ({
   currentType,
-  onTypeChange
+  onTypeChange,
+  multiSelectEnabled = false,
+  selectedTypes = [],
+  onToggleType
 }) => {
   const [activeCategory, setActiveCategory] = useState<EffectCategory>(EffectCategory.BASIC);
 
@@ -37,7 +44,9 @@ const CategorizedEffectSelector: React.FC<CategorizedEffectSelectorProps> = ({
       {/* 特效網格 */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {EFFECTS_BY_CATEGORY[activeCategory]?.map((effect) => {
-          const isSelected = currentType === effect.type;
+          const isSelected = multiSelectEnabled
+            ? selectedTypes.includes(effect.type)
+            : currentType === effect.type;
           return (
             <div
               key={effect.type}
@@ -46,10 +55,27 @@ const CategorizedEffectSelector: React.FC<CategorizedEffectSelectorProps> = ({
                   ? 'ring-2 ring-blue-500 bg-blue-900/30'
                   : 'hover:bg-gray-600'
               }`}
-              onClick={() => onTypeChange(effect.type)}
+              onClick={() => {
+                if (multiSelectEnabled) {
+                  onToggleType?.(effect.type);
+                } else {
+                  onTypeChange(effect.type);
+                }
+              }}
             >
               {/* 特效標題 */}
-              <div className="text-center">
+              <div className="text-center relative">
+                {multiSelectEnabled && (
+                  <div className="absolute -top-1 -right-1">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      readOnly
+                      className="w-4 h-4 text-blue-600 bg-gray-800 border-gray-500 rounded focus:ring-blue-500 focus:ring-2 pointer-events-none"
+                      aria-label={`選取 ${effect.type}`}
+                    />
+                  </div>
+                )}
                 <h3 className="text-sm font-medium text-white mb-1">
                   {effect.type}
                 </h3>

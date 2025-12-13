@@ -59,6 +59,10 @@ interface AudioVisualizerProps {
     analyser: AnalyserNode | null;
     audioRef: React.RefObject<HTMLAudioElement>;
     visualizationType: VisualizationType;
+    // Multi-visualization (composite) mode
+    multiEffectEnabled?: boolean;
+    selectedVisualizationTypes?: VisualizationType[];
+    multiEffectOffsets?: Partial<Record<VisualizationType, { x: number; y: number }>>;
     isPlaying: boolean;
     customText: string;
     textColor: string;
@@ -3501,7 +3505,7 @@ const drawKeYeCustomV2 = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
         ctx.miterLimit = 2;
 
         // shadow/glow
-        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        if (effect === GraphicEffectType.NEON) {
             ctx.shadowColor = color;
             ctx.shadowBlur = 18;
         } else if (effect === GraphicEffectType.SHADOW) {
@@ -3512,7 +3516,7 @@ const drawKeYeCustomV2 = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array |
         }
 
         // outline
-        if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+        if (effect === GraphicEffectType.OUTLINE) {
             ctx.strokeStyle = strokeColor;
             ctx.lineWidth = Math.max(2, size / 18);
             ctx.strokeText(text, x, y);
@@ -5104,7 +5108,7 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
             ctx.lineJoin = 'round';
             ctx.miterLimit = 2;
             // glow/shadow
-            if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+            if (effect === GraphicEffectType.NEON) {
                 ctx.shadowColor = cardColor;
                 ctx.shadowBlur = 16;
             } else if (effect === GraphicEffectType.SHADOW) {
@@ -5114,7 +5118,7 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
                 ctx.shadowOffsetY = 4;
             }
             // outline
-            if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+            if (effect === GraphicEffectType.OUTLINE) {
                 ctx.strokeStyle = stroke;
                 ctx.lineWidth = Math.max(2, size / 18);
                 ctx.strokeText(text, x, y);
@@ -5127,7 +5131,7 @@ const drawGeometricBars = (ctx: CanvasRenderingContext2D, dataArray: Uint8Array 
                 ctx.fillStyle = cardColor;
             }
             // fill
-            ctx.fillStyle = (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) ? '#FFFFFF' : cardColor;
+            ctx.fillStyle = (effect === GraphicEffectType.NEON) ? '#FFFFFF' : cardColor;
             ctx.fillText(text, x, y);
             // glitch (lightweight on beat)
             if (effect === GraphicEffectType.GLITCH && isBeat) {
@@ -5406,14 +5410,14 @@ const drawVerticalSubtitle = (
         }
         
         // 2. 設定填充顏色
-        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        if (effect === GraphicEffectType.NEON) {
             ctx.fillStyle = '#FFFFFF';
         } else {
             ctx.fillStyle = color;
         }
         
         // 3. 陰影設定
-        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        if (effect === GraphicEffectType.NEON) {
             ctx.shadowColor = color;
             ctx.shadowBlur = 15;
         } else if (effect === GraphicEffectType.SHADOW) {
@@ -5424,7 +5428,7 @@ const drawVerticalSubtitle = (
         }
         
         // 4. 描邊效果
-        if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+        if (effect === GraphicEffectType.OUTLINE) {
             ctx.strokeStyle = strokeColor || color; // 使用自定義描邊顏色，如果沒有則使用主顏色
             ctx.lineWidth = Math.max(2, fontSize / 20);
             ctx.lineJoin = 'round';
@@ -5441,7 +5445,7 @@ const drawVerticalSubtitle = (
         ctx.fillText(char, startX, charY);
         
         // 5.1. 額外的霓虹光增強
-        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        if (effect === GraphicEffectType.NEON) {
             ctx.shadowBlur = 30;
             ctx.fillText(char, startX, charY);
         }
@@ -5476,11 +5480,7 @@ const drawVerticalSubtitle = (
             ctx.restore();
             
             // 最後繪製正常文字
-            if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
-                ctx.fillStyle = '#FFFFFF';
-            } else {
-                ctx.fillStyle = color;
-            }
+            ctx.fillStyle = color;
             ctx.fillText(char, startX, charY);
         }
     });
@@ -5582,14 +5582,14 @@ const drawSubtitles = (
     }
 
     // 2. 設定填充顏色
-    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+    if (effect === GraphicEffectType.NEON) {
         ctx.fillStyle = '#FFFFFF'; // 霓虹光文字通常是白色
     } else {
         ctx.fillStyle = color;
     }
 
     // 3. 陰影設定（在填充前設定，影響整個物件包括描邊）
-    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+    if (effect === GraphicEffectType.NEON) {
         ctx.shadowColor = color; // 發光顏色
         ctx.shadowBlur = 15;
     } else if (effect === GraphicEffectType.SHADOW) {
@@ -5600,7 +5600,7 @@ const drawSubtitles = (
     }
 
     // 4. 描邊效果
-    if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+    if (effect === GraphicEffectType.OUTLINE) {
         ctx.strokeStyle = strokeColor || color; // 使用自定義描邊顏色，如果沒有則使用主顏色
         ctx.lineWidth = Math.max(2, fontSize / 20);
         ctx.lineJoin = 'round';
@@ -5617,7 +5617,7 @@ const drawSubtitles = (
     drawTextWithEffect();
 
     // 5.1. 額外的霓虹光增強
-    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+    if (effect === GraphicEffectType.NEON) {
         ctx.shadowBlur = 30; // 更強的發光
         drawTextWithEffect();
     }
@@ -5653,14 +5653,245 @@ const drawSubtitles = (
             ctx.restore();
         }
         // 最後繪製正常文字確保可見
-        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
-            ctx.fillStyle = '#FFFFFF';
-        } else {
-            ctx.fillStyle = color;
-        }
+        ctx.fillStyle = color;
         drawTextWithEffect();
     }
     
+    ctx.restore();
+};
+
+// 局部模糊字幕：字幕浮現後，隨機字元輪流「模糊/變淡」再恢復清楚（非照順序）
+const drawPartialBlurSubtitle = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    subtitles: Subtitle[],
+    currentSubtitleIndex: number,
+    currentSubtitle: Subtitle | undefined,
+    currentTime: number,
+    {
+        fontSizeVw,
+        fontFamily,
+        color,
+        effect,
+        bgStyle,
+        isBeat,
+        dragOffset = { x: 0, y: 0 },
+        orientation = SubtitleOrientation.HORIZONTAL,
+        strokeColor,
+        fadeInSeconds = 0.25,
+        fadeOutSeconds = 0.25,
+    }: {
+        fontSizeVw: number;
+        fontFamily: FontType;
+        color: string;
+        effect: GraphicEffectType;
+        bgStyle: SubtitleBgStyle;
+        isBeat?: boolean;
+        dragOffset?: { x: number; y: number };
+        orientation?: SubtitleOrientation;
+        strokeColor?: string;
+        fadeInSeconds?: number;
+        fadeOutSeconds?: number;
+    }
+) => {
+    if (!currentSubtitle || !currentSubtitle.text) return;
+
+    // 直式先沿用原本字幕（避免逐字測量位置造成方向衝突）
+    if (orientation === SubtitleOrientation.VERTICAL) {
+        drawSubtitles(ctx, width, height, currentSubtitle, {
+            fontSizeVw,
+            fontFamily,
+            color,
+            effect,
+            bgStyle,
+            isBeat,
+            dragOffset,
+            orientation,
+            strokeColor,
+        });
+        return;
+    }
+
+    const start = currentSubtitle.time;
+    const nextTime = subtitles[currentSubtitleIndex + 1]?.time;
+    const end = (typeof currentSubtitle.endTime === 'number' ? currentSubtitle.endTime : nextTime) ?? (start + 2.5);
+    const fi = Math.max(0, fadeInSeconds);
+    const fo = Math.max(0, fadeOutSeconds);
+    const dur = Math.max(0.001, end - start);
+
+    const alphaAt = (t: number) => {
+        if (t < start || t > end) return 0;
+        if (fi > 0 && t < start + fi) return (t - start) / fi;
+        if (fo > 0 && t > end - fo) return Math.max(0, (end - t) / fo);
+        return 1;
+    };
+
+    const baseAlpha = Math.max(0, Math.min(1, alphaAt(currentTime)));
+    if (baseAlpha <= 0) return;
+
+    // deterministic hash helpers (stable "random")
+    const hash32 = (n: number) => {
+        let x = n | 0;
+        x ^= x >>> 16;
+        x = Math.imul(x, 0x7feb352d);
+        x ^= x >>> 15;
+        x = Math.imul(x, 0x846ca68b);
+        x ^= x >>> 16;
+        return x >>> 0;
+    };
+
+    ctx.save();
+    ctx.globalAlpha = baseAlpha;
+
+    const text = currentSubtitle.text;
+    const fontSize = (fontSizeVw / 100) * width;
+    const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
+    const fontWeight = (effect === GraphicEffectType.BOLD) ? '900' : 'bold';
+    ctx.font = `${fontWeight} ${fontSize}px "${actualFontName}", sans-serif`;
+
+    // position (same as drawSubtitles horizontal)
+    const horizontalPos = (latestPropsRef as any)?.horizontalSubtitlePosition ?? 0.5;
+    const horizontalVerticalPos = (latestPropsRef as any)?.horizontalSubtitleVerticalPosition ?? 0.2;
+    const margin = width * 0.1;
+    const positionX = margin + (width - 2 * margin) * horizontalPos + dragOffset.x;
+    const positionY = margin + (height - 2 * margin) * horizontalVerticalPos + dragOffset.y;
+
+    // background
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    const metrics = ctx.measureText(text);
+    const textHeight = metrics.fontBoundingBoxAscent ?? fontSize;
+    const textWidth = metrics.width;
+    const startX = positionX - textWidth / 2;
+
+    if (bgStyle !== SubtitleBgStyle.NONE) {
+        const bgPaddingX = fontSize * 0.4;
+        const bgPaddingY = fontSize * 0.2;
+        const bgWidth = textWidth + bgPaddingX * 2;
+        const bgHeight = textHeight + bgPaddingY * 2;
+        const bgX = positionX - bgWidth / 2;
+        const bgY = positionY - textHeight - bgPaddingY;
+        ctx.fillStyle = bgStyle === SubtitleBgStyle.BLACK ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.5)';
+        createRoundedRectPath(ctx, bgX, bgY, bgWidth, bgHeight, 5);
+        ctx.fill();
+    }
+
+    // base shadow/glow setup
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    if (effect === GraphicEffectType.NEON) {
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 15;
+    } else if (effect === GraphicEffectType.SHADOW) {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 5;
+        ctx.shadowOffsetY = 5;
+    }
+
+    // main fill style
+    const fillColor = (effect === GraphicEffectType.NEON) ? '#FFFFFF' : color;
+    const outline = (effect === GraphicEffectType.OUTLINE);
+    const outlineColor = strokeColor || color;
+    const outlineWidth = Math.max(2, fontSize / 20);
+
+    // random blur cadence: 7~9 updates per second, per subtitle
+    const localT = Math.max(0, currentTime - start);
+    const bucket = Math.floor(localT * 8);
+    const seedBase = (Math.floor(start * 1000) ^ (currentSubtitleIndex * 1000003)) | 0;
+
+    // pick random contiguous segments (1~3 chars) to blur, not sequential
+    const activeMask = new Array<boolean>(text.length).fill(false);
+    for (let i = 0; i < text.length; i++) {
+        const h = hash32(seedBase ^ (bucket * 131) ^ (i * 911));
+        const isStart = (h % 100) < 16; // ~16% chance to start a blurred segment
+        if (!isStart) continue;
+        const segLen = 1 + ((h >>> 8) % 3); // 1..3
+        for (let j = 0; j < segLen; j++) {
+            const k = i + j;
+            if (k >= 0 && k < activeMask.length) activeMask[k] = true;
+        }
+    }
+
+    // measure each char and draw
+    let x = startX;
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const w = ctx.measureText(ch).width;
+
+        const active = !!activeMask[i];
+        const h = hash32(seedBase ^ (bucket * 131) ^ (i * 97));
+
+        ctx.save();
+
+        if (!active) {
+            // normal (crisp) char
+            (ctx as any).filter = 'none';
+
+            if (outline) {
+                ctx.strokeStyle = outlineColor;
+                ctx.lineWidth = outlineWidth;
+                ctx.lineJoin = 'round';
+                ctx.miterLimit = 2;
+                ctx.strokeText(ch, x, positionY);
+            }
+
+            ctx.fillStyle = fillColor;
+            ctx.fillText(ch, x, positionY);
+
+            if (effect === GraphicEffectType.NEON) {
+                ctx.shadowBlur = 30;
+                ctx.fillText(ch, x, positionY);
+            }
+        } else {
+            // blurred "blob" char: make the base glyph faint, then add strong blur + bloom (like screenshot)
+            const blurPx = 14 + (h % 16); // 14..29
+            const faint = 0.12 + ((h >>> 8) % 10) / 100; // 0.12..0.21
+            const bloom = 0.35 + ((h >>> 16) % 20) / 100; // 0.35..0.54
+
+            // 1) faint crisp glyph (nearly disappears)
+            (ctx as any).filter = 'none';
+            ctx.globalAlpha *= faint;
+            ctx.fillStyle = fillColor;
+            ctx.fillText(ch, x, positionY);
+
+            // 2) bloom blur layer
+            ctx.globalAlpha = baseAlpha * bloom;
+            (ctx as any).filter = `blur(${blurPx}px)`;
+            ctx.shadowColor = 'rgba(255,255,255,0.9)';
+            ctx.shadowBlur = 50;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            ctx.fillText(ch, x, positionY);
+            // extra pass to make it more "cloudy"
+            ctx.globalAlpha = baseAlpha * bloom * 0.7;
+            ctx.fillText(ch, x, positionY);
+        }
+
+        // optional glitch (kept mild, only on beat and only for clear chars to avoid chaos)
+        if (effect === GraphicEffectType.GLITCH && isBeat && !active && (h % 7 === 0)) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            const glitchIntensity = 5;
+            const gx = (Math.random() - 0.5) * glitchIntensity;
+            const gy = (Math.random() - 0.5) * glitchIntensity;
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.55)';
+            ctx.fillText(ch, x + gx, positionY + gy);
+            ctx.fillStyle = 'rgba(0, 0, 255, 0.55)';
+            ctx.fillText(ch, x - gx, positionY - gy);
+            ctx.restore();
+        }
+
+        (ctx as any).filter = 'none';
+        ctx.restore();
+
+        x += w;
+    }
+
     ctx.restore();
 };
 
@@ -5790,8 +6021,8 @@ const drawFadeLinesSubtitle = (
     ctx.strokeStyle = lineColor;
     ctx.lineWidth = thick;
     ctx.lineCap = 'round';
-    ctx.shadowColor = (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) ? lineColor : 'transparent';
-    ctx.shadowBlur = (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) ? 10 * scale : 0;
+    ctx.shadowColor = (effect === GraphicEffectType.NEON) ? lineColor : 'transparent';
+    ctx.shadowBlur = (effect === GraphicEffectType.NEON) ? 10 * scale : 0;
 
     ctx.beginPath();
     ctx.moveTo(x1, yTop);
@@ -6025,7 +6256,7 @@ const drawIntroOverlay = (
     ctx.textBaseline = 'middle';
 
     // Shadow/Glow
-    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+    if (effect === GraphicEffectType.NEON) {
         ctx.shadowColor = color;
         ctx.shadowBlur = 18;
     } else if (effect === GraphicEffectType.SHADOW) {
@@ -6041,7 +6272,7 @@ const drawIntroOverlay = (
         ctx.font = `${l.weight} ${l.size}px "${actualFontName}", sans-serif`;
 
         // Outline / Stroke
-        if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+        if (effect === GraphicEffectType.OUTLINE) {
             ctx.lineJoin = 'round';
             ctx.miterLimit = 2;
             ctx.lineWidth = Math.max(2, l.size / 18);
@@ -6050,7 +6281,7 @@ const drawIntroOverlay = (
         }
 
         // Fill
-        ctx.fillStyle = (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) ? '#FFFFFF' : color;
+        ctx.fillStyle = (effect === GraphicEffectType.NEON) ? '#FFFFFF' : color;
         ctx.fillText(l.text, x, cursorY + l.size / 2);
 
         // Faux 3D
@@ -6200,14 +6431,14 @@ const drawWordByWordSubtitles = (
     }
     
     // 2. 設定填充顏色
-    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+    if (effect === GraphicEffectType.NEON) {
         ctx.fillStyle = '#FFFFFF';
     } else {
         ctx.fillStyle = color;
     }
     
     // 3. 陰影設定
-    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+    if (effect === GraphicEffectType.NEON) {
         ctx.shadowColor = color;
         ctx.shadowBlur = isBeat ? fontSize * 0.5 : 15;
     } else if (effect === GraphicEffectType.SHADOW) {
@@ -6218,7 +6449,7 @@ const drawWordByWordSubtitles = (
     }
     
     // 4. 描邊效果
-    if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+    if (effect === GraphicEffectType.OUTLINE) {
         ctx.strokeStyle = strokeColor || color; // 使用自定義描邊顏色，如果沒有則使用主顏色
         ctx.lineWidth = Math.max(2, fontSize / 20);
         ctx.lineJoin = 'round';
@@ -6235,7 +6466,7 @@ const drawWordByWordSubtitles = (
     drawTextWithEffect();
     
     // 5.1. 額外的霓虹光增強
-    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+    if (effect === GraphicEffectType.NEON) {
         ctx.shadowBlur = 30;
         drawTextWithEffect();
     }
@@ -6270,11 +6501,7 @@ const drawWordByWordSubtitles = (
         ctx.restore();
         
         // 最後繪製正常文字
-        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
-            ctx.fillStyle = '#FFFFFF';
-        } else {
-            ctx.fillStyle = color;
-        }
+        ctx.fillStyle = color;
         drawTextWithEffect();
     }
     
@@ -6363,14 +6590,14 @@ const drawSubtitleLine = (
     }
     
     // 2. 設定填充顏色
-    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+    if (effect === GraphicEffectType.NEON) {
         ctx.fillStyle = '#FFFFFF';
     } else {
         ctx.fillStyle = color;
     }
     
     // 3. 陰影設定
-    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+    if (effect === GraphicEffectType.NEON) {
         ctx.shadowColor = color;
         ctx.shadowBlur = isBeat ? fontSize * 0.4 : 15;
     } else if (effect === GraphicEffectType.SHADOW) {
@@ -6381,7 +6608,7 @@ const drawSubtitleLine = (
     }
     
     // 4. 描邊效果
-    if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+    if (effect === GraphicEffectType.OUTLINE) {
         ctx.strokeStyle = color;
         ctx.lineWidth = Math.max(2, fontSize / 20);
         ctx.lineJoin = 'round';
@@ -6398,7 +6625,7 @@ const drawSubtitleLine = (
     drawTextWithEffect();
     
     // 5.1. 額外的霓虹光增強
-    if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+    if (effect === GraphicEffectType.NEON) {
         ctx.shadowBlur = 30;
         drawTextWithEffect();
     }
@@ -6433,11 +6660,7 @@ const drawSubtitleLine = (
         ctx.restore();
         
         // 最後繪製正常文字
-        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
-            ctx.fillStyle = '#FFFFFF';
-        } else {
-            ctx.fillStyle = color;
-        }
+        ctx.fillStyle = color;
         drawTextWithEffect();
     }
 };
@@ -6710,14 +6933,14 @@ const drawLyricsDisplay = (
         }
         
         // 2. 設定填充顏色
-        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        if (effect === GraphicEffectType.NEON) {
             ctx.fillStyle = '#FFFFFF'; // 霓虹光文字通常是白色
         } else {
             ctx.fillStyle = color;
         }
         
         // 3. 陰影設定
-        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        if (effect === GraphicEffectType.NEON) {
             ctx.shadowColor = color;
             ctx.shadowBlur = isCurrentLine ? 20 : 15;
         } else if (effect === GraphicEffectType.SHADOW) {
@@ -6728,7 +6951,7 @@ const drawLyricsDisplay = (
         }
         
         // 4. 描邊效果
-        if (effect === GraphicEffectType.OUTLINE || effect === GraphicEffectType.STROKE) {
+        if (effect === GraphicEffectType.OUTLINE) {
             ctx.strokeStyle = color;
             ctx.lineWidth = Math.max(2, currentFontSize / 20);
             ctx.lineJoin = 'round';
@@ -6745,7 +6968,7 @@ const drawLyricsDisplay = (
         ctx.fillText(line.text, x, y);
         
         // 5.1. 額外的霓虹光增強
-        if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+        if (effect === GraphicEffectType.NEON) {
             ctx.shadowBlur = 30;
             ctx.fillText(line.text, x, y);
         }
@@ -6780,11 +7003,7 @@ const drawLyricsDisplay = (
             ctx.restore();
             
             // 最後繪製正常文字
-            if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
-                ctx.fillStyle = '#FFFFFF';
-            } else {
-                ctx.fillStyle = color;
-            }
+            ctx.fillStyle = color;
             ctx.fillText(line.text, x, y);
         }
     });
@@ -6976,14 +7195,14 @@ const drawCustomText = (
 
     const drawText = (offsetX = 0, offsetY = 0) => {
         ctx.fillText(text, positionX + offsetX, positionY + offsetY);
-        if (graphicEffect === GraphicEffectType.STROKE || graphicEffect === GraphicEffectType.OUTLINE) {
+        if (graphicEffect === GraphicEffectType.OUTLINE) {
             ctx.strokeStyle = strokeColor ? applyAlphaToColor(strokeColor, 0.8) : 'rgba(0,0,0,0.6)';
             ctx.strokeText(text, positionX + offsetX, positionY + offsetY);
         }
     };
 
     switch (graphicEffect) {
-        case GraphicEffectType.GLOW:
+        case GraphicEffectType.NEON:
             ctx.shadowColor = color;
             ctx.shadowBlur = 20;
             drawText();
@@ -8106,75 +8325,93 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
 
         // 調試覆蓋層已移除
 
-        const drawFunction = VISUALIZATION_MAP[visualizationType];
-        if (drawFunction && !isVisualizerDisabled) {
-            const shouldTransform = !IGNORE_TRANSFORM_VISUALIZATIONS.has(visualizationType);
+        const multiEnabled = !!propsRef.current.multiEffectEnabled;
+        const selectedTypes = propsRef.current.selectedVisualizationTypes;
+        const typesToDraw: VisualizationType[] =
+            !isVisualizerDisabled && multiEnabled && Array.isArray(selectedTypes) && selectedTypes.length > 0
+                ? selectedTypes
+                : !isVisualizerDisabled
+                    ? [visualizationType]
+                    : [];
 
-            if (shouldTransform) {
-                ctx.save();
-                const currentTransform = propsRef.current.visualizationTransform || { x: 0, y: 0, scale: 1.0 };
-                const dragOffset = dragState.current.draggedElement === 'visualization' ? dragState.current.dragOffset : { x: 0, y: 0 };
-                const scale = propsRef.current.visualizationScale || 1.0;
-                const rotationDeg = typeof propsRef.current.effectRotation === 'number' ? propsRef.current.effectRotation : 0;
-                const rotationRad = (rotationDeg * Math.PI) / 180;
-                ctx.translate(centerX + effectOffsetX + currentTransform.x + dragOffset.x, centerY + effectOffsetY + currentTransform.y + dragOffset.y);
-                if (rotationRad !== 0) {
-                    ctx.rotate(rotationRad);
+        if (!isVisualizerDisabled) {
+            for (const type of typesToDraw) {
+                const drawFunction = VISUALIZATION_MAP[type];
+                if (!drawFunction) continue;
+
+                const shouldTransform = !IGNORE_TRANSFORM_VISUALIZATIONS.has(type);
+
+                if (shouldTransform) {
+                    ctx.save();
+                    const currentTransform = propsRef.current.visualizationTransform || { x: 0, y: 0, scale: 1.0 };
+                    const dragOffset = dragState.current.draggedElement === 'visualization' ? dragState.current.dragOffset : { x: 0, y: 0 };
+                    const scale = propsRef.current.visualizationScale || 1.0;
+                    const rotationDeg = typeof propsRef.current.effectRotation === 'number' ? propsRef.current.effectRotation : 0;
+                    const rotationRad = (rotationDeg * Math.PI) / 180;
+                    const perEffectOffset = propsRef.current.multiEffectOffsets?.[type] || { x: 0, y: 0 };
+                    ctx.translate(
+                        centerX + effectOffsetX + currentTransform.x + dragOffset.x + (perEffectOffset.x || 0),
+                        centerY + effectOffsetY + currentTransform.y + dragOffset.y + (perEffectOffset.y || 0)
+                    );
+                    if (rotationRad !== 0) {
+                        ctx.rotate(rotationRad);
+                    }
+                    ctx.scale(effectScale * scale, effectScale * scale);
+                    ctx.translate(-centerX, -centerY);
                 }
-                ctx.scale(effectScale * scale, effectScale * scale);
-                ctx.translate(-centerX, -centerY);
-            }
 
-            if (visualizationType === VisualizationType.STELLAR_CORE) {
-                const bass = smoothedData.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
-                const normalizedBass = bass / 255;
-                const bgGlowRadius = Math.min(width, height) * 0.5 + normalizedBass * 50;
-                const bgGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, bgGlowRadius);
-                bgGradient.addColorStop(0, finalColors.backgroundGlow);
-                bgGradient.addColorStop(1, 'rgba(10, 20, 40, 0)');
-                ctx.fillStyle = bgGradient;
-                ctx.fillRect(0, 0, width, height);
-            }
-            if (visualizationType === VisualizationType.GEOMETRIC_BARS) {
-                // 可夜特別訂製版需要特殊處理，傳遞額外參數
-                drawGeometricBars(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, propsRef.current, controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor, (latestPropsRef as any)?.controlCardFontFamily, (latestPropsRef as any)?.controlCardTextEffect, (latestPropsRef as any)?.controlCardStrokeColor);
-            } else if (visualizationType === VisualizationType.Z_CUSTOM) {
-                // Z總訂製款需要特殊處理，傳遞額外參數
-                const currentFrame = typeof frame.current === 'number' ? frame.current : 0;
-                drawZCustomVisualization(ctx, width, height, propsRef.current.zCustomCenterImage, propsRef, currentFrame);
-        } else if (visualizationType === VisualizationType.VINYL_RECORD) {
-            // 檢查是否啟用唱片顯示
-            const vinylRecordEnabled = propsRef.current?.vinylRecordEnabled !== false;
-            const vinylNeedleEnabled = propsRef.current?.vinylNeedleEnabled !== false;
-            drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, vinylRecordEnabled, vinylNeedleEnabled);
-        } else if (visualizationType === VisualizationType.PHOTO_SHAKE) {
-            // 相片晃動需要傳遞 props
-            drawPhotoShake(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
-        } else if (visualizationType === VisualizationType.FRAME_PIXELATION) {
-            // 方框 像素化需要傳遞 props
-            drawFramePixelation(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
-        } else if (visualizationType === VisualizationType.DYNAMIC_CONTROL_CARD) {
-            // 重低音強化需要傳遞 props
-            drawDynamicControlCard(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
-        } else if (visualizationType === VisualizationType.CIRCULAR_WAVE) {
-            // 圓形波形需要傳遞 props
-            drawCircularWave(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
-        } else if (visualizationType === VisualizationType.BLURRED_EDGE) {
-            // 邊緣虛化需要傳遞 props
-            drawBlurredEdge(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
-        } else if (visualizationType === VisualizationType.KE_YE_CUSTOM_V2) {
-            // 可夜訂製版二號需要傳遞 props
-            drawKeYeCustomV2(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
-        } else {
-            drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
-        }
-            
-            if (shouldTransform) {
-                ctx.restore();
+                if (type === VisualizationType.STELLAR_CORE) {
+                    const bass = smoothedData.slice(0, 32).reduce((a, b) => a + b, 0) / 32;
+                    const normalizedBass = bass / 255;
+                    const bgGlowRadius = Math.min(width, height) * 0.5 + normalizedBass * 50;
+                    const bgGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, bgGlowRadius);
+                    bgGradient.addColorStop(0, finalColors.backgroundGlow);
+                    bgGradient.addColorStop(1, 'rgba(10, 20, 40, 0)');
+                    ctx.fillStyle = bgGradient;
+                    ctx.fillRect(0, 0, width, height);
+                }
+
+                if (type === VisualizationType.GEOMETRIC_BARS) {
+                    // 可夜特別訂製版需要特殊處理，傳遞額外參數
+                    drawGeometricBars(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, propsRef.current, controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor, (latestPropsRef as any)?.controlCardFontFamily, (latestPropsRef as any)?.controlCardTextEffect, (latestPropsRef as any)?.controlCardStrokeColor);
+                } else if (type === VisualizationType.Z_CUSTOM) {
+                    // Z總訂製款需要特殊處理，傳遞額外參數
+                    const currentFrame = typeof frame.current === 'number' ? frame.current : 0;
+                    drawZCustomVisualization(ctx, width, height, propsRef.current.zCustomCenterImage, propsRef, currentFrame);
+                } else if (type === VisualizationType.VINYL_RECORD) {
+                    // 檢查是否啟用唱片顯示
+                    const vinylRecordEnabled = propsRef.current?.vinylRecordEnabled !== false;
+                    const vinylNeedleEnabled = propsRef.current?.vinylNeedleEnabled !== false;
+                    drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, vinylRecordEnabled, vinylNeedleEnabled);
+                } else if (type === VisualizationType.PHOTO_SHAKE) {
+                    // 相片晃動需要傳遞 props
+                    drawPhotoShake(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+                } else if (type === VisualizationType.FRAME_PIXELATION) {
+                    // 方框 像素化需要傳遞 props
+                    drawFramePixelation(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+                } else if (type === VisualizationType.DYNAMIC_CONTROL_CARD) {
+                    // 重低音強化需要傳遞 props
+                    drawDynamicControlCard(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+                } else if (type === VisualizationType.CIRCULAR_WAVE) {
+                    // 圓形波形需要傳遞 props
+                    drawCircularWave(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+                } else if (type === VisualizationType.BLURRED_EDGE) {
+                    // 邊緣虛化需要傳遞 props
+                    drawBlurredEdge(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+                } else if (type === VisualizationType.KE_YE_CUSTOM_V2) {
+                    // 可夜訂製版二號需要傳遞 props
+                    drawKeYeCustomV2(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+                } else {
+                    drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
+                }
+
+                if (shouldTransform) {
+                    ctx.restore();
+                }
             }
         }
         
-        if (visualizationType === VisualizationType.PIANO_VIRTUOSO) {
+        if (typesToDraw.includes(VisualizationType.PIANO_VIRTUOSO)) {
             const keyboardHeight = height * 0.25;
             const numWhiteKeys = 28;
             const whiteKeyWidth = width / numWhiteKeys;
@@ -8349,6 +8586,22 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 orientation: propsRef.current.subtitleOrientation,
                 strokeColor: propsRef.current.subtitleStrokeColor
             });
+        } else if (propsRef.current.subtitleDisplayMode === SubtitleDisplayMode.PARTIAL_BLUR && currentSubtitle && currentSubtitleIndex >= 0) {
+            // 局部模糊字幕
+            const dragOffset = dragState.current.draggedElement === 'subtitle' ? dragState.current.dragOffset : (propsRef.current.subtitleDragOffset || { x: 0, y: 0 });
+            drawPartialBlurSubtitle(ctx, width, height, subtitles, currentSubtitleIndex, currentSubtitle, currentTime, {
+                fontSizeVw: subtitleFontSize,
+                fontFamily: subtitleFontFamily,
+                color: subtitleColor,
+                effect: subtitleEffect || GraphicEffectType.NONE,
+                bgStyle: subtitleBgStyle,
+                isBeat,
+                dragOffset,
+                orientation: propsRef.current.subtitleOrientation,
+                strokeColor: propsRef.current.subtitleStrokeColor,
+                fadeInSeconds: 0.25,
+                fadeOutSeconds: 0.25,
+            });
         } else if (propsRef.current.subtitleDisplayMode === SubtitleDisplayMode.FADE_LINES && currentSubtitle && currentSubtitleIndex >= 0) {
             // 淡入淡出字幕（上下線）
             const dragOffset = dragState.current.draggedElement === 'subtitle' ? dragState.current.dragOffset : (propsRef.current.subtitleDragOffset || { x: 0, y: 0 });
@@ -8430,7 +8683,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 artist: propsRef.current.introArtist ?? '',
                 description: propsRef.current.introDescription ?? '',
                 fontFamily: propsRef.current.introFontFamily ?? FontType.POPPINS,
-                effect: propsRef.current.introEffect ?? GraphicEffectType.GLOW,
+                effect: propsRef.current.introEffect ?? GraphicEffectType.NEON,
                 color: propsRef.current.introColor ?? '#FFFFFF',
                 strokeColor: propsRef.current.introStrokeColor ?? '#000000',
                 titleSizeVw: propsRef.current.introTitleSize ?? 6,
@@ -8822,7 +9075,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                     ctx.shadowBlur = 8;
                     ctx.shadowOffsetX = 2;
                     ctx.shadowOffsetY = 2;
-                } else if (effect === GraphicEffectType.NEON || effect === GraphicEffectType.GLOW) {
+                } else if (effect === GraphicEffectType.NEON) {
                     ctx.shadowColor = color;
                     ctx.shadowBlur = 20;
                     ctx.shadowOffsetX = 0;

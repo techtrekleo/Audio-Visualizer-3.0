@@ -10,6 +10,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    // ffmpeg wasm loads its own worker/wasm at runtime; dep optimizer can mis-handle it in dev
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
+  },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

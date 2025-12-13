@@ -1,7 +1,13 @@
 import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode } from '../types';
 
 export interface SavedSettings {
+    // Allow forward-compatible settings without constantly updating this interface
+    // (the UI stores many effect-specific fields).
+    [key: string]: any;
     visualizationType: VisualizationType;
+    // Multi-visualization (composite) mode
+    multiEffectEnabled?: boolean;
+    selectedVisualizationTypes?: VisualizationType[];
     customText: string;
     textColor: string;
     textStrokeColor: string;
