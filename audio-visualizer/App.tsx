@@ -237,6 +237,7 @@ function App() {
     const [introPositionY, setIntroPositionY] = useState<number>(50); // 0-100
     const [introStartTime, setIntroStartTime] = useState<number>(0); // seconds in audio timeline
     const [introTriggerId, setIntroTriggerId] = useState<number>(0); // force re-trigger
+    const [introLightBarsEnabled, setIntroLightBarsEnabled] = useState<boolean>(true);
     
     // CTA 位置變更處理函數
     const handleCtaPositionXChange = (value: number) => {
@@ -1842,6 +1843,7 @@ function App() {
                                     introPositionY={introPositionY}
                                     introStartTime={introStartTime}
                                     introTriggerId={introTriggerId}
+                                    introLightBarsEnabled={introLightBarsEnabled}
                                     zCustomCenterImage={zCustomCenterImage}
                                     zCustomScale={zCustomScale}
                                     zCustomPosition={zCustomPosition}
@@ -2267,6 +2269,8 @@ function App() {
                             onIntroPositionXChange={setIntroPositionX}
                             introPositionY={introPositionY}
                             onIntroPositionYChange={setIntroPositionY}
+                            introLightBarsEnabled={introLightBarsEnabled}
+                            onIntroLightBarsEnabledChange={setIntroLightBarsEnabled}
                             onPreviewIntro={handlePreviewIntro}
                             showZCustomControls={showZCustomControls}
                             onShowZCustomControlsChange={setShowZCustomControls}

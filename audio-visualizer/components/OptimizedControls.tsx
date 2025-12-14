@@ -345,6 +345,8 @@ interface OptimizedControlsProps {
     onIntroPositionXChange?: (v: number) => void;
     introPositionY?: number;
     onIntroPositionYChange?: (v: number) => void;
+    introLightBarsEnabled?: boolean;
+    onIntroLightBarsEnabledChange?: (v: boolean) => void;
     onPreviewIntro?: () => void;
     // Z總訂製款控制
     showZCustomControls?: boolean;
@@ -820,6 +822,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         introBgOpacity: props.introBgOpacity ?? 0.35,
         introPositionX: props.introPositionX ?? 50,
         introPositionY: props.introPositionY ?? 50,
+        introLightBarsEnabled: props.introLightBarsEnabled ?? true,
     });
 
     // 載入設置
@@ -902,6 +905,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.introBgOpacity !== undefined) props.onIntroBgOpacityChange?.(settings.introBgOpacity);
         if (settings.introPositionX !== undefined) props.onIntroPositionXChange?.(settings.introPositionX);
         if (settings.introPositionY !== undefined) props.onIntroPositionYChange?.(settings.introPositionY);
+        if (settings.introLightBarsEnabled !== undefined) props.onIntroLightBarsEnabledChange?.(!!settings.introLightBarsEnabled);
 
         // Control Card (text)
         if (settings.controlCardFontFamily !== undefined) props.onControlCardFontFamilyChange?.(settings.controlCardFontFamily);
@@ -1543,6 +1547,20 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         step={0.05}
                                         colorType="scale"
                                     />
+                                </div>
+
+                                <div className="flex items-center justify-between bg-gray-800/40 border border-gray-700 rounded-lg p-3">
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-medium text-gray-200">上下流動光條</span>
+                                        <span className="text-xs text-gray-400">關閉後只保留文字與背景卡片，不再出現上下掃光條</span>
+                                    </div>
+                                    <button
+                                        onClick={() => props.onIntroLightBarsEnabledChange?.(!(props.introLightBarsEnabled ?? true))}
+                                        className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${(props.introLightBarsEnabled ?? true) ? 'bg-cyan-600' : 'bg-gray-500'}`}
+                                        aria-pressed={(props.introLightBarsEnabled ?? true)}
+                                    >
+                                        <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${(props.introLightBarsEnabled ?? true) ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    </button>
                                 </div>
                                 
                                 <p className="text-xs text-gray-400">

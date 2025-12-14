@@ -59,6 +59,7 @@ export interface SavedSettings {
     introBgOpacity: number;
     introPositionX: number;
     introPositionY: number;
+    introLightBarsEnabled: boolean;
 
     // CTA Animation
     showCtaAnimation: boolean;

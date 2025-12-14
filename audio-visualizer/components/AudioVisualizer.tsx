@@ -162,6 +162,8 @@ interface AudioVisualizerProps {
     introPositionX?: number;
     introPositionY?: number;
     introStartTime?: number;
+    // Intro overlay: top & bottom flowing neon bars
+    introLightBarsEnabled?: boolean;
     introTriggerId?: number;
     // Z總訂製款狀態
     zCustomCenterImage?: string | null;
@@ -6066,6 +6068,7 @@ const drawIntroOverlay = (
         titleSizeVw,
         artistSizeVw,
         descriptionSizeVw,
+        lightBarsEnabled = true,
     }: {
         enabled: boolean;
         startTime: number;
@@ -6085,6 +6088,7 @@ const drawIntroOverlay = (
         titleSizeVw: number;
         artistSizeVw: number;
         descriptionSizeVw: number;
+        lightBarsEnabled?: boolean;
     }
 ) => {
     if (!enabled) return;
@@ -6163,7 +6167,7 @@ const drawIntroOverlay = (
 
     // ===== A 版：更細更乾淨的霓虹掃光（包住文字卡片上下）=====
     // 只保留細的掃光條本體，不做厚能量帶底色；位置是卡片上緣/下緣附近
-    {
+    if (lightBarsEnabled) {
         const baseColor = color || '#FFFFFF';
         const speed = 0.9;
         const phase = (nowSeconds - startTime) * speed;
@@ -8692,6 +8696,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 titleSizeVw: propsRef.current.introTitleSize ?? 6,
                 artistSizeVw: propsRef.current.introArtistSize ?? 4,
                 descriptionSizeVw: propsRef.current.introDescriptionSize ?? 2.8,
+                lightBarsEnabled: propsRef.current.introLightBarsEnabled !== false,
             });
         }
         
