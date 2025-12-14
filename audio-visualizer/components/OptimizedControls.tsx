@@ -311,6 +311,15 @@ interface OptimizedControlsProps {
     onCtaPositionXChange?: (value: number) => void;
     ctaPositionY?: number;
     onCtaPositionYChange?: (value: number) => void;
+    // CTA video (upload)
+    ctaVideoUrl?: string | null;
+    ctaVideoFileName?: string;
+    onCtaVideoSelect?: (file: File) => void;
+    onClearCtaVideo?: () => void;
+    ctaVideoEnabled?: boolean;
+    onCtaVideoEnabledChange?: (enabled: boolean) => void;
+    ctaVideoIncludeAudio?: boolean;
+    onCtaVideoIncludeAudioChange?: (enabled: boolean) => void;
 
     // Intro Overlay controls
     showIntroOverlay?: boolean;
@@ -777,6 +786,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         ctaTextEffect: props.ctaTextEffect || GraphicEffectType.NONE,
         ctaPositionX: props.ctaPositionX ?? 50,
         ctaPositionY: props.ctaPositionY ?? 50,
+        ctaVideoEnabled: props.ctaVideoEnabled ?? false,
+        ctaVideoIncludeAudio: props.ctaVideoIncludeAudio ?? false,
 
         // Fusion
         fusionCenterOpacity: props.fusionCenterOpacity ?? 1.0,
@@ -884,6 +895,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.ctaTextEffect !== undefined) props.onCtaTextEffectChange?.(settings.ctaTextEffect);
         if (settings.ctaPositionX !== undefined) props.onCtaPositionXChange?.(settings.ctaPositionX);
         if (settings.ctaPositionY !== undefined) props.onCtaPositionYChange?.(settings.ctaPositionY);
+        if (settings.ctaVideoEnabled !== undefined) props.onCtaVideoEnabledChange?.(!!settings.ctaVideoEnabled);
+        if (settings.ctaVideoIncludeAudio !== undefined) props.onCtaVideoIncludeAudioChange?.(!!settings.ctaVideoIncludeAudio);
 
         // Fusion
         if (settings.fusionCenterOpacity !== undefined) props.onFusionCenterOpacityChange?.(settings.fusionCenterOpacity);
@@ -1196,6 +1209,76 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         {/* CTA 動畫頻道名稱輸入 */}
                         {props.showCtaAnimation && (
                             <div className="mt-4 space-y-4">
+                                {/* CTA 影片上傳（可選） */}
+                                <div className="p-4 rounded-lg border border-gray-600 bg-gray-800/40 space-y-3">
+                                    <div className="text-sm font-medium text-cyan-300">CTA 影片（自訂上傳）</div>
+
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-center bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg font-semibold transition-all duration-200 cursor-pointer">
+                                            上傳 CTA 影片
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept="video/*,.mp4,.webm,.mov"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) props.onCtaVideoSelect?.(file);
+                                                    e.target.value = '';
+                                                }}
+                                            />
+                                        </label>
+
+                                        {(props.ctaVideoUrl || props.ctaVideoFileName) && (
+                                            <div className="flex items-center justify-between bg-gray-900/40 border border-gray-700 rounded-lg px-3 py-2">
+                                                <div className="text-xs text-gray-300 truncate">
+                                                    {props.ctaVideoFileName || '已上傳 CTA 影片'}
+                                                </div>
+                                                <Button
+                                                    onClick={() => props.onClearCtaVideo?.()}
+                                                    variant="danger"
+                                                    className="px-2 py-1 text-xs"
+                                                >
+                                                    清除
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center justify-between bg-gray-900/40 border border-gray-700 rounded-lg p-3">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-gray-200">顯示 CTA 影片</span>
+                                            <span className="text-xs text-gray-400">將 CTA 影片疊加在畫面上（可拖曳位置）</span>
+                                        </div>
+                                        <button
+                                            onClick={() => props.onCtaVideoEnabledChange?.(!(props.ctaVideoEnabled ?? false))}
+                                            type="button"
+                                            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${(props.ctaVideoEnabled ?? false) ? 'bg-cyan-600' : 'bg-gray-500'}`}
+                                            aria-pressed={(props.ctaVideoEnabled ?? false)}
+                                        >
+                                            <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${(props.ctaVideoEnabled ?? false) ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center justify-between bg-gray-900/40 border border-gray-700 rounded-lg p-3">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-gray-200">保留 CTA 影片原聲</span>
+                                            <span className="text-xs text-gray-400">開啟後會把 CTA 影片的聲音混進輸出影片</span>
+                                        </div>
+                                        <button
+                                            onClick={() => props.onCtaVideoIncludeAudioChange?.(!(props.ctaVideoIncludeAudio ?? false))}
+                                            type="button"
+                                            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${(props.ctaVideoIncludeAudio ?? false) ? 'bg-cyan-600' : 'bg-gray-500'}`}
+                                            aria-pressed={(props.ctaVideoIncludeAudio ?? false)}
+                                        >
+                                            <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${(props.ctaVideoIncludeAudio ?? false) ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
+
+                                    <p className="text-xs text-gray-400">
+                                        提醒：CTA 影片原聲會與主音樂同時播放/錄製；若你只想要畫面請關閉「保留原聲」。
+                                    </p>
+                                </div>
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
                                         頻道名稱

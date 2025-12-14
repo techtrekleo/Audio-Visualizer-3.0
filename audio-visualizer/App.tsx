@@ -217,6 +217,12 @@ function App() {
     const [ctaTextEffect, setCtaTextEffect] = useState<GraphicEffectType>(GraphicEffectType.NONE);
     const [ctaPositionX, setCtaPositionX] = useState<number>(50); // CTA 水平位置 (0-100)
     const [ctaPositionY, setCtaPositionY] = useState<number>(50); // CTA 垂直位置 (0-100)
+    // CTA Video (user-uploaded)
+    const [ctaVideoUrl, setCtaVideoUrl] = useState<string | null>(null);
+    const [ctaVideoFileName, setCtaVideoFileName] = useState<string>('');
+    const [ctaVideoEnabled, setCtaVideoEnabled] = useState<boolean>(false);
+    const [ctaVideoIncludeAudio, setCtaVideoIncludeAudio] = useState<boolean>(false);
+    const ctaVideoRef = useRef<HTMLVideoElement | null>(null);
 
     // 開場文字動畫（Intro Overlay）
     const [showIntroOverlay, setShowIntroOverlay] = useState<boolean>(false);
@@ -250,6 +256,34 @@ function App() {
         setCtaPositionY(value);
         setCtaPosition(prev => ({ ...prev, y: value }));
     };
+
+    const handleCtaVideoSelect = useCallback((file: File) => {
+        if (!file) return;
+        const isVideo = file.type.startsWith('video/');
+        if (!isVideo) {
+            alert('請上傳影片檔案（video/*）。');
+            return;
+        }
+        // Replace existing url
+        setCtaVideoUrl((prev) => {
+            if (prev) URL.revokeObjectURL(prev);
+            return URL.createObjectURL(file);
+        });
+        setCtaVideoFileName(file.name);
+        setCtaVideoEnabled(true);
+    }, []);
+
+    const handleClearCtaVideo = useCallback(() => {
+        setCtaVideoUrl((prev) => {
+            if (prev) URL.revokeObjectURL(prev);
+            return null;
+        });
+        setCtaVideoFileName('');
+        setCtaVideoEnabled(false);
+        setCtaVideoIncludeAudio(false);
+        // Ensure aux audio is detached
+        setAuxMediaElement(null, false);
+    }, [setAuxMediaElement]);
     
     // 幾何圖形可視化狀態
     const [showGeometricControls, setShowGeometricControls] = useState<boolean>(false); // 幾何圖形控制面板
@@ -1438,7 +1472,7 @@ function App() {
         setVinylImage(null);
     };
 
-    const { analyser, initializeAudio, isAudioInitialized, getAudioStream, resetAudioAnalysis } = useAudioAnalysis();
+    const { analyser, initializeAudio, isAudioInitialized, getAudioStream, resetAudioAnalysis, setAuxMediaElement } = useAudioAnalysis();
 
     const handleRecordingComplete = useCallback((url: string, extension: string) => {
         setVideoUrl(url);
@@ -1562,6 +1596,19 @@ function App() {
             setIsPlaying(false);
         }
     }, [isPlaying, isAudioInitialized, initializeAudio, showIntroOverlay]);
+
+    // Attach/detach CTA video audio into the recording stream (and speakers) when enabled.
+    useEffect(() => {
+        const el = ctaVideoRef.current;
+        const enabled = !!(ctaVideoUrl && ctaVideoEnabled && ctaVideoIncludeAudio);
+        if (!el) {
+            setAuxMediaElement(null, false);
+            return;
+        }
+        // Keep element muted when we don't want its audio
+        el.muted = !enabled;
+        setAuxMediaElement(el, enabled);
+    }, [ctaVideoUrl, ctaVideoEnabled, ctaVideoIncludeAudio, setAuxMediaElement]);
     
     const handleMetadataLoaded = () => {
         if (audioRef.current) {
@@ -1723,6 +1770,17 @@ function App() {
                 />
             )}
 
+            {/* Hidden CTA video element used as a draw source for canvas + optional audio mixing */}
+            <video
+                ref={ctaVideoRef}
+                src={ctaVideoUrl || undefined}
+                muted={!ctaVideoIncludeAudio}
+                playsInline
+                loop
+                preload="auto"
+                className="hidden"
+            />
+
             <main className="flex flex-col p-4 overflow-y-auto pt-24">
                 <div className="w-full max-w-7xl mx-auto flex flex-col items-center gap-4">
                     {/* 頁面標題 */}
@@ -1825,6 +1883,8 @@ function App() {
                                     ctaTextEffect={ctaTextEffect}
                                     ctaPosition={ctaPosition}
                                     onCtaPositionUpdate={setCtaPosition}
+                                    ctaVideoElement={ctaVideoRef.current}
+                                    ctaVideoEnabled={ctaVideoEnabled}
                                     // Intro Overlay props
                                     showIntroOverlay={showIntroOverlay}
                                     introTitle={introTitle}
@@ -2238,6 +2298,14 @@ function App() {
                             onCtaPositionXChange={handleCtaPositionXChange}
                             ctaPositionY={ctaPositionY}
                             onCtaPositionYChange={handleCtaPositionYChange}
+                            ctaVideoUrl={ctaVideoUrl}
+                            ctaVideoFileName={ctaVideoFileName}
+                            onCtaVideoSelect={handleCtaVideoSelect}
+                            onClearCtaVideo={handleClearCtaVideo}
+                            ctaVideoEnabled={ctaVideoEnabled}
+                            onCtaVideoEnabledChange={setCtaVideoEnabled}
+                            ctaVideoIncludeAudio={ctaVideoIncludeAudio}
+                            onCtaVideoIncludeAudioChange={setCtaVideoIncludeAudio}
                             // Intro Overlay props
                             showIntroOverlay={showIntroOverlay}
                             onShowIntroOverlayChange={setShowIntroOverlay}

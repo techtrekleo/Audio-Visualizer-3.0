@@ -71,6 +71,8 @@ export interface SavedSettings {
     ctaTextEffect: GraphicEffectType;
     ctaPositionX: number;
     ctaPositionY: number;
+    ctaVideoEnabled: boolean;
+    ctaVideoIncludeAudio: boolean;
 
     // Control Card (text)
     controlCardFontFamily: FontType;

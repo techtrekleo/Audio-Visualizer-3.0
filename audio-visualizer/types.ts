@@ -326,6 +326,9 @@ export interface AudioVisualizerProps {
     ctaTextEffect?: GraphicEffectType;
     ctaPosition?: { x: number; y: number };
     onCtaPositionUpdate?: (position: { x: number; y: number }) => void;
+    // CTA video (user-uploaded)
+    ctaVideoElement?: HTMLVideoElement | null;
+    ctaVideoEnabled?: boolean;
     // Z總訂製款狀態
     zCustomCenterImage?: string | null;
     zCustomScale?: number;

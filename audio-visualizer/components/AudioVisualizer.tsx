@@ -144,6 +144,9 @@ interface AudioVisualizerProps {
     ctaTextEffect?: GraphicEffectType;
     ctaPosition?: { x: number; y: number };
     onCtaPositionUpdate?: (position: { x: number; y: number }) => void;
+    // CTA video overlay (user-uploaded)
+    ctaVideoElement?: HTMLVideoElement | null;
+    ctaVideoEnabled?: boolean;
     // Intro Overlay（開場文字動畫）
     showIntroOverlay?: boolean;
     introTitle?: string;
@@ -8657,6 +8660,39 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             });
         }
         
+        // CTA 影片疊加（可與文字 CTA 並存；影片先畫、文字再畫在上層）
+        if (propsRef.current.ctaVideoEnabled && propsRef.current.ctaVideoElement) {
+            const v = propsRef.current.ctaVideoElement;
+            // Ensure the video is playing (best-effort)
+            if (v.paused && !v.ended) {
+                v.play().catch(() => {});
+            }
+            if (v.readyState >= 2 && v.videoWidth > 0 && v.videoHeight > 0) {
+                const basePosition = propsRef.current.ctaPosition || { x: 50, y: 50 };
+                const dragOffset = dragState.current.isDragging && dragState.current.draggedElement === 'cta'
+                    ? dragState.current.dragOffset
+                    : { x: 0, y: 0 };
+                const ctaPosition = {
+                    x: basePosition.x + (dragOffset.x / width) * 100,
+                    y: basePosition.y + (dragOffset.y / height) * 100
+                };
+
+                const cx = (ctaPosition.x / 100) * width;
+                const cy = (ctaPosition.y / 100) * height;
+
+                // Size: target ~32% canvas width, keep aspect ratio.
+                const targetW = Math.max(160, width * 0.32);
+                const aspect = v.videoWidth / v.videoHeight;
+                const drawW = targetW;
+                const drawH = Math.max(90, drawW / Math.max(0.01, aspect));
+
+                ctx.save();
+                ctx.globalAlpha = 1;
+                ctx.drawImage(v, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
+                ctx.restore();
+            }
+        }
+
         // 繪製 CTA 動畫（在字幕之後，但確保不覆蓋字幕）
         if (propsRef.current.showCtaAnimation && propsRef.current.ctaChannelName) {
             // 計算 CTA 位置，包含拖動偏移
