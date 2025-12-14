@@ -29,6 +29,7 @@ export interface SavedSettings {
     subtitleDisplayMode: SubtitleDisplayMode;
     subtitleFadeInSeconds: number;
     subtitleFadeOutSeconds: number;
+    subtitleFadeLinesEnabled: boolean;
     subtitleLineColor: string;
     subtitleLineThickness: number;
     subtitleLineGap: number;

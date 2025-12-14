@@ -267,6 +267,8 @@ interface OptimizedControlsProps {
     onSubtitleLineThicknessChange?: (v: number) => void;
     subtitleLineGap?: number;
     onSubtitleLineGapChange?: (v: number) => void;
+    subtitleFadeLinesEnabled?: boolean;
+    onSubtitleFadeLinesEnabledChange?: (enabled: boolean) => void;
     // Progress bar props
     currentTime: number;
     audioDuration: number;
@@ -753,6 +755,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         subtitleDisplayMode: props.subtitleDisplayMode,
         subtitleFadeInSeconds: props.subtitleFadeInSeconds ?? 0.25,
         subtitleFadeOutSeconds: props.subtitleFadeOutSeconds ?? 0.25,
+        subtitleFadeLinesEnabled: props.subtitleFadeLinesEnabled ?? true,
         subtitleLineColor: props.subtitleLineColor || '#FFFFFF',
         subtitleLineThickness: props.subtitleLineThickness ?? 3,
         subtitleLineGap: props.subtitleLineGap ?? 10,
@@ -859,6 +862,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.subtitleDisplayMode) props.onSubtitleDisplayModeChange(settings.subtitleDisplayMode);
         if (settings.subtitleFadeInSeconds !== undefined) props.onSubtitleFadeInSecondsChange?.(settings.subtitleFadeInSeconds);
         if (settings.subtitleFadeOutSeconds !== undefined) props.onSubtitleFadeOutSecondsChange?.(settings.subtitleFadeOutSeconds);
+        if (settings.subtitleFadeLinesEnabled !== undefined) props.onSubtitleFadeLinesEnabledChange?.(!!settings.subtitleFadeLinesEnabled);
         if (settings.subtitleLineColor !== undefined) props.onSubtitleLineColorChange?.(settings.subtitleLineColor);
         if (settings.subtitleLineThickness !== undefined) props.onSubtitleLineThicknessChange?.(settings.subtitleLineThickness);
         if (settings.subtitleLineGap !== undefined) props.onSubtitleLineGapChange?.(settings.subtitleLineGap);
@@ -2172,6 +2176,19 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             {props.subtitleDisplayMode === SubtitleDisplayMode.FADE_LINES && (
                                 <div className="mt-4 p-4 rounded-lg border border-gray-600 bg-gray-800/40 space-y-4">
                                     <div className="text-sm font-medium text-cyan-300">淡入淡出字幕（上下線）設定</div>
+                                    <div className="flex items-center justify-between bg-gray-900/40 border border-gray-700 rounded-lg p-3">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-gray-200">上下線條</span>
+                                            <span className="text-xs text-gray-400">關閉後保留淡入淡出字幕，但不顯示上下線條</span>
+                                        </div>
+                                        <button
+                                            onClick={() => props.onSubtitleFadeLinesEnabledChange?.(!(props.subtitleFadeLinesEnabled ?? true))}
+                                            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${(props.subtitleFadeLinesEnabled ?? true) ? 'bg-cyan-600' : 'bg-gray-500'}`}
+                                            aria-pressed={(props.subtitleFadeLinesEnabled ?? true)}
+                                        >
+                                            <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${(props.subtitleFadeLinesEnabled ?? true) ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <SliderControl
                                             label="淡入時間 (秒)"

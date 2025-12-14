@@ -100,6 +100,7 @@ interface AudioVisualizerProps {
     subtitleLineColor?: string;
     subtitleLineThickness?: number;
     subtitleLineGap?: number;
+    subtitleFadeLinesEnabled?: boolean;
     effectScale: number;
     effectOffsetX: number;
     effectOffsetY: number;
@@ -5921,6 +5922,7 @@ const drawFadeLinesSubtitle = (
         strokeColor,
         fadeInSeconds = 0.25,
         fadeOutSeconds = 0.25,
+        linesEnabled = true,
         lineColor = '#FFFFFF',
         lineThickness = 3,
         lineGap = 10,
@@ -5936,6 +5938,7 @@ const drawFadeLinesSubtitle = (
         strokeColor?: string;
         fadeInSeconds?: number;
         fadeOutSeconds?: number;
+        linesEnabled?: boolean;
         lineColor?: string;
         lineThickness?: number;
         lineGap?: number;
@@ -5991,6 +5994,12 @@ const drawFadeLinesSubtitle = (
         orientation,
         strokeColor,
     });
+
+    // If disabled, keep the fade-in/out subtitle itself but skip top/bottom lines.
+    if (!linesEnabled) {
+        ctx.restore();
+        return;
+    }
 
     // 計算字幕位置（複製 drawSubtitles 的橫式定位邏輯）
     const fontSize = (fontSizeVw / 100) * width;
@@ -8624,6 +8633,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 strokeColor: propsRef.current.subtitleStrokeColor,
                 fadeInSeconds: propsRef.current.subtitleFadeInSeconds ?? 0.25,
                 fadeOutSeconds: propsRef.current.subtitleFadeOutSeconds ?? 0.25,
+                linesEnabled: propsRef.current.subtitleFadeLinesEnabled !== false,
                 lineColor: propsRef.current.subtitleLineColor ?? '#FFFFFF',
                 lineThickness: propsRef.current.subtitleLineThickness ?? 3,
                 lineGap: propsRef.current.subtitleLineGap ?? 10,

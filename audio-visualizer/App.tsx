@@ -113,6 +113,7 @@ function App() {
     // Fade subtitles with top/bottom lines
     const [subtitleFadeInSeconds, setSubtitleFadeInSeconds] = useState<number>(0.25);
     const [subtitleFadeOutSeconds, setSubtitleFadeOutSeconds] = useState<number>(0.25);
+    const [subtitleFadeLinesEnabled, setSubtitleFadeLinesEnabled] = useState<boolean>(true);
     const [subtitleLineColor, setSubtitleLineColor] = useState<string>('#FFFFFF');
     const [subtitleLineThickness, setSubtitleLineThickness] = useState<number>(3);
     const [subtitleLineGap, setSubtitleLineGap] = useState<number>(10);
@@ -1806,6 +1807,7 @@ function App() {
                                     horizontalSubtitlePosition={horizontalSubtitlePosition}
                                     verticalSubtitleVerticalPosition={verticalSubtitleVerticalPosition}
                                     horizontalSubtitleVerticalPosition={horizontalSubtitleVerticalPosition}
+                                    subtitleFadeLinesEnabled={subtitleFadeLinesEnabled}
                                     disableVisualizer={!showVisualizer}
                                     subtitleDragOffset={subtitleDragOffset}
                                     lyricsDragOffset={lyricsDragOffset}
@@ -2191,6 +2193,8 @@ function App() {
                             onSubtitleFadeInSecondsChange={setSubtitleFadeInSeconds}
                             subtitleFadeOutSeconds={subtitleFadeOutSeconds}
                             onSubtitleFadeOutSecondsChange={setSubtitleFadeOutSeconds}
+                            subtitleFadeLinesEnabled={subtitleFadeLinesEnabled}
+                            onSubtitleFadeLinesEnabledChange={setSubtitleFadeLinesEnabled}
                             subtitleLineColor={subtitleLineColor}
                             onSubtitleLineColorChange={setSubtitleLineColor}
                             subtitleLineThickness={subtitleLineThickness}

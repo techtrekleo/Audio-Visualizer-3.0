@@ -277,6 +277,13 @@ export interface AudioVisualizerProps {
     subtitleFontFamily: FontType;
     subtitleColor: string;
     subtitleBgStyle: SubtitleBgStyle;
+    // Fade-lines subtitle mode options
+    subtitleFadeInSeconds?: number;
+    subtitleFadeOutSeconds?: number;
+    subtitleLineColor?: string;
+    subtitleLineThickness?: number;
+    subtitleLineGap?: number;
+    subtitleFadeLinesEnabled?: boolean;
     effectScale: number;
     effectOffsetX: number;
     effectOffsetY: number;
