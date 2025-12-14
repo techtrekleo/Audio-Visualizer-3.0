@@ -224,6 +224,8 @@ function App() {
     const [ctaVideoIncludeAudio, setCtaVideoIncludeAudio] = useState<boolean>(false);
     const ctaVideoRef = useRef<HTMLVideoElement | null>(null);
 
+    const { analyser, initializeAudio, isAudioInitialized, getAudioStream, resetAudioAnalysis, setAuxMediaElement } = useAudioAnalysis();
+
     // 開場文字動畫（Intro Overlay）
     const [showIntroOverlay, setShowIntroOverlay] = useState<boolean>(false);
     const [introTitle, setIntroTitle] = useState<string>('');
@@ -1472,7 +1474,6 @@ function App() {
         setVinylImage(null);
     };
 
-    const { analyser, initializeAudio, isAudioInitialized, getAudioStream, resetAudioAnalysis, setAuxMediaElement } = useAudioAnalysis();
 
     const handleRecordingComplete = useCallback((url: string, extension: string) => {
         setVideoUrl(url);
