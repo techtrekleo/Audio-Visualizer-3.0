@@ -7972,7 +7972,19 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         isPlaying: false,
         startTime: 0,
         duration: 5000, // 5秒
-        currentFrame: 0
+        currentFrame: 0,
+        lastRenderMs: 0,
+        lastBeatMs: 0,
+        particles: [] as Array<{
+            x: number;
+            y: number;
+            vx: number;
+            vy: number;
+            life: number;
+            age: number;
+            size: number;
+            color: string;
+        }>,
     });
 
     useEffect(() => {
@@ -9011,212 +9023,329 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         textEffect?: GraphicEffectType,
         isBeat?: boolean
     ) => {
-        const currentTime = Date.now();
+        const nowMs = Date.now();
         const audioCurrentTime = propsRef.current.audioRef?.current?.currentTime || 0;
-        
+
         // 只在音頻開始的前10秒顯示，但允許拖動時或暫停時顯示
-        // 修改：如果沒有音頻播放，也顯示 CTA 動畫
         if (audioCurrentTime > 10 && !dragState.current.isDragging && propsRef.current.isPlaying && propsRef.current.audioRef?.current) return;
-        
+
+        // If audio isn't playing, keep animating using wall time so users can preview the CTA.
+        const animTime = (propsRef.current.isPlaying && propsRef.current.audioRef?.current)
+            ? audioCurrentTime
+            : ((nowMs / 1000) % 10);
+
+        // dt for particles
+        const st = ctaAnimationState.current;
+        const prevMs = st.lastRenderMs || nowMs;
+        const dt = Math.min(0.05, Math.max(0, (nowMs - prevMs) / 1000));
+        st.lastRenderMs = nowMs;
+
+        // helpers
+        const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+        const smoothstep = (e0: number, e1: number, x: number) => {
+            const t = clamp01((x - e0) / (e1 - e0));
+            return t * t * (3 - 2 * t);
+        };
+        const easeOutCubic = (t: number) => 1 - Math.pow(1 - clamp01(t), 3);
+        const easeOutBack = (t: number) => {
+            const x = clamp01(t);
+            const c1 = 1.70158;
+            const c3 = c1 + 1;
+            return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+        };
+
         const ctaX = (position.x / 100) * width;
         const ctaY = (position.y / 100) * height;
-        
-        // 動畫進度 (0-1)
-        const progress = Math.min(audioCurrentTime / 10, 1);
-        
-        // 淡入效果
-        const alpha = progress < 0.1 ? progress * 10 : (progress > 0.9 ? (1 - progress) * 10 : 1);
-        
+
+        // Timeline inside the 10-second window
+        const introT = clamp01(animTime / 0.9); // 0..0.9s entrance
+        const settleT = clamp01((animTime - 0.9) / 0.8); // 0.9..1.7s settle
+        const overallAlpha = (() => {
+            // Fade in quickly, fade out near the end of the 10s window (only meaningful when audio is playing)
+            const inA = smoothstep(0, 0.25, animTime);
+            const outA = (propsRef.current.isPlaying && propsRef.current.audioRef?.current)
+                ? (1 - smoothstep(9.2, 10.0, animTime))
+                : 1;
+            return clamp01(inA * outA);
+        })();
+
+        // Panel geometry (scale with resolution a bit)
+        const scaleBase = Math.max(0.85, Math.min(1.1, width / 1920));
+        const frameWidth = 520 * scaleBase;
+        const frameHeight = 140 * scaleBase;
+        const cornerRadius = 25 * scaleBase;
+
+        // Entrance motion: slide up + overshoot scale
+        const slideY = (1 - easeOutCubic(introT)) * (24 * scaleBase);
+        const panelScale = 0.90 + 0.10 * easeOutBack(introT);
+        // Subtle idle float
+        const floatY = Math.sin(animTime * 1.2) * (2.2 * scaleBase);
+
+        const baseColor = textColor || '#FFFFFF';
+
         ctx.save();
-        ctx.globalAlpha = alpha;
-        
-        // 計算動畫階段 - 全部一起閃動
-        const flashPhase = Math.min(audioCurrentTime / 6, 1); // 前6秒：全部元素一起閃動
-        
-        // 美化透明圓角框背景
-        const frameWidth = 520;
-        const frameHeight = 140;
-        const cornerRadius = 25;
-        
-        // 外層光暈效果
-        const outerGlow = ctx.createRadialGradient(ctaX, ctaY, 0, ctaX, ctaY, frameWidth / 2 + 30);
-        outerGlow.addColorStop(0, 'rgba(255, 0, 0, 0.1)');
-        outerGlow.addColorStop(0.7, 'rgba(255, 0, 0, 0.05)');
-        outerGlow.addColorStop(1, 'rgba(255, 0, 0, 0)');
+        ctx.globalAlpha = overallAlpha;
+        ctx.translate(0, -(slideY) + floatY);
+
+        // ===== Background glow pulse =====
+        const pulse = 0.55 + 0.45 * Math.sin(animTime * 2.2);
+        const glowAlpha = 0.08 + 0.08 * pulse;
+        const outerGlow = ctx.createRadialGradient(ctaX, ctaY, 0, ctaX, ctaY, frameWidth / 2 + 80 * scaleBase);
+        outerGlow.addColorStop(0, `rgba(255, 60, 80, ${glowAlpha})`);
+        outerGlow.addColorStop(0.7, `rgba(255, 60, 80, ${glowAlpha * 0.5})`);
+        outerGlow.addColorStop(1, 'rgba(255, 60, 80, 0)');
         ctx.fillStyle = outerGlow;
-        ctx.fillRect(ctaX - frameWidth / 2 - 30, ctaY - frameHeight / 2 - 30, frameWidth + 60, frameHeight + 60);
-        
-        // 主背景 - 漸變效果
+        ctx.fillRect(ctaX - frameWidth / 2 - 100, ctaY - frameHeight / 2 - 100, frameWidth + 200, frameHeight + 200);
+
+        // ===== Panel (rounded) =====
+        ctx.save();
+        ctx.translate(ctaX, ctaY);
+        ctx.scale(panelScale, panelScale);
+        ctx.translate(-ctaX, -ctaY);
+
         const bgGradient = ctx.createLinearGradient(ctaX - frameWidth / 2, ctaY - frameHeight / 2, ctaX + frameWidth / 2, ctaY + frameHeight / 2);
-        bgGradient.addColorStop(0, 'rgba(0, 0, 0, 0.4)');
-        bgGradient.addColorStop(0.5, 'rgba(20, 20, 20, 0.5)');
-        bgGradient.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
+        bgGradient.addColorStop(0, 'rgba(0, 0, 0, 0.42)');
+        bgGradient.addColorStop(0.5, 'rgba(18, 18, 18, 0.56)');
+        bgGradient.addColorStop(1, 'rgba(0, 0, 0, 0.42)');
         ctx.fillStyle = bgGradient;
-        
-        // 邊框漸變
-        const borderGradient = ctx.createLinearGradient(ctaX - frameWidth / 2, ctaY - frameHeight / 2, ctaX + frameWidth / 2, ctaY + frameHeight / 2);
-        borderGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-        borderGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.6)');
-        borderGradient.addColorStop(1, 'rgba(255, 255, 255, 0.8)');
-        ctx.strokeStyle = borderGradient;
-        ctx.lineWidth = 3;
-        
-        // 繪製圓角矩形
+
+        // Border: subtle animated shimmer
+        const shimmerX = ((animTime * 0.9) % 1) * (frameWidth + 220 * scaleBase) - (110 * scaleBase);
+        const borderGradient = ctx.createLinearGradient(ctaX - frameWidth / 2 + shimmerX, 0, ctaX - frameWidth / 2 + shimmerX + 220 * scaleBase, 0);
+        borderGradient.addColorStop(0, 'rgba(255,255,255,0)');
+        borderGradient.addColorStop(0.45, 'rgba(255,255,255,0.55)');
+        borderGradient.addColorStop(0.5, 'rgba(255,255,255,0.95)');
+        borderGradient.addColorStop(0.55, 'rgba(255,255,255,0.55)');
+        borderGradient.addColorStop(1, 'rgba(255,255,255,0)');
+
         ctx.beginPath();
         ctx.roundRect(ctaX - frameWidth / 2, ctaY - frameHeight / 2, frameWidth, frameHeight, cornerRadius);
         ctx.fill();
+
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+        ctx.lineWidth = 2.5 * scaleBase;
         ctx.stroke();
-        
-        
-        // 全部元素一起閃動
-        if (flashPhase > 0) {
-            const scale = 1 + Math.sin(flashPhase * Math.PI * 4) * 0.2; // 統一閃動效果
-            
-            // 左側訂閱按鈕
-            const subscribeX = ctaX - 160;
-            const subscribeY = ctaY;
-            
+
+        // Shimmer pass (clipped)
+        ctx.clip();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha *= (0.22 + 0.18 * pulse);
+        ctx.fillStyle = borderGradient;
+        ctx.fillRect(ctaX - frameWidth / 2, ctaY - frameHeight / 2, frameWidth, frameHeight);
+        ctx.restore();
+
+        // ===== Subscribe button pop =====
+        const subscribeX = ctaX - 160 * scaleBase;
+        const subscribeY = ctaY;
+        const pop = 0.92 + 0.12 * easeOutBack(clamp01(animTime / 0.7));
+        const pulse2 = 1 + 0.05 * Math.sin(animTime * 3.5);
+        const subScale = pop * pulse2;
+
+        ctx.save();
+        ctx.translate(subscribeX, subscribeY);
+        ctx.scale(subScale, subScale);
+        // Shadow
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+        ctx.shadowBlur = 14 * scaleBase;
+        ctx.shadowOffsetX = 2 * scaleBase;
+        ctx.shadowOffsetY = 3 * scaleBase;
+        // Red circle
+        ctx.fillStyle = '#FF0000';
+        ctx.beginPath();
+        ctx.arc(0, 0, 45 * scaleBase, 0, Math.PI * 2);
+        ctx.fill();
+        // Inner glossy highlight
+        ctx.shadowColor = 'transparent';
+        ctx.globalAlpha *= 0.6;
+        const gloss = ctx.createRadialGradient(-14 * scaleBase, -18 * scaleBase, 0, -14 * scaleBase, -18 * scaleBase, 48 * scaleBase);
+        gloss.addColorStop(0, 'rgba(255,255,255,0.35)');
+        gloss.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = gloss;
+        ctx.beginPath();
+        ctx.arc(0, 0, 45 * scaleBase, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha /= 0.6;
+        // Play triangle
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.moveTo(-14 * scaleBase, -20 * scaleBase);
+        ctx.lineTo(-14 * scaleBase, 20 * scaleBase);
+        ctx.lineTo(20 * scaleBase, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // ===== Text block with staggered reveal =====
+        ctx.save();
+        const actualFontName = FONT_MAP[fontFamily || FontType.POPPINS] || 'Poppins';
+        const color = baseColor;
+        const stroke = (strokeColor || '#000000');
+        const effect = textEffect || GraphicEffectType.NONE;
+
+        const line1A = smoothstep(0.10, 0.35, animTime);
+        const line2A = smoothstep(0.22, 0.50, animTime);
+        const line3A = smoothstep(0.34, 0.68, animTime);
+
+        const drawLine = (text: string, sizePx: number, y: number, opacity: number) => {
             ctx.save();
-            ctx.translate(subscribeX, subscribeY);
-            ctx.scale(scale, scale);
-            
-            // 按鈕陰影
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 2;
-            
-            // YouTube 紅色背景
-            ctx.fillStyle = '#FF0000';
-            ctx.beginPath();
-            ctx.arc(0, 0, 45, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // 白色播放按鈕
-            ctx.shadowColor = 'transparent';
-            ctx.fillStyle = '#FFFFFF';
-            ctx.beginPath();
-            ctx.moveTo(-14, -20);
-            ctx.lineTo(-14, 20);
-            ctx.lineTo(20, 0);
-            ctx.closePath();
-            ctx.fill();
-            
-            ctx.restore();
-            
-            // 中央文字（樣式與其他區塊一致：字型/顏色/描邊/特效）
-            ctx.save();
-            ctx.translate(ctaX, ctaY);
-            ctx.scale(scale, scale);
-            ctx.translate(-ctaX, -ctaY);
-
-            const actualFontName = FONT_MAP[fontFamily || FontType.POPPINS] || 'Poppins';
-            const color = (textColor || '#FFFFFF');
-            const stroke = (strokeColor || '#000000');
-            const effect = textEffect || GraphicEffectType.NONE;
-
-            const drawLine = (text: string, sizePx: number, y: number, opacity: number) => {
-                ctx.save();
-                ctx.globalAlpha *= opacity;
-                const fontWeight = effect === GraphicEffectType.BOLD ? '900' : 'bold';
-                ctx.font = `${fontWeight} ${sizePx}px "${actualFontName}", "Noto Sans TC", sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-
-                // shadow/glow
-                if (effect === GraphicEffectType.SHADOW) {
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-                    ctx.shadowBlur = 8;
-                    ctx.shadowOffsetX = 2;
-                    ctx.shadowOffsetY = 2;
-                } else if (effect === GraphicEffectType.NEON) {
-                    ctx.shadowColor = color;
-                    ctx.shadowBlur = 20;
-                    ctx.shadowOffsetX = 0;
-                    ctx.shadowOffsetY = 0;
-                } else {
-                    ctx.shadowColor = 'transparent';
-                    ctx.shadowBlur = 0;
-                    ctx.shadowOffsetX = 0;
-                    ctx.shadowOffsetY = 0;
-                }
-
-                // stroke first (if any)
-                if (stroke && stroke !== 'transparent') {
-                    const strokeW = Math.max(2, Math.round(sizePx * 0.12));
-                    ctx.lineWidth = strokeW;
-                    ctx.strokeStyle = stroke;
-                    ctx.strokeText(text, ctaX, y);
-                }
-
-                // main fill
-                ctx.fillStyle = color;
-                ctx.fillText(text, ctaX, y);
-
-                // glitch overlay on beat
-                if (effect === GraphicEffectType.GLITCH && isBeat) {
-                    ctx.save();
-                    ctx.globalCompositeOperation = 'lighter';
-                    const intensity = Math.max(3, Math.round(sizePx * 0.08));
-                    const ox = (Math.random() - 0.5) * intensity;
-                    const oy = (Math.random() - 0.5) * intensity;
-                    ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
-                    ctx.fillText(text, ctaX + ox, y + oy);
-                    ctx.fillStyle = 'rgba(0, 0, 255, 0.7)';
-                    ctx.fillText(text, ctaX - ox, y - oy);
-                    ctx.fillStyle = 'rgba(0, 255, 0, 0.6)';
-                    ctx.fillText(text, ctaX + ox * 0.5, y - oy * 0.5);
-                    ctx.restore();
-                }
-
-                ctx.restore();
-            };
-
-            drawLine('訂閱', 36, ctaY - 35, 0.95);
-            drawLine('SUBSCRIBE', 28, ctaY + 5, 0.88);
-            drawLine(channelName, 22, ctaY + 50, 0.78);
-            
-            ctx.restore();
-            
-            // 右側鈴鐺 - 使用🔔字元，修正垂直對齊
-            const bellX = ctaX + 160;
-            const bellY = ctaY; // 與中央文字對齊
-            
-            ctx.save();
-            ctx.translate(bellX, bellY);
-            ctx.scale(scale, scale);
-            ctx.translate(-bellX, -bellY);
-            
-            // 文字陰影效果
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-            ctx.shadowBlur = 3;
-            ctx.shadowOffsetX = 1;
-            ctx.shadowOffsetY = 1;
-            
-            // 鈴鐺字元，調整垂直位置使其與文字對齊
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-            ctx.font = 'bold 80px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+            ctx.globalAlpha *= opacity;
+            const fontWeight = effect === GraphicEffectType.BOLD ? '900' : 'bold';
+            ctx.font = `${fontWeight} ${sizePx}px "${actualFontName}", "Noto Sans TC", sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('🔔', bellX, bellY + 10); // 向下調整鈴鐺位置
-            
+
+            // shadow/glow
+            if (effect === GraphicEffectType.SHADOW) {
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+                ctx.shadowBlur = 10 * scaleBase;
+                ctx.shadowOffsetX = 2 * scaleBase;
+                ctx.shadowOffsetY = 2 * scaleBase;
+            } else if (effect === GraphicEffectType.NEON) {
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 22 * scaleBase;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+            } else {
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+            }
+
+            if (stroke && stroke !== 'transparent') {
+                const strokeW = Math.max(2 * scaleBase, Math.round(sizePx * 0.12));
+                ctx.lineWidth = strokeW;
+                ctx.strokeStyle = stroke;
+                ctx.strokeText(text, ctaX, y);
+            }
+
+            ctx.fillStyle = color;
+            ctx.fillText(text, ctaX, y);
+
+            // glitch overlay on beat
+            if (effect === GraphicEffectType.GLITCH && isBeat) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                const intensity = Math.max(3 * scaleBase, Math.round(sizePx * 0.08));
+                const ox = (Math.random() - 0.5) * intensity;
+                const oy = (Math.random() - 0.5) * intensity;
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.65)';
+                ctx.fillText(text, ctaX + ox, y + oy);
+                ctx.fillStyle = 'rgba(0, 0, 255, 0.65)';
+                ctx.fillText(text, ctaX - ox, y - oy);
+                ctx.restore();
+            }
+
             ctx.restore();
-            
-            // 移除貓掌動畫
+        };
+
+        // Slight settle scale for text only
+        const textScale = 0.98 + 0.02 * easeOutCubic(settleT);
+        ctx.translate(ctaX, ctaY);
+        ctx.scale(textScale, textScale);
+        ctx.translate(-ctaX, -ctaY);
+
+        drawLine('訂閱', 36 * scaleBase, ctaY - 35 * scaleBase, 0.95 * line1A);
+        drawLine('SUBSCRIBE', 28 * scaleBase, ctaY + 5 * scaleBase, 0.88 * line2A);
+        drawLine(channelName, 22 * scaleBase, ctaY + 50 * scaleBase, 0.78 * line3A);
+        ctx.restore();
+
+        // ===== Bell wiggle + ring accents =====
+        const bellX = ctaX + 160 * scaleBase;
+        const bellY = ctaY;
+        const beatKick = (isBeat && (nowMs - (st.lastBeatMs || 0) > 120)) ? 1 : 0;
+        if (beatKick) st.lastBeatMs = nowMs;
+        const wiggle = Math.sin(animTime * 6.0) * 0.08;
+        const beatWiggle = beatKick ? 0.22 : 0;
+        const rot = wiggle + beatWiggle;
+        const bellScale = (0.98 + 0.02 * pulse) * (1 + 0.08 * beatKick);
+
+        ctx.save();
+        ctx.translate(bellX, bellY);
+        ctx.rotate(rot);
+        ctx.scale(bellScale, bellScale);
+        ctx.translate(-bellX, -bellY);
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+        ctx.shadowBlur = 4 * scaleBase;
+        ctx.shadowOffsetX = 1 * scaleBase;
+        ctx.shadowOffsetY = 1 * scaleBase;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.font = `bold ${80 * scaleBase}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🔔', bellX, bellY + 4 * scaleBase);
+        ctx.restore();
+
+        // Ring lines on beat
+        if (beatKick) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.strokeStyle = `rgba(255,255,255,${0.55 * overallAlpha})`;
+            ctx.lineWidth = 2 * scaleBase;
+            ctx.lineCap = 'round';
+            const r1 = 26 * scaleBase;
+            const r2 = 38 * scaleBase;
+            ctx.beginPath();
+            ctx.arc(bellX, bellY, r1, -0.8, 0.8);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(bellX, bellY, r2, -0.6, 0.6);
+            ctx.stroke();
+            ctx.restore();
         }
-        
-        // 清除陰影
-        ctx.shadowColor = 'transparent';
-        
-        // 背景光暈效果
-        const glowRadius = 150 + Math.sin(currentTime * 0.002) * 50;
-        const glowGradient = ctx.createRadialGradient(ctaX, ctaY, 0, ctaX, ctaY, glowRadius);
-        glowGradient.addColorStop(0, 'rgba(255, 0, 0, 0.15)');
-        glowGradient.addColorStop(0.5, 'rgba(255, 0, 0, 0.08)');
-        glowGradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
-        ctx.fillStyle = glowGradient;
-        ctx.fillRect(ctaX - glowRadius, ctaY - glowRadius, glowRadius * 2, glowRadius * 2);
-        
+
+        // ===== Particles on beat (subtle sparks) =====
+        if (beatKick) {
+            const spawn = (cx: number, cy: number, n: number, tint: string) => {
+                for (let i = 0; i < n; i++) {
+                    const a = Math.random() * Math.PI * 2;
+                    const sp = (60 + Math.random() * 120) * scaleBase;
+                    st.particles.push({
+                        x: cx + (Math.random() - 0.5) * 8 * scaleBase,
+                        y: cy + (Math.random() - 0.5) * 8 * scaleBase,
+                        vx: Math.cos(a) * sp,
+                        vy: Math.sin(a) * sp - 40 * scaleBase,
+                        life: 0.35 + Math.random() * 0.25,
+                        age: 0,
+                        size: (2 + Math.random() * 3) * scaleBase,
+                        color: tint,
+                    });
+                }
+            };
+            spawn(subscribeX, subscribeY, 8, 'rgba(255, 90, 120, 1)');
+            spawn(bellX, bellY, 6, 'rgba(120, 220, 255, 1)');
+        }
+
+        if (st.particles.length > 0) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            for (let i = st.particles.length - 1; i >= 0; i--) {
+                const p = st.particles[i];
+                p.age += dt;
+                if (p.age >= p.life) {
+                    st.particles.splice(i, 1);
+                    continue;
+                }
+                p.vy += 260 * scaleBase * dt; // gravity
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                const k = 1 - p.age / p.life;
+                const a = (0.9 * k) * overallAlpha;
+                const r = p.size * (0.8 + 0.8 * (1 - k));
+                const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 4);
+                g.addColorStop(0, p.color.replace(/, 1\)$/, `, ${a})`));
+                g.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, r * 2.2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        ctx.restore(); // panelScale
+        ctx.restore(); // translate slide/float
         ctx.restore();
     };
 
