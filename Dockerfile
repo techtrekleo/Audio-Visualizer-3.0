@@ -41,6 +41,11 @@ WORKDIR /app/srt-translator
 RUN npm install
 RUN npm run build
 
+# 建置歐皇工具（Video Merger）
+WORKDIR /app/video-merger
+RUN npm install
+RUN npm run build
+
 # 回到根目錄
 WORKDIR /app
 
