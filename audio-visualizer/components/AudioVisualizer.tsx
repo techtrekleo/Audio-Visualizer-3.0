@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, forwardRef, useCallback } from 'react';
-import { VisualizationType, Palette, GraphicEffectType, ColorPaletteType, WatermarkPosition, FontType, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, FilterEffectType, ControlCardStyle, SubtitleOrientation } from '../types';
+import { VisualizationType, Palette, GraphicEffectType, ColorPaletteType, WatermarkPosition, FontType, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, FilterEffectType, ControlCardStyle, SubtitleOrientation, CustomTextOverlay } from '../types';
 import ImageBasedVisualizer from './ImageBasedVisualizer';
 
 // 字體映射表
@@ -64,6 +64,7 @@ interface AudioVisualizerProps {
     selectedVisualizationTypes?: VisualizationType[];
     multiEffectOffsets?: Partial<Record<VisualizationType, { x: number; y: number }>>;
     isPlaying: boolean;
+    customTextOverlays?: CustomTextOverlay[];
     customText: string;
     textColor: string;
     textStrokeColor?: string;
@@ -7139,7 +7140,7 @@ const drawCustomText = (
     ctx: CanvasRenderingContext2D,
     text: string,
     dataArray: Uint8Array,
-    { width, height, color, strokeColor, fontFamily, graphicEffect, position, textSize, textPositionX, textPositionY, isBeat }: {
+    { width, height, color, strokeColor, fontFamily, graphicEffect, position, textSize, textPositionX, textPositionY, rotationDeg, isBeat }: {
         width: number;
         height: number;
         color: string;
@@ -7150,6 +7151,7 @@ const drawCustomText = (
         textSize: number;
         textPositionX: number;
         textPositionY: number;
+        rotationDeg?: number;
         isBeat?: boolean;
     }
 ) => {
@@ -7211,6 +7213,15 @@ const drawCustomText = (
     const offsetY = height * (textPositionY / 100);
     positionX += offsetX;
     positionY += offsetY;
+
+    // Apply rotation around the anchor point (positionX/positionY)
+    const rot = ((rotationDeg || 0) * Math.PI) / 180;
+    if (rot !== 0) {
+        ctx.translate(positionX, positionY);
+        ctx.rotate(rot);
+        positionX = 0;
+        positionY = 0;
+    }
 
     const drawText = (offsetX = 0, offsetY = 0) => {
         ctx.fillText(text, positionX + offsetX, positionY + offsetY);
@@ -8654,21 +8665,43 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 lineGap: propsRef.current.subtitleLineGap ?? 10,
             });
         }
-        // 無字幕模式：不顯示任何字幕
-        if (customText) {
-            const actualFontName = FONT_MAP[fontFamily] || 'Poppins';
-            drawCustomText(ctx, customText, smoothedData, { 
-                width, 
-                height, 
-                color: textColor, 
-                strokeColor: propsRef.current.textStrokeColor,
-                fontFamily: actualFontName, 
-                graphicEffect, 
-                position: watermarkPosition, 
-                textSize: textSize,
-                textPositionX: textPositionX,
-                textPositionY: textPositionY,
-                isBeat 
+        // 自訂文字（支援 3 組疊加）
+        const overlaysRaw = (propsRef.current as any).customTextOverlays;
+        const overlays: CustomTextOverlay[] = Array.isArray(overlaysRaw) ? overlaysRaw : [];
+        const legacyOverlay: CustomTextOverlay = {
+            enabled: true,
+            text: customText,
+            color: textColor,
+            strokeColor: propsRef.current.textStrokeColor,
+            fontFamily,
+            graphicEffect,
+            textSize,
+            textPositionX,
+            textPositionY,
+            rotationDeg: 0,
+            anchor: watermarkPosition,
+        };
+        const overlaysToDraw = overlays.length > 0 ? overlays : [legacyOverlay];
+
+        for (const o of overlaysToDraw) {
+            if (!o) continue;
+            if (o.enabled === false) continue;
+            const t = (o.text ?? '').toString();
+            if (!t.trim()) continue;
+            const actualFontName = FONT_MAP[o.fontFamily] || 'Poppins';
+            drawCustomText(ctx, t, smoothedData, {
+                width,
+                height,
+                color: o.color || '#FFFFFF',
+                strokeColor: o.strokeColor,
+                fontFamily: actualFontName,
+                graphicEffect: o.graphicEffect || GraphicEffectType.NONE,
+                position: o.anchor || WatermarkPosition.BOTTOM_RIGHT,
+                textSize: typeof o.textSize === 'number' ? o.textSize : textSize,
+                textPositionX: typeof o.textPositionX === 'number' ? o.textPositionX : 0,
+                textPositionY: typeof o.textPositionY === 'number' ? o.textPositionY : 0,
+                rotationDeg: typeof o.rotationDeg === 'number' ? o.rotationDeg : 0,
+                isBeat
             });
         }
         

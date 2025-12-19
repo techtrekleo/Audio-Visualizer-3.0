@@ -241,6 +241,29 @@ export type Subtitle = {
     endTime?: number; // 結束時間（可選）
 };
 
+export type CustomTextOverlay = {
+    /** Whether this overlay should be drawn (if false, it's ignored even if text is non-empty). */
+    enabled: boolean;
+    /** The text to draw. */
+    text: string;
+    /** Fill color (hex/rgb/etc). */
+    color: string;
+    /** Stroke color used when graphicEffect === OUTLINE. */
+    strokeColor?: string;
+    fontFamily: FontType;
+    graphicEffect: GraphicEffectType;
+    /** Size in vw-like percent (same semantics as existing custom textSize). */
+    textSize: number;
+    /** Offset X in % of canvas width (same semantics as existing textPositionX). */
+    textPositionX: number;
+    /** Offset Y in % of canvas height (same semantics as existing textPositionY). */
+    textPositionY: number;
+    /** Rotation in degrees. */
+    rotationDeg: number;
+    /** Anchor position on canvas. */
+    anchor: WatermarkPosition;
+};
+
 export interface AudioVisualizerProps {
     analyser: AnalyserNode | null;
     audioRef: React.RefObject<HTMLAudioElement>;
@@ -251,6 +274,8 @@ export interface AudioVisualizerProps {
     // Per-effect offsets used in multi-effect mode (pixels)
     multiEffectOffsets?: Partial<Record<VisualizationType, { x: number; y: number }>>;
     isPlaying: boolean;
+    // Custom text overlays (up to 3, but kept generic for future extension).
+    customTextOverlays?: CustomTextOverlay[];
     customText: string;
     textColor: string;
     fontFamily: FontType;

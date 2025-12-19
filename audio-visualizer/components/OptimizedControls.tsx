@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle } from '../types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle, CustomTextOverlay } from '../types';
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
 import CollapsibleControlSection from './CollapsibleControlSection';
@@ -142,22 +142,10 @@ interface OptimizedControlsProps {
     onActiveMultiEffectNudge?: (dx: number, dy: number) => void;
     onActiveMultiEffectOffsetChange?: (next: { x: number; y: number }) => void;
     onActiveMultiEffectOffsetReset?: () => void;
-    customText: string;
-    onTextChange: (text: string) => void;
-    textColor: string;
-    onTextColorChange: (color: string) => void;
-    textStrokeColor?: string;
-    onTextStrokeColorChange?: (color: string) => void;
-    fontFamily: FontType;
-    onFontFamilyChange: (font: FontType) => void;
-    graphicEffect: GraphicEffectType;
-    onGraphicEffectChange: (effect: GraphicEffectType) => void;
-    textSize: number;
-    onTextSizeChange: (size: number) => void;
-    textPositionX: number;
-    onTextPositionXChange: (value: number) => void;
-    textPositionY: number;
-    onTextPositionYChange: (value: number) => void;
+    // Custom text overlays (3 layers)
+    customTextOverlays: CustomTextOverlay[];
+    onCustomTextOverlaysChange: (overlays: CustomTextOverlay[]) => void;
+    onUpdateCustomTextOverlay?: (index: number, patch: Partial<CustomTextOverlay>) => void;
     sensitivity: number;
     onSensitivityChange: (value: number) => void;
     smoothing: number;
@@ -199,8 +187,6 @@ interface OptimizedControlsProps {
     isTransitioning: boolean;
     transitionType: TransitionType;
     onTransitionTypeChange: (type: TransitionType) => void;
-    watermarkPosition: WatermarkPosition;
-    onWatermarkPositionChange: (position: WatermarkPosition) => void;
     waveformStroke: boolean;
     onWaveformStrokeChange: (value: boolean) => void;
     // Subtitle props
@@ -737,24 +723,83 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         '#D1D5DB'  // 淺灰
     ];
 
+    const getDefaultCustomTextOverlay = (index: number): CustomTextOverlay => ({
+        enabled: index === 0,
+        text: index === 0 ? 'Sonic Pulse' : '',
+        color: index === 0 ? '#67E8F9' : '#FFFFFF',
+        strokeColor: '#000000',
+        fontFamily: index === 0 ? FontType.ROCKNROLL_ONE : FontType.POPPINS,
+        graphicEffect: index === 0 ? GraphicEffectType.NEON : GraphicEffectType.NONE,
+        textSize: 4,
+        textPositionX: 0,
+        textPositionY: 0,
+        rotationDeg: 0,
+        anchor: index === 0 ? WatermarkPosition.BOTTOM_RIGHT : WatermarkPosition.CENTER,
+    });
+
+    const normalizeCustomTextOverlays = (input: any): CustomTextOverlay[] => {
+        const arr: any[] = Array.isArray(input) ? input : [];
+        const next: CustomTextOverlay[] = [];
+        for (let i = 0; i < 3; i++) {
+            const def = getDefaultCustomTextOverlay(i);
+            const raw = (arr[i] && typeof arr[i] === 'object') ? arr[i] : {};
+            next.push({
+                ...def,
+                ...raw,
+                enabled: raw.enabled !== undefined ? !!raw.enabled : (!!raw.text && String(raw.text).trim().length > 0) || def.enabled,
+                text: raw.text !== undefined ? String(raw.text) : def.text,
+                color: raw.color || def.color,
+                strokeColor: raw.strokeColor !== undefined ? raw.strokeColor : def.strokeColor,
+                fontFamily: raw.fontFamily || def.fontFamily,
+                graphicEffect: raw.graphicEffect || def.graphicEffect,
+                textSize: typeof raw.textSize === 'number' ? raw.textSize : def.textSize,
+                textPositionX: typeof raw.textPositionX === 'number' ? raw.textPositionX : def.textPositionX,
+                textPositionY: typeof raw.textPositionY === 'number' ? raw.textPositionY : def.textPositionY,
+                rotationDeg: typeof raw.rotationDeg === 'number' ? raw.rotationDeg : def.rotationDeg,
+                anchor: raw.anchor || def.anchor,
+            });
+        }
+        return next;
+    };
+
+    const setCustomTextOverlay = (index: number, patch: Partial<CustomTextOverlay>) => {
+        if (props.onUpdateCustomTextOverlay) {
+            props.onUpdateCustomTextOverlay(index, patch);
+            return;
+        }
+        const current = normalizeCustomTextOverlays(props.customTextOverlays);
+        const next = [...current];
+        next[index] = { ...next[index], ...patch };
+        props.onCustomTextOverlaysChange(next);
+    };
+
     // 獲取當前設置
-    const getCurrentSettings = (): Partial<SavedSettings> => ({
+    const getCurrentSettings = (): Partial<SavedSettings> => {
+        const overlays = normalizeCustomTextOverlays(props.customTextOverlays);
+        const o0 = overlays[0];
+        return ({
         visualizationType: props.visualizationType,
         multiEffectEnabled: !!props.multiEffectEnabled,
         selectedVisualizationTypes: props.selectedVisualizationTypes || [],
         multiEffectOffsets: props.multiEffectOffsets || {},
-        customText: props.customText,
-        textColor: props.textColor,
-        textStrokeColor: props.textStrokeColor || '#000000',
-        fontFamily: props.fontFamily,
-        graphicEffect: props.graphicEffect,
+        customTextOverlays: overlays,
+        // Legacy single-text fields (keep for backwards compatibility)
+        customText: o0.enabled ? o0.text : '',
+        textColor: o0.color,
+        textStrokeColor: o0.strokeColor || '#000000',
+        fontFamily: o0.fontFamily,
+        graphicEffect: o0.graphicEffect,
+        textSize: o0.textSize,
+        textPositionX: o0.textPositionX,
+        textPositionY: o0.textPositionY,
+        textRotationDeg: o0.rotationDeg,
         sensitivity: props.sensitivity,
         smoothing: props.smoothing,
         equalization: props.equalization,
         backgroundColor: props.backgroundColor,
         colorPalette: props.colorPalette,
         resolution: props.resolution,
-        watermarkPosition: props.watermarkPosition,
+        watermarkPosition: o0.anchor,
         waveformStroke: props.waveformStroke,
         subtitleFontSize: props.subtitleFontSize,
         subtitleFontFamily: props.subtitleFontFamily,
@@ -837,7 +882,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         introPositionX: props.introPositionX ?? 50,
         introPositionY: props.introPositionY ?? 50,
         introLightBarsEnabled: props.introLightBarsEnabled ?? true,
-    });
+        });
+    };
 
     // 載入設置
     const handleLoadSettings = (settings: Partial<SavedSettings>) => {
@@ -852,18 +898,38 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.multiEffectOffsets && typeof settings.multiEffectOffsets === 'object') {
             props.onMultiEffectOffsetsChange?.(settings.multiEffectOffsets as any);
         }
-        if (settings.customText !== undefined) props.onTextChange(settings.customText);
-        if (settings.textColor) props.onTextColorChange(settings.textColor);
-        if (settings.textStrokeColor !== undefined) props.onTextStrokeColorChange?.(settings.textStrokeColor);
-        if (settings.fontFamily) props.onFontFamilyChange(settings.fontFamily);
-        if (settings.graphicEffect) props.onGraphicEffectChange(settings.graphicEffect);
+        // Custom text overlays (prefer new format, fallback to legacy single-text fields)
+        if (Array.isArray((settings as any).customTextOverlays)) {
+            props.onCustomTextOverlaysChange(
+                normalizeCustomTextOverlays((settings as any).customTextOverlays)
+            );
+        } else {
+            const current = normalizeCustomTextOverlays(props.customTextOverlays);
+            const patch0: Partial<CustomTextOverlay> = {};
+            if ((settings as any).customText !== undefined) patch0.text = String((settings as any).customText);
+            if ((settings as any).textColor !== undefined) patch0.color = (settings as any).textColor;
+            if ((settings as any).textStrokeColor !== undefined) patch0.strokeColor = (settings as any).textStrokeColor;
+            if ((settings as any).fontFamily !== undefined) patch0.fontFamily = (settings as any).fontFamily;
+            if ((settings as any).graphicEffect !== undefined) patch0.graphicEffect = (settings as any).graphicEffect;
+            if ((settings as any).textSize !== undefined) patch0.textSize = (settings as any).textSize;
+            if ((settings as any).textPositionX !== undefined) patch0.textPositionX = (settings as any).textPositionX;
+            if ((settings as any).textPositionY !== undefined) patch0.textPositionY = (settings as any).textPositionY;
+            if ((settings as any).textRotationDeg !== undefined) patch0.rotationDeg = (settings as any).textRotationDeg;
+            if ((settings as any).watermarkPosition !== undefined) patch0.anchor = (settings as any).watermarkPosition;
+            if (Object.keys(patch0).length > 0) {
+                const next = [...current];
+                next[0] = { ...next[0], ...patch0 };
+                // If legacy had text, assume enabled
+                if (patch0.text !== undefined) next[0].enabled = String(patch0.text).trim().length > 0;
+                props.onCustomTextOverlaysChange(next);
+            }
+        }
         if (settings.sensitivity !== undefined) props.onSensitivityChange(settings.sensitivity);
         if (settings.smoothing !== undefined) props.onSmoothingChange(settings.smoothing);
         if (settings.equalization !== undefined) props.onEqualizationChange(settings.equalization);
         if (settings.backgroundColor) props.onBackgroundColorChange(settings.backgroundColor);
         if (settings.colorPalette) props.onColorPaletteChange(settings.colorPalette);
         if (settings.resolution) props.onResolutionChange(settings.resolution);
-        if (settings.watermarkPosition) props.onWatermarkPositionChange(settings.watermarkPosition);
         if (settings.waveformStroke !== undefined) props.onWaveformStrokeChange(settings.waveformStroke);
         if (settings.subtitleFontSize !== undefined) props.onSubtitleFontSizeChange(settings.subtitleFontSize);
         if (settings.subtitleFontFamily) props.onSubtitleFontFamilyChange(settings.subtitleFontFamily);
@@ -1905,172 +1971,203 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         priority="medium"
                         defaultExpanded={false}
                     >
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-300">自訂文字</label>
-                                <input
-                                    type="text"
-                                    value={props.customText}
-                                    onChange={(e) => props.onTextChange(e.target.value)}
-                                    placeholder="輸入自訂文字..."
-                                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
-                                />
-                            </div>
-                            
-                            <SelectControl
-                                label="字體"
-                                value={props.fontFamily}
-                                onChange={(value) => props.onFontFamilyChange(value as FontType)}
-                                options={[
-                                    // 中文字體
-                                    { value: FontType.NOTO_SANS_TC, label: '思源黑體' },
-                                    { value: FontType.SOURCE_HAN_SANS, label: '思源黑體 (TC)' },
-                                    { value: FontType.CW_TEX_KAI, label: 'cwTeXKai' },
-                                    { value: FontType.KLEE_ONE, label: 'Klee One' },
-                                    { value: FontType.QINGSONG_1, label: '清松手寫體1' },
-                                    { value: FontType.QINGSONG_2, label: '清松手寫體2' },
-                                    // 英文字體
-                                    { value: FontType.POPPINS, label: '現代 (Poppins)' },
-                                    { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
-                                    { value: FontType.PACIFICO, label: 'Pacifico' },
-                                    { value: FontType.LOBSTER, label: 'Lobster' },
-                                    { value: FontType.BUNGEE, label: 'Bungee' },
-                                    { value: FontType.ORBITRON, label: 'Orbitron' },
-                                    { value: FontType.PRESS_START_2P, label: 'Press Start 2P' },
-                                    { value: FontType.ROCKNROLL_ONE, label: '搖滾圓體 (RocknRoll One)' },
-                                    { value: FontType.REGGAE_ONE, label: 'Reggae One' },
-                                    { value: FontType.VT323, label: 'VT323' }
-                                ]}
-                            />
-                            
-                            <SelectControl
-                                label="視覺效果"
-                                value={props.graphicEffect}
-                                onChange={(value) => props.onGraphicEffectChange(value as GraphicEffectType)}
-                                options={Object.values(GraphicEffectType).map(v => ({ value: v, label: v }))}
-                            />
-                            
-                            <SelectControl
-                                label="浮水印位置"
-                                value={props.watermarkPosition}
-                                onChange={(value) => props.onWatermarkPositionChange(value as WatermarkPosition)}
-                                options={Object.values(WatermarkPosition).map(v => ({ value: v, label: v }))}
-                            />
-                            
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-300">文字顏色</label>
-                                <div className="flex space-x-2">
-                                    {PRESET_COLORS.map(color => (
-                                        <SwatchButton
-                                            key={color}
-                                            color={color}
-                                            onClick={props.onTextColorChange}
-                                            isActive={props.textColor === color}
-                                        />
-                                    ))}
-                                </div>
-                                <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <input
-                                        type="color"
-                                        value={props.textColor}
-                                        onChange={(e) => props.onTextColorChange(e.target.value)}
-                                        className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={props.textColor}
-                                        onChange={(e) => props.onTextColorChange(e.target.value)}
-                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
-                                        placeholder="#RRGGBB"
-                                    />
-                                </div>
-                            </div>
+                        {(() => {
+                            const overlays = normalizeCustomTextOverlays(props.customTextOverlays);
+                            return (
+                                <div className="space-y-6">
+                                    {overlays.map((o, idx) => (
+                                        <div key={`custom-text-${idx}`} className="p-4 rounded-xl border border-gray-700 bg-gray-800/40">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <Icon path={ICON_PATHS.SETTINGS} className="w-4 h-4 text-cyan-400" />
+                                                    <h4 className="text-md font-semibold text-gray-200">文字 {idx + 1}</h4>
+                                                </div>
+                                                <label className="flex items-center gap-2 text-sm text-gray-300 select-none">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={!!o.enabled}
+                                                        onChange={(e) => setCustomTextOverlay(idx, { enabled: e.target.checked })}
+                                                        className="w-4 h-4 accent-cyan-500"
+                                                    />
+                                                    啟用
+                                                </label>
+                                            </div>
 
-                            {/* 描邊顏色（只在描邊特效時顯示） */}
-                            {(props.graphicEffect === GraphicEffectType.OUTLINE) && (
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300">描邊顏色</label>
-                                    <div className="flex space-x-2">
-                                        {PRESET_COLORS.map(color => (
-                                            <SwatchButton
-                                                key={`custom-text-stroke-${color}`}
-                                                color={color}
-                                                onClick={(c) => props.onTextStrokeColorChange?.(c)}
-                                                isActive={(props.textStrokeColor || '#000000') === color}
-                                            />
-                                        ))}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium text-gray-300">文字內容</label>
+                                                    <input
+                                                        type="text"
+                                                        value={o.text}
+                                                        onChange={(e) => setCustomTextOverlay(idx, { text: e.target.value })}
+                                                        placeholder="輸入自訂文字..."
+                                                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+                                                    />
+                                                </div>
+
+                                                <SelectControl
+                                                    label="字體"
+                                                    value={o.fontFamily}
+                                                    onChange={(value) => setCustomTextOverlay(idx, { fontFamily: value as FontType })}
+                                                    options={[
+                                                        // 中文字體
+                                                        { value: FontType.NOTO_SANS_TC, label: '思源黑體' },
+                                                        { value: FontType.SOURCE_HAN_SANS, label: '思源黑體 (TC)' },
+                                                        { value: FontType.CW_TEX_KAI, label: 'cwTeXKai' },
+                                                        { value: FontType.KLEE_ONE, label: 'Klee One' },
+                                                        { value: FontType.QINGSONG_1, label: '清松手寫體1' },
+                                                        { value: FontType.QINGSONG_2, label: '清松手寫體2' },
+                                                        // 英文字體
+                                                        { value: FontType.POPPINS, label: '現代 (Poppins)' },
+                                                        { value: FontType.DANCING_SCRIPT, label: 'Dancing Script' },
+                                                        { value: FontType.PACIFICO, label: 'Pacifico' },
+                                                        { value: FontType.LOBSTER, label: 'Lobster' },
+                                                        { value: FontType.BUNGEE, label: 'Bungee' },
+                                                        { value: FontType.ORBITRON, label: 'Orbitron' },
+                                                        { value: FontType.PRESS_START_2P, label: 'Press Start 2P' },
+                                                        { value: FontType.ROCKNROLL_ONE, label: '搖滾圓體 (RocknRoll One)' },
+                                                        { value: FontType.REGGAE_ONE, label: 'Reggae One' },
+                                                        { value: FontType.VT323, label: 'VT323' }
+                                                    ]}
+                                                />
+
+                                                <SelectControl
+                                                    label="視覺效果"
+                                                    value={o.graphicEffect}
+                                                    onChange={(value) => setCustomTextOverlay(idx, { graphicEffect: value as GraphicEffectType })}
+                                                    options={Object.values(GraphicEffectType).map(v => ({ value: v, label: v }))}
+                                                />
+
+                                                <SelectControl
+                                                    label="位置錨點"
+                                                    value={o.anchor}
+                                                    onChange={(value) => setCustomTextOverlay(idx, { anchor: value as WatermarkPosition })}
+                                                    options={Object.values(WatermarkPosition).map(v => ({ value: v, label: v }))}
+                                                />
+
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium text-gray-300">文字顏色</label>
+                                                    <div className="flex space-x-2">
+                                                        {PRESET_COLORS.map(color => (
+                                                            <SwatchButton
+                                                                key={`custom-text-${idx}-fill-${color}`}
+                                                                color={color}
+                                                                onClick={(c) => setCustomTextOverlay(idx, { color: c })}
+                                                                isActive={o.color === color}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                    <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                        <input
+                                                            type="color"
+                                                            value={o.color}
+                                                            onChange={(e) => setCustomTextOverlay(idx, { color: e.target.value })}
+                                                            className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            value={o.color}
+                                                            onChange={(e) => setCustomTextOverlay(idx, { color: e.target.value })}
+                                                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
+                                                            placeholder="#RRGGBB"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {(o.graphicEffect === GraphicEffectType.OUTLINE) && (
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium text-gray-300">描邊顏色</label>
+                                                        <div className="flex space-x-2">
+                                                            {PRESET_COLORS.map(color => (
+                                                                <SwatchButton
+                                                                    key={`custom-text-${idx}-stroke-${color}`}
+                                                                    color={color}
+                                                                    onClick={(c) => setCustomTextOverlay(idx, { strokeColor: c })}
+                                                                    isActive={(o.strokeColor || '#000000') === color}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                        <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                            <input
+                                                                type="color"
+                                                                value={o.strokeColor || '#000000'}
+                                                                onChange={(e) => setCustomTextOverlay(idx, { strokeColor: e.target.value })}
+                                                                className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
+                                                            />
+                                                            <input
+                                                                type="text"
+                                                                value={o.strokeColor || '#000000'}
+                                                                onChange={(e) => setCustomTextOverlay(idx, { strokeColor: e.target.value })}
+                                                                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
+                                                                placeholder="#RRGGBB"
+                                                            />
+                                                        </div>
+                                                        <p className="text-xs text-gray-400">提示：把「視覺效果」選成「描邊」才會套用這個顏色。</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="mt-6">
+                                                <div className="flex items-center space-x-2 mb-4">
+                                                    <Icon path={ICON_PATHS.SETTINGS} className="w-4 h-4 text-cyan-400" />
+                                                    <h5 className="text-sm font-semibold text-gray-200">大小 / 位置 / 角度</h5>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                                    <SliderControl
+                                                        label="字體大小 (vw)"
+                                                        value={o.textSize}
+                                                        onChange={(v) => setCustomTextOverlay(idx, { textSize: v })}
+                                                        min={1}
+                                                        max={10}
+                                                        step={0.5}
+                                                        colorType="scale"
+                                                    />
+                                                    <SliderControl
+                                                        label="水平位置 (%)"
+                                                        value={o.textPositionX}
+                                                        onChange={(v) => setCustomTextOverlay(idx, { textPositionX: v })}
+                                                        min={-50}
+                                                        max={50}
+                                                        step={5}
+                                                        colorType="position"
+                                                    />
+                                                    <SliderControl
+                                                        label="垂直位置 (%)"
+                                                        value={o.textPositionY}
+                                                        onChange={(v) => setCustomTextOverlay(idx, { textPositionY: v })}
+                                                        min={-50}
+                                                        max={50}
+                                                        step={5}
+                                                        colorType="position"
+                                                    />
+                                                    <SliderControl
+                                                        label="旋轉角度 (°)"
+                                                        value={o.rotationDeg}
+                                                        onChange={(v) => setCustomTextOverlay(idx, { rotationDeg: v })}
+                                                        min={-180}
+                                                        max={180}
+                                                        step={5}
+                                                        colorType="position"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    <div className="p-3 bg-blue-500/20 border border-blue-400/30 rounded-lg text-sm">
+                                        <div className="flex items-center gap-2 text-blue-300">
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                            </svg>
+                                            <span className="font-medium">💡 小提示</span>
+                                        </div>
+                                        <p className="text-blue-200 text-xs mt-1">
+                                            位置滑桿範圍為 -50% 到 +50%。0% 代表以「位置錨點」為基準不偏移。
+                                        </p>
                                     </div>
-                                    <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        <input
-                                            type="color"
-                                            value={props.textStrokeColor || '#000000'}
-                                            onChange={(e) => props.onTextStrokeColorChange?.(e.target.value)}
-                                            className="w-full h-10 rounded-lg cursor-pointer border border-gray-600"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={props.textStrokeColor || '#000000'}
-                                            onChange={(e) => props.onTextStrokeColorChange?.(e.target.value)}
-                                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
-                                            placeholder="#RRGGBB"
-                                        />
-                                    </div>
-                                    <p className="text-xs text-gray-400">提示：把「視覺效果」選成「描邊」才會套用這個顏色。</p>
                                 </div>
-                            )}
-                        </div>
-                        
-                        {/* 文字大小和位置控制 */}
-                        <div className="mt-6">
-                            <div className="flex items-center space-x-2 mb-4">
-                                <Icon path={ICON_PATHS.SETTINGS} className="w-4 h-4 text-cyan-400" />
-                                <h4 className="text-md font-semibold text-gray-200">文字大小與位置</h4>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <SliderControl
-                                    label="字體大小 (vw)"
-                                    value={props.textSize}
-                                    onChange={props.onTextSizeChange}
-                                    min={1}
-                                    max={10}
-                                    step={0.5}
-                                    colorType="scale"
-                                />
-                                
-                                <SliderControl
-                                    label="水平位置 (%)"
-                                    value={props.textPositionX}
-                                    onChange={props.onTextPositionXChange}
-                                    min={-50}
-                                    max={50}
-                                    step={5}
-                                    colorType="position"
-                                />
-                                
-                                <SliderControl
-                                    label="垂直位置 (%)"
-                                    value={props.textPositionY}
-                                    onChange={props.onTextPositionYChange}
-                                    min={-50}
-                                    max={50}
-                                    step={5}
-                                    colorType="position"
-                                />
-                            </div>
-                            
-                            {/* 拖拽提示 */}
-                            <div className="mt-4 p-3 bg-blue-500/20 border border-blue-400/30 rounded-lg text-sm">
-                                <div className="flex items-center gap-2 text-blue-300">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                    </svg>
-                                    <span className="font-medium">💡 拖拽提示</span>
-                                </div>
-                                <p className="text-blue-200 text-xs mt-1">
-                                    使用滑桿調整文字大小和位置，數值範圍為 -50% 到 +50%，0% 為畫面中心位置
-                                </p>
-                            </div>
-                        </div>
+                            );
+                        })()}
                     </CollapsibleControlSection>
 
                     {/* 字幕設定 */}

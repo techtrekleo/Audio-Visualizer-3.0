@@ -16,7 +16,7 @@ import { UnifiedHeader } from './components/UnifiedLayout';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
 import { useMediaRecorder } from './hooks/useMediaRecorder';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle } from './types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle, CustomTextOverlay } from './types';
 import { ICON_PATHS, COLOR_PALETTES, RESOLUTION_MAP } from './constants';
 import FilterEffectsDemo from './src/components/FilterEffectsDemo';
 
@@ -59,14 +59,47 @@ function App() {
     const [selectedVisualizationTypes, setSelectedVisualizationTypes] = useState<VisualizationType[]>([VisualizationType.MONSTERCAT]);
     const [multiEffectOffsets, setMultiEffectOffsets] = useState<Partial<Record<VisualizationType, { x: number; y: number }>>>({});
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [customText, setCustomText] = useState<string>('Sonic Pulse');
-    const [textColor, setTextColor] = useState<string>('#67E8F9');
-    const [textStrokeColor, setTextStrokeColor] = useState<string>('#000000'); // 自訂文字描邊顏色
-    const [fontFamily, setFontFamily] = useState<FontType>(FontType.ROCKNROLL_ONE);
-    const [graphicEffect, setGraphicEffect] = useState<GraphicEffectType>(GraphicEffectType.NEON);
-    const [textSize, setTextSize] = useState<number>(4); // 字體大小 (vw 單位)
-    const [textPositionX, setTextPositionX] = useState<number>(0); // 水平位置偏移 (-50 到 50)
-    const [textPositionY, setTextPositionY] = useState<number>(0); // 垂直位置偏移 (-50 到 50)
+    const [customTextOverlays, setCustomTextOverlays] = useState<CustomTextOverlay[]>(() => ([
+        {
+            enabled: true,
+            text: 'Sonic Pulse',
+            color: '#67E8F9',
+            strokeColor: '#000000',
+            fontFamily: FontType.ROCKNROLL_ONE,
+            graphicEffect: GraphicEffectType.NEON,
+            textSize: 4,
+            textPositionX: 0,
+            textPositionY: 0,
+            rotationDeg: 0,
+            anchor: WatermarkPosition.BOTTOM_RIGHT,
+        },
+        {
+            enabled: false,
+            text: '',
+            color: '#FFFFFF',
+            strokeColor: '#000000',
+            fontFamily: FontType.POPPINS,
+            graphicEffect: GraphicEffectType.NONE,
+            textSize: 4,
+            textPositionX: 0,
+            textPositionY: 0,
+            rotationDeg: 0,
+            anchor: WatermarkPosition.CENTER,
+        },
+        {
+            enabled: false,
+            text: '',
+            color: '#FFFFFF',
+            strokeColor: '#000000',
+            fontFamily: FontType.POPPINS,
+            graphicEffect: GraphicEffectType.NONE,
+            textSize: 4,
+            textPositionX: 0,
+            textPositionY: 0,
+            rotationDeg: 0,
+            anchor: WatermarkPosition.CENTER,
+        },
+    ]));
     const [sensitivity, setSensitivity] = useState<number>(1.0);
     const [smoothing, setSmoothing] = useState<number>(0);
     const [equalization, setEqualization] = useState<number>(0.25);
@@ -86,7 +119,29 @@ function App() {
     const [isTransitioning, setIsTransitioning] = useState<boolean>(false); // 是否正在過場
     const [transitionType, setTransitionType] = useState<TransitionType>(TransitionType.TV_STATIC); // 轉場效果類型
     const [backgroundVideo, setBackgroundVideo] = useState<string | null>(null); // 背景影片
-    const [watermarkPosition, setWatermarkPosition] = useState<WatermarkPosition>(WatermarkPosition.BOTTOM_RIGHT);
+    const updateCustomTextOverlay = useCallback((index: number, patch: Partial<CustomTextOverlay>) => {
+        setCustomTextOverlays(prev => {
+            const next = [...prev];
+            // Ensure we always have 3 overlays
+            while (next.length < 3) {
+                next.push({
+                    enabled: false,
+                    text: '',
+                    color: '#FFFFFF',
+                    strokeColor: '#000000',
+                    fontFamily: FontType.POPPINS,
+                    graphicEffect: GraphicEffectType.NONE,
+                    textSize: 4,
+                    textPositionX: 0,
+                    textPositionY: 0,
+                    rotationDeg: 0,
+                    anchor: WatermarkPosition.CENTER,
+                });
+            }
+            next[index] = { ...next[index], ...patch };
+            return next.slice(0, 3);
+        });
+    }, []);
     const [waveformStroke, setWaveformStroke] = useState<boolean>(true);
     // Toggles
     const [showVisualizer, setShowVisualizer] = useState<boolean>(true);
@@ -1346,11 +1401,11 @@ function App() {
     };
 
     const handleTextChange = (text: string) => {
-        setCustomText(text);
+        updateCustomTextOverlay(0, { text });
     };
     
     const handleWatermarkPositionChange = (position: WatermarkPosition) => {
-        setWatermarkPosition(position);
+        updateCustomTextOverlay(0, { anchor: position });
     };
 
     const handleBackgroundImageSelect = (file: File) => {
@@ -1816,14 +1871,15 @@ function App() {
                                     selectedVisualizationTypes={selectedVisualizationTypes}
                                     multiEffectOffsets={multiEffectOffsets}
                                     isPlaying={isPlaying}
-                                    customText={customText}
-                                    textColor={textColor}
-                                    textStrokeColor={textStrokeColor}
-                                    fontFamily={fontFamily}
-                                    graphicEffect={graphicEffect}
-                                    textSize={textSize}
-                                    textPositionX={textPositionX}
-                                    textPositionY={textPositionY}
+                                    customTextOverlays={customTextOverlays}
+                                    customText={(customTextOverlays?.[0]?.enabled ?? true) ? (customTextOverlays?.[0]?.text ?? '') : ''}
+                                    textColor={customTextOverlays?.[0]?.color ?? '#FFFFFF'}
+                                    textStrokeColor={customTextOverlays?.[0]?.strokeColor ?? '#000000'}
+                                    fontFamily={customTextOverlays?.[0]?.fontFamily ?? FontType.POPPINS}
+                                    graphicEffect={customTextOverlays?.[0]?.graphicEffect ?? GraphicEffectType.NONE}
+                                    textSize={customTextOverlays?.[0]?.textSize ?? 4}
+                                    textPositionX={customTextOverlays?.[0]?.textPositionX ?? 0}
+                                    textPositionY={customTextOverlays?.[0]?.textPositionY ?? 0}
                                     sensitivity={sensitivity}
                                     smoothing={smoothing}
                                     equalization={equalization}
@@ -1831,7 +1887,7 @@ function App() {
                                     colors={getCurrentPalette()}
                                     backgroundImage={showBackgroundImage ? backgroundImage : null}
                                     backgroundVideo={showBackgroundImage ? backgroundVideo : null}
-                                    watermarkPosition={watermarkPosition}
+                                    watermarkPosition={customTextOverlays?.[0]?.anchor ?? WatermarkPosition.BOTTOM_RIGHT}
                                     waveformStroke={waveformStroke}
                                     isTransitioning={isTransitioning}
                                     transitionType={transitionType}
@@ -2137,22 +2193,9 @@ function App() {
                             onStellarCoreInnerOpacityChange={setStellarCoreInnerOpacity}
                             stellarCoreTentaclesOpacity={stellarCoreTentaclesOpacity}
                             onStellarCoreTentaclesOpacityChange={setStellarCoreTentaclesOpacity}
-                            customText={customText}
-                            onTextChange={handleTextChange}
-                            textColor={textColor}
-                            onTextColorChange={setTextColor}
-                            textStrokeColor={textStrokeColor}
-                            onTextStrokeColorChange={setTextStrokeColor}
-                            fontFamily={fontFamily}
-                            onFontFamilyChange={setFontFamily}
-                            graphicEffect={graphicEffect}
-                            onGraphicEffectChange={setGraphicEffect}
-                            textSize={textSize}
-                            onTextSizeChange={setTextSize}
-                            textPositionX={textPositionX}
-                            onTextPositionXChange={setTextPositionX}
-                            textPositionY={textPositionY}
-                            onTextPositionYChange={setTextPositionY}
+                            customTextOverlays={customTextOverlays}
+                            onCustomTextOverlaysChange={setCustomTextOverlays}
+                            onUpdateCustomTextOverlay={updateCustomTextOverlay}
                             sensitivity={sensitivity}
                             onSensitivityChange={setSensitivity}
                             smoothing={smoothing}
@@ -2194,8 +2237,6 @@ function App() {
                             isTransitioning={isTransitioning}
                             transitionType={transitionType}
                             onTransitionTypeChange={setTransitionType}
-                            watermarkPosition={watermarkPosition}
-                            onWatermarkPositionChange={handleWatermarkPositionChange}
                             waveformStroke={waveformStroke}
                             onWaveformStrokeChange={setWaveformStroke}
                             subtitlesRawText={subtitlesRawText}
