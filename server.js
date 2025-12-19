@@ -712,51 +712,65 @@ const server = http.createServer((req, res) => {
   // 設置 CORS 標頭
   res.setHeader('Access-Control-Allow-Origin', '*');
   
+  // Normalize URL path (strip query/hash, decode, keep leading slash for routing checks)
+  const urlPath = (() => {
+    try {
+      return decodeURIComponent((req.url || '/').split('?')[0].split('#')[0]);
+    } catch {
+      return (req.url || '/').split('?')[0].split('#')[0];
+    }
+  })();
+
+  const stripLeadingSlash = (p) => (p && p.startsWith('/') ? p.slice(1) : p);
+
   let filePath;
   
   // 處理各個工具的 dist 目錄 - 使用絕對路徑
-  if (req.url.startsWith('/audio-visualizer/assets/')) {
+  // ads.txt / robots.txt / sitemap.xml should be served from domain root reliably (for Google crawlers)
+  if (urlPath === '/ads.txt' || urlPath === '/robots.txt' || urlPath === '/sitemap.xml') {
+    filePath = path.join(__dirname, stripLeadingSlash(urlPath));
+  } else if (urlPath.startsWith('/audio-visualizer/assets/')) {
     // 處理 Audio Visualizer 的 assets 請求 (第二層分層結構)
     const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
-    const assetPath = req.url.replace('/audio-visualizer', '');
+    const assetPath = stripLeadingSlash(urlPath.replace('/audio-visualizer/', ''));
     filePath = path.join(distPath, assetPath);
-    console.log('Audio Visualizer Assets (分層結構):', req.url, '->', filePath);
-  } else if (req.url.startsWith('/audio-visualizer')) {
+    console.log('Audio Visualizer Assets (分層結構):', urlPath, '->', filePath);
+  } else if (urlPath.startsWith('/audio-visualizer')) {
     const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
-    const relativePath = req.url.replace('/audio-visualizer', '');
+    const relativePath = stripLeadingSlash(urlPath.replace('/audio-visualizer', ''));
     filePath = path.join(distPath, relativePath);
     
     // 如果是目錄，添加 index.html
-    if (filePath.endsWith('/') || !path.extname(filePath)) {
-      filePath = path.join(filePath, 'index.html');
+    if (urlPath.endsWith('/') || !path.extname(relativePath)) {
+      filePath = path.join(distPath, relativePath, 'index.html');
     }
-  } else if (req.url.startsWith('/font-effects')) {
+  } else if (urlPath.startsWith('/font-effects')) {
     const distPath = path.join(__dirname, 'font-effects', 'dist');
-    const relativePath = req.url.replace('/font-effects', '');
+    const relativePath = stripLeadingSlash(urlPath.replace('/font-effects', ''));
     filePath = path.join(distPath, relativePath);
     
     // 如果是目錄，添加 index.html
-    if (filePath.endsWith('/') || !path.extname(filePath)) {
-      filePath = path.join(filePath, 'index.html');
+    if (urlPath.endsWith('/') || !path.extname(relativePath)) {
+      filePath = path.join(distPath, relativePath, 'index.html');
     }
-  } else if (req.url.startsWith('/youtube-seo')) {
+  } else if (urlPath.startsWith('/youtube-seo')) {
     const distPath = path.join(__dirname, 'youtube-seo', 'dist');
-    const relativePath = req.url.replace('/youtube-seo', '');
+    const relativePath = stripLeadingSlash(urlPath.replace('/youtube-seo', ''));
     filePath = path.join(distPath, relativePath);
     
     // 如果是目錄，添加 index.html
-    if (filePath.endsWith('/') || !path.extname(filePath)) {
-      filePath = path.join(filePath, 'index.html');
+    if (urlPath.endsWith('/') || !path.extname(relativePath)) {
+      filePath = path.join(distPath, relativePath, 'index.html');
     }
-  } else if (req.url.startsWith('/video-merger/assets/')) {
+  } else if (urlPath.startsWith('/video-merger/assets/')) {
     // 處理 Video Merger 的 assets 請求（必須在 /video-merger 之前）
     const distPath = path.join(__dirname, 'video-merger', 'dist');
-    const assetPath = req.url.replace('/video-merger', '');
+    const assetPath = stripLeadingSlash(urlPath.replace('/video-merger/', ''));
     filePath = path.join(distPath, assetPath);
-    console.log('Video Merger Assets:', req.url, '->', filePath);
-  } else if (req.url.startsWith('/video-merger')) {
+    console.log('Video Merger Assets:', urlPath, '->', filePath);
+  } else if (urlPath.startsWith('/video-merger')) {
     const distPath = path.join(__dirname, 'video-merger', 'dist');
-    let relativePath = req.url.replace('/video-merger', '');
+    let relativePath = urlPath.replace('/video-merger', '');
     
     // 如果路徑為空或只有斜線，返回 index.html
     if (!relativePath || relativePath === '/') {
@@ -771,32 +785,32 @@ const server = http.createServer((req, res) => {
         filePath = path.join(distPath, relativePath, 'index.html');
       }
     }
-    console.log('Video Merger Route:', req.url, '->', filePath);
-  } else if (req.url.startsWith('/srt-translator')) {
+    console.log('Video Merger Route:', urlPath, '->', filePath);
+  } else if (urlPath.startsWith('/srt-translator')) {
     const distPath = path.join(__dirname, 'srt-translator', 'dist');
-    const relativePath = req.url.replace('/srt-translator', '');
+    const relativePath = stripLeadingSlash(urlPath.replace('/srt-translator', ''));
     filePath = path.join(distPath, relativePath);
     
     // 如果是目錄，添加 index.html
-    if (filePath.endsWith('/') || !path.extname(filePath)) {
-      filePath = path.join(filePath, 'index.html');
+    if (urlPath.endsWith('/') || !path.extname(relativePath)) {
+      filePath = path.join(distPath, relativePath, 'index.html');
     }
-  } else if (req.url.startsWith('/assets/') && (req.url.includes('main-') || req.url.includes('cat-avatar'))) {
+  } else if (urlPath.startsWith('/assets/') && (urlPath.includes('main-') || urlPath.includes('cat-avatar'))) {
     // 處理 Audio Visualizer 的 assets 請求 (純 /assets/ 路徑)
     const distPath = path.join(__dirname, 'audio-visualizer', 'dist');
-    filePath = path.join(distPath, req.url);
-    console.log('Audio Visualizer Assets (純路徑):', req.url, '->', filePath);
-  } else if (req.url.startsWith('/assets/') && req.url.includes('DUtiRxny')) {
+    filePath = path.join(distPath, stripLeadingSlash(urlPath));
+    console.log('Audio Visualizer Assets (純路徑):', urlPath, '->', filePath);
+  } else if (urlPath.startsWith('/assets/') && urlPath.includes('DUtiRxny')) {
     // 處理字體特效產生器的 assets 請求
     const distPath = path.join(__dirname, 'font-effects', 'dist');
-    filePath = path.join(distPath, req.url);
-  } else if (req.url.startsWith('/assets/') && req.url.includes('index-')) {
+    filePath = path.join(distPath, stripLeadingSlash(urlPath));
+  } else if (urlPath.startsWith('/assets/') && urlPath.includes('index-')) {
     // 處理 YouTube SEO 的 assets 請求
     const distPath = path.join(__dirname, 'youtube-seo', 'dist');
-    filePath = path.join(distPath, req.url);
+    filePath = path.join(distPath, stripLeadingSlash(urlPath));
   } else {
     // 其他路由服務根目錄
-    filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+    filePath = path.join(__dirname, urlPath === '/' ? 'index.html' : stripLeadingSlash(urlPath));
     
     // 如果是目錄，添加 index.html
     if (filePath.endsWith('/')) {
