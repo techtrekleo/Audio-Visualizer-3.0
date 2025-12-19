@@ -264,6 +264,17 @@ export type CustomTextOverlay = {
     anchor: WatermarkPosition;
 };
 
+export type MultiEffectTransform = {
+    /** Pixel offset relative to canvas center (after anchoring at center). */
+    x: number;
+    /** Pixel offset relative to canvas center (after anchoring at center). */
+    y: number;
+    /** Scale multiplier (1 = default). */
+    scale: number;
+    /** Rotation in degrees. */
+    rotation: number;
+};
+
 export interface AudioVisualizerProps {
     analyser: AnalyserNode | null;
     audioRef: React.RefObject<HTMLAudioElement>;
@@ -273,6 +284,8 @@ export interface AudioVisualizerProps {
     selectedVisualizationTypes?: VisualizationType[];
     // Per-effect offsets used in multi-effect mode (pixels)
     multiEffectOffsets?: Partial<Record<VisualizationType, { x: number; y: number }>>;
+    // Per-effect full transforms used in multi-effect mode (pixels + scale + rotation)
+    multiEffectTransforms?: Partial<Record<VisualizationType, MultiEffectTransform>>;
     isPlaying: boolean;
     // Custom text overlays (up to 3, but kept generic for future extension).
     customTextOverlays?: CustomTextOverlay[];

@@ -1,4 +1,4 @@
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, CustomTextOverlay } from '../types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, CustomTextOverlay, MultiEffectTransform } from '../types';
 
 export interface SavedSettings {
     // Allow forward-compatible settings without constantly updating this interface
@@ -8,6 +8,7 @@ export interface SavedSettings {
     // Multi-visualization (composite) mode
     multiEffectEnabled?: boolean;
     selectedVisualizationTypes?: VisualizationType[];
+    multiEffectTransforms?: Partial<Record<VisualizationType, MultiEffectTransform>>;
     // Multiple custom text overlays (3-layer custom text)
     customTextOverlays?: CustomTextOverlay[];
     customText: string;

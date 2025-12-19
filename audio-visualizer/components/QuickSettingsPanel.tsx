@@ -1,5 +1,5 @@
 import React from 'react';
-import { VisualizationType, ColorPaletteType } from '../types';
+import { VisualizationType, ColorPaletteType, MultiEffectTransform } from '../types';
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
 import CategorizedEffectSelector from './CategorizedEffectSelector';
@@ -16,6 +16,9 @@ interface QuickSettingsPanelProps {
     onActiveMultiEffectNudge?: (dx: number, dy: number) => void;
     onActiveMultiEffectOffsetChange?: (next: { x: number; y: number }) => void;
     onActiveMultiEffectOffsetReset?: () => void;
+    multiEffectTransforms?: Partial<Record<VisualizationType, MultiEffectTransform>>;
+    onActiveMultiEffectTransformChange?: (patch: Partial<MultiEffectTransform>) => void;
+    onActiveMultiEffectTransformReset?: () => void;
     waveformStroke: boolean;
     onWaveformStrokeChange: (value: boolean) => void;
     effectScale: number;
@@ -60,6 +63,9 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
     onActiveMultiEffectNudge,
     onActiveMultiEffectOffsetChange,
     onActiveMultiEffectOffsetReset,
+    multiEffectTransforms = {},
+    onActiveMultiEffectTransformChange,
+    onActiveMultiEffectTransformReset,
     waveformStroke,
     onWaveformStrokeChange,
     effectScale,
@@ -90,6 +96,13 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
     onEnterPictureInPicture,
     onExitPictureInPicture,
 }) => {
+    const activeTransform: MultiEffectTransform = (multiEffectTransforms?.[visualizationType] as any) || {
+        x: multiEffectOffsets?.[visualizationType]?.x ?? 0,
+        y: multiEffectOffsets?.[visualizationType]?.y ?? 0,
+        scale: 1,
+        rotation: 0,
+    };
+
     return (
         <div className="quick-settings-panel bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-sm rounded-xl p-4 border border-cyan-400/30">
             <div className="flex items-center space-x-2 mb-4">
@@ -135,7 +148,10 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => onActiveMultiEffectOffsetReset?.()}
+                                    onClick={() => {
+                                        onActiveMultiEffectTransformReset?.();
+                                        onActiveMultiEffectOffsetReset?.();
+                                    }}
                                     className="text-xs px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600"
                                 >
                                     重置
@@ -192,11 +208,12 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                     <label className="text-xs text-gray-300">X</label>
                                     <input
                                         type="number"
-                                        value={(multiEffectOffsets?.[visualizationType]?.x ?? 0)}
+                                        value={(activeTransform?.x ?? 0)}
                                         onChange={(e) => {
                                             const x = Number(e.target.value || 0);
-                                            const y = multiEffectOffsets?.[visualizationType]?.y ?? 0;
+                                            const y = activeTransform?.y ?? 0;
                                             onActiveMultiEffectOffsetChange?.({ x, y });
+                                            onActiveMultiEffectTransformChange?.({ x, y });
                                         }}
                                         className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
                                     />
@@ -205,18 +222,51 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                                     <label className="text-xs text-gray-300">Y</label>
                                     <input
                                         type="number"
-                                        value={(multiEffectOffsets?.[visualizationType]?.y ?? 0)}
+                                        value={(activeTransform?.y ?? 0)}
                                         onChange={(e) => {
                                             const y = Number(e.target.value || 0);
-                                            const x = multiEffectOffsets?.[visualizationType]?.x ?? 0;
+                                            const x = activeTransform?.x ?? 0;
                                             onActiveMultiEffectOffsetChange?.({ x, y });
+                                            onActiveMultiEffectTransformChange?.({ x, y });
+                                        }}
+                                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-300">縮放</label>
+                                    <input
+                                        type="number"
+                                        step="0.05"
+                                        min="0.1"
+                                        max="2"
+                                        value={(activeTransform?.scale ?? 1)}
+                                        onChange={(e) => {
+                                            const scale = Math.max(0.1, Math.min(2, Number(e.target.value || 1)));
+                                            onActiveMultiEffectTransformChange?.({ scale });
+                                        }}
+                                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-gray-300">旋轉 (°)</label>
+                                    <input
+                                        type="number"
+                                        step="5"
+                                        min="-180"
+                                        max="180"
+                                        value={(activeTransform?.rotation ?? 0)}
+                                        onChange={(e) => {
+                                            const rotation = Math.max(-180, Math.min(180, Number(e.target.value || 0)));
+                                            onActiveMultiEffectTransformChange?.({ rotation });
                                         }}
                                         className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
                                     />
                                 </div>
                             </div>
                             <div className="text-[11px] text-gray-400">
-                                提示：點選任一特效卡片會切換「目前」特效，方向鍵控制只影響目前特效的位置。
+                                提示：點選任一特效卡片會切換「目前」特效，這裡調整的 X/Y/縮放/旋轉只影響目前特效。
                             </div>
                         </div>
                     )}

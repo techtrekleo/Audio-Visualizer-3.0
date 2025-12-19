@@ -16,7 +16,7 @@ import { UnifiedHeader } from './components/UnifiedLayout';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
 import { useMediaRecorder } from './hooks/useMediaRecorder';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle, CustomTextOverlay } from './types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle, CustomTextOverlay, MultiEffectTransform } from './types';
 import { ICON_PATHS, COLOR_PALETTES, RESOLUTION_MAP } from './constants';
 import FilterEffectsDemo from './src/components/FilterEffectsDemo';
 
@@ -58,6 +58,7 @@ function App() {
     const [multiEffectEnabled, setMultiEffectEnabled] = useState<boolean>(false);
     const [selectedVisualizationTypes, setSelectedVisualizationTypes] = useState<VisualizationType[]>([VisualizationType.MONSTERCAT]);
     const [multiEffectOffsets, setMultiEffectOffsets] = useState<Partial<Record<VisualizationType, { x: number; y: number }>>>({});
+    const [multiEffectTransforms, setMultiEffectTransforms] = useState<Partial<Record<VisualizationType, MultiEffectTransform>>>({});
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [customTextOverlays, setCustomTextOverlays] = useState<CustomTextOverlay[]>(() => ([
         {
@@ -1312,6 +1313,10 @@ function App() {
 
     const handleSetActiveMultiEffectOffset = (type: VisualizationType, next: { x: number; y: number }) => {
         setMultiEffectOffsets((prev) => ({ ...prev, [type]: { x: next.x, y: next.y } }));
+        setMultiEffectTransforms((prev) => {
+            const current = prev[type] || { x: 0, y: 0, scale: 1, rotation: 0 };
+            return { ...prev, [type]: { ...current, x: next.x, y: next.y } };
+        });
     };
 
     const handleNudgeActiveMultiEffect = (dx: number, dy: number) => {
@@ -1320,16 +1325,70 @@ function App() {
             const current = prev[type] || { x: 0, y: 0 };
             return { ...prev, [type]: { x: current.x + dx, y: current.y + dy } };
         });
+        setMultiEffectTransforms((prev) => {
+            const current = prev[type] || { x: 0, y: 0, scale: 1, rotation: 0 };
+            return { ...prev, [type]: { ...current, x: (current.x || 0) + dx, y: (current.y || 0) + dy } };
+        });
     };
 
     const handleResetActiveMultiEffectOffset = () => {
         const type = visualizationType;
         setMultiEffectOffsets((prev) => ({ ...prev, [type]: { x: 0, y: 0 } }));
+        setMultiEffectTransforms((prev) => {
+            const current = prev[type] || { x: 0, y: 0, scale: 1, rotation: 0 };
+            return { ...prev, [type]: { ...current, x: 0, y: 0 } };
+        });
     };
 
     const handleMultiEffectOffsetsChange = (next: Partial<Record<VisualizationType, { x: number; y: number }>>) => {
         if (!next) return;
         setMultiEffectOffsets(next);
+        // Best-effort migrate offset-only into full transforms (keep scale/rotation as-is).
+        setMultiEffectTransforms((prev) => {
+            const merged = { ...prev };
+            for (const [k, v] of Object.entries(next as any)) {
+                const type = k as VisualizationType;
+                const current = merged[type] || { x: 0, y: 0, scale: 1, rotation: 0 };
+                merged[type] = { ...current, x: v?.x ?? current.x, y: v?.y ?? current.y };
+            }
+            return merged;
+        });
+    };
+
+    // Per-effect full transform helpers (for multi-effect mode)
+    const ensureMultiEffectTransform = useCallback((type: VisualizationType) => {
+        setMultiEffectTransforms((prev) => {
+            if (prev[type]) return prev;
+            const legacyOffset = multiEffectOffsets?.[type] || { x: 0, y: 0 };
+            // Seed with current global transform so enabling multi mode doesn't visually jump.
+            const seeded: MultiEffectTransform = {
+                x: (legacyOffset.x || 0) + (effectOffsetX || 0) + (visualizationTransform?.x || 0),
+                y: (legacyOffset.y || 0) + (effectOffsetY || 0) + (visualizationTransform?.y || 0),
+                scale: (effectScale || 1.0) * (visualizationScale || 1.0),
+                rotation: typeof effectRotation === 'number' ? effectRotation : 0,
+            };
+            return { ...prev, [type]: seeded };
+        });
+    }, [effectOffsetX, effectOffsetY, effectRotation, effectScale, multiEffectOffsets, visualizationScale, visualizationTransform]);
+
+    useEffect(() => {
+        if (!multiEffectEnabled) return;
+        // Ensure every selected type has its own transform initialized.
+        (selectedVisualizationTypes || []).forEach((t) => ensureMultiEffectTransform(t));
+    }, [multiEffectEnabled, selectedVisualizationTypes, ensureMultiEffectTransform]);
+
+    const handleSetActiveMultiEffectTransform = (type: VisualizationType, patch: Partial<MultiEffectTransform>) => {
+        setMultiEffectTransforms((prev) => {
+            const current = prev[type] || { x: 0, y: 0, scale: 1, rotation: 0 };
+            return { ...prev, [type]: { ...current, ...patch } };
+        });
+    };
+
+    const handleResetActiveMultiEffectTransform = () => {
+        const type = visualizationType;
+        setMultiEffectTransforms((prev) => ({ ...prev, [type]: { x: 0, y: 0, scale: 1, rotation: 0 } }));
+        // Keep legacy offset map in sync (so old UI paths remain consistent)
+        setMultiEffectOffsets((prev) => ({ ...prev, [type]: { x: 0, y: 0 } }));
     };
     
     const handleSetColorPalette = (newPalette: ColorPaletteType) => {
@@ -1870,6 +1929,7 @@ function App() {
                                     multiEffectEnabled={multiEffectEnabled}
                                     selectedVisualizationTypes={selectedVisualizationTypes}
                                     multiEffectOffsets={multiEffectOffsets}
+                                    multiEffectTransforms={multiEffectTransforms}
                                     isPlaying={isPlaying}
                                     customTextOverlays={customTextOverlays}
                                     customText={(customTextOverlays?.[0]?.enabled ?? true) ? (customTextOverlays?.[0]?.text ?? '') : ''}
@@ -2177,6 +2237,10 @@ function App() {
                             onActiveMultiEffectNudge={handleNudgeActiveMultiEffect}
                             onActiveMultiEffectOffsetChange={(next) => handleSetActiveMultiEffectOffset(visualizationType, next)}
                             onActiveMultiEffectOffsetReset={handleResetActiveMultiEffectOffset}
+                            multiEffectTransforms={multiEffectTransforms}
+                            onMultiEffectTransformsChange={setMultiEffectTransforms}
+                            onActiveMultiEffectTransformChange={(patch) => handleSetActiveMultiEffectTransform(visualizationType, patch)}
+                            onActiveMultiEffectTransformReset={handleResetActiveMultiEffectTransform}
                             // Vinyl Record controls
                             vinylImage={vinylImage}
                             onVinylImageUpload={handleVinylImageUpload}

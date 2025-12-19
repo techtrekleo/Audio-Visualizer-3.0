@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle, CustomTextOverlay } from '../types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle, CustomTextOverlay, MultiEffectTransform } from '../types';
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
 import CollapsibleControlSection from './CollapsibleControlSection';
@@ -142,6 +142,10 @@ interface OptimizedControlsProps {
     onActiveMultiEffectNudge?: (dx: number, dy: number) => void;
     onActiveMultiEffectOffsetChange?: (next: { x: number; y: number }) => void;
     onActiveMultiEffectOffsetReset?: () => void;
+    multiEffectTransforms?: Partial<Record<VisualizationType, MultiEffectTransform>>;
+    onMultiEffectTransformsChange?: (next: Partial<Record<VisualizationType, MultiEffectTransform>>) => void;
+    onActiveMultiEffectTransformChange?: (patch: Partial<MultiEffectTransform>) => void;
+    onActiveMultiEffectTransformReset?: () => void;
     // Custom text overlays (3 layers)
     customTextOverlays: CustomTextOverlay[];
     onCustomTextOverlaysChange: (overlays: CustomTextOverlay[]) => void;
@@ -782,6 +786,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         multiEffectEnabled: !!props.multiEffectEnabled,
         selectedVisualizationTypes: props.selectedVisualizationTypes || [],
         multiEffectOffsets: props.multiEffectOffsets || {},
+            multiEffectTransforms: props.multiEffectTransforms || {},
         customTextOverlays: overlays,
         // Legacy single-text fields (keep for backwards compatibility)
         customText: o0.enabled ? o0.text : '',
@@ -894,6 +899,9 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
             if (list.length > 0) {
                 props.onSelectedVisualizationTypesChange?.(list);
             }
+        }
+        if (settings.multiEffectTransforms && typeof settings.multiEffectTransforms === 'object') {
+            props.onMultiEffectTransformsChange?.(settings.multiEffectTransforms as any);
         }
         if (settings.multiEffectOffsets && typeof settings.multiEffectOffsets === 'object') {
             props.onMultiEffectOffsetsChange?.(settings.multiEffectOffsets as any);
@@ -1093,6 +1101,9 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         onActiveMultiEffectNudge={props.onActiveMultiEffectNudge}
                         onActiveMultiEffectOffsetChange={props.onActiveMultiEffectOffsetChange}
                         onActiveMultiEffectOffsetReset={props.onActiveMultiEffectOffsetReset}
+                        multiEffectTransforms={props.multiEffectTransforms}
+                        onActiveMultiEffectTransformChange={props.onActiveMultiEffectTransformChange}
+                        onActiveMultiEffectTransformReset={props.onActiveMultiEffectTransformReset}
                         waveformStroke={props.waveformStroke}
                         onWaveformStrokeChange={props.onWaveformStrokeChange}
                         effectScale={props.effectScale}

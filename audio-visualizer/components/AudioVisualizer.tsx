@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, forwardRef, useCallback } from 'react';
-import { VisualizationType, Palette, GraphicEffectType, ColorPaletteType, WatermarkPosition, FontType, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, FilterEffectType, ControlCardStyle, SubtitleOrientation, CustomTextOverlay } from '../types';
+import { VisualizationType, Palette, GraphicEffectType, ColorPaletteType, WatermarkPosition, FontType, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, FilterEffectType, ControlCardStyle, SubtitleOrientation, CustomTextOverlay, MultiEffectTransform } from '../types';
 import ImageBasedVisualizer from './ImageBasedVisualizer';
 
 // 字體映射表
@@ -63,6 +63,7 @@ interface AudioVisualizerProps {
     multiEffectEnabled?: boolean;
     selectedVisualizationTypes?: VisualizationType[];
     multiEffectOffsets?: Partial<Record<VisualizationType, { x: number; y: number }>>;
+    multiEffectTransforms?: Partial<Record<VisualizationType, MultiEffectTransform>>;
     isPlaying: boolean;
     customTextOverlays?: CustomTextOverlay[];
     customText: string;
@@ -8400,21 +8401,66 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
 
                 if (shouldTransform) {
                     ctx.save();
-                    const currentTransform = propsRef.current.visualizationTransform || { x: 0, y: 0, scale: 1.0 };
-                    const dragOffset = dragState.current.draggedElement === 'visualization' ? dragState.current.dragOffset : { x: 0, y: 0 };
-                    const scale = propsRef.current.visualizationScale || 1.0;
-                    const rotationDeg = typeof propsRef.current.effectRotation === 'number' ? propsRef.current.effectRotation : 0;
-                    const rotationRad = (rotationDeg * Math.PI) / 180;
-                    const perEffectOffset = propsRef.current.multiEffectOffsets?.[type] || { x: 0, y: 0 };
+                    const multiEnabled = !!propsRef.current.multiEffectEnabled;
+                    // In multi mode, each effect should be independent: use per-effect transform instead of global sliders.
+                    const currentTransform = multiEnabled ? { x: 0, y: 0, scale: 1.0 } : (propsRef.current.visualizationTransform || { x: 0, y: 0, scale: 1.0 });
+                    const dragOffset = (!multiEnabled && dragState.current.draggedElement === 'visualization') ? dragState.current.dragOffset : { x: 0, y: 0 };
+                    const globalScale = propsRef.current.visualizationScale || 1.0;
+                    const globalEffectScale = typeof propsRef.current.effectScale === 'number' ? propsRef.current.effectScale : 1.0;
+                    const globalEffectOffsetX = typeof propsRef.current.effectOffsetX === 'number' ? propsRef.current.effectOffsetX : 0;
+                    const globalEffectOffsetY = typeof propsRef.current.effectOffsetY === 'number' ? propsRef.current.effectOffsetY : 0;
+                    const globalRotationDeg = typeof propsRef.current.effectRotation === 'number' ? propsRef.current.effectRotation : 0;
+
+                    const legacyOffset = propsRef.current.multiEffectOffsets?.[type] || { x: 0, y: 0 };
+                    const per = (propsRef.current.multiEffectTransforms?.[type] as any) as MultiEffectTransform | undefined;
+                    const perEffect: MultiEffectTransform = per || {
+                        x: legacyOffset.x || 0,
+                        y: legacyOffset.y || 0,
+                        scale: 1,
+                        rotation: 0,
+                    };
+
+                    const appliedOffsetX = multiEnabled ? (perEffect.x || 0) : (globalEffectOffsetX + currentTransform.x + dragOffset.x + (legacyOffset.x || 0));
+                    const appliedOffsetY = multiEnabled ? (perEffect.y || 0) : (globalEffectOffsetY + currentTransform.y + dragOffset.y + (legacyOffset.y || 0));
+                    const appliedScale = multiEnabled ? (perEffect.scale || 1) : (globalEffectScale * globalScale);
+                    const appliedRotationDeg = multiEnabled ? (perEffect.rotation || 0) : globalRotationDeg;
+                    const rotationRad = (appliedRotationDeg * Math.PI) / 180;
+
+                    // For special visualizers that read propsRef.current.effectScale/offset/rotation internally,
+                    // temporarily override those fields during this draw.
+                    const prevFx = (propsRef.current as any).effectOffsetX;
+                    const prevFy = (propsRef.current as any).effectOffsetY;
+                    const prevFs = (propsRef.current as any).effectScale;
+                    const prevFr = (propsRef.current as any).effectRotation;
+                    if (multiEnabled) {
+                        (propsRef.current as any).effectOffsetX = perEffect.x || 0;
+                        (propsRef.current as any).effectOffsetY = perEffect.y || 0;
+                        (propsRef.current as any).effectScale = perEffect.scale || 1;
+                        (propsRef.current as any).effectRotation = perEffect.rotation || 0;
+                        // Ensure legacy offset stays coherent for code paths still referencing it.
+                        (propsRef.current as any).multiEffectOffsets = {
+                            ...(propsRef.current as any).multiEffectOffsets,
+                            [type]: { x: perEffect.x || 0, y: perEffect.y || 0 }
+                        };
+                    }
                     ctx.translate(
-                        centerX + effectOffsetX + currentTransform.x + dragOffset.x + (perEffectOffset.x || 0),
-                        centerY + effectOffsetY + currentTransform.y + dragOffset.y + (perEffectOffset.y || 0)
+                        centerX + appliedOffsetX,
+                        centerY + appliedOffsetY
                     );
                     if (rotationRad !== 0) {
                         ctx.rotate(rotationRad);
                     }
-                    ctx.scale(effectScale * scale, effectScale * scale);
+                    ctx.scale(appliedScale, appliedScale);
                     ctx.translate(-centerX, -centerY);
+
+                    // Restore overrides after drawing this type (restored below after draw call too)
+                    // NOTE: actual restore happens after drawFunction, right before ctx.restore().
+                    (ctx as any).__multiRestore = () => {
+                        (propsRef.current as any).effectOffsetX = prevFx;
+                        (propsRef.current as any).effectOffsetY = prevFy;
+                        (propsRef.current as any).effectScale = prevFs;
+                        (propsRef.current as any).effectRotation = prevFr;
+                    };
                 }
 
                 if (type === VisualizationType.STELLAR_CORE) {
@@ -8463,6 +8509,9 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 }
 
                 if (shouldTransform) {
+                    // Restore any temporary per-effect overrides
+                    try { (ctx as any).__multiRestore?.(); } catch {}
+                    delete (ctx as any).__multiRestore;
                     ctx.restore();
                 }
             }
