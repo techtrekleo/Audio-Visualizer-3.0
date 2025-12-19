@@ -7170,9 +7170,10 @@ const drawCustomText = (
     const pulseAmount = baseFontSize * 0.05;
     const fontSize = baseFontSize + (normalizedBass * pulseAmount);
 
-    ctx.font = `bold ${fontSize}px "${fontFamily}", sans-serif`;
+    const fontWeight = (graphicEffect === GraphicEffectType.BOLD) ? '900' : 'bold';
+    ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
     ctx.lineJoin = 'round';
-    ctx.lineWidth = fontSize * 0.1;
+    ctx.miterLimit = 2;
 
     // 計算基礎位置
     switch (position) {
@@ -7223,42 +7224,56 @@ const drawCustomText = (
         positionY = 0;
     }
 
-    const drawText = (offsetX = 0, offsetY = 0) => {
-        ctx.fillText(text, positionX + offsetX, positionY + offsetY);
-        if (graphicEffect === GraphicEffectType.OUTLINE) {
-            ctx.strokeStyle = strokeColor ? applyAlphaToColor(strokeColor, 0.8) : 'rgba(0,0,0,0.6)';
-            ctx.strokeText(text, positionX + offsetX, positionY + offsetY);
-        }
-    };
-
-    switch (graphicEffect) {
-        case GraphicEffectType.NEON:
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 20;
-            drawText();
-            ctx.shadowBlur = 10;
-            drawText();
-            break;
-        case GraphicEffectType.GLITCH:
-            if (isBeat) {
-                ctx.globalCompositeOperation = 'lighter';
-                const glitchAmount = fontSize * 0.1;
-                ctx.fillStyle = 'rgba(255, 0, 100, 0.7)';
-                drawText((Math.random() - 0.5) * glitchAmount, (Math.random() - 0.5) * glitchAmount);
-                ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
-                drawText((Math.random() - 0.5) * glitchAmount, (Math.random() - 0.5) * glitchAmount);
-                ctx.globalCompositeOperation = 'source-over';
-            }
-            break;
+    // shadow / glow
+    if (graphicEffect === GraphicEffectType.NEON) {
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 20;
+    } else if (graphicEffect === GraphicEffectType.SHADOW) {
+        ctx.shadowColor = 'rgba(0,0,0,0.65)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetX = 4;
+        ctx.shadowOffsetY = 4;
     }
-    
-    // Draw the main text fill
-    const gradient = ctx.createLinearGradient(0, positionY - fontSize, 0, positionY);
-    gradient.addColorStop(0, '#FFFFFF');
-    gradient.addColorStop(0.8, color);
-    gradient.addColorStop(1, color);
-    ctx.fillStyle = gradient;
-    drawText();
+
+    const x = positionX;
+    const y = positionY;
+
+    // outline
+    if (graphicEffect === GraphicEffectType.OUTLINE) {
+        ctx.strokeStyle = strokeColor ? applyAlphaToColor(strokeColor, 0.9) : 'rgba(0,0,0,0.75)';
+        ctx.lineWidth = Math.max(2, fontSize / 18);
+        ctx.strokeText(text, x, y);
+    }
+
+    // faux 3D
+    if (graphicEffect === GraphicEffectType.FAUX_3D) {
+        const depth = Math.max(1, Math.floor(fontSize / 28));
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        for (let i = 1; i <= depth; i++) ctx.fillText(text, x + i, y + i);
+    }
+
+    // fill (NEON uses white fill with glow; others use chosen color)
+    ctx.fillStyle = (graphicEffect === GraphicEffectType.NEON) ? '#FFFFFF' : color;
+    ctx.fillText(text, x, y);
+
+    // extra neon pass for stronger glow
+    if (graphicEffect === GraphicEffectType.NEON) {
+        ctx.shadowBlur = 10;
+        ctx.fillText(text, x, y);
+    }
+
+    // glitch (best on beat to reduce noise)
+    if (graphicEffect === GraphicEffectType.GLITCH && isBeat) {
+        const jitter = Math.max(2, fontSize / 20);
+        const ox = (Math.random() - 0.5) * jitter;
+        const oy = (Math.random() - 0.5) * jitter;
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = 'rgba(255,0,0,0.55)';
+        ctx.fillText(text, x + ox, y + oy);
+        ctx.fillStyle = 'rgba(0,255,255,0.55)';
+        ctx.fillText(text, x - ox, y - oy);
+        ctx.globalCompositeOperation = 'source-over';
+    }
 
     ctx.restore();
 };
