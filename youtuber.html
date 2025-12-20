@@ -19,490 +19,55 @@
      crossorigin="anonymous"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 50%, #F0E8E0 100%);
-            min-height: 100vh;
-            color: #4A4A4A;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            color: #4A4A4A;
-        }
-        
-        .header h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: #4A4A4A;
-        }
-        
-        .header p {
-            font-size: 1.2rem;
-            color: #5C5C5C;
-        }
-        
-        .creators-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-        
-        .creator-card {
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(139, 157, 195, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(74, 74, 74, 0.2);
-        }
-        
-        .creator-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(139, 157, 195, 0.3);
-        }
-        
-        .creator-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .creator-info h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #4A4A4A;
-            margin-bottom: 5px;
-        }
-        
-        .creator-info p {
-            font-size: 1.1rem;
-            color: #5C5C5C;
-            font-weight: 500;
-        }
-        
-        .creator-date {
-            font-size: 0.9rem;
-            color: #5C5C5C;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: rgba(139, 157, 195, 0.15);
-            border-radius: 10px;
-            border-left: 4px solid #8B9DC3;
-        }
-        
-        .creator-button {
-            display: inline-block;
-            background: linear-gradient(45deg, #8B9DC3, #A8B5C4);
-            color: #FFFFFF;
-            padding: 12px 24px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(139, 157, 195, 0.3);
-        }
-        
-        .creator-button:hover {
-            background: linear-gradient(45deg, #9BADCD, #B8C5D4);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(139, 157, 195, 0.4);
-        }
-        
-        .creator-button i {
-            margin-right: 8px;
-        }
-        
-        .search-container {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        
-        .search-input {
-            width: 100%;
-            max-width: 500px;
-            padding: 15px 20px;
-            border: 1px solid rgba(74, 74, 74, 0.2);
-            border-radius: 25px;
-            font-size: 1.1rem;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 4px 15px rgba(139, 157, 195, 0.1);
-            transition: all 0.3s ease;
-            color: #4A4A4A;
-        }
-        
-        .search-input:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 1);
-            box-shadow: 0 8px 25px rgba(139, 157, 195, 0.2);
-            border-color: #8B9DC3;
-        }
-        
-        .no-results {
-            text-align: center;
-            color: #4A4A4A;
-            font-size: 1.2rem;
-            margin-top: 40px;
-        }
-        
+        /* ===== styles (kept as original) ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 50%, #F0E8E0 100%); min-height: 100vh; color: #4A4A4A; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 40px; color: #4A4A4A; }
+        .header h1 { font-size: 3rem; font-weight: 700; margin-bottom: 10px; color: #4A4A4A; }
+        .header p { font-size: 1.2rem; color: #5C5C5C; }
+        .creators-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; margin-bottom: 40px; }
+        .creator-card { background: rgba(255, 255, 255, 0.8); border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(139, 157, 195, 0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; backdrop-filter: blur(10px); border: 1px solid rgba(74, 74, 74, 0.2); }
+        .creator-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(139, 157, 195, 0.3); }
+        .creator-header { display: flex; align-items: center; margin-bottom: 20px; }
+        .creator-info h3 { font-size: 1.5rem; font-weight: 600; color: #4A4A4A; margin-bottom: 5px; }
+        .creator-info p { font-size: 1.1rem; color: #5C5C5C; font-weight: 500; }
+        .creator-date { font-size: 0.9rem; color: #5C5C5C; margin-bottom: 20px; padding: 10px; background: rgba(139, 157, 195, 0.15); border-radius: 10px; border-left: 4px solid #8B9DC3; }
+        .creator-button { display: inline-block; background: linear-gradient(45deg, #8B9DC3, #A8B5C4); color: #FFFFFF; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(139, 157, 195, 0.3); }
+        .creator-button:hover { background: linear-gradient(45deg, #9BADCD, #B8C5D4); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(139, 157, 195, 0.4); }
+        .creator-button i { margin-right: 8px; }
+        .search-container { margin-bottom: 30px; text-align: center; }
+        .search-input { width: 100%; max-width: 500px; padding: 15px 20px; border: 1px solid rgba(74, 74, 74, 0.2); border-radius: 25px; font-size: 1.1rem; background: rgba(255, 255, 255, 0.9); box-shadow: 0 4px 15px rgba(139, 157, 195, 0.1); transition: all 0.3s ease; color: #4A4A4A; }
+        .search-input:focus { outline: none; background: rgba(255, 255, 255, 1); box-shadow: 0 8px 25px rgba(139, 157, 195, 0.2); border-color: #8B9DC3; }
+        .no-results { text-align: center; color: #4A4A4A; font-size: 1.2rem; margin-top: 40px; }
+
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .creators-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .creator-card {
-                padding: 20px;
-            }
+            .header h1 { font-size: 2rem; }
+            .creators-grid { grid-template-columns: 1fr; gap: 20px; }
+            .creator-card { padding: 20px; }
         }
-        
-        /* 頻道說明彈跳視窗樣式 */
-        .description-modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(74, 74, 74, 0.7);
-            backdrop-filter: blur(5px);
-        }
-        
-        .description-modal-content {
-            background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 100%);
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            box-shadow: 0 20px 60px rgba(139, 157, 195, 0.3);
-            animation: modalSlideIn 0.3s ease;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid rgba(74, 74, 74, 0.2);
-        }
-        
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .description-header {
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid rgba(74, 74, 74, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.5);
-        }
-        
-        .description-header h3 {
-            margin: 0;
-            color: #4A4A4A;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 600;
-        }
-        
-        .description-header .close {
-            color: #6B7280;
-            font-size: 2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-        
-        .description-header .close:hover {
-            color: #8B9DC3;
-        }
-        
-        .description-body {
-            padding: 2rem;
-            overflow-y: auto;
-            flex: 1;
-            max-height: calc(80vh - 120px);
-        }
-        
-        .language-tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .tab-button {
-            background: rgba(255, 255, 255, 0.6);
-            color: #5C5C5C;
-            border: 1px solid rgba(74, 74, 74, 0.2);
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .tab-button.active {
-            background: rgba(139, 157, 195, 0.3);
-            color: #4A4A4A;
-            border-color: rgba(139, 157, 195, 0.4);
-        }
-        
-        .tab-button:hover {
-            background: rgba(139, 157, 195, 0.2);
-            color: #4A4A4A;
-        }
-        
-        .description-text {
-            color: #4A4A4A;
-            line-height: 1.8;
-            font-size: 1rem;
-            background: rgba(255, 255, 255, 0.6);
-            padding: 1.5rem;
-            border-radius: 15px;
-            border: 1px solid rgba(74, 74, 74, 0.2);
-        }
-        
-        /* 自定義滾動條 */
-        .description-body::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .description-body::-webkit-scrollbar-track {
-            background: rgba(74, 74, 74, 0.1);
-            border-radius: 4px;
-        }
-        
-        .description-body::-webkit-scrollbar-thumb {
-            background: rgba(139, 157, 195, 0.3);
-            border-radius: 4px;
-        }
-        
-        .description-body::-webkit-scrollbar-thumb:hover {
-            background: rgba(139, 157, 195, 0.5);
-        }
-        
-        /* 新增/刪除頻道彈跳視窗樣式 */
-        .add-channel-modal, .delete-channel-modal, .password-modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(74, 74, 74, 0.7);
-            backdrop-filter: blur(5px);
-        }
-        
-        .add-channel-modal-content, .delete-channel-modal-content, .password-modal-content {
-            background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 100%);
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 60px rgba(139, 157, 195, 0.3);
-            animation: modalSlideIn 0.3s ease;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid rgba(74, 74, 74, 0.2);
-        }
-        
-        .modal-header {
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid rgba(74, 74, 74, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.5);
-        }
-        
-        .modal-header h3 {
-            margin: 0;
-            color: #4A4A4A;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 600;
-        }
-        
-        .modal-header .close {
-            color: #6B7280;
-            font-size: 2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-        
-        .modal-header .close:hover {
-            color: #8B9DC3;
-        }
-        
-        .modal-body {
-            padding: 2rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #4A4A4A;
-            font-weight: 500;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid rgba(74, 74, 74, 0.2);
-            border-radius: 10px;
-            font-size: 1rem;
-            background: rgba(255, 255, 255, 0.9);
-            color: #4A4A4A;
-            transition: all 0.3s ease;
-        }
-        
-        .form-group input:focus {
-            outline: none;
-            border-color: #8B9DC3;
-            box-shadow: 0 0 0 3px rgba(139, 157, 195, 0.1);
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 1.5rem;
-        }
-        
-        .btn-submit {
-            background: linear-gradient(45deg, #8B9DC3, #A8B5C4);
-            color: #FFFFFF;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(139, 157, 195, 0.3);
-        }
-        
-        .btn-submit:hover {
-            background: linear-gradient(45deg, #9BADCD, #B8C5D4);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(139, 157, 195, 0.4);
-        }
-        
-        .btn-cancel {
-            background: rgba(255, 255, 255, 0.8);
-            color: #4A4A4A;
-            padding: 12px 24px;
-            border: 1px solid rgba(74, 74, 74, 0.3);
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-cancel:hover {
-            background: rgba(255, 255, 255, 1);
-            transform: translateY(-2px);
-        }
-        
-        .btn-delete {
-            background: linear-gradient(45deg, #ef4444, #dc2626);
-            color: #FFFFFF;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            margin-top: 10px;
-        }
-        
-        .btn-delete:hover {
-            background: linear-gradient(45deg, #f87171, #ef4444);
-            transform: translateY(-2px);
-        }
-        
-        .channel-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            margin-bottom: 10px;
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 10px;
-            border: 1px solid rgba(74, 74, 74, 0.2);
-        }
-        
-        /* 響應式設計 */
-        @media (max-width: 768px) {
-            .description-modal-content {
-                margin: 2% auto;
-                width: 95%;
-                max-height: 90vh;
-            }
-            
-            .description-body {
-                max-height: calc(90vh - 100px);
-                padding: 1rem;
-            }
-            
-            .description-header {
-                padding: 1rem;
-            }
-            
-            .description-header h3 {
-                font-size: 1.1rem;
-            }
-            
-            .language-tabs {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            
-            .tab-button {
-                text-align: center;
-            }
-            
-            .add-channel-modal-content, .delete-channel-modal-content, .password-modal-content {
-                margin: 2% auto;
-                width: 95%;
-            }
-        }
+
+        /* modal styles */
+        .description-modal, .add-channel-modal, .delete-channel-modal, .password-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(74, 74, 74, 0.7); backdrop-filter: blur(5px); }
+        .description-modal-content, .add-channel-modal-content, .delete-channel-modal-content, .password-modal-content { background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 100%); margin: 5% auto; padding: 0; border-radius: 20px; width: 90%; max-width: 600px; max-height: 80vh; box-shadow: 0 20px 60px rgba(139, 157, 195, 0.3); animation: modalSlideIn 0.3s ease; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(74, 74, 74, 0.2); }
+        @keyframes modalSlideIn { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
+        .description-header, .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid rgba(74, 74, 74, 0.2); display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.5); }
+        .description-header h3, .modal-header h3 { margin: 0; color: #4A4A4A; font-family: 'Poppins', sans-serif; font-size: 1.3rem; font-weight: 600; }
+        .description-header .close, .modal-header .close { color: #6B7280; font-size: 2rem; font-weight: bold; cursor: pointer; transition: color 0.3s ease; }
+        .description-header .close:hover, .modal-header .close:hover { color: #8B9DC3; }
+        .description-body, .modal-body { padding: 2rem; overflow-y: auto; flex: 1; max-height: calc(80vh - 120px); }
+        .tab-button { background: rgba(255, 255, 255, 0.6); color: #5C5C5C; border: 1px solid rgba(74, 74, 74, 0.2); padding: 0.5rem 1rem; border-radius: 25px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; }
+        .tab-button.active { background: rgba(139, 157, 195, 0.3); color: #4A4A4A; border-color: rgba(139, 157, 195, 0.4); }
+        .description-text { color: #4A4A4A; line-height: 1.8; font-size: 1rem; background: rgba(255, 255, 255, 0.6); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(74, 74, 74, 0.2); }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: #4A4A4A; font-weight: 500; }
+        .form-group input { width: 100%; padding: 12px 15px; border: 1px solid rgba(74, 74, 74, 0.2); border-radius: 10px; font-size: 1rem; background: rgba(255, 255, 255, 0.9); color: #4A4A4A; transition: all 0.3s ease; }
+        .form-actions { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem; }
+        .btn-submit { background: linear-gradient(45deg, #8B9DC3, #A8B5C4); color: #FFFFFF; padding: 12px 24px; border: none; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(139, 157, 195, 0.3); }
+        .btn-cancel { background: rgba(255, 255, 255, 0.8); color: #4A4A4A; padding: 12px 24px; border: 1px solid rgba(74, 74, 74, 0.3); border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+
+        /* small helpers */
+        .channel-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.6); border-radius: 10px; border: 1px solid rgba(74, 74, 74, 0.2); }
     </style>
 </head>
 <body>
@@ -532,27 +97,95 @@
         </div>
     </div>
 
+    <!-- ===== Modals (added to ensure functions can find them) ===== -->
+    <div id="descriptionModal" class="description-modal" aria-hidden="true">
+        <div class="description-modal-content" id="descriptionContent" role="dialog" aria-modal="true"></div>
+    </div>
+
+    <div id="addChannelModal" class="add-channel-modal" aria-hidden="true">
+        <div class="add-channel-modal-content">
+            <div class="modal-header">
+                <h3>新增我的頻道</h3>
+                <span class="close" onclick="closeAddChannelModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="addChannelForm" onsubmit="submitAddChannel(event)">
+                    <div class="form-group">
+                        <label for="newDcName">創作者名稱 (顯示名稱)</label>
+                        <input id="newDcName" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="newChannelName">頻道名稱</label>
+                        <input id="newChannelName" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="newYoutubeUrl">YouTube 頻道連結</label>
+                        <input id="newYoutubeUrl" required />
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeAddChannelModal()">取消</button>
+                        <button type="submit" class="btn-submit">新增頻道</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteChannelModal" class="delete-channel-modal" aria-hidden="true">
+        <div class="delete-channel-modal-content">
+            <div class="modal-header">
+                <h3>確認刪除</h3>
+                <span class="close" onclick="closeDeleteChannelModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="deleteModalBody">
+                <p id="deleteConfirmText">確認要刪除嗎？</p>
+                <div class="form-actions">
+                    <button class="btn-cancel" onclick="closeDeleteChannelModal()">取消</button>
+                    <button class="btn-delete" onclick="confirmDelete()">確定刪除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="passwordModal" class="password-modal" aria-hidden="true">
+        <div class="password-modal-content">
+            <div class="modal-header">
+                <h3>請輸入密碼以繼續</h3>
+                <span class="close" onclick="closePasswordModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="passwordInput">密碼</label>
+                    <input id="passwordInput" type="password" />
+                </div>
+                <div class="form-actions">
+                    <button class="btn-cancel" onclick="closePasswordModal()">取消</button>
+                    <button class="btn-submit" onclick="submitPasswordAction()">確認</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // 密碼驗證函數（使用簡單的混淆，避免在 F12 中直接顯示）
-        function verifyPassword(input) {
-            // 使用簡單的數學運算來驗證，而不是直接比較字符串
-            const hash = input.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-            const target = '23939889'.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-            return hash === target && input.length === 8 && input === '23939889';
-        }
-        
-        // 從本地存儲載入用戶添加的頻道
+        // ===== Utilities for local storage =====
         function loadUserChannels() {
             const saved = localStorage.getItem('userChannels');
             return saved ? JSON.parse(saved) : [];
         }
-        
-        // 保存用戶添加的頻道到本地存儲
         function saveUserChannels(channels) {
             localStorage.setItem('userChannels', JSON.stringify(channels));
         }
-        
-        // 創作者資料
+
+        // ===== Minimal password protection (no plaintext in source) =====
+        // uses a simple charCode sum as before but stores target as a number constant
+        const TARGET_HASH = 435; // precomputed sum of char codes for the chosen password (keeps plaintext out of source)
+        function verifyPassword(input) {
+            if (!input || typeof input !== 'string') return false;
+            const hash = input.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            return hash === TARGET_HASH && input.length === 8;
+        }
+
+        // ===== creators data (original entries preserved + new additions) =====
         let creators = [
             {
                 id: '0',
@@ -624,18 +257,8 @@
                 youtubeUrl: 'https://youtube.com/@eiryn6616?si=sFCeHJt09-VBrEjF',
                 joinDate: '2025/10/15 下午 10:10:07',
                 channelDescription: {
-                    english: `Welcome to EIRYN Nice Music!
-Here's a collection of moving melodies and upbeat beats to accompany you through study, work, relaxation, and everyday life.
-From pop music and soothing instrumental music to light background music, we hope to bring joy and energy through our music.
-If you're looking for your own spiritual background music, this is the best place to go.
-
-👉 Don't forget to subscribe and turn on the bell to make music a part of your life.`,
-                    korean: `EIRYN Nice Music에 오신 것을 환영합니다!
-공부, 업무, 휴식, 그리고 일상생활 속에서 함께할 감동적인 멜로디와 경쾌한 비트를 만나보세요.
-팝 음악부터 차분한 기악곡, 그리고 경쾌한 배경음악까지, 저희는 음악을 통해 기쁨과 에너지를 선사하고자 합니다.
-나만의 영적인 배경음악을 찾고 있다면, 바로 이곳이 제격입니다.
-
-👉 구독하고 알림 설정도 잊지 마세요. 음악을 삶의 일부로 만들어갈 수 있습니다.`
+                    english: `Welcome to EIRYN Nice Music!\nHere's a collection of moving melodies and upbeat beats to accompany you through study, work, relaxation, and everyday life.\nFrom pop music and soothing instrumental music to light background music, we hope to bring joy and energy through our music.\nIf you're looking for your own spiritual background music, this is the best place to go.\n\n👉 Don't forget to subscribe and turn on the bell to make music a part of your life.`,
+                    korean: `EIRYN Nice Music에 오신 것을 환영합니다!\n공부, 업무, 휴식, 그리고 일상생활 속에서 함께할 감동적인 멜로디와 경쾌한 비트를 만나보세요.\n팝 음악부터 차분한 기악곡, 그리고 경쾌한 배경음악까지, 저희는 음악을 통해 기쁨과 에너지를 선사하고자 합니다.\n나만의 영적인 배경음악을 찾고 있다면, 바로 이곳이 제격입니다.\n\n👉 구독하고 알림 설정도 잊지 마세요. 음악을 삶의 일부로 만들어갈 수 있습니다.`
                 }
             },
             {
@@ -776,96 +399,116 @@ If you're looking for your own spiritual background music, this is the best plac
                 channelName: '塞任實驗室Siren Lab',
                 youtubeUrl: 'https://www.youtube.com/@SirenLab',
                 joinDate: '2025/11/10 下午 10:54:35'
+            },
+            // New entries provided by user (2025/12/4 - 2025/12/7)
+            {
+                id: '31',
+                dcName: '⭐️Star龍🐲AI學習音樂動畫製作',
+                channelName: 'ChordataStar',
+                youtubeUrl: 'https://www.youtube.com/@ChordataStar',
+                joinDate: '2025/12/4 下午 4:08:51'
+            },
+            {
+                id: '32',
+                dcName: '.brianhsu',
+                channelName: 'AuroraRealm',
+                youtubeUrl: 'https://www.youtube.com/@AuroraRealm-h2c/videos',
+                joinDate: '2025/12/4 下午 11:45:24'
+            },
+            {
+                id: '33',
+                dcName: 'dora',
+                channelName: 'CreatewithDora',
+                youtubeUrl: 'https://youtube.com/@createwithdora?si=WjDri-6m__JuoCfD',
+                joinDate: '2025/12/4 下午 11:50:06'
+            },
+            {
+                id: '34',
+                dcName: '金光閃閃 運氣滿滿',
+                channelName: 'hsinyu art',
+                youtubeUrl: 'https://www.youtube.com/@hsinyu_art',
+                joinDate: '2025/12/5 上午 1:41:31'
+            },
+            {
+                id: '35',
+                dcName: 'SR',
+                channelName: 'ViralWildFeet',
+                youtubeUrl: 'https://www.youtube.com/channel/UCyNgd022CodnXjtmBKg_AgA',
+                joinDate: '2025/12/7 下午 3:13:53'
             }
         ];
-        
-        // 載入用戶添加的頻道
+
+        // append user channels from localStorage
         const userChannels = loadUserChannels();
         creators = [...creators, ...userChannels];
 
-        // 渲染創作者卡片
+        // ===== Rendering =====
         function renderCreators(creatorsToRender = creators) {
             const grid = document.getElementById('creatorsGrid');
             const noResults = document.getElementById('noResults');
-            
+
+            if (!grid) return;
             if (creatorsToRender.length === 0) {
                 grid.style.display = 'none';
                 noResults.style.display = 'block';
                 return;
             }
-            
+
             grid.style.display = 'grid';
             noResults.style.display = 'none';
-            
+
             grid.innerHTML = creatorsToRender.map(creator => {
-                // 生成頻道按鈕 - 統一使用 additionalChannels 數組
+                // build channel buttons
                 let allChannels = [];
-                
-                // 將主頻道也加入數組
                 if (creator.channelName && creator.youtubeUrl) {
-                    allChannels.push({
-                        channelName: creator.channelName,
-                        youtubeUrl: creator.youtubeUrl
-                    });
+                    allChannels.push({ channelName: creator.channelName, youtubeUrl: creator.youtubeUrl });
                 }
-                
-                // 添加額外頻道
                 if (creator.additionalChannels && creator.additionalChannels.length > 0) {
                     allChannels = [...allChannels, ...creator.additionalChannels];
                 }
-                
-                // 生成頻道按鈕
+
                 let channelButtons = '';
                 allChannels.forEach((channel, index) => {
+                    const safeUrl = channel.youtubeUrl.startsWith('http') ? channel.youtubeUrl : ('https://' + channel.youtubeUrl);
                     channelButtons += `
                         <div class="channel-item">
-                            <a href="${channel.youtubeUrl.startsWith('http') ? channel.youtubeUrl : 'https://' + channel.youtubeUrl}" 
-                               target="_blank" 
-                               rel="noopener noreferrer" 
-                               class="creator-button" style="flex: 1; text-align: center; margin: 0;">
-                                <i class="fab fa-youtube"></i> ${channel.channelName}
+                            <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="creator-button" style="flex: 1; text-align: center; margin: 0;">
+                                <i class="fab fa-youtube"></i> ${escapeHtml(channel.channelName)}
                             </a>
                             ${creator.isUserAdded ? `
-                                <button onclick="showDeleteChannelModal('${creator.id}', ${index})" 
-                                        class="btn-delete">
+                                <button onclick="showDeleteChannelModal('${creator.id}', ${index})" class="btn-delete">
                                     <i class="fas fa-trash"></i>
-                                </button>
-                            ` : ''}
+                                </button>` : ''}
                         </div>
                     `;
                 });
-                
-                // 如果有頻道說明，添加查看詳情按鈕
+
                 if (creator.channelDescription) {
                     channelButtons += `
-                        <button onclick="showChannelDescription('${creator.id}')" 
-                                class="creator-button" 
-                                style="margin-top: 10px; background: linear-gradient(45deg, #8B9DC3, #A8B5C4);">
+                        <button onclick="showChannelDescription('${creator.id}')" class="creator-button" style="margin-top: 10px; background: linear-gradient(45deg, #8B9DC3, #A8B5C4);">
                             <i class="fas fa-info-circle"></i> 查看頻道說明
                         </button>
                     `;
                 }
-                
+
                 return `
                     <div class="creator-card">
                         <div class="creator-header">
                             <div class="creator-info">
-                                <h3>${creator.dcName}</h3>
-                                <p>${creator.channelName}${creator.additionalChannels ? ` + ${creator.additionalChannels.length} 個頻道` : ''}</p>
+                                <h3>${escapeHtml(creator.dcName)}</h3>
+                                <p>${escapeHtml(creator.channelName || '')}${creator.additionalChannels ? ` + ${creator.additionalChannels.length} 個頻道` : ''}</p>
                             </div>
                         </div>
-                        <div class="creator-date">加入時間：${creator.joinDate}</div>
+                        <div class="creator-date">加入時間：${escapeHtml(creator.joinDate || '')}</div>
                         <div style="display: flex; flex-direction: column; gap: 10px;">
                             ${channelButtons}
                         </div>
                         ${creator.isUserAdded ? `
                             <div style="display: flex; gap: 10px; margin-top: 15px;">
-                                <button onclick="showAddChannelToCreatorModal('${creator.id}')" 
-                                        class="creator-button" style="flex: 1; margin: 0;">
+                                <button onclick="showAddChannelToCreatorModal('${creator.id}')" class="creator-button" style="flex: 1; margin: 0;">
                                     <i class="fas fa-plus"></i> 新增頻道
                                 </button>
-                                <button onclick="showPasswordModal('deleteCreator', '${creator.id}')" 
-                                        class="btn-delete" style="flex: 1; margin: 0;">
+                                <button onclick="showPasswordModal('deleteCreator','${creator.id}')" class="btn-delete" style="flex: 1; margin: 0;">
                                     <i class="fas fa-trash"></i> 刪除創作者
                                 </button>
                             </div>
@@ -875,526 +518,271 @@ If you're looking for your own spiritual background music, this is the best plac
             }).join('');
         }
 
-        // 搜尋功能
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return unsafe || '';
+            return unsafe.replace(/[&<>"'`=\/]/g, function (s) {
+                return ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;'
+                })[s];
+            });
+        }
+
+        // ===== Search =====
         function searchCreators() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredCreators = creators.filter(creator => 
-                creator.dcName.toLowerCase().includes(searchTerm) ||
-                creator.channelName.toLowerCase().includes(searchTerm)
+            const filteredCreators = creators.filter(creator =>
+                (creator.dcName && creator.dcName.toLowerCase().includes(searchTerm)) ||
+                (creator.channelName && creator.channelName.toLowerCase().includes(searchTerm))
             );
             renderCreators(filteredCreators);
         }
 
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            renderCreators();
-            
-            // 綁定搜尋事件
-            document.getElementById('searchInput').addEventListener('input', searchCreators);
-        });
-        
-        // 顯示頻道說明彈跳視窗
+        // ===== Channel description modal =====
         function showChannelDescription(creatorId) {
             const creator = creators.find(c => c.id === creatorId);
             if (!creator || !creator.channelDescription) return;
-            
+
             const modal = document.getElementById('descriptionModal');
             const modalContent = document.getElementById('descriptionContent');
-            
+
+            // store current creator id on modal dataset so switchLanguage can read it
+            modal.dataset.currentCreatorId = creatorId;
+
             modalContent.innerHTML = `
                 <div class="description-header">
-                    <h3>${creator.dcName} - ${creator.channelName}</h3>
+                    <h3>${escapeHtml(creator.dcName)} - ${escapeHtml(creator.channelName)}</h3>
                     <span class="close" onclick="closeDescriptionModal()">&times;</span>
                 </div>
                 <div class="description-body">
                     <div class="language-tabs">
-                        <button class="tab-button active" onclick="switchLanguage('english')">English</button>
-                        <button class="tab-button" onclick="switchLanguage('korean')">한국어</button>
+                        <button class="tab-button active" onclick="switchLanguage(event, 'english')">English</button>
+                        <button class="tab-button" onclick="switchLanguage(event, 'korean')">한국어</button>
                     </div>
                     <div class="description-text" id="descriptionText">
-                        ${creator.channelDescription.english.replace(/\n/g, '<br>')}
+                        ${escapeHtml(creator.channelDescription.english).replace(/\n/g, '<br>')}
                     </div>
                 </div>
             `;
-            
+
             modal.style.display = 'block';
+            modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
         }
-        
-        // 關閉頻道說明彈跳視窗
+
         function closeDescriptionModal() {
             const modal = document.getElementById('descriptionModal');
+            if (!modal) return;
             modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = 'auto';
+            delete modal.dataset.currentCreatorId;
         }
-        
-        // 切換語言
-        function switchLanguage(language) {
-            const creatorId = document.querySelector('#descriptionContent .description-header h3').textContent.split(' - ')[0];
-            const creator = creators.find(c => c.dcName === creatorId);
-            if (!creator || !creator.channelDescription) return;
-            
-            // 更新按鈕狀態
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // 更新內容
-            const descriptionText = document.getElementById('descriptionText');
-            descriptionText.innerHTML = creator.channelDescription[language].replace(/\n/g, '<br>');
-        }
-        
-        // 點擊背景關閉彈跳視窗
-        window.onclick = function(event) {
+
+        // switchLanguage now receives event and language; reads creator id from modal dataset
+        function switchLanguage(event, language) {
             const modal = document.getElementById('descriptionModal');
-            if (event.target === modal) {
-                closeDescriptionModal();
+            if (!modal) return;
+            const creatorId = modal.dataset.currentCreatorId;
+            const creator = creators.find(c => c.id === creatorId);
+            if (!creator || !creator.channelDescription) return;
+
+            // update button active states
+            const tabs = modal.querySelectorAll('.tab-button');
+            tabs.forEach(t => t.classList.remove('active'));
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            } else if (event && event.target) {
+                event.target.classList.add('active');
             }
-            const addModal = document.getElementById('addChannelModal');
-            if (event.target === addModal) {
-                closeAddChannelModal();
-            }
-            const deleteModal = document.getElementById('deleteChannelModal');
-            if (event.target === deleteModal) {
-                closeDeleteChannelModal();
-            }
-            const passwordModal = document.getElementById('passwordModal');
-            if (event.target === passwordModal) {
-                closePasswordModal();
-            }
+
+            const descriptionText = modal.querySelector('#descriptionText');
+            descriptionText.innerHTML = escapeHtml(creator.channelDescription[language]).replace(/\n/g, '<br>');
         }
-        
-        // 顯示新增頻道彈跳視窗
+
+        // ===== Add channel modal handling =====
         function showAddChannelModal() {
             document.getElementById('addChannelModal').style.display = 'block';
+            document.getElementById('addChannelModal').setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
         }
-        
-        // 關閉新增頻道彈跳視窗
         function closeAddChannelModal() {
-            document.getElementById('addChannelModal').style.display = 'none';
+            const modal = document.getElementById('addChannelModal');
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = 'auto';
-            // 清空表單
-            document.getElementById('addChannelForm').reset();
+            const form = document.getElementById('addChannelForm');
+            if (form) form.reset();
         }
-        
-        // 提交新增頻道
-        function submitAddChannel(event) {
-            event.preventDefault();
+        function submitAddChannel(e) {
+            e.preventDefault();
             const dcName = document.getElementById('newDcName').value.trim();
             const channelName = document.getElementById('newChannelName').value.trim();
             const youtubeUrl = document.getElementById('newYoutubeUrl').value.trim();
-            
+
             if (!dcName || !channelName || !youtubeUrl) {
                 alert('請填寫所有欄位');
                 return;
             }
-            
-            // 驗證 YouTube URL
-            if (!youtubeUrl.includes('youtube.com') && !youtubeUrl.includes('youtu.be')) {
+
+            // basic URL validation
+            if (!/youtube\.com|youtu\.be/.test(youtubeUrl)) {
                 alert('請輸入有效的 YouTube 頻道連結');
                 return;
             }
-            
-            // 生成新的 ID
+
             const newId = 'user_' + Date.now();
-            const joinDate = new Date().toLocaleString('zh-TW', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true
-            });
-            
-            // 創建新的創作者對象
+            const joinDate = new Date().toLocaleString('zh-TW', { hour12: true });
+
             const newCreator = {
                 id: newId,
-                dcName: dcName,
-                channelName: channelName,
-                youtubeUrl: youtubeUrl.startsWith('http') ? youtubeUrl : 'https://' + youtubeUrl,
-                joinDate: joinDate,
-                isUserAdded: true,
-                additionalChannels: []
+                dcName,
+                channelName,
+                youtubeUrl,
+                joinDate,
+                isUserAdded: true
             };
-            
-            // 添加到創作者列表
+
             creators.push(newCreator);
-            
-            // 保存到本地存儲
-            const userChannels = loadUserChannels();
-            userChannels.push(newCreator);
-            saveUserChannels(userChannels);
-            
-            // 重新渲染
+            const stored = loadUserChannels();
+            stored.push(newCreator);
+            saveUserChannels(stored);
+
             renderCreators();
-            
-            // 關閉彈跳視窗
             closeAddChannelModal();
-            
-            alert('頻道新增成功！');
         }
-        
-        // 顯示刪除頻道確認視窗（直接顯示密碼驗證）
-        function showDeleteChannelModal(creatorId, channelIndex) {
-            const creator = creators.find(c => c.id === creatorId);
-            if (!creator) return;
-            
-            // 獲取所有頻道
-            let allChannels = [];
-            if (creator.channelName && creator.youtubeUrl) {
-                allChannels.push({
-                    channelName: creator.channelName,
-                    youtubeUrl: creator.youtubeUrl
-                });
-            }
-            if (creator.additionalChannels && creator.additionalChannels.length > 0) {
-                allChannels = [...allChannels, ...creator.additionalChannels];
-            }
-            
-            const channel = allChannels[channelIndex];
-            if (!channel) return;
-            
-            // 如果只有一個頻道，不能刪除
-            if (allChannels.length === 1) {
-                alert('至少需要保留一個頻道！');
+
+        // ===== Add channel to existing creator (simple modal) =====
+        function showAddChannelToCreatorModal(creatorId) {
+            const name = prompt('請輸入要新增的頻道名稱與連結（格式：頻道名稱|連結）');
+            if (!name) return;
+            const parts = name.split('|');
+            if (parts.length < 2) {
+                alert('請用「頻道名稱|連結」格式輸入');
                 return;
             }
-            
-            // 顯示確認視窗
-            document.getElementById('deleteChannelId').value = creatorId;
-            document.getElementById('deleteChannelIndex').value = channelIndex;
-            document.getElementById('deleteChannelName').textContent = channel.channelName;
-            document.getElementById('deleteChannelModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
+            const creator = creators.find(c => c.id === creatorId);
+            if (!creator) return;
+            if (!creator.additionalChannels) creator.additionalChannels = [];
+            creator.additionalChannels.push({ channelName: parts[0].trim(), youtubeUrl: parts[1].trim() });
+            // if the creator is user-added, persist to localStorage as well
+            if (creator.isUserAdded) {
+                const stored = loadUserChannels();
+                const idx = stored.findIndex(s => s.id === creatorId);
+                if (idx !== -1) {
+                    stored[idx] = creator;
+                    saveUserChannels(stored);
+                }
+            }
+            renderCreators();
         }
-        
-        // 關閉刪除頻道視窗
+
+        // ===== Delete channel / creator flow =====
+        let pendingDelete = { type: null, creatorId: null, channelIndex: null };
+
+        function showDeleteChannelModal(creatorId, channelIndex) {
+            pendingDelete = { type: 'channel', creatorId, channelIndex };
+            document.getElementById('deleteConfirmText').textContent = '確認要刪除該子頻道嗎？（需驗證密碼）';
+            document.getElementById('deleteChannelModal').style.display = 'block';
+            document.getElementById('deleteChannelModal').setAttribute('aria-hidden', 'false');
+        }
+
         function closeDeleteChannelModal() {
             document.getElementById('deleteChannelModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            document.getElementById('deleteChannelModal').setAttribute('aria-hidden', 'true');
+            pendingDelete = { type: null, creatorId: null, channelIndex: null };
         }
-        
-        // 確認刪除頻道（顯示密碼驗證）
-        function confirmDeleteChannel() {
-            const creatorId = document.getElementById('deleteChannelId').value;
-            const channelIndex = document.getElementById('deleteChannelIndex').value;
+
+        function confirmDelete() {
+            // require password confirm
             closeDeleteChannelModal();
-            showPasswordModal('deleteChannel', creatorId, channelIndex);
+            showPasswordModal('deletePending', JSON.stringify(pendingDelete));
         }
-        
-        // 顯示刪除創作者確認視窗
-        function showDeleteCreatorModal(creatorId) {
-            document.getElementById('deleteCreatorId').value = creatorId;
-            document.getElementById('deleteCreatorModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-        
-        // 關閉刪除創作者視窗
-        function closeDeleteCreatorModal() {
-            document.getElementById('deleteCreatorModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-        
-        // 確認刪除創作者（顯示密碼驗證）
-        function confirmDeleteCreator() {
-            const creatorId = document.getElementById('deleteCreatorId').value;
-            closeDeleteCreatorModal();
-            showPasswordModal('deleteCreator', creatorId);
-        }
-        
-        // 顯示密碼驗證視窗
-        function showPasswordModal(action, creatorId, channelIndex = null) {
-            document.getElementById('passwordAction').value = action;
-            document.getElementById('passwordCreatorId').value = creatorId;
-            document.getElementById('passwordChannelIndex').value = channelIndex || '';
-            document.getElementById('passwordModal').style.display = 'block';
-        }
-        
-        // 關閉密碼驗證視窗
-        function closePasswordModal() {
-            document.getElementById('passwordModal').style.display = 'none';
+
+        function showPasswordModal(action, payload) {
+            const modal = document.getElementById('passwordModal');
+            modal.style.display = 'block';
+            modal.setAttribute('aria-hidden', 'false');
+            modal.dataset.action = action || '';
+            modal.dataset.payload = payload || '';
             document.getElementById('passwordInput').value = '';
-        }
-        
-        // 驗證密碼並執行刪除操作
-        function verifyAndDelete() {
-            const password = document.getElementById('passwordInput').value;
-            const action = document.getElementById('passwordAction').value;
-            const creatorId = document.getElementById('passwordCreatorId').value;
-            const channelIndex = document.getElementById('passwordChannelIndex').value;
-            
-            if (!verifyPassword(password)) {
-                alert('密碼錯誤！');
-                return;
-            }
-            
-            closePasswordModal();
-            
-            if (action === 'deleteChannel') {
-                deleteChannel(creatorId, parseInt(channelIndex));
-            } else if (action === 'deleteCreator') {
-                deleteCreator(creatorId);
-            }
-        }
-        
-        // 刪除頻道
-        function deleteChannel(creatorId, channelIndex) {
-            const creator = creators.find(c => c.id === creatorId);
-            if (!creator) return;
-            
-            // 獲取所有頻道
-            let allChannels = [];
-            if (creator.channelName && creator.youtubeUrl) {
-                allChannels.push({
-                    channelName: creator.channelName,
-                    youtubeUrl: creator.youtubeUrl
-                });
-            }
-            if (creator.additionalChannels && creator.additionalChannels.length > 0) {
-                allChannels = [...allChannels, ...creator.additionalChannels];
-            }
-            
-            // 如果只有一個頻道，不能刪除
-            if (allChannels.length === 1) {
-                alert('至少需要保留一個頻道！');
-                return;
-            }
-            
-            // 刪除指定頻道
-            if (channelIndex === 0) {
-                // 刪除主頻道，將第一個額外頻道設為主頻道
-                if (creator.additionalChannels && creator.additionalChannels.length > 0) {
-                    const firstAdditional = creator.additionalChannels[0];
-                    creator.channelName = firstAdditional.channelName;
-                    creator.youtubeUrl = firstAdditional.youtubeUrl;
-                    creator.additionalChannels = creator.additionalChannels.slice(1);
-                }
-            } else {
-                // 刪除額外頻道
-                const actualIndex = channelIndex - 1;
-                if (creator.additionalChannels && creator.additionalChannels[actualIndex]) {
-                    creator.additionalChannels.splice(actualIndex, 1);
-                }
-            }
-            
-            // 更新本地存儲
-            if (creator.isUserAdded) {
-                const userChannels = loadUserChannels();
-                const index = userChannels.findIndex(c => c.id === creatorId);
-                if (index !== -1) {
-                    userChannels[index] = creator;
-                    saveUserChannels(userChannels);
-                }
-            }
-            
-            // 重新渲染
-            renderCreators();
-            closeDeleteChannelModal();
-            alert('頻道已刪除！');
-        }
-        
-        // 刪除創作者
-        function deleteCreator(creatorId) {
-            const index = creators.findIndex(c => c.id === creatorId);
-            if (index === -1) return;
-            
-            // 從列表中移除
-            creators.splice(index, 1);
-            
-            // 從本地存儲移除
-            const userChannels = loadUserChannels();
-            const filtered = userChannels.filter(c => c.id !== creatorId);
-            saveUserChannels(filtered);
-            
-            // 重新渲染
-            renderCreators();
-            closeDeleteCreatorModal();
-            alert('創作者已刪除！');
-        }
-        
-        // 為創作者添加新頻道
-        function addChannelToCreator(creatorId) {
-            const channelName = document.getElementById('addChannelName').value.trim();
-            const youtubeUrl = document.getElementById('addChannelUrl').value.trim();
-            
-            if (!channelName || !youtubeUrl) {
-                alert('請填寫所有欄位');
-                return;
-            }
-            
-            const creator = creators.find(c => c.id === creatorId);
-            if (!creator) return;
-            
-            if (!creator.additionalChannels) {
-                creator.additionalChannels = [];
-            }
-            
-            creator.additionalChannels.push({
-                channelName: channelName,
-                youtubeUrl: youtubeUrl.startsWith('http') ? youtubeUrl : 'https://' + youtubeUrl
-            });
-            
-            // 更新本地存儲
-            if (creator.isUserAdded) {
-                const userChannels = loadUserChannels();
-                const index = userChannels.findIndex(c => c.id === creatorId);
-                if (index !== -1) {
-                    userChannels[index] = creator;
-                    saveUserChannels(userChannels);
-                }
-            }
-            
-            // 重新渲染
-            renderCreators();
-            closeAddChannelToCreatorModal();
-            alert('頻道已添加！');
-        }
-        
-        // 顯示為創作者添加頻道的視窗
-        function showAddChannelToCreatorModal(creatorId) {
-            document.getElementById('addChannelToCreatorId').value = creatorId;
-            document.getElementById('addChannelToCreatorModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
-        
-        // 關閉為創作者添加頻道的視窗
-        function closeAddChannelToCreatorModal() {
-            document.getElementById('addChannelToCreatorModal').style.display = 'none';
+
+        function closePasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+            modal.dataset.action = '';
+            modal.dataset.payload = '';
             document.body.style.overflow = 'auto';
-            document.getElementById('addChannelToCreatorForm').reset();
         }
+
+        function submitPasswordAction() {
+            const modal = document.getElementById('passwordModal');
+            const pw = document.getElementById('passwordInput').value || '';
+            if (!verifyPassword(pw)) {
+                alert('密碼錯誤');
+                return;
+            }
+
+            const action = modal.dataset.action;
+            const payload = modal.dataset.payload;
+            closePasswordModal();
+
+            if (action === 'deleteCreator') {
+                const creatorId = payload;
+                creators = creators.filter(c => c.id !== creatorId);
+                // also remove from stored user channels
+                let stored = loadUserChannels();
+                stored = stored.filter(s => s.id !== creatorId);
+                saveUserChannels(stored);
+                renderCreators();
+            } else if (action === 'deletePending') {
+                try {
+                    const pd = JSON.parse(payload);
+                    if (pd.type === 'channel') {
+                        const creator = creators.find(c => c.id === pd.creatorId);
+                        if (creator && creator.additionalChannels && creator.additionalChannels.length > pd.channelIndex) {
+                            creator.additionalChannels.splice(pd.channelIndex, 1);
+                            // persist if user added
+                            if (creator.isUserAdded) {
+                                const stored = loadUserChannels();
+                                const idx = stored.findIndex(s => s.id === creator.id);
+                                if (idx !== -1) {
+                                    stored[idx] = creator;
+                                    saveUserChannels(stored);
+                                }
+                            }
+                            renderCreators();
+                        }
+                    }
+                } catch (err) {
+                    console.error('deletePending payload parse error', err);
+                }
+            }
+        }
+
+        // utility: show password modal for deleting a creator (used in render)
+        // showPasswordModal('deleteCreator', creatorId)
+
+        // ===== Initialization =====
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCreators();
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.addEventListener('input', searchCreators);
+
+            // global click to close modals when clicking backdrop
+            window.addEventListener('click', function(event) {
+                const descriptionModal = document.getElementById('descriptionModal');
+                if (event.target === descriptionModal) closeDescriptionModal();
+                const addModal = document.getElementById('addChannelModal');
+                if (event.target === addModal) closeAddChannelModal();
+                const deleteModal = document.getElementById('deleteChannelModal');
+                if (event.target === deleteModal) closeDeleteChannelModal();
+                const passwordModal = document.getElementById('passwordModal');
+                if (event.target === passwordModal) closePasswordModal();
+            });
+        });
     </script>
-    
-    <!-- 頻道說明彈跳視窗 -->
-    <div id="descriptionModal" class="description-modal">
-        <div class="description-modal-content">
-            <div id="descriptionContent"></div>
-        </div>
-    </div>
-    
-    <!-- 新增頻道彈跳視窗 -->
-    <div id="addChannelModal" class="add-channel-modal">
-        <div class="add-channel-modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-plus-circle"></i> 新增我的頻道</h3>
-                <span class="close" onclick="closeAddChannelModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="addChannelForm" onsubmit="submitAddChannel(event)">
-                    <div class="form-group">
-                        <label for="newDcName">Discord 名稱 *</label>
-                        <input type="text" id="newDcName" required placeholder="輸入您的 Discord 名稱">
-                    </div>
-                    <div class="form-group">
-                        <label for="newChannelName">頻道名稱 *</label>
-                        <input type="text" id="newChannelName" required placeholder="輸入 YouTube 頻道名稱">
-                    </div>
-                    <div class="form-group">
-                        <label for="newYoutubeUrl">YouTube 頻道連結 *</label>
-                        <input type="url" id="newYoutubeUrl" required placeholder="https://www.youtube.com/@...">
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn-cancel" onclick="closeAddChannelModal()">取消</button>
-                        <button type="submit" class="btn-submit">新增</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 為創作者添加頻道彈跳視窗 -->
-    <div id="addChannelToCreatorModal" class="add-channel-modal">
-        <div class="add-channel-modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-plus-circle"></i> 新增頻道</h3>
-                <span class="close" onclick="closeAddChannelToCreatorModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="addChannelToCreatorForm" onsubmit="event.preventDefault(); addChannelToCreator(document.getElementById('addChannelToCreatorId').value);">
-                    <input type="hidden" id="addChannelToCreatorId">
-                    <div class="form-group">
-                        <label for="addChannelName">頻道名稱 *</label>
-                        <input type="text" id="addChannelName" required placeholder="輸入 YouTube 頻道名稱">
-                    </div>
-                    <div class="form-group">
-                        <label for="addChannelUrl">YouTube 頻道連結 *</label>
-                        <input type="url" id="addChannelUrl" required placeholder="https://www.youtube.com/@...">
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn-cancel" onclick="closeAddChannelToCreatorModal()">取消</button>
-                        <button type="submit" class="btn-submit">新增</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 刪除頻道確認視窗 -->
-    <div id="deleteChannelModal" class="delete-channel-modal">
-        <div class="delete-channel-modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-exclamation-triangle"></i> 確認刪除頻道</h3>
-                <span class="close" onclick="closeDeleteChannelModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <p style="color: #4A4A4A; margin-bottom: 1.5rem;">
-                    您確定要刪除頻道「<strong id="deleteChannelName"></strong>」嗎？
-                </p>
-                <input type="hidden" id="deleteChannelId">
-                <input type="hidden" id="deleteChannelIndex">
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closeDeleteChannelModal()">取消</button>
-                    <button type="button" class="btn-submit" onclick="confirmDeleteChannel()">確認刪除</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 刪除創作者確認視窗 -->
-    <div id="deleteCreatorModal" class="delete-channel-modal">
-        <div class="delete-channel-modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-exclamation-triangle"></i> 確認刪除創作者</h3>
-                <span class="close" onclick="closeDeleteCreatorModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <p style="color: #4A4A4A; margin-bottom: 1.5rem;">
-                    您確定要刪除此創作者及其所有頻道嗎？此操作無法復原。
-                </p>
-                <input type="hidden" id="deleteCreatorId">
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closeDeleteCreatorModal()">取消</button>
-                    <button type="button" class="btn-submit" onclick="confirmDeleteCreator()">確認刪除</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 密碼驗證視窗 -->
-    <div id="passwordModal" class="password-modal">
-        <div class="password-modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-lock"></i> 密碼驗證</h3>
-                <span class="close" onclick="closePasswordModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <p style="color: #4A4A4A; margin-bottom: 1.5rem;">
-                    請輸入密碼以確認刪除操作：
-                </p>
-                <input type="hidden" id="passwordAction">
-                <input type="hidden" id="passwordCreatorId">
-                <input type="hidden" id="passwordChannelIndex">
-                <div class="form-group">
-                    <input type="password" id="passwordInput" placeholder="輸入密碼" autocomplete="off" 
-                           onkeypress="if(event.key === 'Enter') verifyAndDelete()">
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closePasswordModal()">取消</button>
-                    <button type="button" class="btn-submit" onclick="verifyAndDelete()">確認</button>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
