@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
 
@@ -22,6 +22,36 @@ const CollapsibleControlSection: React.FC<CollapsibleControlSectionProps> = ({
     priority = 'medium'
 }) => {
     const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+    const contentRef = useRef<HTMLDivElement | null>(null);
+    const [contentMaxHeight, setContentMaxHeight] = useState<number>(0);
+
+    const measureHeight = () => {
+        const el = contentRef.current;
+        if (!el) return;
+        setContentMaxHeight(el.scrollHeight);
+    };
+
+    useLayoutEffect(() => {
+        if (!isExpanded) {
+            setContentMaxHeight(0);
+            return;
+        }
+        measureHeight();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isExpanded, children]);
+
+    useEffect(() => {
+        if (!isExpanded) return;
+        const el = contentRef.current;
+        if (!el) return;
+
+        if (typeof ResizeObserver === 'undefined') return;
+
+        const ro = new ResizeObserver(() => measureHeight());
+        ro.observe(el);
+        return () => ro.disconnect();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isExpanded]);
 
     const priorityStyles = {
         high: 'border-l-4 border-l-cyan-400 bg-gradient-to-r from-cyan-500/10 to-transparent',
@@ -61,10 +91,13 @@ const CollapsibleControlSection: React.FC<CollapsibleControlSectionProps> = ({
                 </div>
             </button>
             
-            <div className={`collapsible-content ${
-                isExpanded ? 'expanded' : 'collapsed'
-            }`}>
-                <div className="p-4 pt-0">
+            <div
+                className={`collapsible-content ${isExpanded ? 'expanded' : 'collapsed'}`}
+                style={{
+                    maxHeight: isExpanded ? `${contentMaxHeight}px` : '0px',
+                }}
+            >
+                <div ref={contentRef} className="p-4 pt-0">
                     {children}
                 </div>
             </div>

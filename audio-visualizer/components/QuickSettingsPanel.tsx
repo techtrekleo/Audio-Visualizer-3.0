@@ -3,6 +3,7 @@ import { VisualizationType, ColorPaletteType, MultiEffectTransform } from '../ty
 import Icon from './Icon';
 import { ICON_PATHS } from '../constants';
 import CategorizedEffectSelector from './CategorizedEffectSelector';
+import { getEffectInfo } from '../constants/effectCategories';
 
 interface QuickSettingsPanelProps {
     visualizationType: VisualizationType;
@@ -18,6 +19,7 @@ interface QuickSettingsPanelProps {
     onActiveMultiEffectOffsetReset?: () => void;
     multiEffectTransforms?: Partial<Record<VisualizationType, MultiEffectTransform>>;
     onActiveMultiEffectTransformChange?: (patch: Partial<MultiEffectTransform>) => void;
+    onMultiEffectTransformChange?: (type: VisualizationType, patch: Partial<MultiEffectTransform>) => void;
     onActiveMultiEffectTransformReset?: () => void;
     waveformStroke: boolean;
     onWaveformStrokeChange: (value: boolean) => void;
@@ -65,6 +67,7 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
     onActiveMultiEffectOffsetReset,
     multiEffectTransforms = {},
     onActiveMultiEffectTransformChange,
+    onMultiEffectTransformChange,
     onActiveMultiEffectTransformReset,
     waveformStroke,
     onWaveformStrokeChange,
@@ -140,133 +143,177 @@ const QuickSettingsPanel: React.FC<QuickSettingsPanelProps> = ({
                         selectedTypes={selectedVisualizationTypes}
                         onToggleType={onToggleVisualizationType}
                     />
-                    {multiEffectEnabled && (
-                        <div className="mt-3 p-3 bg-gray-800/50 rounded-lg border border-red-400/30 space-y-3">
-                            <div className="flex items-center justify-between">
-                                <div className="text-xs font-medium text-red-200">
-                                    疊加位置調整（目前：{visualizationType}）
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        onActiveMultiEffectTransformReset?.();
-                                        onActiveMultiEffectOffsetReset?.();
-                                    }}
-                                    className="text-xs px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600"
-                                >
-                                    重置
-                                </button>
+                    {multiEffectEnabled && selectedVisualizationTypes.length > 0 && (
+                        <div className="mt-3 space-y-3">
+                            <div className="text-xs font-semibold text-red-200 mb-2">
+                                各特效獨立調整
                             </div>
-                            <div className="grid grid-cols-3 gap-2 items-center justify-items-center">
-                                <div />
-                                <button
-                                    type="button"
-                                    onClick={() => onActiveMultiEffectNudge?.(0, -20)}
-                                    className="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
-                                    title="上移"
-                                >
-                                    ↑
-                                </button>
-                                <div />
-                                <button
-                                    type="button"
-                                    onClick={() => onActiveMultiEffectNudge?.(-20, 0)}
-                                    className="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
-                                    title="左移"
-                                >
-                                    ←
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => onActiveMultiEffectNudge?.(0, 0)}
-                                    className="w-10 h-10 rounded-lg bg-gray-700 text-gray-300 border border-gray-600 cursor-default"
-                                    title="使用方向鍵移動"
-                                >
-                                    +
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => onActiveMultiEffectNudge?.(20, 0)}
-                                    className="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
-                                    title="右移"
-                                >
-                                    →
-                                </button>
-                                <div />
-                                <button
-                                    type="button"
-                                    onClick={() => onActiveMultiEffectNudge?.(0, 20)}
-                                    className="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
-                                    title="下移"
-                                >
-                                    ↓
-                                </button>
-                                <div />
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-300">X</label>
-                                    <input
-                                        type="number"
-                                        value={(activeTransform?.x ?? 0)}
-                                        onChange={(e) => {
-                                            const x = Number(e.target.value || 0);
-                                            const y = activeTransform?.y ?? 0;
-                                            onActiveMultiEffectOffsetChange?.({ x, y });
-                                            onActiveMultiEffectTransformChange?.({ x, y });
-                                        }}
-                                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-300">Y</label>
-                                    <input
-                                        type="number"
-                                        value={(activeTransform?.y ?? 0)}
-                                        onChange={(e) => {
-                                            const y = Number(e.target.value || 0);
-                                            const x = activeTransform?.x ?? 0;
-                                            onActiveMultiEffectOffsetChange?.({ x, y });
-                                            onActiveMultiEffectTransformChange?.({ x, y });
-                                        }}
-                                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-300">縮放</label>
-                                    <input
-                                        type="number"
-                                        step="0.05"
-                                        min="0.1"
-                                        max="2"
-                                        value={(activeTransform?.scale ?? 1)}
-                                        onChange={(e) => {
-                                            const scale = Math.max(0.1, Math.min(2, Number(e.target.value || 1)));
-                                            onActiveMultiEffectTransformChange?.({ scale });
-                                        }}
-                                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-gray-300">旋轉 (°)</label>
-                                    <input
-                                        type="number"
-                                        step="5"
-                                        min="-180"
-                                        max="180"
-                                        value={(activeTransform?.rotation ?? 0)}
-                                        onChange={(e) => {
-                                            const rotation = Math.max(-180, Math.min(180, Number(e.target.value || 0)));
-                                            onActiveMultiEffectTransformChange?.({ rotation });
-                                        }}
-                                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
-                                    />
-                                </div>
-                            </div>
-                            <div className="text-[11px] text-gray-400">
-                                提示：點選任一特效卡片會切換「目前」特效，這裡調整的 X/Y/縮放/旋轉只影響目前特效。
+                            {selectedVisualizationTypes.map((type) => {
+                                const effectInfo = getEffectInfo(type);
+                                const effectName = effectInfo?.type || type;
+                                const effectTransform: MultiEffectTransform = multiEffectTransforms?.[type] || {
+                                    x: multiEffectOffsets?.[type]?.x ?? 0,
+                                    y: multiEffectOffsets?.[type]?.y ?? 0,
+                                    scale: 1,
+                                    rotation: 0,
+                                };
+                                
+                                return (
+                                    <div key={type} className="p-3 bg-gray-800/50 rounded-lg border border-red-400/30 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="text-xs font-medium text-red-200">
+                                                {effectName}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (onMultiEffectTransformChange) {
+                                                        onMultiEffectTransformChange(type, { x: 0, y: 0, scale: 1, rotation: 0 });
+                                                    } else if (type === visualizationType && onActiveMultiEffectTransformReset) {
+                                                        onActiveMultiEffectTransformReset();
+                                                    }
+                                                }}
+                                                className="text-xs px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600"
+                                            >
+                                                重置
+                                            </button>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-gray-300">縮放</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.05"
+                                                    min="0.1"
+                                                    max="2"
+                                                    value={effectTransform.scale ?? 1}
+                                                    onChange={(e) => {
+                                                        const scale = Math.max(0.1, Math.min(2, Number(e.target.value || 1)));
+                                                        if (onMultiEffectTransformChange) {
+                                                            onMultiEffectTransformChange(type, { scale });
+                                                        } else if (type === visualizationType && onActiveMultiEffectTransformChange) {
+                                                            onActiveMultiEffectTransformChange({ scale });
+                                                        }
+                                                    }}
+                                                    className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-gray-300">旋轉 (°)</label>
+                                                <input
+                                                    type="number"
+                                                    step="5"
+                                                    min="-180"
+                                                    max="180"
+                                                    value={effectTransform.rotation ?? 0}
+                                                    onChange={(e) => {
+                                                        const rotation = Math.max(-180, Math.min(180, Number(e.target.value || 0)));
+                                                        if (onMultiEffectTransformChange) {
+                                                            onMultiEffectTransformChange(type, { rotation });
+                                                        } else if (type === visualizationType && onActiveMultiEffectTransformChange) {
+                                                            onActiveMultiEffectTransformChange({ rotation });
+                                                        }
+                                                    }}
+                                                    className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
+                                                />
+                                            </div>
+                                        </div>
+                                        
+                                        {/* 保留位置調整（X/Y）用於當前選中的特效 */}
+                                        {type === visualizationType && (
+                                            <>
+                                                <div className="grid grid-cols-3 gap-2 items-center justify-items-center pt-2 border-t border-gray-700">
+                                                    <div />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => onActiveMultiEffectNudge?.(0, -20)}
+                                                        className="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+                                                        title="上移"
+                                                    >
+                                                        ↑
+                                                    </button>
+                                                    <div />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => onActiveMultiEffectNudge?.(-20, 0)}
+                                                        className="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+                                                        title="左移"
+                                                    >
+                                                        ←
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => onActiveMultiEffectNudge?.(0, 0)}
+                                                        className="w-10 h-10 rounded-lg bg-gray-700 text-gray-300 border border-gray-600 cursor-default"
+                                                        title="使用方向鍵移動"
+                                                    >
+                                                        +
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => onActiveMultiEffectNudge?.(20, 0)}
+                                                        className="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+                                                        title="右移"
+                                                    >
+                                                        →
+                                                    </button>
+                                                    <div />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => onActiveMultiEffectNudge?.(0, 20)}
+                                                        className="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 text-white border border-gray-600"
+                                                        title="下移"
+                                                    >
+                                                        ↓
+                                                    </button>
+                                                    <div />
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="space-y-1">
+                                                        <label className="text-xs text-gray-300">X</label>
+                                                        <input
+                                                            type="number"
+                                                            value={effectTransform.x ?? 0}
+                                                            onChange={(e) => {
+                                                                const x = Number(e.target.value || 0);
+                                                                const y = effectTransform.y ?? 0;
+                                                                if (onMultiEffectTransformChange) {
+                                                                    onMultiEffectTransformChange(type, { x, y });
+                                                                } else if (onActiveMultiEffectTransformChange) {
+                                                                    onActiveMultiEffectTransformChange({ x, y });
+                                                                }
+                                                                onActiveMultiEffectOffsetChange?.({ x, y });
+                                                            }}
+                                                            className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <label className="text-xs text-gray-300">Y</label>
+                                                        <input
+                                                            type="number"
+                                                            value={effectTransform.y ?? 0}
+                                                            onChange={(e) => {
+                                                                const y = Number(e.target.value || 0);
+                                                                const x = effectTransform.x ?? 0;
+                                                                if (onMultiEffectTransformChange) {
+                                                                    onMultiEffectTransformChange(type, { x, y });
+                                                                } else if (onActiveMultiEffectTransformChange) {
+                                                                    onActiveMultiEffectTransformChange({ x, y });
+                                                                }
+                                                                onActiveMultiEffectOffsetChange?.({ x, y });
+                                                            }}
+                                                            className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-red-400"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            <div className="text-[11px] text-gray-400 pt-2">
+                                提示：每個特效可以獨立調整大小和旋轉角度。位置調整（X/Y）僅適用於當前選中的特效（藍色邊框）。
                             </div>
                         </div>
                     )}

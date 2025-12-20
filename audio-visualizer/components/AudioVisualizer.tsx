@@ -8398,6 +8398,10 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 if (!drawFunction) continue;
 
                 const shouldTransform = !IGNORE_TRANSFORM_VISUALIZATIONS.has(type);
+                
+                // Prepare props for special visualizers that read effectScale/offset/rotation
+                let propsForDrawing = propsRef.current;
+                let perEffectForDrawing: MultiEffectTransform | null = null;
 
                 if (shouldTransform) {
                     ctx.save();
@@ -8428,20 +8432,39 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
 
                     // For special visualizers that read propsRef.current.effectScale/offset/rotation internally,
                     // temporarily override those fields during this draw.
-                    const prevFx = (propsRef.current as any).effectOffsetX;
-                    const prevFy = (propsRef.current as any).effectOffsetY;
-                    const prevFs = (propsRef.current as any).effectScale;
-                    const prevFr = (propsRef.current as any).effectRotation;
+                    // Use a try-catch approach to safely override, or use a wrapper object if direct assignment fails.
+                    let prevFx: any = undefined;
+                    let prevFy: any = undefined;
+                    let prevFs: any = undefined;
+                    let prevFr: any = undefined;
+                    let wasOverridden = false;
+                    
                     if (multiEnabled) {
-                        (propsRef.current as any).effectOffsetX = perEffect.x || 0;
-                        (propsRef.current as any).effectOffsetY = perEffect.y || 0;
-                        (propsRef.current as any).effectScale = perEffect.scale || 1;
-                        (propsRef.current as any).effectRotation = perEffect.rotation || 0;
-                        // Ensure legacy offset stays coherent for code paths still referencing it.
-                        (propsRef.current as any).multiEffectOffsets = {
-                            ...(propsRef.current as any).multiEffectOffsets,
-                            [type]: { x: perEffect.x || 0, y: perEffect.y || 0 }
-                        };
+                        try {
+                            // Try to read existing values
+                            prevFx = (propsRef.current as any).effectOffsetX;
+                            prevFy = (propsRef.current as any).effectOffsetY;
+                            prevFs = (propsRef.current as any).effectScale;
+                            prevFr = (propsRef.current as any).effectRotation;
+                            
+                            // Try to override - if this fails, we'll skip and use the applied values directly
+                            (propsRef.current as any).effectOffsetX = perEffect.x || 0;
+                            (propsRef.current as any).effectOffsetY = perEffect.y || 0;
+                            (propsRef.current as any).effectScale = perEffect.scale || 1;
+                            (propsRef.current as any).effectRotation = perEffect.rotation || 0;
+                            
+                            // Ensure legacy offset stays coherent for code paths still referencing it.
+                            (propsRef.current as any).multiEffectOffsets = {
+                                ...(propsRef.current as any).multiEffectOffsets,
+                                [type]: { x: perEffect.x || 0, y: perEffect.y || 0 }
+                            };
+                            wasOverridden = true;
+                        } catch (e) {
+                            // If direct assignment fails (read-only property), we'll use the applied values directly
+                            // The transform is already applied via ctx.translate/rotate/scale above, so drawing should still work
+                            console.warn('Cannot override propsRef properties in multi-effect mode, using direct transform instead:', e);
+                            wasOverridden = false;
+                        }
                     }
                     ctx.translate(
                         centerX + appliedOffsetX,
@@ -8453,13 +8476,33 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                     ctx.scale(appliedScale, appliedScale);
                     ctx.translate(-centerX, -centerY);
 
+                    // Store perEffect for later use in drawing functions
+                    perEffectForDrawing = perEffect;
+                    
+                    // Create a wrapped props object for special visualizers if we couldn't override propsRef.current
+                    if (multiEnabled && wasOverridden === false) {
+                        propsForDrawing = {
+                            ...propsRef.current,
+                            effectOffsetX: perEffect.x || 0,
+                            effectOffsetY: perEffect.y || 0,
+                            effectScale: perEffect.scale || 1,
+                            effectRotation: perEffect.rotation || 0,
+                        } as any;
+                    }
+                    
                     // Restore overrides after drawing this type (restored below after draw call too)
                     // NOTE: actual restore happens after drawFunction, right before ctx.restore().
                     (ctx as any).__multiRestore = () => {
-                        (propsRef.current as any).effectOffsetX = prevFx;
-                        (propsRef.current as any).effectOffsetY = prevFy;
-                        (propsRef.current as any).effectScale = prevFs;
-                        (propsRef.current as any).effectRotation = prevFr;
+                        if (wasOverridden) {
+                            try {
+                                (propsRef.current as any).effectOffsetX = prevFx;
+                                (propsRef.current as any).effectOffsetY = prevFy;
+                                (propsRef.current as any).effectScale = prevFs;
+                                (propsRef.current as any).effectRotation = prevFr;
+                            } catch (e) {
+                                // Ignore restore errors
+                            }
+                        }
                     };
                 }
 
@@ -8476,7 +8519,7 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
 
                 if (type === VisualizationType.GEOMETRIC_BARS) {
                     // 可夜特別訂製版需要特殊處理，傳遞額外參數
-                    drawGeometricBars(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, propsRef.current, controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor, (latestPropsRef as any)?.controlCardFontFamily, (latestPropsRef as any)?.controlCardTextEffect, (latestPropsRef as any)?.controlCardStrokeColor);
+                    drawGeometricBars(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, propsForDrawing, controlCardEnabled, controlCardFontSize, controlCardStyle, controlCardColor, controlCardBackgroundColor, (latestPropsRef as any)?.controlCardFontFamily, (latestPropsRef as any)?.controlCardTextEffect, (latestPropsRef as any)?.controlCardStrokeColor);
                 } else if (type === VisualizationType.Z_CUSTOM) {
                     // Z總訂製款需要特殊處理，傳遞額外參數
                     const currentFrame = typeof frame.current === 'number' ? frame.current : 0;
@@ -8488,22 +8531,22 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                     drawVinylRecord(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current, geometricFrameImageRef.current, geometricSemicircleImageRef.current, vinylRecordEnabled, vinylNeedleEnabled);
                 } else if (type === VisualizationType.PHOTO_SHAKE) {
                     // 相片晃動需要傳遞 props
-                    drawPhotoShake(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+                    drawPhotoShake(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsForDrawing);
                 } else if (type === VisualizationType.FRAME_PIXELATION) {
                     // 方框 像素化需要傳遞 props
-                    drawFramePixelation(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+                    drawFramePixelation(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsForDrawing);
                 } else if (type === VisualizationType.DYNAMIC_CONTROL_CARD) {
                     // 重低音強化需要傳遞 props
-                    drawDynamicControlCard(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+                    drawDynamicControlCard(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsForDrawing);
                 } else if (type === VisualizationType.CIRCULAR_WAVE) {
                     // 圓形波形需要傳遞 props
-                    drawCircularWave(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+                    drawCircularWave(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsForDrawing);
                 } else if (type === VisualizationType.BLURRED_EDGE) {
                     // 邊緣虛化需要傳遞 props
-                    drawBlurredEdge(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+                    drawBlurredEdge(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsForDrawing);
                 } else if (type === VisualizationType.KE_YE_CUSTOM_V2) {
                     // 可夜訂製版二號需要傳遞 props
-                    drawKeYeCustomV2(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsRef.current);
+                    drawKeYeCustomV2(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsForDrawing);
                 } else {
                     drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
                 }

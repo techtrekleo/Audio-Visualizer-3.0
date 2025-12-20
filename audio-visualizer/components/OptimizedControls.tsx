@@ -747,10 +747,12 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         for (let i = 0; i < 3; i++) {
             const def = getDefaultCustomTextOverlay(i);
             const raw = (arr[i] && typeof arr[i] === 'object') ? arr[i] : {};
+            // If enabled is explicitly set, use it. Otherwise, default to enabled if text exists, or use default.
+            const shouldAutoEnable = raw.enabled === undefined && !!raw.text && String(raw.text).trim().length > 0;
             next.push({
                 ...def,
                 ...raw,
-                enabled: raw.enabled !== undefined ? !!raw.enabled : (!!raw.text && String(raw.text).trim().length > 0) || def.enabled,
+                enabled: raw.enabled !== undefined ? !!raw.enabled : (shouldAutoEnable || def.enabled),
                 text: raw.text !== undefined ? String(raw.text) : def.text,
                 color: raw.color || def.color,
                 strokeColor: raw.strokeColor !== undefined ? raw.strokeColor : def.strokeColor,
@@ -768,11 +770,24 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
     const setCustomTextOverlay = (index: number, patch: Partial<CustomTextOverlay>) => {
         if (props.onUpdateCustomTextOverlay) {
+            // If user is adding text and the overlay is currently disabled, auto-enable it
+            if (patch.text !== undefined && patch.text.trim().length > 0) {
+                const current = normalizeCustomTextOverlays(props.customTextOverlays);
+                const currentOverlay = current[index];
+                if (currentOverlay && currentOverlay.enabled === false && (!currentOverlay.text || currentOverlay.text.trim().length === 0)) {
+                    patch = { ...patch, enabled: true };
+                }
+            }
             props.onUpdateCustomTextOverlay(index, patch);
             return;
         }
         const current = normalizeCustomTextOverlays(props.customTextOverlays);
         const next = [...current];
+        const currentOverlay = next[index];
+        // If user is adding text and the overlay is currently disabled, auto-enable it
+        if (patch.text !== undefined && patch.text.trim().length > 0 && currentOverlay && currentOverlay.enabled === false && (!currentOverlay.text || currentOverlay.text.trim().length === 0)) {
+            patch = { ...patch, enabled: true };
+        }
         next[index] = { ...next[index], ...patch };
         props.onCustomTextOverlaysChange(next);
     };
@@ -887,6 +902,80 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         introPositionX: props.introPositionX ?? 50,
         introPositionY: props.introPositionY ?? 50,
         introLightBarsEnabled: props.introLightBarsEnabled ?? true,
+        
+        // Custom colors
+        customPrimaryColor: props.customPrimaryColor,
+        customSecondaryColor: props.customSecondaryColor,
+        customAccentColor: props.customAccentColor,
+        
+        // Subtitle additional settings
+        subtitleOrientation: props.subtitleOrientation,
+        verticalSubtitlePosition: props.verticalSubtitlePosition,
+        horizontalSubtitlePosition: props.horizontalSubtitlePosition,
+        verticalSubtitleVerticalPosition: props.verticalSubtitleVerticalPosition,
+        horizontalSubtitleVerticalPosition: props.horizontalSubtitleVerticalPosition,
+        subtitleFormat: props.subtitleFormat,
+        subtitleLanguage: props.subtitleLanguage,
+        subtitlesRawText: props.subtitlesRawText,
+        showSubtitles: props.showSubtitles,
+        subtitleStrokeColor: props.subtitleStrokeColor,
+        
+        // Lyrics Display
+        showLyricsDisplay: props.showLyricsDisplay,
+        
+        // Slideshow
+        isSlideshowEnabled: props.isSlideshowEnabled,
+        slideshowInterval: props.slideshowInterval,
+        transitionType: props.transitionType,
+        
+        // Display toggles
+        showVisualizer: props.showVisualizer,
+        showBackgroundImage: props.showBackgroundImage,
+        
+        // Photo Shake
+        photoShakeImage: props.photoShakeImage,
+        photoShakeSongTitle: props.photoShakeSongTitle,
+        photoShakeSubtitle: props.photoShakeSubtitle,
+        photoShakeFontFamily: props.photoShakeFontFamily,
+        photoShakeOverlayOpacity: props.photoShakeOverlayOpacity,
+        photoShakeFontSize: props.photoShakeFontSize,
+        photoShakeDecaySpeed: props.photoShakeDecaySpeed,
+        
+        // Bass Enhancement
+        bassEnhancementBlurIntensity: props.bassEnhancementBlurIntensity,
+        bassEnhancementCurveIntensity: props.bassEnhancementCurveIntensity,
+        bassEnhancementText: props.bassEnhancementText,
+        bassEnhancementTextColor: props.bassEnhancementTextColor,
+        bassEnhancementTextFont: props.bassEnhancementTextFont,
+        bassEnhancementTextSize: props.bassEnhancementTextSize,
+        bassEnhancementTextBgOpacity: props.bassEnhancementTextBgOpacity,
+        bassEnhancementCenterOpacity: props.bassEnhancementCenterOpacity,
+        
+        // Circular Wave
+        circularWaveImage: props.circularWaveImage,
+        
+        // Blurred Edge
+        blurredEdgeSinger: props.blurredEdgeSinger,
+        blurredEdgeSongTitle: props.blurredEdgeSongTitle,
+        blurredEdgeFontFamily: props.blurredEdgeFontFamily,
+        blurredEdgeTextColor: props.blurredEdgeTextColor,
+        blurredEdgeBgOpacity: props.blurredEdgeBgOpacity,
+        blurredEdgeFontSize: props.blurredEdgeFontSize,
+        
+        // Vinyl Record
+        vinylImage: props.vinylImage,
+        vinylLayoutMode: props.vinylLayoutMode,
+        vinylCenterFixed: props.vinylCenterFixed,
+        vinylRecordEnabled: props.vinylRecordEnabled,
+        vinylNeedleEnabled: props.vinylNeedleEnabled,
+        pianoOpacity: props.pianoOpacity,
+        
+        // Control Card
+        controlCardEnabled: props.controlCardEnabled,
+        controlCardStyle: props.controlCardStyle,
+        controlCardColor: props.controlCardColor,
+        controlCardBackgroundColor: props.controlCardBackgroundColor,
+        controlCardFontSize: props.controlCardFontSize,
         });
     };
 
@@ -1019,6 +1108,75 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.keYeCustomV2Text2Effect !== undefined) props.onKeYeCustomV2Text2EffectChange?.(settings.keYeCustomV2Text2Effect);
         if (settings.keYeCustomV2Text1StrokeColor !== undefined) props.onKeYeCustomV2Text1StrokeColorChange?.(settings.keYeCustomV2Text1StrokeColor);
         if (settings.keYeCustomV2Text2StrokeColor !== undefined) props.onKeYeCustomV2Text2StrokeColorChange?.(settings.keYeCustomV2Text2StrokeColor);
+        
+        // Custom colors
+        if (settings.customPrimaryColor !== undefined) props.onCustomPrimaryColorChange?.(settings.customPrimaryColor);
+        if (settings.customSecondaryColor !== undefined) props.onCustomSecondaryColorChange?.(settings.customSecondaryColor);
+        if (settings.customAccentColor !== undefined) props.onCustomAccentColorChange?.(settings.customAccentColor);
+        
+        // Subtitle additional settings
+        if (settings.subtitleOrientation !== undefined) props.onSubtitleOrientationChange?.(settings.subtitleOrientation);
+        if (settings.verticalSubtitlePosition !== undefined) props.onVerticalSubtitlePositionChange?.(settings.verticalSubtitlePosition);
+        if (settings.horizontalSubtitlePosition !== undefined) props.onHorizontalSubtitlePositionChange?.(settings.horizontalSubtitlePosition);
+        if (settings.verticalSubtitleVerticalPosition !== undefined) props.onVerticalSubtitleVerticalPositionChange?.(settings.verticalSubtitleVerticalPosition);
+        if (settings.horizontalSubtitleVerticalPosition !== undefined) props.onHorizontalSubtitleVerticalPositionChange?.(settings.horizontalSubtitleVerticalPosition);
+        if (settings.subtitleFormat !== undefined) props.onSubtitleFormatChange?.(settings.subtitleFormat);
+        if (settings.subtitleLanguage !== undefined) props.onSubtitleLanguageChange?.(settings.subtitleLanguage);
+        if (settings.subtitlesRawText !== undefined) props.onSubtitlesRawTextChange?.(settings.subtitlesRawText);
+        if (settings.showSubtitles !== undefined) props.onShowSubtitlesChange?.(settings.showSubtitles);
+        if (settings.subtitleStrokeColor !== undefined) props.onSubtitleStrokeColorChange?.(settings.subtitleStrokeColor);
+        
+        // Lyrics Display
+        if (settings.showLyricsDisplay !== undefined) props.onShowLyricsDisplayChange?.(settings.showLyricsDisplay);
+        
+        // Slideshow
+        if (settings.isSlideshowEnabled !== undefined) props.onSlideshowEnabledChange?.(settings.isSlideshowEnabled);
+        if (settings.slideshowInterval !== undefined) props.onSlideshowIntervalChange?.(settings.slideshowInterval);
+        if (settings.transitionType !== undefined) props.onTransitionTypeChange?.(settings.transitionType);
+        
+        // Display toggles
+        if (settings.showVisualizer !== undefined) props.onShowVisualizerChange?.(settings.showVisualizer);
+        if (settings.showBackgroundImage !== undefined) props.onShowBackgroundImageChange?.(settings.showBackgroundImage);
+        
+        // Photo Shake
+        if (settings.photoShakeSongTitle !== undefined) props.onPhotoShakeSongTitleChange?.(settings.photoShakeSongTitle);
+        if (settings.photoShakeSubtitle !== undefined) props.onPhotoShakeSubtitleChange?.(settings.photoShakeSubtitle);
+        if (settings.photoShakeFontFamily !== undefined) props.onPhotoShakeFontFamilyChange?.(settings.photoShakeFontFamily);
+        if (settings.photoShakeOverlayOpacity !== undefined) props.onPhotoShakeOverlayOpacityChange?.(settings.photoShakeOverlayOpacity);
+        if (settings.photoShakeFontSize !== undefined) props.onPhotoShakeFontSizeChange?.(settings.photoShakeFontSize);
+        if (settings.photoShakeDecaySpeed !== undefined) props.onPhotoShakeDecaySpeedChange?.(settings.photoShakeDecaySpeed);
+        
+        // Bass Enhancement
+        if (settings.bassEnhancementBlurIntensity !== undefined) props.onBassEnhancementBlurIntensityChange?.(settings.bassEnhancementBlurIntensity);
+        if (settings.bassEnhancementCurveIntensity !== undefined) props.onBassEnhancementCurveIntensityChange?.(settings.bassEnhancementCurveIntensity);
+        if (settings.bassEnhancementText !== undefined) props.onBassEnhancementTextChange?.(settings.bassEnhancementText);
+        if (settings.bassEnhancementTextColor !== undefined) props.onBassEnhancementTextColorChange?.(settings.bassEnhancementTextColor);
+        if (settings.bassEnhancementTextFont !== undefined) props.onBassEnhancementTextFontChange?.(settings.bassEnhancementTextFont);
+        if (settings.bassEnhancementTextSize !== undefined) props.onBassEnhancementTextSizeChange?.(settings.bassEnhancementTextSize);
+        if (settings.bassEnhancementTextBgOpacity !== undefined) props.onBassEnhancementTextBgOpacityChange?.(settings.bassEnhancementTextBgOpacity);
+        if (settings.bassEnhancementCenterOpacity !== undefined) props.onBassEnhancementCenterOpacityChange?.(settings.bassEnhancementCenterOpacity);
+        
+        // Blurred Edge
+        if (settings.blurredEdgeSinger !== undefined) props.onBlurredEdgeSingerChange?.(settings.blurredEdgeSinger);
+        if (settings.blurredEdgeSongTitle !== undefined) props.onBlurredEdgeSongTitleChange?.(settings.blurredEdgeSongTitle);
+        if (settings.blurredEdgeFontFamily !== undefined) props.onBlurredEdgeFontFamilyChange?.(settings.blurredEdgeFontFamily);
+        if (settings.blurredEdgeTextColor !== undefined) props.onBlurredEdgeTextColorChange?.(settings.blurredEdgeTextColor);
+        if (settings.blurredEdgeBgOpacity !== undefined) props.onBlurredEdgeBgOpacityChange?.(settings.blurredEdgeBgOpacity);
+        if (settings.blurredEdgeFontSize !== undefined) props.onBlurredEdgeFontSizeChange?.(settings.blurredEdgeFontSize);
+        
+        // Vinyl Record
+        if (settings.vinylLayoutMode !== undefined) props.onVinylLayoutModeChange?.(settings.vinylLayoutMode);
+        if (settings.vinylCenterFixed !== undefined) props.onVinylCenterFixedChange?.(settings.vinylCenterFixed);
+        if (settings.vinylRecordEnabled !== undefined) props.onVinylRecordEnabledChange?.(settings.vinylRecordEnabled);
+        if (settings.vinylNeedleEnabled !== undefined) props.onVinylNeedleEnabledChange?.(settings.vinylNeedleEnabled);
+        if (settings.pianoOpacity !== undefined) props.onPianoOpacityChange?.(settings.pianoOpacity);
+        
+        // Control Card
+        if (settings.controlCardEnabled !== undefined) props.onControlCardEnabledChange?.(settings.controlCardEnabled);
+        if (settings.controlCardStyle !== undefined) props.onControlCardStyleChange?.(settings.controlCardStyle);
+        if (settings.controlCardColor !== undefined) props.onControlCardColorChange?.(settings.controlCardColor);
+        if (settings.controlCardBackgroundColor !== undefined) props.onControlCardBackgroundColorChange?.(settings.controlCardBackgroundColor);
+        if (settings.controlCardFontSize !== undefined) props.onControlCardFontSizeChange?.(settings.controlCardFontSize);
     };
 
     const FONT_MAP: Record<FontType, string> = {
@@ -1103,6 +1261,11 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                         onActiveMultiEffectOffsetReset={props.onActiveMultiEffectOffsetReset}
                         multiEffectTransforms={props.multiEffectTransforms}
                         onActiveMultiEffectTransformChange={props.onActiveMultiEffectTransformChange}
+                        onMultiEffectTransformChange={props.onMultiEffectTransformsChange ? (type: VisualizationType, patch: Partial<MultiEffectTransform>) => {
+                            // Convert the callback signature: (type, patch) => update the full transforms map
+                            const current = props.multiEffectTransforms?.[type] || { x: 0, y: 0, scale: 1, rotation: 0 };
+                            props.onMultiEffectTransformsChange?.({ ...props.multiEffectTransforms, [type]: { ...current, ...patch } });
+                        } : undefined}
                         onActiveMultiEffectTransformReset={props.onActiveMultiEffectTransformReset}
                         waveformStroke={props.waveformStroke}
                         onWaveformStrokeChange={props.onWaveformStrokeChange}

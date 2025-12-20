@@ -1,4 +1,4 @@
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, CustomTextOverlay, MultiEffectTransform } from '../types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Resolution, GraphicEffectType, WatermarkPosition, SubtitleBgStyle, SubtitleDisplayMode, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, TransitionType, ControlCardStyle, CustomTextOverlay, MultiEffectTransform } from '../types';
 
 export interface SavedSettings {
     // Allow forward-compatible settings without constantly updating this interface
@@ -102,6 +102,80 @@ export interface SavedSettings {
     // Stellar Core
     stellarCoreInnerOpacity: number;
     stellarCoreTentaclesOpacity: number;
+    
+    // Custom colors
+    customPrimaryColor?: string;
+    customSecondaryColor?: string;
+    customAccentColor?: string;
+    
+    // Subtitle additional settings
+    subtitleOrientation?: SubtitleOrientation;
+    verticalSubtitlePosition?: number;
+    horizontalSubtitlePosition?: number;
+    verticalSubtitleVerticalPosition?: number;
+    horizontalSubtitleVerticalPosition?: number;
+    subtitleFormat?: SubtitleFormat;
+    subtitleLanguage?: SubtitleLanguage;
+    subtitlesRawText?: string;
+    showSubtitles?: boolean;
+    subtitleStrokeColor?: string;
+    
+    // Lyrics Display
+    showLyricsDisplay?: boolean;
+    
+    // Slideshow
+    isSlideshowEnabled?: boolean;
+    slideshowInterval?: number;
+    transitionType?: TransitionType;
+    
+    // Display toggles
+    showVisualizer?: boolean;
+    showBackgroundImage?: boolean;
+    
+    // Photo Shake
+    photoShakeImage?: string | null;
+    photoShakeSongTitle?: string;
+    photoShakeSubtitle?: string;
+    photoShakeFontFamily?: FontType;
+    photoShakeOverlayOpacity?: number;
+    photoShakeFontSize?: number;
+    photoShakeDecaySpeed?: number;
+    
+    // Bass Enhancement
+    bassEnhancementBlurIntensity?: number;
+    bassEnhancementCurveIntensity?: number;
+    bassEnhancementText?: string;
+    bassEnhancementTextColor?: string;
+    bassEnhancementTextFont?: FontType;
+    bassEnhancementTextSize?: number;
+    bassEnhancementTextBgOpacity?: number;
+    bassEnhancementCenterOpacity?: number;
+    
+    // Circular Wave
+    circularWaveImage?: string | null;
+    
+    // Blurred Edge
+    blurredEdgeSinger?: string;
+    blurredEdgeSongTitle?: string;
+    blurredEdgeFontFamily?: FontType;
+    blurredEdgeTextColor?: string;
+    blurredEdgeBgOpacity?: number;
+    blurredEdgeFontSize?: number;
+    
+    // Vinyl Record
+    vinylImage?: string | null;
+    vinylLayoutMode?: 'horizontal' | 'vertical';
+    vinylCenterFixed?: boolean;
+    vinylRecordEnabled?: boolean;
+    vinylNeedleEnabled?: boolean;
+    pianoOpacity?: number;
+    
+    // Control Card
+    controlCardEnabled?: boolean;
+    controlCardStyle?: ControlCardStyle;
+    controlCardColor?: string;
+    controlCardBackgroundColor?: string;
+    controlCardFontSize?: number;
 }
 
 export class SettingsManager {

@@ -271,7 +271,8 @@ input[type="range"].slider-enhanced::-moz-range-thumb:hover,
 }
 
 .collapsible-content.expanded {
-  max-height: 1000px;
+  /* Fallback cap; actual height is set inline by `CollapsibleControlSection` to avoid clipping long sections. */
+  max-height: 9999px;
   opacity: 1;
 }
 
