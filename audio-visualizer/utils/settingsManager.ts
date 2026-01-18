@@ -80,6 +80,8 @@ export interface SavedSettings {
     ctaPositionY: number;
     ctaVideoEnabled: boolean;
     ctaVideoIncludeAudio: boolean;
+    // When true, the uploaded CTA video replaces the CTA pill animation (video-only CTA).
+    ctaVideoReplaceCtaAnimation?: boolean;
 
     // Control Card (text)
     controlCardFontFamily: FontType;

@@ -310,6 +310,9 @@ interface OptimizedControlsProps {
     onCtaVideoEnabledChange?: (enabled: boolean) => void;
     ctaVideoIncludeAudio?: boolean;
     onCtaVideoIncludeAudioChange?: (enabled: boolean) => void;
+    // When true, the uploaded CTA video replaces the CTA pill animation
+    ctaVideoReplaceCtaAnimation?: boolean;
+    onCtaVideoReplaceCtaAnimationChange?: (enabled: boolean) => void;
 
     // Intro Overlay controls
     showIntroOverlay?: boolean;
@@ -853,6 +856,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         ctaPositionY: props.ctaPositionY ?? 50,
         ctaVideoEnabled: props.ctaVideoEnabled ?? false,
         ctaVideoIncludeAudio: props.ctaVideoIncludeAudio ?? false,
+        ctaVideoReplaceCtaAnimation: props.ctaVideoReplaceCtaAnimation ?? false,
 
         // Fusion
         fusionCenterOpacity: props.fusionCenterOpacity ?? 1.0,
@@ -1060,6 +1064,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
         if (settings.ctaPositionY !== undefined) props.onCtaPositionYChange?.(settings.ctaPositionY);
         if (settings.ctaVideoEnabled !== undefined) props.onCtaVideoEnabledChange?.(!!settings.ctaVideoEnabled);
         if (settings.ctaVideoIncludeAudio !== undefined) props.onCtaVideoIncludeAudioChange?.(!!settings.ctaVideoIncludeAudio);
+        if (settings.ctaVideoReplaceCtaAnimation !== undefined) props.onCtaVideoReplaceCtaAnimationChange?.(!!settings.ctaVideoReplaceCtaAnimation);
 
         // Fusion
         if (settings.fusionCenterOpacity !== undefined) props.onFusionCenterOpacityChange?.(settings.fusionCenterOpacity);
@@ -1445,10 +1450,11 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 </a>
                             )}
                         </div>
+                    </div>
                         
-                        {/* CTA 動畫頻道名稱輸入 */}
-                        {props.showCtaAnimation && (
-                            <div className="mt-4 space-y-4">
+                    {/* CTA 設定（動畫 + 自訂上傳影片） */}
+                    {props.showCtaAnimation && (
+                        <div className="mt-4 space-y-4">
                                 {/* CTA 影片上傳（可選） */}
                                 <div className="p-4 rounded-lg border border-gray-600 bg-gray-800/40 space-y-3">
                                     <div className="text-sm font-medium text-cyan-300">CTA 影片（自訂上傳）</div>
@@ -1487,7 +1493,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     <div className="flex items-center justify-between bg-gray-900/40 border border-gray-700 rounded-lg p-3">
                                         <div className="flex flex-col">
                                             <span className="text-sm font-medium text-gray-200">顯示 CTA 影片</span>
-                                            <span className="text-xs text-gray-400">將 CTA 影片疊加在畫面上（可拖曳位置）</span>
+                                            <span className="text-xs text-gray-400">將 CTA 影片疊加在畫面上（目前為全螢幕 cover）</span>
                                         </div>
                                         <button
                                             onClick={() => props.onCtaVideoEnabledChange?.(!(props.ctaVideoEnabled ?? false))}
@@ -1496,6 +1502,21 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                             aria-pressed={(props.ctaVideoEnabled ?? false)}
                                         >
                                             <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${(props.ctaVideoEnabled ?? false) ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center justify-between bg-gray-900/40 border border-gray-700 rounded-lg p-3">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-gray-200">用 CTA 影片取代中間 CTA 小動畫</span>
+                                            <span className="text-xs text-gray-400">開啟後：只播一次 + 會有淡入淡出轉場；中間 CTA 卡片動畫不顯示</span>
+                                        </div>
+                                        <button
+                                            onClick={() => props.onCtaVideoReplaceCtaAnimationChange?.(!(props.ctaVideoReplaceCtaAnimation ?? false))}
+                                            type="button"
+                                            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${(props.ctaVideoReplaceCtaAnimation ?? false) ? 'bg-cyan-600' : 'bg-gray-500'}`}
+                                            aria-pressed={(props.ctaVideoReplaceCtaAnimation ?? false)}
+                                        >
+                                            <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${(props.ctaVideoReplaceCtaAnimation ?? false) ? 'translate-x-6' : 'translate-x-1'}`} />
                                         </button>
                                     </div>
 
@@ -1519,6 +1540,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     </p>
                                 </div>
 
+                                {props.showCtaAnimation && !(props.ctaVideoReplaceCtaAnimation ?? false) && (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-300 mb-2">
                                         頻道名稱
@@ -1531,6 +1553,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         className="w-full px-3 py-2 bg-gray-900 border-2 border-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
                                     />
                                 </div>
+                                )}
+                                {props.showCtaAnimation && !(props.ctaVideoReplaceCtaAnimation ?? false) && (
                                 <div>
                                     <SelectControl
                                         label="字體"
@@ -1590,6 +1614,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                         ]}
                                     />
                                 </div>
+                                )}
 
                                 {/* CTA 文字特效 */}
                                 <div>
@@ -1691,8 +1716,8 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                     />
                                 </div>
                             </div>
-                        )}
-                        
+                    )}
+
                         {/* Intro Overlay 設定 */}
                         {props.showIntroOverlay && (
                             <div className="mt-4 space-y-4">
@@ -4854,7 +4879,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
 
                 </div>
             </div>
-        </div>
     );
 };
 

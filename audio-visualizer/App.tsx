@@ -278,6 +278,7 @@ function App() {
     const [ctaVideoFileName, setCtaVideoFileName] = useState<string>('');
     const [ctaVideoEnabled, setCtaVideoEnabled] = useState<boolean>(false);
     const [ctaVideoIncludeAudio, setCtaVideoIncludeAudio] = useState<boolean>(false);
+    const [ctaVideoReplaceCtaAnimation, setCtaVideoReplaceCtaAnimation] = useState<boolean>(false);
     const ctaVideoRef = useRef<HTMLVideoElement | null>(null);
 
     const { analyser, initializeAudio, isAudioInitialized, getAudioStream, resetAudioAnalysis, setAuxMediaElement } = useAudioAnalysis();
@@ -329,6 +330,7 @@ function App() {
         });
         setCtaVideoFileName(file.name);
         setCtaVideoEnabled(true);
+        setCtaVideoReplaceCtaAnimation(true);
     }, []);
 
     const handleClearCtaVideo = useCallback(() => {
@@ -339,9 +341,25 @@ function App() {
         setCtaVideoFileName('');
         setCtaVideoEnabled(false);
         setCtaVideoIncludeAudio(false);
+        setCtaVideoReplaceCtaAnimation(false);
         // Ensure aux audio is detached
         setAuxMediaElement(null, false);
     }, [setAuxMediaElement]);
+
+    // When enabling CTA video, restart from 0 and play once (no loop).
+    useEffect(() => {
+        const el = ctaVideoRef.current;
+        if (!el) return;
+        if (!ctaVideoUrl || !ctaVideoEnabled) return;
+        try {
+            // best-effort: restart playback when toggled on
+            el.currentTime = 0;
+        } catch {
+            // ignore
+        }
+        // Autoplay works reliably when muted; if user includes audio, play may still require gesture.
+        el.play().catch(() => {});
+    }, [ctaVideoUrl, ctaVideoEnabled]);
     
     // 幾何圖形可視化狀態
     const [showGeometricControls, setShowGeometricControls] = useState<boolean>(false); // 幾何圖形控制面板
@@ -1349,7 +1367,8 @@ function App() {
             for (const [k, v] of Object.entries(next as any)) {
                 const type = k as VisualizationType;
                 const current = merged[type] || { x: 0, y: 0, scale: 1, rotation: 0 };
-                merged[type] = { ...current, x: v?.x ?? current.x, y: v?.y ?? current.y };
+                const vv = (v as any) as { x?: number; y?: number };
+                merged[type] = { ...current, x: vv?.x ?? current.x, y: vv?.y ?? current.y };
             }
             return merged;
         });
@@ -1731,9 +1750,41 @@ function App() {
         }
     };
 
+    const restartCtaVideoIfNeeded = useCallback((audioTimeSec: number, reason: string) => {
+        // Only restart when user is using CTA video as a replacement for the CTA pill animation.
+        if (!ctaVideoUrl || !ctaVideoEnabled || !ctaVideoReplaceCtaAnimation) return;
+        const v = ctaVideoRef.current;
+        if (!v) return;
+
+        // Only trigger replay when we are (re)at the beginning.
+        if (audioTimeSec > 0.06) return;
+
+        try {
+            v.pause();
+            v.currentTime = 0;
+        } catch {
+            // ignore
+        }
+        // Play once (no loop). This is in response to a user action (seek/record),
+        // so it should usually be allowed even when audio is enabled.
+        v.play().catch(() => {});
+    }, [ctaVideoUrl, ctaVideoEnabled, ctaVideoReplaceCtaAnimation]);
+
+    const prevAudioTimeRef = useRef<number>(0);
+
     const handleTimeUpdate = () => {
         if (audioRef.current) {
-            setCurrentTime(audioRef.current.currentTime);
+            const t = audioRef.current.currentTime;
+            setCurrentTime(t);
+
+            // If user scrubbed backwards to the beginning via the native audio element,
+            // ensure CTA replacement video can replay.
+            const prev = prevAudioTimeRef.current;
+            prevAudioTimeRef.current = t;
+            if (t <= 0.06 && prev > 0.30) {
+                restartCtaVideoIfNeeded(t, 'rewind');
+            }
+
             if (audioRef.current.ended) {
                 setIsPlaying(false);
                 if (isRecording) {
@@ -1747,6 +1798,8 @@ function App() {
         if (audioRef.current) {
             audioRef.current.currentTime = newTime;
             setCurrentTime(newTime);
+            // If user seeks back to the beginning, replay CTA replacement video.
+            restartCtaVideoIfNeeded(newTime, 'seek');
         }
     };
 
@@ -1774,6 +1827,8 @@ function App() {
                 const isTransparent = backgroundColor === BackgroundColorType.TRANSPARENT;
                 startRecording(canvasRef.current, audioStream, isTransparent);
                 audioRef.current.currentTime = 0;
+                // Ensure CTA replacement video also starts from 0 for recording.
+                restartCtaVideoIfNeeded(0, 'record');
                 // 錄影一定從 0 開始，因此可觸發開場動畫
                 if (showIntroOverlay) {
                     setIntroStartTime(0);
@@ -1891,7 +1946,6 @@ function App() {
                 src={ctaVideoUrl || undefined}
                 muted={!ctaVideoIncludeAudio}
                 playsInline
-                loop
                 preload="auto"
                 className="hidden"
             />
@@ -2002,6 +2056,7 @@ function App() {
                                     onCtaPositionUpdate={setCtaPosition}
                                     ctaVideoElement={ctaVideoRef.current}
                                     ctaVideoEnabled={ctaVideoEnabled}
+                                    ctaVideoReplaceCtaAnimation={ctaVideoReplaceCtaAnimation}
                                     // Intro Overlay props
                                     showIntroOverlay={showIntroOverlay}
                                     introTitle={introTitle}
@@ -2412,6 +2467,8 @@ function App() {
                             onCtaVideoEnabledChange={setCtaVideoEnabled}
                             ctaVideoIncludeAudio={ctaVideoIncludeAudio}
                             onCtaVideoIncludeAudioChange={setCtaVideoIncludeAudio}
+                            ctaVideoReplaceCtaAnimation={ctaVideoReplaceCtaAnimation}
+                            onCtaVideoReplaceCtaAnimationChange={setCtaVideoReplaceCtaAnimation}
                             // Intro Overlay props
                             showIntroOverlay={showIntroOverlay}
                             onShowIntroOverlayChange={setShowIntroOverlay}

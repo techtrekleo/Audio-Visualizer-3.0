@@ -149,6 +149,7 @@ interface AudioVisualizerProps {
     // CTA video overlay (user-uploaded)
     ctaVideoElement?: HTMLVideoElement | null;
     ctaVideoEnabled?: boolean;
+    ctaVideoReplaceCtaAnimation?: boolean;
     // Intro Overlay（開場文字動畫）
     showIntroOverlay?: boolean;
     introTitle?: string;
@@ -8683,6 +8684,59 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 }
             }
         }
+
+        // CTA 影片疊加（全螢幕）：用於 CTA 動畫功能裡「自訂上傳」的影片。
+        // 改善：原本只有中央小區塊，改成全螢幕（cover），並放在字幕/文字之前，確保字幕仍在上層。
+        if (propsRef.current.ctaVideoEnabled && propsRef.current.ctaVideoElement) {
+            const v = propsRef.current.ctaVideoElement;
+            // Ensure the video is playing (best-effort)
+            if (v.paused && !v.ended) {
+                v.play().catch(() => {});
+            }
+            if (v.readyState >= 2 && v.videoWidth > 0 && v.videoHeight > 0) {
+                // Transition (fade in/out). Play-once behavior is controlled by the <video> (no loop).
+                const t = typeof v.currentTime === 'number' ? v.currentTime : 0;
+                const d = typeof v.duration === 'number' ? v.duration : NaN;
+                const fadeIn = 0.25;
+                const fadeOut = 0.40;
+                const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
+                let alpha = 1;
+                if (Number.isFinite(d) && d > 0.001) {
+                    const aIn = clamp01(t / fadeIn);
+                    const aOut = clamp01((d - t) / fadeOut);
+                    alpha = aIn * aOut;
+                    // If ended, don't keep drawing forever.
+                    if (v.ended) alpha = 0;
+                }
+                if (alpha <= 0.001) {
+                    // skip drawing when fully faded out
+                } else {
+                const canvasAspect = width / height;
+                const videoAspect = v.videoWidth / v.videoHeight;
+                let sx = 0, sy = 0, sWidth = v.videoWidth, sHeight = v.videoHeight;
+
+                if (canvasAspect > videoAspect) {
+                    // canvas wider → crop top/bottom
+                    sWidth = v.videoWidth;
+                    sHeight = sWidth / canvasAspect;
+                    sx = 0;
+                    sy = (v.videoHeight - sHeight) / 2;
+                } else {
+                    // canvas taller → crop left/right
+                    sHeight = v.videoHeight;
+                    sWidth = sHeight * canvasAspect;
+                    sy = 0;
+                    sx = (v.videoWidth - sWidth) / 2;
+                }
+
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.drawImage(v, sx, sy, sWidth, sHeight, 0, 0, width, height);
+                ctx.restore();
+                }
+            }
+        }
+
         // 根據字幕顯示模式決定顯示內容
         if (propsRef.current.subtitleDisplayMode === SubtitleDisplayMode.LYRICS_SCROLL && subtitles.length > 0) {
             // 捲軸歌詞模式
@@ -8811,42 +8865,9 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 isBeat
             });
         }
-        
-        // CTA 影片疊加（可與文字 CTA 並存；影片先畫、文字再畫在上層）
-        if (propsRef.current.ctaVideoEnabled && propsRef.current.ctaVideoElement) {
-            const v = propsRef.current.ctaVideoElement;
-            // Ensure the video is playing (best-effort)
-            if (v.paused && !v.ended) {
-                v.play().catch(() => {});
-            }
-            if (v.readyState >= 2 && v.videoWidth > 0 && v.videoHeight > 0) {
-                const basePosition = propsRef.current.ctaPosition || { x: 50, y: 50 };
-                const dragOffset = dragState.current.isDragging && dragState.current.draggedElement === 'cta'
-                    ? dragState.current.dragOffset
-                    : { x: 0, y: 0 };
-                const ctaPosition = {
-                    x: basePosition.x + (dragOffset.x / width) * 100,
-                    y: basePosition.y + (dragOffset.y / height) * 100
-                };
-
-                const cx = (ctaPosition.x / 100) * width;
-                const cy = (ctaPosition.y / 100) * height;
-
-                // Size: target ~32% canvas width, keep aspect ratio.
-                const targetW = Math.max(160, width * 0.32);
-                const aspect = v.videoWidth / v.videoHeight;
-                const drawW = targetW;
-                const drawH = Math.max(90, drawW / Math.max(0.01, aspect));
-
-                ctx.save();
-                ctx.globalAlpha = 1;
-                ctx.drawImage(v, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
-                ctx.restore();
-            }
-        }
-
         // 繪製 CTA 動畫（在字幕之後，但確保不覆蓋字幕）
-        if (propsRef.current.showCtaAnimation && propsRef.current.ctaChannelName) {
+        // 若開啟「用 CTA 影片取代 CTA 小動畫」，則不顯示這個中間 CTA 動畫。
+        if (propsRef.current.showCtaAnimation && propsRef.current.ctaChannelName && !(propsRef.current.ctaVideoReplaceCtaAnimation && propsRef.current.ctaVideoEnabled)) {
             // 計算 CTA 位置，包含拖動偏移
             const basePosition = propsRef.current.ctaPosition || { x: 50, y: 50 };
             const dragOffset = dragState.current.isDragging && dragState.current.draggedElement === 'cta' 
@@ -9017,7 +9038,13 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         const { visualizationType, showSubtitles, subtitleDisplayMode, subtitles, currentTime } = propsRef.current;
         
         // 優先檢測 CTA 動畫區域（獨立功能，適用於所有可視化）
-        if (propsRef.current.showCtaAnimation && propsRef.current.ctaChannelName && propsRef.current.ctaPosition) {
+        // 若開啟「用 CTA 影片取代 CTA 小動畫」，則不提供 CTA 動畫拖曳。
+        if (
+            propsRef.current.showCtaAnimation &&
+            propsRef.current.ctaChannelName &&
+            propsRef.current.ctaPosition &&
+            !(propsRef.current.ctaVideoReplaceCtaAnimation && propsRef.current.ctaVideoEnabled)
+        ) {
             const basePosition = propsRef.current.ctaPosition || { x: 50, y: 50 };
             const dragOffset = dragState.current.isDragging && dragState.current.draggedElement === 'cta' 
                 ? dragState.current.dragOffset 
