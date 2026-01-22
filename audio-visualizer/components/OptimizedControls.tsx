@@ -121,6 +121,65 @@ const formatSRTTime = (seconds: number): string => {
     
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')},${milliseconds.toString().padStart(3, '0')}`;
 };
+
+// 解析 LRC 格式 [mm:ss.xx] 或 [mm:ss.xxx]
+const parseLRC = (lrcText: string): string => {
+    if (!lrcText.trim()) return '';
+    
+    const lines = lrcText.trim().split('\n');
+    const subtitles: Array<{ time: number; text: string }> = [];
+    
+    // LRC 格式: [mm:ss.xx] 或 [mm:ss.xxx] 或 [mm:ss:xx]
+    const lrcTimeRegex = /\[(\d{1,2}):(\d{1,2})[\.:](\d{1,2})\]/;
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        // 跳過標籤行（如 [ar:Artist], [ti:Title] 等）
+        if (line.startsWith('[') && /^\[(ar|ti|al|by|offset|length):/.test(line)) {
+            continue;
+        }
+        
+        // 匹配所有時間標籤（一行可能有多個時間標籤）
+        const matches = [...line.matchAll(/\[(\d{1,2}):(\d{1,2})[\.:](\d{1,2})\]/g)];
+        
+        if (matches.length > 0) {
+            // 提取文字（移除所有時間標籤）
+            const text = line.replace(/\[(\d{1,2}):(\d{1,2})[\.:](\d{1,2})\]/g, '').trim();
+            
+            if (text) {
+                // 為每個時間標籤創建一個字幕條目
+                for (const match of matches) {
+                    const minutes = parseInt(match[1], 10);
+                    const seconds = parseInt(match[2], 10);
+                    const centiseconds = parseInt(match[3], 10);
+                    const time = minutes * 60 + seconds + centiseconds / 100;
+                    subtitles.push({ time, text });
+                }
+            }
+        }
+    }
+    
+    // 按時間排序
+    subtitles.sort((a, b) => a.time - b.time);
+    
+    // 轉換為方括號格式
+    return subtitles.map(subtitle => {
+        const minutes = Math.floor(subtitle.time / 60);
+        const secs = Math.floor(subtitle.time % 60);
+        const centiseconds = Math.floor((subtitle.time % 1) * 100);
+        return `[${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}] ${subtitle.text}`;
+    }).join('\n');
+};
+
+// 解析 SRT 文件內容
+const parseSRTFile = (srtText: string): string => {
+    if (!srtText.trim()) return '';
+    
+    // SRT 格式已經符合要求，直接返回
+    return srtText;
+};
 import { SettingsManager, SavedSettings } from '../utils/settingsManager';
 
 interface OptimizedControlsProps {
@@ -2415,17 +2474,94 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                             </div>
                             
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-300">字幕文字</label>
+                                <div className="flex items-center justify-between">
+                                    <label className="text-sm font-medium text-gray-300">字幕文字</label>
+                                    <input
+                                        type="file"
+                                        accept=".srt,.lrc,.txt"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+                                            
+                                            const reader = new FileReader();
+                                            reader.onload = (event) => {
+                                                const content = event.target?.result as string;
+                                                const fileName = file.name.toLowerCase();
+                                                
+                                                try {
+                                                    if (fileName.endsWith('.lrc')) {
+                                                        // 解析 LRC 格式
+                                                        const converted = parseLRC(content);
+                                                        props.onSubtitlesRawTextChange(converted);
+                                                        // 自動切換為方括號格式
+                                                        if (props.onSubtitleFormatChange) {
+                                                            props.onSubtitleFormatChange(SubtitleFormat.BRACKET);
+                                                        }
+                                                        alert('✅ LRC 字幕文件已成功載入！\n\n已自動轉換為方括號格式。');
+                                                    } else if (fileName.endsWith('.srt')) {
+                                                        // 解析 SRT 格式
+                                                        props.onSubtitlesRawTextChange(content);
+                                                        // 自動切換為 SRT 格式
+                                                        if (props.onSubtitleFormatChange) {
+                                                            props.onSubtitleFormatChange(SubtitleFormat.SRT);
+                                                        }
+                                                        alert('✅ SRT 字幕文件已成功載入！');
+                                                    } else {
+                                                        // 嘗試自動檢測格式
+                                                        if (content.includes('-->')) {
+                                                            // 看起來是 SRT 格式
+                                                            props.onSubtitlesRawTextChange(content);
+                                                            if (props.onSubtitleFormatChange) {
+                                                                props.onSubtitleFormatChange(SubtitleFormat.SRT);
+                                                            }
+                                                            alert('✅ 字幕文件已成功載入（自動檢測為 SRT 格式）！');
+                                                        } else if (content.match(/\[\d{1,2}:\d{1,2}[\.:]\d{1,2}\]/)) {
+                                                            // 看起來是 LRC 格式
+                                                            const converted = parseLRC(content);
+                                                            props.onSubtitlesRawTextChange(converted);
+                                                            if (props.onSubtitleFormatChange) {
+                                                                props.onSubtitleFormatChange(SubtitleFormat.BRACKET);
+                                                            }
+                                                            alert('✅ 字幕文件已成功載入（自動檢測為 LRC 格式）！');
+                                                        } else {
+                                                            // 直接使用原始內容
+                                                            props.onSubtitlesRawTextChange(content);
+                                                            alert('✅ 字幕文件已成功載入！\n\n如果格式不正確，請手動調整。');
+                                                        }
+                                                    }
+                                                } catch (error) {
+                                                    alert('❌ 載入字幕文件時發生錯誤：\n\n' + (error instanceof Error ? error.message : String(error)));
+                                                }
+                                            };
+                                            reader.readAsText(file, 'utf-8');
+                                            
+                                            // 重置 input，允許再次選擇同一個文件
+                                            e.target.value = '';
+                                        }}
+                                        className="hidden"
+                                        id="subtitle-file-input"
+                                    />
+                                    <label
+                                        htmlFor="subtitle-file-input"
+                                        className="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg transition-colors"
+                                    >
+                                        <Icon path={ICON_PATHS.UPLOAD} className="w-4 h-4" />
+                                        <span>上傳字幕</span>
+                                    </label>
+                                </div>
                                 <textarea 
                                     value={props.subtitlesRawText}
                                     onChange={(e) => props.onSubtitlesRawTextChange(e.target.value)}
                                     rows={5}
                                     className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent font-mono text-sm"
                                     placeholder={props.subtitleFormat === SubtitleFormat.BRACKET 
-                                        ? "使用格式 [00:00.00] 歌詞文字，或點擊「AI 產生字幕」按鈕自動產生歌詞..."
-                                        : "使用格式 00:00:14,676 --> 00:00:19,347 歌詞文字，或點擊「AI 產生字幕」按鈕自動產生歌詞..."
+                                        ? "使用格式 [00:00.00] 歌詞文字，或點擊「上傳字幕」按鈕上傳 SRT/LRC 文件，或點擊「AI 產生字幕」按鈕自動產生歌詞..."
+                                        : "使用格式 00:00:14,676 --> 00:00:19,347 歌詞文字，或點擊「上傳字幕」按鈕上傳 SRT/LRC 文件，或點擊「AI 產生字幕」按鈕自動產生歌詞..."
                                     }
                                 />
+                                <p className="text-xs text-gray-400">
+                                    💡 支援上傳 SRT 或 LRC 格式的字幕文件
+                                </p>
                             </div>
                             
                             <div className="flex items-center justify-between">
