@@ -524,8 +524,13 @@
         // ===== UI Rendering & Interaction =====
 
         function getAvatarUrl(creator) {
-            // Return default avatar for now
-            return '/assets/cat-avatar.png';
+            // Keep the cat avatar for the specific creator (ID 0 / 口袋裡的貓)
+            if (creator.id === '0' || creator.dcName === '口袋裡的貓') {
+                return '/assets/cat-avatar.png';
+            }
+
+            // For everyone else, generate a nice avatar based on their name
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(creator.dcName)}&background=random&color=fff&size=128`;
         }
 
         function renderCreators() {
