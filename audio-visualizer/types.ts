@@ -56,7 +56,7 @@ export interface EffectInfo {
 // 全畫面濾鏡特效類型
 export enum FilterEffectType {
     SNOW = 'snow',
-    PARTICLES = 'particles', 
+    PARTICLES = 'particles',
     STARS = 'stars',
     RAIN = 'rain',
     CHERRY_BLOSSOM = 'cherry-blossom',
@@ -410,4 +410,6 @@ export interface SongItem {
     subtitlesRawText: string; // 字幕原始文本
     subtitles: Subtitle[]; // 解析后的字幕
     songName?: string; // 歌曲名称（可选）
+    ctaVideoFile?: File | null; // CTA 影片文件 (可選)
+    ctaVideoUrl?: string | null; // CTA 影片 URL (可選)
 }

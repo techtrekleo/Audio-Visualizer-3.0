@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快速檢查 Suno Cookie</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .code-box {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 20px 0;
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-btn:hover { background: #5568d3; }
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin: 10px 0;
+            display: none;
+        }
+        .success.show { display: block; }
+        .info {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 快速檢查 Suno Cookie</h1>
+        
+        <div class="info">
+            <strong>使用說明：</strong><br>
+            1. 在 Suno 歌曲頁面按 <code>F12</code> 開啟開發者工具<br>
+            2. 切換到「Console」標籤<br>
+            3. 複製下方程式碼並貼上執行<br>
+            4. 查看結果，找到 Session Cookie 的名稱
+        </div>
+        
+        <h3>檢查程式碼：</h3>
+        <div class="code-box" id="codeBox">
+(function() {
+    console.log('=== 🔍 Suno Cookie 檢查工具 ===\n');
+    
+    const allCookies = document.cookie.split(';').map(c => {
+        const [name, ...valueParts] = c.trim().split('=');
+        return {
+            name: name.trim(),
+            value: valueParts.join('='),
+            length: (valueParts.join('=') || '').length
+        };
+    });
+    
+    console.log('📊 所有 Cookie 數量:', allCookies.length);
+    console.log('\n📋 所有 Cookie 列表:');
+    allCookies.forEach((cookie, i) => {
+        console.log(`${i + 1}. ${cookie.name} (${cookie.length} 字元)`);
+    });
+    
+    const sessionCookies = allCookies.filter(c => {
+        const name = c.name.toLowerCase();
+        return name.includes('session') || name.includes('auth') || name.includes('token');
+    });
+    
+    console.log('\n🎯 可能的 Session Cookie:');
+    if (sessionCookies.length > 0) {
+        sessionCookies.forEach((cookie, i) => {
+            const preview = cookie.value.substring(0, 50);
+            console.log(`\n${i + 1}. ✅ ${cookie.name}`);
+            console.log(`   長度: ${cookie.length} 字元`);
+            console.log(`   預覽: ${preview}${cookie.value.length > 50 ? '...' : ''}`);
+            console.log(`   建議使用: ${cookie.length > 50 ? '✅ 是' : '❌ 否（太短）'}`);
+        });
+        
+        const best = sessionCookies.find(c => c.name === '__session') || 
+                    sessionCookies.find(c => c.name === '_session') ||
+                    sessionCookies.sort((a, b) => b.length - a.length)[0];
+        console.log(`\n💡 建議使用的 Cookie: ${best.name}`);
+    } else {
+        console.log('❌ 找不到任何可能的 Session Cookie');
+        console.log('請確認已登入 Suno 帳號');
+    }
+    
+    console.log('\n=== 檢查完成 ===');
+})();
+        </div>
+        <button class="copy-btn" onclick="copyCode()">複製程式碼</button>
+        
+        <div class="success" id="successMsg">✅ 已複製到剪貼簿！</div>
+        
+        <h3>下一步：</h3>
+        <ol>
+            <li>在 Suno 頁面按 <code>F12</code> 開啟開發者工具</li>
+            <li>切換到「Console」標籤</li>
+            <li>貼上上方程式碼並按 Enter</li>
+            <li>查看 Console 輸出，找到 Session Cookie 的名稱</li>
+            <li>如果找到的 Cookie 名稱不是 <code>__session</code> 或 <code>_session</code>，請告訴我</li>
+        </ol>
+    </div>
+
+    <script>
+        function copyCode() {
+            const code = document.getElementById('codeBox').textContent.trim();
+            navigator.clipboard.writeText(code).then(() => {
+                const msg = document.getElementById('successMsg');
+                msg.classList.add('show');
+                setTimeout(() => msg.classList.remove('show'), 3000);
+            });
+        }
+    </script>
+</body>
+</html>

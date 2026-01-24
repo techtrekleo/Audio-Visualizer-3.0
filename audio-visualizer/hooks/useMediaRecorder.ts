@@ -30,13 +30,14 @@ export const useMediaRecorder = (onRecordingComplete: (url: string, extension: s
                 return;
             }
         } else {
-            // For opaque backgrounds, prefer MP4 for better compatibility with video editors.
-            if (MediaRecorder.isTypeSupported(mp4Options.mimeType)) {
-                selectedConfig = mp4Options;
-            } else if (MediaRecorder.isTypeSupported(webmTransparentOptions.mimeType)) {
+            // Prefer WebM for better stability and YouTube compatibility.
+            // MP4 is kept as a fallback for browsers like Safari that might prioritize it or lack WebM.
+            if (MediaRecorder.isTypeSupported(webmTransparentOptions.mimeType)) {
                 selectedConfig = webmTransparentOptions;
             } else if (MediaRecorder.isTypeSupported(webmVp8Options.mimeType)) {
                 selectedConfig = webmVp8Options;
+            } else if (MediaRecorder.isTypeSupported(mp4Options.mimeType)) {
+                selectedConfig = mp4Options;
             } else if (MediaRecorder.isTypeSupported(webmFallbackOptions.mimeType)) {
                 selectedConfig = webmFallbackOptions;
             } else {
@@ -60,7 +61,16 @@ export const useMediaRecorder = (onRecordingComplete: (url: string, extension: s
             return;
         }
 
+        mediaRecorderRef.current.onerror = (e) => {
+            console.error("[Recorder] Error:", e);
+        };
+
+        mediaRecorderRef.current.onstart = () => {
+            console.log("[Recorder] Started successfully");
+        };
+
         mediaRecorderRef.current.ondataavailable = (event) => {
+            console.log(`[Recorder] Data available: ${event.data.size} bytes`, { state: mediaRecorderRef.current?.state });
             if (event.data.size > 0) {
                 recordedChunksRef.current.push(event.data);
             }
@@ -72,10 +82,11 @@ export const useMediaRecorder = (onRecordingComplete: (url: string, extension: s
             onRecordingComplete(url, selectedConfig.extension);
             recordedChunksRef.current = [];
         };
-        
+
         recordedChunksRef.current = [];
-        // Use small timeslice to flush data regularly; helps Safari stability
-        mediaRecorderRef.current.start(1000);
+        // Start recording without timeslice to produce a single blob with correct headers/duration
+        // This fixes "Processing Abandoned" on YouTube for WebM files.
+        mediaRecorderRef.current.start();
         setIsRecording(true);
 
     }, [onRecordingComplete]);

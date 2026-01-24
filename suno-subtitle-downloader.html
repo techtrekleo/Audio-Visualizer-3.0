@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suno 字幕下載工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .help-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+            transition: all 0.3s;
+        }
+
+        .help-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .output-dir-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .output-dir-group input {
+            flex: 1;
+        }
+
+        .browse-btn {
+            background: #764ba2;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .browse-btn:hover {
+            background: #653a8a;
+            transform: translateY(-2px);
+        }
+
+        .download-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .download-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .status-text {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .log-container {
+            margin-top: 30px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            display: none;
+        }
+
+        .log-container.active {
+            display: block;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .log-entry.info {
+            color: #333;
+        }
+
+        .log-entry.success {
+            color: #28a745;
+            background: #d4edda;
+        }
+
+        .log-entry.error {
+            color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .log-entry.warning {
+            color: #856404;
+            background: #fff3cd;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.active {
+            display: block;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .output-dir-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Suno 字幕下載工具</h1>
+        <p class="subtitle">從 Suno 歌曲網址下載 SRT 和 LRC 格式字幕檔案</p>
+
+        <div id="alert" class="alert"></div>
+
+        <form id="downloadForm">
+            <div class="form-group">
+                <label for="songUrl">歌曲 URL</label>
+                <input type="text" id="songUrl" placeholder="https://suno.com/song/xxxxx" required>
+            </div>
+
+            <div class="form-group">
+                <label for="sessionCookie">
+                    Session Cookie
+                    <button type="button" class="help-btn" onclick="showCookieHelp()">如何取得？</button>
+                </label>
+                <input type="password" id="sessionCookie" placeholder="貼上 __session cookie 值" required>
+            </div>
+
+            <div class="form-group">
+                <label for="outputDir">輸出檔名（選填）</label>
+                <div class="output-dir-group">
+                    <input type="text" id="outputDir" placeholder="留空則使用歌曲 ID">
+                </div>
+            </div>
+
+            <button type="submit" class="download-btn" id="downloadBtn">
+                開始下載
+            </button>
+        </form>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="status-text" id="statusText">準備中...</div>
+        </div>
+
+        <div class="log-container" id="logContainer">
+            <div id="logContent"></div>
+        </div>
+
+        <div class="footer">
+            <p>本工具在瀏覽器中運行，資料不會上傳到任何伺服器</p>
+        </div>
+    </div>
+
+    <script>
+        // 工具函數
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const logContent = document.getElementById('logContent');
+            const timestamp = new Date().toLocaleTimeString('zh-TW');
+            
+            const icons = {
+                info: 'ℹ️',
+                success: '✅',
+                error: '❌',
+                warning: '⚠️'
+            };
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${timestamp}] ${icons[type] || 'ℹ️'} ${message}`;
+            logContent.appendChild(entry);
+            
+            logContainer.classList.add('active');
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function showAlert(message, type = 'error') {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type} active`;
+            setTimeout(() => {
+                alert.classList.remove('active');
+            }, 5000);
+        }
+
+        function updateProgress(percent, text) {
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const statusText = document.getElementById('statusText');
+            
+            progressContainer.classList.add('active');
+            progressFill.style.width = percent + '%';
+            statusText.textContent = text;
+        }
+
+        function extractSongId(url) {
+            const patterns = [
+                /suno\.com\/song\/([a-zA-Z0-9_-]+)/,
+                /suno\.com\/song\/([^/?]+)/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) return match[1];
+            }
+            return null;
+        }
+
+        function getSafeFilename(title, songId) {
+            if (!title) return songId || 'suno_song';
+            let safe = title.replace(/\s+/g, ' ').replace(/[\\/:*?"<>|\[\]]+/g, '_').trim();
+            return safe || songId || 'suno_song';
+        }
+
+        function stripMeta(text) {
+            return String(text || '').replace(/\[[^\]]*?\]/g, '');
+        }
+
+        function isParenOnly(text) {
+            return /^\([^)]*\)$/.test(text.trim());
+        }
+
+        function buildSegments(words) {
+            words = [...words].sort((a, b) => (a.start_s || 0) - (b.start_s || 0));
+            
+            const segments = [];
+            let currentText = '';
+            let currentStart = null;
+            let currentEnd = null;
+            
+            function pushSegment() {
+                const text = currentText.trim();
+                if (currentStart !== null && text) {
+                    segments.push({
+                        start: currentStart,
+                        end: currentEnd,
+                        text: text
+                    });
+                }
+                currentText = '';
+                currentStart = null;
+                currentEnd = null;
+            }
+            
+            for (const wordData of words) {
+                const word = wordData.word;
+                if (!word) continue;
+                
+                let raw = stripMeta(word);
+                if (!raw.trim()) continue;
+                
+                const hasDoubleNewline = /\n\n\s*$/.test(raw);
+                const hasSingleNewline = !hasDoubleNewline && /\n\s*$/.test(raw);
+                
+                const parts = raw.replace(/\s*$/, '').split('\n');
+                
+                for (let i = 0; i < parts.length; i++) {
+                    const part = parts[i].trim();
+                    if (!part || isParenOnly(part)) continue;
+                    
+                    if (currentStart === null) {
+                        currentStart = wordData.start_s;
+                        currentEnd = wordData.end_s;
+                        currentText = part;
+                    } else {
+                        currentEnd = Math.max(currentEnd, wordData.end_s || 0);
+                        currentText += (currentText ? ' ' : '') + part;
+                    }
+                    
+                    if (i < parts.length - 1) {
+                        pushSegment();
+                    }
+                }
+                
+                if (hasDoubleNewline || hasSingleNewline) {
+                    pushSegment();
+                }
+            }
+            
+            pushSegment();
+            return segments;
+        }
+
+        function formatSrtTime(seconds) {
+            const totalMs = Math.round(seconds * 1000);
+            const hours = Math.floor(totalMs / 3600000);
+            const minutes = Math.floor((totalMs % 3600000) / 60000);
+            const secs = Math.floor((totalMs % 60000) / 1000);
+            const ms = totalMs % 1000;
+            
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')},${String(ms).padStart(3, '0')}`;
+        }
+
+        function formatLrcTime(seconds) {
+            const totalCs = Math.round(seconds * 100);
+            const minutes = Math.floor(totalCs / 6000);
+            const secs = Math.floor((totalCs % 6000) / 100);
+            const cs = totalCs % 100;
+            
+            return `[${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(cs).padStart(2, '0')}]`;
+        }
+
+        function generateSrt(segments) {
+            const lines = [];
+            segments.forEach((seg, i) => {
+                lines.push(`${i + 1}`);
+                lines.push(`${formatSrtTime(seg.start)} --> ${formatSrtTime(seg.end)}`);
+                lines.push(seg.text);
+                lines.push('');
+            });
+            return lines.join('\n');
+        }
+
+        function generateLrc(segments) {
+            return segments.map(seg => `${formatLrcTime(seg.start)}${seg.text}`).join('\n');
+        }
+
+        function downloadFile(content, filename, mimeType = 'text/plain') {
+            const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function showCookieHelp() {
+            const helpText = `📋 如何取得 Session Cookie（詳細步驟）
+
+你現在應該已經打開了開發者工具（F12），請按照以下步驟：
+
+📍 步驟 1: 切換標籤
+   你現在在「Console」標籤
+   → 請點擊頂部的「Application」標籤
+   （如果沒看到，可能是工具被縮小了，點擊頂部標籤欄）
+
+📍 步驟 2: 找到 Cookies
+   在左側邊欄中：
+   Application
+   └─ Storage（儲存）
+       └─ Cookies ← 點擊這個
+           └─ https://suno.com ← 點擊這個
+
+📍 步驟 3: 找到 _session
+   右側會顯示一個表格，找到 Name 是「_session」的行
+   （注意：是 _session，不是 __session）
+   
+   如果看到多個 _session：
+   - 選擇 Domain 是「.suno.com」或「suno.com」的那個
+   - 選擇 Path 是「/」的那個
+   - 選擇 Value 最長的那個
+   
+   ┌──────────┬──────────────┬─────────────────────┐
+   │ Name     │ Domain       │ Value               │
+   ├──────────┼──────────────┼─────────────────────┤
+   │ _session │ .suno.com    │ [很長的字符串]      │ ← 選這個！
+   └──────────┴──────────────┴─────────────────────┘
+
+📍 步驟 4: 複製 Cookie 值
+   - 雙擊 Value 欄位中的值
+   - 全選後按 Cmd+C（Mac）或 Ctrl+C（Windows）複製
+   - 或右鍵選擇「Copy value」
+
+📍 步驟 5: 貼上
+   - 回到這個工具
+   - 貼上到「Session Cookie」欄位
+
+💡 提示：
+- Cookie 名稱是「_session」（一個底線），不是「__session」（兩個底線）
+- 如果看到多個 _session，選擇 Domain 是「.suno.com」的那個
+- 如果找不到 _session，確認你已經登入 Suno
+- Cookie 值通常很長（以「eyJhb...」開頭），包含字母、數字和符號
+- 確保複製完整的值，不要遺漏任何字符
+- 在下方「Cookie Value」區域可以查看完整值
+
+⚠️ 注意：Cookie 包含你的登入憑證，請妥善保管！`;
+            
+            alert(helpText);
+        }
+
+        // 表單提交處理
+        document.getElementById('downloadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const songUrl = document.getElementById('songUrl').value.trim();
+            const sessionCookie = document.getElementById('sessionCookie').value.trim();
+            const outputDir = document.getElementById('outputDir').value.trim();
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            // 驗證輸入
+            if (!songUrl) {
+                showAlert('請輸入歌曲 URL', 'error');
+                return;
+            }
+            
+            if (!sessionCookie) {
+                showAlert('請輸入 Session Cookie', 'error');
+                return;
+            }
+            
+            // 提取歌曲 ID
+            const songId = extractSongId(songUrl);
+            if (!songId) {
+                showAlert('無法從 URL 中提取歌曲 ID\n\n請確認 URL 格式為：https://suno.com/song/[歌曲ID]', 'error');
+                return;
+            }
+            
+            // 禁用按鈕
+            downloadBtn.disabled = true;
+            downloadBtn.textContent = '下載中...';
+            
+            // 清空日誌
+            document.getElementById('logContent').innerHTML = '';
+            log(`開始處理歌曲 ID: ${songId}`, 'info');
+            updateProgress(10, '正在連接 API...');
+            
+            try {
+                // 請求 API
+                const apiUrl = `https://studio-api.prod.suno.com/api/gen/${songId}/aligned_lyrics/v2/`;
+                log('正在請求字幕資料...', 'info');
+                
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionCookie}`,
+                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+                    }
+                });
+                
+                updateProgress(30, '正在接收資料...');
+                
+                if (!response.ok) {
+                    let errorMsg = `API 回傳錯誤狀態碼: ${response.status}`;
+                    if (response.status === 401) {
+                        errorMsg += '\n請確認 session cookie 是否有效，建議重新登入 Suno 後取得新的 cookie';
+                    } else if (response.status === 404) {
+                        errorMsg += '\n該歌曲可能不存在或沒有字幕資料';
+                    }
+                    throw new Error(errorMsg);
+                }
+                
+                const data = await response.json();
+                const words = data.aligned_words || [];
+                
+                if (!Array.isArray(words) || words.length === 0) {
+                    throw new Error('該歌曲沒有字幕資料（aligned_words 為空）');
+                }
+                
+                log(`成功取得 ${words.length} 個單詞資料`, 'success');
+                updateProgress(50, '正在處理字幕資料...');
+                
+                // 建立字幕段落
+                const segments = buildSegments(words);
+                if (segments.length === 0) {
+                    throw new Error('無法建立字幕段落');
+                }
+                
+                log(`已建立 ${segments.length} 個字幕段落`, 'success');
+                updateProgress(70, '正在生成檔案...');
+                
+                // 生成檔案名稱
+                const filename = getSafeFilename(outputDir, songId);
+                
+                // 生成 SRT
+                const srtContent = generateSrt(segments);
+                downloadFile(srtContent, `${filename}.srt`, 'text/plain');
+                log(`已下載 SRT: ${filename}.srt`, 'success');
+                
+                // 生成 LRC
+                const lrcContent = generateLrc(segments);
+                downloadFile(lrcContent, `${filename}.lrc`, 'text/plain');
+                log(`已下載 LRC: ${filename}.lrc`, 'success');
+                
+                updateProgress(100, '下載完成！');
+                showAlert(`✅ 字幕檔案已成功下載！\n\nSRT: ${filename}.srt\nLRC: ${filename}.lrc`, 'success');
+                
+            } catch (error) {
+                log(`錯誤: ${error.message}`, 'error');
+                showAlert(`❌ ${error.message}`, 'error');
+                updateProgress(0, '下載失敗');
+            } finally {
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = '開始下載';
+            }
+        });
+    </script>
+</body>
+</html>

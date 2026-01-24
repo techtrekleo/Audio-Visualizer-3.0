@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>檢查 Suno Cookie</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .info { background: #e7f3ff; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .cookie-item { 
+            background: #f9f9f9; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+        .cookie-name { font-weight: bold; color: #667eea; }
+        .cookie-value { 
+            font-family: monospace; 
+            font-size: 12px; 
+            word-break: break-all;
+            color: #666;
+            margin-top: 5px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background: #5568d3; }
+        .result { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Suno Cookie 檢查工具</h1>
+        
+        <div class="info">
+            <strong>使用說明：</strong><br>
+            1. 在 Suno 歌曲頁面（suno.com/song/xxxxx）打開此頁面<br>
+            2. 點擊下方按鈕檢查 Cookie<br>
+            3. 查看找到的 Cookie 資訊
+        </div>
+        
+        <button onclick="checkCookies()">檢查 Cookie</button>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        function checkCookies() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>正在檢查...</p>';
+            
+            // 取得所有 Cookie
+            const allCookies = document.cookie.split(';').map(c => {
+                const [name, ...valueParts] = c.trim().split('=');
+                return {
+                    name: name.trim(),
+                    value: valueParts.join('='),
+                    full: c.trim()
+                };
+            });
+            
+            let html = '<h2>所有 Cookie (' + allCookies.length + ' 個)</h2>';
+            
+            // 顯示所有 Cookie
+            allCookies.forEach(cookie => {
+                html += `
+                    <div class="cookie-item">
+                        <div class="cookie-name">${cookie.name}</div>
+                        <div class="cookie-value">${cookie.value.substring(0, 100)}${cookie.value.length > 100 ? '...' : ''}</div>
+                        <div style="font-size: 11px; color: #999; margin-top: 5px;">
+                            長度: ${cookie.value.length} 字元
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // 尋找可能的 Session Cookie
+            const sessionCookies = allCookies.filter(c => 
+                c.name.toLowerCase().includes('session') || 
+                c.name.toLowerCase().includes('auth') ||
+                c.name.toLowerCase().includes('token')
+            );
+            
+            html += '<h2 style="margin-top: 30px;">可能的 Session Cookie (' + sessionCookies.length + ' 個)</h2>';
+            
+            if (sessionCookies.length > 0) {
+                sessionCookies.forEach(cookie => {
+                    html += `
+                        <div class="cookie-item" style="border-left-color: #4CAF50;">
+                            <div class="cookie-name">✅ ${cookie.name}</div>
+                            <div class="cookie-value">${cookie.value.substring(0, 100)}${cookie.value.length > 100 ? '...' : ''}</div>
+                            <div style="font-size: 11px; color: #999; margin-top: 5px;">
+                                長度: ${cookie.value.length} 字元 | 
+                                建議使用: ${cookie.value.length > 50 ? '是' : '否'}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p style="color: #f44336;">❌ 找不到任何可能的 Session Cookie</p>';
+            }
+            
+            // 檢查特定的 Cookie 名稱
+            html += '<h2 style="margin-top: 30px;">檢查標準 Cookie 名稱</h2>';
+            const standardNames = ['_session', '__session', 'session', 'auth_session', 'session_id'];
+            standardNames.forEach(name => {
+                const cookie = allCookies.find(c => c.name === name);
+                if (cookie) {
+                    html += `<p style="color: #4CAF50;">✅ 找到 <strong>${name}</strong>: ${cookie.value.substring(0, 50)}...</p>`;
+                } else {
+                    html += `<p style="color: #999;">❌ 找不到 <strong>${name}</strong></p>`;
+                }
+            });
+            
+            // 建議
+            html += '<h2 style="margin-top: 30px;">建議</h2>';
+            if (sessionCookies.length > 0) {
+                const bestCookie = sessionCookies.find(c => c.name === '_session') || sessionCookies[0];
+                html += `<p>✅ 建議使用: <strong>${bestCookie.name}</strong></p>`;
+                html += `<p>如果書籤還是無法使用，請將此 Cookie 名稱告訴開發者</p>`;
+            } else {
+                html += '<p style="color: #f44336;">⚠️ 找不到 Session Cookie，請確認：</p>';
+                html += '<ul>';
+                html += '<li>已登入 Suno 帳號</li>';
+                html += '<li>在 suno.com 域名下打開此頁面</li>';
+                html += '<li>檢查瀏覽器是否阻擋了 Cookie</li>';
+                html += '</ul>';
+            }
+            
+            result.innerHTML = html;
+        }
+        
+        // 自動檢查（如果在 Suno 域名下）
+        if (window.location.hostname.includes('suno.com')) {
+            setTimeout(checkCookies, 500);
+        }
+    </script>
+</body>
+</html>

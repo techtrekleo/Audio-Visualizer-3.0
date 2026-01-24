@@ -1,0 +1,14 @@
+已更新書籤程式碼，完全按照 PDF 說明的方式實作
+
+主要修改：
+1. ✅ 使用 __session（兩個底線）作為主要 Cookie 名稱
+2. ✅ 使用與 PDF 相同的函數命名（getCookie, getSafeTitle, buildSegments, srtTime, lrcTime, dl）
+3. ✅ 使用與 PDF 相同的錯誤處理方式
+4. ✅ 使用與 PDF 相同的 API 請求方式
+
+請重新安裝書籤：
+1. 打開「書籤安裝頁面.html」
+2. 重新拖曳安裝書籤
+3. 或在書籤列中編輯現有書籤，更新 URL
+
+完整的書籤 URL 已儲存在：bookmarklet-url-updated.txt

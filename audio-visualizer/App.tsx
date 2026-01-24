@@ -16,7 +16,7 @@ import { UnifiedHeader } from './components/UnifiedLayout';
 // import PopupAdManager from './components/PopupAdManager';
 import { useAudioAnalysis } from './hooks/useAudioAnalysis';
 import { useMediaRecorder } from './hooks/useMediaRecorder';
-import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle, CustomTextOverlay, MultiEffectTransform } from './types';
+import { VisualizationType, FontType, BackgroundColorType, ColorPaletteType, Palette, Resolution, GraphicEffectType, WatermarkPosition, Subtitle, SubtitleBgStyle, SubtitleDisplayMode, TransitionType, SubtitleFormat, SubtitleLanguage, SubtitleOrientation, FilterEffectType, ControlCardStyle, CustomTextOverlay, MultiEffectTransform, SongItem } from './types';
 import { ICON_PATHS, COLOR_PALETTES, RESOLUTION_MAP } from './constants';
 import FilterEffectsDemo from './src/components/FilterEffectsDemo';
 
@@ -187,13 +187,13 @@ function App() {
     const [vinylCenterFixed, setVinylCenterFixed] = useState<boolean>(false); // 中心照片固定
     const [vinylRecordEnabled, setVinylRecordEnabled] = useState<boolean>(true); // 唱片開關
     const [vinylNeedleEnabled, setVinylNeedleEnabled] = useState<boolean>(true); // 唱片指針開關
-    
+
     // Chinese Control Card State
     const [chineseCardAlbumImage, setChineseCardAlbumImage] = useState<string | null>(null);
     const [chineseCardSongTitle, setChineseCardSongTitle] = useState<string>('憶新愁');
     const [chineseCardArtist, setChineseCardArtist] = useState<string>('張福樂');
     const [chineseCardFontFamily, setChineseCardFontFamily] = useState<FontType>(FontType.POPPINS);
-    
+
     // Photo Shake State
     const [photoShakeImage, setPhotoShakeImage] = useState<string | null>(null);
     const [photoShakeSongTitle, setPhotoShakeSongTitle] = useState<string>('歌曲名稱');
@@ -202,10 +202,10 @@ function App() {
     const [photoShakeOverlayOpacity, setPhotoShakeOverlayOpacity] = useState<number>(0);
     const [photoShakeFontSize, setPhotoShakeFontSize] = useState<number>(60);
     const [photoShakeDecaySpeed, setPhotoShakeDecaySpeed] = useState<number>(0.95);
-    
+
     // Circular Wave State (圓形波形)
     const [circularWaveImage, setCircularWaveImage] = useState<string | null>(null);
-    
+
     // Blurred Edge State (邊緣虛化)
     const [blurredEdgeSinger, setBlurredEdgeSinger] = useState<string>('');
     const [blurredEdgeSongTitle, setBlurredEdgeSongTitle] = useState<string>('');
@@ -213,7 +213,7 @@ function App() {
     const [blurredEdgeTextColor, setBlurredEdgeTextColor] = useState<string>('#FFFFFF');
     const [blurredEdgeBgOpacity, setBlurredEdgeBgOpacity] = useState<number>(0.5);
     const [blurredEdgeFontSize, setBlurredEdgeFontSize] = useState<number>(40);
-    
+
     // Ke Ye Custom V2 State (可夜訂製版二號)
     const [keYeCustomV2BoxOpacity, setKeYeCustomV2BoxOpacity] = useState<number>(0.5);
     const [keYeCustomV2BoxColor, setKeYeCustomV2BoxColor] = useState<string>('#FFFFFF');
@@ -230,39 +230,39 @@ function App() {
     const [keYeCustomV2Text2Effect, setKeYeCustomV2Text2Effect] = useState<GraphicEffectType>(GraphicEffectType.NONE);
     const [keYeCustomV2Text1StrokeColor, setKeYeCustomV2Text1StrokeColor] = useState<string>('#FFFFFF');
     const [keYeCustomV2Text2StrokeColor, setKeYeCustomV2Text2StrokeColor] = useState<string>('#FFFFFF');
-    
-  // Bass Enhancement State (重低音強化)
-  const [bassEnhancementBlurIntensity, setBassEnhancementBlurIntensity] = useState<number>(0.5);
-  const [bassEnhancementCurveIntensity, setBassEnhancementCurveIntensity] = useState<number>(1.0);
-  const [bassEnhancementText, setBassEnhancementText] = useState<string>('');
-  const [bassEnhancementTextColor, setBassEnhancementTextColor] = useState<string>('#FFFFFF');
-  const [bassEnhancementTextFont, setBassEnhancementTextFont] = useState<FontType>(FontType.POPPINS);
-  const [bassEnhancementTextSize, setBassEnhancementTextSize] = useState<number>(4.0);
-  const [bassEnhancementTextBgOpacity, setBassEnhancementTextBgOpacity] = useState<number>(0.5);
-  // Frame Pixelation State (方框像素化)
-  const [bassEnhancementCenterOpacity, setBassEnhancementCenterOpacity] = useState<number>(0.3);
-    
+
+    // Bass Enhancement State (重低音強化)
+    const [bassEnhancementBlurIntensity, setBassEnhancementBlurIntensity] = useState<number>(0.5);
+    const [bassEnhancementCurveIntensity, setBassEnhancementCurveIntensity] = useState<number>(1.0);
+    const [bassEnhancementText, setBassEnhancementText] = useState<string>('');
+    const [bassEnhancementTextColor, setBassEnhancementTextColor] = useState<string>('#FFFFFF');
+    const [bassEnhancementTextFont, setBassEnhancementTextFont] = useState<FontType>(FontType.POPPINS);
+    const [bassEnhancementTextSize, setBassEnhancementTextSize] = useState<number>(4.0);
+    const [bassEnhancementTextBgOpacity, setBassEnhancementTextBgOpacity] = useState<number>(0.5);
+    // Frame Pixelation State (方框像素化)
+    const [bassEnhancementCenterOpacity, setBassEnhancementCenterOpacity] = useState<number>(0.3);
+
     // Lyrics Display State (測試中)
     const [showLyricsDisplay, setShowLyricsDisplay] = useState<boolean>(false);
     const [lyricsFontSize, setLyricsFontSize] = useState<number>(2); // 字體大小百分比
     const [lyricsFontFamily, setLyricsFontFamily] = useState<FontType>(FontType.POPPINS); // 捲軸字幕字體
     const [lyricsPositionX, setLyricsPositionX] = useState<number>(0); // 水平位置偏移 (-50 到 50)
     const [lyricsPositionY, setLyricsPositionY] = useState<number>(0); // 垂直位置偏移 (-50 到 50)
-    
+
     // 字幕拖曳位置狀態
     const [subtitleDragOffset, setSubtitleDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [lyricsDragOffset, setLyricsDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-    
+
     // 可視化拖曳和大小調整狀態
     const [visualizationTransform, setVisualizationTransform] = useState<{
         x: number;
         y: number;
         scale: number;
     }>({ x: 0, y: 0, scale: 1.0 });
-    
+
     // 可視化大小控制
     const [visualizationScale, setVisualizationScale] = useState<number>(1.0);
-    
+
     // CTA 動畫控制
     const [showCtaAnimation, setShowCtaAnimation] = useState<boolean>(false);
     const [ctaChannelName, setCtaChannelName] = useState<string>('口袋裡的貓');
@@ -304,13 +304,13 @@ function App() {
     const [introStartTime, setIntroStartTime] = useState<number>(0); // seconds in audio timeline
     const [introTriggerId, setIntroTriggerId] = useState<number>(0); // force re-trigger
     const [introLightBarsEnabled, setIntroLightBarsEnabled] = useState<boolean>(true);
-    
+
     // CTA 位置變更處理函數
     const handleCtaPositionXChange = (value: number) => {
         setCtaPositionX(value);
         setCtaPosition(prev => ({ ...prev, x: value }));
     };
-    
+
     const handleCtaPositionYChange = (value: number) => {
         setCtaPositionY(value);
         setCtaPosition(prev => ({ ...prev, y: value }));
@@ -358,29 +358,29 @@ function App() {
             // ignore
         }
         // Autoplay works reliably when muted; if user includes audio, play may still require gesture.
-        el.play().catch(() => {});
+        el.play().catch(() => { });
     }, [ctaVideoUrl, ctaVideoEnabled]);
-    
+
     // 幾何圖形可視化狀態
     const [showGeometricControls, setShowGeometricControls] = useState<boolean>(false); // 幾何圖形控制面板
     const [geometricFrameImage, setGeometricFrameImage] = useState<string | null>(null); // 方框圖片
     const [geometricSemicircleImage, setGeometricSemicircleImage] = useState<string | null>(null); // 半圓圖片
     const [geometricSongName, setGeometricSongName] = useState<string>(''); // 歌曲名稱
     const [geometricArtistName, setGeometricArtistName] = useState<string>(''); // 歌手名稱
-    
+
     // Z總訂製款可視化狀態
     const [showZCustomControls, setShowZCustomControls] = useState<boolean>(false); // Z總訂製款控制面板
     const [zCustomCenterImage, setZCustomCenterImage] = useState<string | null>(null); // 中央圖片
     const [zCustomScale, setZCustomScale] = useState<number>(1.0); // Z總訂製款大小
     const [zCustomPosition, setZCustomPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 }); // Z總訂製款位置
-    
+
     // 全畫面濾鏡特效狀態
     const [filterEffectType, setFilterEffectType] = useState<FilterEffectType>(FilterEffectType.SNOW); // 濾鏡特效類型
     const [filterEffectIntensity, setFilterEffectIntensity] = useState<number>(0.5); // 濾鏡特效強度 (0-1)
     const [filterEffectOpacity, setFilterEffectOpacity] = useState<number>(0.6); // 濾鏡特效透明度 (0-1)
     const [filterEffectSpeed, setFilterEffectSpeed] = useState<number>(1.0); // 濾鏡特效速度 (0.5-2)
     const [filterEffectEnabled, setFilterEffectEnabled] = useState<boolean>(false); // 濾鏡特效開關
-    
+
     // 鋼琴演奏家透明度
     const [pianoOpacity, setPianoOpacity] = useState<number>(1.0); // 鋼琴透明度 (0-1)
 
@@ -390,15 +390,15 @@ function App() {
     // Stellar Core 透明度（核心 / 觸手）
     const [stellarCoreInnerOpacity, setStellarCoreInnerOpacity] = useState<number>(1.0);
     const [stellarCoreTentaclesOpacity, setStellarCoreTentaclesOpacity] = useState<number>(1.0);
-    
+
     // 可夜訂製版控制卡狀態
     const [controlCardEnabled, setControlCardEnabled] = useState<boolean>(true); // 控制卡開關
     const [controlCardFontSize, setControlCardFontSize] = useState<number>(24); // 控制卡字體大小 (24-50px)
     const [controlCardFontFamily, setControlCardFontFamily] = useState<FontType>(FontType.POPPINS); // 控制卡字體
     const [controlCardTextEffect, setControlCardTextEffect] = useState<GraphicEffectType>(GraphicEffectType.NONE); // 控制卡文字特效
     const [controlCardStrokeColor, setControlCardStrokeColor] = useState<string>('#000000'); // 控制卡描邊顏色
-    
-    
+
+
     // API Key 管理狀態
     const [showApiKeyModal, setShowApiKeyModal] = useState<boolean>(false); // 是否顯示 API Key 彈出視窗
     const [userApiKey, setUserApiKey] = useState<string>(''); // 用戶自定義 API Key
@@ -409,22 +409,254 @@ function App() {
     const [songNameList, setSongNameList] = useState<string[]>([]); // 歌名列表
     const [currentSongIndex, setCurrentSongIndex] = useState<number>(0); // 當前歌曲索引
     const [autoChangeSong, setAutoChangeSong] = useState<boolean>(false); // 自動切換歌曲
-    
+
+    // Batch Processing State
+    const [isBatchMode, setIsBatchMode] = useState<boolean>(false);
+    const [batchQueue, setBatchQueue] = useState<SongItem[]>([]);
+    const [currentBatchIndex, setCurrentBatchIndex] = useState<number>(0);
+    const [isBatchRecording, setIsBatchRecording] = useState<boolean>(false);
+
+    const handleLoadBatchSong = (song: SongItem) => {
+        if (!song) return;
+        setAudioFile(song.audioFile);
+        setAudioUrl(song.audioUrl);
+        setSubtitlesRawText(song.subtitlesRawText || '');
+
+        // Handle Batch CTA Video
+        if (song.ctaVideoUrl) {
+            setCtaVideoUrl(song.ctaVideoUrl);
+            setCtaVideoEnabled(true);
+            setCtaVideoIncludeAudio(true); // Default to including audio for batch CTA
+            setCtaVideoReplaceCtaAnimation(true); // Default to replacing animation
+        } else {
+            // If no CTA video for this song, disable it or keep previous?
+            // User requirement: "If no CTA video, do not play". So we should disable/clear it.
+            setCtaVideoUrl(null);
+            setCtaVideoEnabled(false);
+        }
+
+        // Optional: Update title in control card or other UI if needed
+        // setControlCardSongTitle(song.songName || '');
+    };
+
+    // 處理批量上傳 (CRUD Handlers)
+    const handleAddBatchRow = useCallback(() => {
+        setBatchQueue(prev => [
+            ...prev,
+            {
+                id: Math.random().toString(36).substr(2, 9),
+                audioFile: undefined, // Wait for user upload
+                audioUrl: '',
+                audioDuration: 0,
+                backgroundImage: null,
+                backgroundVideo: null,
+                subtitlesRawText: '',
+                subtitles: [],
+                songName: '',
+                ctaVideoFile: null,
+                ctaVideoUrl: null
+            }
+        ]);
+        // If it's the first row, ensure current index is 0
+        setCurrentBatchIndex(prev => batchQueue.length === 0 ? 0 : prev);
+    }, [batchQueue.length]);
+
+    const handleRemoveBatchRow = useCallback((index: number) => {
+        setBatchQueue(prev => {
+            const newQueue = prev.filter((_, i) => i !== index);
+            return newQueue;
+        });
+        // Adjust index if needed
+        setCurrentBatchIndex(prev => {
+            if (index < prev) return prev - 1;
+            if (index === prev && prev > 0) return prev - 1;
+            return prev;
+        });
+    }, []);
+
+    const handleUpdateBatchRow = useCallback(async (index: number, field: 'audio' | 'subtitle' | 'cta', file: File) => {
+        // Optimistic update
+        setBatchQueue(prev => {
+            const newQueue = [...prev];
+            if (!newQueue[index]) return prev;
+
+            const item = { ...newQueue[index] };
+
+            if (field === 'audio') {
+                item.audioFile = file;
+                item.audioUrl = URL.createObjectURL(file);
+                const name = file.name;
+                const lastDot = name.lastIndexOf('.');
+                item.songName = lastDot === -1 ? name : name.substring(0, lastDot);
+            }
+
+            if (field === 'cta') {
+                item.ctaVideoFile = file;
+                item.ctaVideoUrl = URL.createObjectURL(file);
+            }
+
+            newQueue[index] = item;
+
+            // Sync with main player if updating current song
+            if (index === currentBatchIndex && field === 'audio') {
+                handleLoadBatchSong(item);
+            }
+
+            return newQueue;
+        });
+
+        // Handle text reading for subtitles separate from the main update
+        if (field === 'subtitle') {
+            // Auto-detect SRT format
+            if (file.name.toLowerCase().endsWith('.srt')) {
+                setSubtitleFormat(SubtitleFormat.SRT);
+            }
+
+            try {
+                const text = await file.text();
+                setBatchQueue(prev => {
+                    const newQueue = [...prev];
+                    if (newQueue[index]) {
+                        newQueue[index] = {
+                            ...newQueue[index],
+                            subtitlesRawText: text
+                        };
+
+                        // Sync with main player if updating current song
+                        if (index === currentBatchIndex) {
+                            handleLoadBatchSong(newQueue[index]);
+                        }
+                    }
+                    return newQueue;
+                });
+            } catch (e) {
+                console.error('Failed to read subtitle file:', e);
+            }
+        }
+    }, [currentBatchIndex]);
+
+    // 處理批量上傳
+    // 處理批量上傳
+    const handleBatchUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        // Group files by name (ignoring extension) to match audio with srt
+        const fileMap = new Map<string, { audio?: File; subtitle?: File }>();
+
+        Array.from(files).forEach(file => {
+            const name = file.name;
+            const lastDot = name.lastIndexOf('.');
+            const baseName = lastDot === -1 ? name : name.substring(0, lastDot);
+            const ext = lastDot === -1 ? '' : name.substring(lastDot + 1).toLowerCase();
+
+            if (!fileMap.has(baseName)) {
+                fileMap.set(baseName, {});
+            }
+
+            if (['mp3', 'wav', 'ogg', 'm4a', 'flac'].includes(ext)) {
+                fileMap.get(baseName)!.audio = file;
+            } else if (['srt', 'vtt', 'txt', 'lrc'].includes(ext)) {
+                fileMap.get(baseName)!.subtitle = file;
+            }
+        });
+
+        // Create SongItems
+        const newQueue: SongItem[] = [];
+
+        // Convert map to array to use for...of loop for async operations
+        for (const [baseName, items] of fileMap.entries()) {
+            if (items.audio) {
+                let rawText = '';
+                if (items.subtitle) {
+                    try {
+                        rawText = await items.subtitle.text();
+                    } catch (e) {
+                        console.error(`Failed to read subtitle file for ${baseName}:`, e);
+                    }
+                }
+
+                newQueue.push({
+                    id: Math.random().toString(36).substr(2, 9),
+                    audioFile: items.audio,
+                    audioUrl: URL.createObjectURL(items.audio),
+                    audioDuration: 0, // Will be set on load
+                    backgroundImage: null,
+                    backgroundVideo: null,
+                    subtitlesRawText: rawText,
+                    subtitles: [],
+                    songName: baseName
+                });
+            }
+        }
+
+        if (newQueue.length > 0) {
+            setBatchQueue(prev => {
+                const updated = [...prev, ...newQueue];
+                // If queue was empty, prepare first song
+                if (prev.length === 0) {
+                    setCurrentBatchIndex(0);
+                    const first = newQueue[0];
+                    if (first) {
+                        // Defer state update slightly to ensure safe context
+                        setTimeout(() => handleLoadBatchSong(first), 100);
+                    }
+                }
+                return updated;
+            });
+        }
+    }, []);
+
+
+
+
+
+    // Auto-play for batch mode when song changes
+    useEffect(() => {
+        if (isBatchMode && (isBatchRecording || isPlaying) && audioRef.current && audioUrl) {
+            console.log('BatchMode: Auto-playing new track');
+
+            // Small delay to ensure DOM is ready and src is loaded
+            setTimeout(() => {
+                // Play Audio
+                audioRef.current?.play().then(() => {
+                    setIsPlaying(true);
+
+                    // Also play CTA Video if available
+                    if (ctaVideoUrl && ctaVideoRef.current) {
+                        console.log('BatchMode: Auto-playing CTA video');
+                        ctaVideoRef.current.currentTime = 0;
+                        ctaVideoRef.current.play().catch(e => console.error('CTA Auto-play failed:', e));
+                    }
+                }).catch(err => {
+                    console.error('Auto-play failed:', err);
+                });
+            }, 500);
+        }
+    }, [audioUrl, ctaVideoUrl, isBatchRecording, isBatchMode]); // Added ctaVideoUrl to deps 
+    // No, if isPlaying changes to true manually, we don't need to auto-play (user did it).
+    // We only care when audioUrl changes. So existing deps + isPlaying? 
+    // Actually if I add isPlaying to deps, and I click play, this effect runs... calls play() again. Harmless promise.
+    // But better to keep deps focused on valid triggers. audioUrl change is the main one.
+    // isBatchMode change is another.
+    // isBatchRecording change is another.
+    // I will include isPlaying in deps to be safe and "React-compliant", but the logic is mainly for src change.
+
     const audioRef = useRef<HTMLAudioElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    
+
     // Picture-in-Picture 相關狀態
     const [isPipSupported, setIsPipSupported] = useState<boolean>(false);
     const [isPipActive, setIsPipActive] = useState<boolean>(false);
     const [pipVideo, setPipVideo] = useState<HTMLVideoElement | null>(null);
-    
+
     const canvasBgColors: Record<BackgroundColorType, string> = {
         [BackgroundColorType.BLACK]: 'rgba(0, 0, 0, 1)',
         [BackgroundColorType.GREEN]: 'rgba(0, 255, 0, 1)',
         [BackgroundColorType.WHITE]: 'rgba(255, 255, 255, 1)',
         [BackgroundColorType.TRANSPARENT]: 'transparent',
     };
-    
+
     // 檢查本地存儲的 API Key
     useEffect(() => {
         const storedApiKey = localStorage.getItem('user_gemini_api_key');
@@ -437,50 +669,50 @@ function App() {
     useEffect(() => {
         // 檢測 Picture-in-Picture API 支援
         const checkPipSupport = () => {
-            const hasPipSupport = 
+            const hasPipSupport =
                 'pictureInPictureEnabled' in document ||
                 (document as any).pictureInPictureEnabled ||
                 ('requestPictureInPicture' in HTMLVideoElement.prototype);
-            
+
             console.log('Picture-in-Picture 支援檢測:', {
                 pictureInPictureEnabledInDocument: 'pictureInPictureEnabled' in document,
                 documentPictureInPictureEnabled: (document as any).pictureInPictureEnabled,
                 requestPictureInPictureInPrototype: 'requestPictureInPicture' in HTMLVideoElement.prototype,
                 hasPipSupport
             });
-            
+
             setIsPipSupported(hasPipSupport);
         };
-        
+
         checkPipSupport();
     }, []);
-    
-    
+
+
     const createVideoFromCanvas = useCallback(() => {
         if (!canvasRef.current) return null;
-        
+
         const canvas = canvasRef.current;
-        
+
         // 檢查 Canvas 是否有內容
         const ctx = canvas.getContext('2d');
         if (!ctx) return null;
-        
+
         // 檢查 Canvas 尺寸
         if (canvas.width === 0 || canvas.height === 0) {
             console.warn('Canvas 尺寸為 0，無法創建 Picture-in-Picture');
             alert('Canvas 尺寸異常，請重新載入頁面');
             return null;
         }
-        
+
         console.log('Canvas 尺寸:', canvas.width, 'x', canvas.height);
-        
+
         // 檢查 Canvas 內容 - 改進檢測邏輯
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const pixels = imageData.data;
         let hasContent = false;
         let nonBlackPixels = 0;
         let totalPixels = 0;
-        
+
         // 檢查是否有非黑色像素 - 降低閾值並計算比例
         for (let i = 0; i < pixels.length; i += 4) {
             totalPixels++;
@@ -488,7 +720,7 @@ function App() {
             const g = pixels[i + 1];
             const b = pixels[i + 2];
             const alpha = pixels[i + 3];
-            
+
             // 降低閾值到 5，並檢查透明度
             if (alpha > 0 && (r > 5 || g > 5 || b > 5)) {
                 nonBlackPixels++;
@@ -497,12 +729,12 @@ function App() {
                 }
             }
         }
-        
+
         const contentRatio = totalPixels > 0 ? (nonBlackPixels / totalPixels) : 0;
         console.log(`Canvas 內容統計: ${nonBlackPixels}/${totalPixels} 非黑色像素 (${(contentRatio * 100).toFixed(2)}%)`);
-        
+
         console.log('Canvas 內容檢查結果:', hasContent ? '有內容' : '空內容');
-        
+
         if (!hasContent) {
             console.warn('Canvas 是空的，但繼續嘗試創建 Picture-in-Picture');
             console.log('Canvas 狀態檢查:');
@@ -514,7 +746,7 @@ function App() {
             console.log('- Canvas 內容樣式:', getComputedStyle(canvas).getPropertyValue('background-color'));
             // 不阻止，讓用戶試試看
         }
-        
+
         // 嘗試不同的捕獲策略
         let stream;
         try {
@@ -528,7 +760,7 @@ function App() {
                 return null;
             }
         }
-        
+
         const video = document.createElement('video');
         video.srcObject = stream;
         video.autoplay = true;
@@ -536,33 +768,33 @@ function App() {
         video.playsInline = true;
         video.style.width = '100%';
         video.style.height = '100%';
-        
+
         // 添加調試信息
         console.log('Video 元素創建成功:', video);
         console.log('Stream tracks:', stream.getTracks().length);
         stream.getTracks().forEach((track, index) => {
             console.log(`Track ${index}:`, track.kind, track.label, track.enabled);
         });
-        
+
         // 等待 video metadata 載入
         return new Promise((resolve, reject) => {
             video.onloadedmetadata = () => {
                 console.log('Video metadata 載入完成');
                 resolve(video);
             };
-            
+
             video.onerror = (error) => {
                 console.error('Video 載入錯誤:', error);
                 reject(error);
             };
-            
+
             // 設置超時
             setTimeout(() => {
                 reject(new Error('Video metadata 載入超時'));
             }, 3000);
         });
     }, []);
-    
+
     const createVideoFromCanvasSync = useCallback(() => {
         if (!canvasRef.current) return null;
 
@@ -583,7 +815,7 @@ function App() {
         let hasContent = false;
         let nonBlackPixels = 0;
         let totalPixels = 0;
-        
+
         // 採樣檢測：每10個像素檢測一次，提高性能
         for (let i = 0; i < pixels.length; i += 40) { // 每10個像素檢測一次
             totalPixels++;
@@ -591,7 +823,7 @@ function App() {
             const g = pixels[i + 1];
             const b = pixels[i + 2];
             const alpha = pixels[i + 3];
-            
+
             // 更寬鬆的檢測條件，適應不同環境
             if (alpha > 1 && (r > 1 || g > 1 || b > 1)) {
                 nonBlackPixels++;
@@ -600,7 +832,7 @@ function App() {
                 }
             }
         }
-        
+
         // 額外的調試信息
         console.log('Canvas 調試信息:');
         console.log('- 可視化顯示:', showVisualizer);
@@ -610,14 +842,14 @@ function App() {
         console.log('- Canvas 計算樣式:', getComputedStyle(canvas).getPropertyValue('background-color'));
         console.log('- Canvas 尺寸樣式:', canvas.style.width, 'x', canvas.style.height);
         console.log('- Canvas 實際尺寸:', canvas.width, 'x', canvas.height);
-        
+
         const contentRatio = totalPixels > 0 ? (nonBlackPixels / totalPixels) : 0;
         console.log(`Canvas 內容統計: ${nonBlackPixels}/${totalPixels} 非黑色像素 (${(contentRatio * 100).toFixed(2)}%)`);
-        
+
         // 合理的內容檢測：需要至少 1% 的非黑色像素
         const hasAnyContent = contentRatio > 0.01; // 1% 的閾值
         console.log('Canvas 內容檢查結果:', hasAnyContent ? '有內容' : '內容不足');
-        
+
         if (!hasAnyContent) {
             console.warn('Canvas 內容不足，建議等待更多可視化內容');
             console.log('Canvas 狀態檢查:');
@@ -627,7 +859,7 @@ function App() {
             console.log('- 可視化類型:', visualizationType);
             console.log('- Canvas 背景色:', canvas.style.backgroundColor);
             console.log('- Canvas 內容樣式:', getComputedStyle(canvas).getPropertyValue('background-color'));
-            
+
             // 如果內容太少，建議用戶等待
             alert(`🎨 Canvas 內容不足 (${(contentRatio * 100).toFixed(2)}%)\n\n當前可視化內容較少，建議：\n1. 等待音頻播放產生更多可視化效果\n2. 確保音頻有足夠的音量\n3. 調整靈敏度設定\n4. 嘗試不同的可視化類型\n\n需要至少 1% 的非黑色像素才能啟動子母畫面。`);
             return null;
@@ -643,7 +875,7 @@ function App() {
                         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                         const pixels = imageData.data;
                         let hasContent = false;
-                        
+
                         // 檢查是否有非透明像素
                         for (let i = 3; i < pixels.length; i += 4) {
                             if (pixels[i] > 0) {
@@ -651,7 +883,7 @@ function App() {
                                 break;
                             }
                         }
-                        
+
                         // 如果沒有內容，繪製一個測試圖形
                         if (!hasContent) {
                             console.log('Canvas 沒有內容，繪製測試圖形');
@@ -663,7 +895,7 @@ function App() {
                             ctx.fillRect(230, 10, 100, 100);
                         }
                     }
-                    
+
                     // 捕獲 stream
                     let stream;
                     try {
@@ -674,7 +906,7 @@ function App() {
                             ctx.save();
                             ctx.restore();
                         }
-                        
+
                         stream = canvas.captureStream(30);
                         console.log('Stream 捕獲成功:', {
                             videoTracks: stream.getVideoTracks().length,
@@ -703,12 +935,12 @@ function App() {
 
                     console.log('Video 元素創建成功:', video);
                     console.log('Stream tracks:', stream.getTracks().length);
-                    
+
                     // 添加 video 狀態監聽
                     video.addEventListener('loadeddata', () => {
                         console.log('Video loadeddata 事件觸發');
                     });
-                    
+
                     video.addEventListener('canplay', () => {
                         console.log('Video canplay 事件觸發');
                         // 明確調用 play() 確保內容在子母畫面中顯示
@@ -718,11 +950,11 @@ function App() {
                             console.error('Video play() 失敗:', error);
                         });
                     });
-                    
+
                     video.addEventListener('playing', () => {
                         console.log('Video playing 事件觸發');
                     });
-                    
+
                     // 檢查 video 是否真的在播放
                     setTimeout(() => {
                         console.log('Video 狀態檢查:', {
@@ -746,12 +978,12 @@ function App() {
                         });
                         resolve(video);
                     };
-                    
+
                     video.onerror = (error) => {
                         console.error('Video 載入錯誤:', error);
                         reject(error);
                     };
-                    
+
                     // 設置超時
                     setTimeout(() => {
                         reject(new Error('Video metadata 載入超時'));
@@ -769,32 +1001,32 @@ function App() {
             });
         });
     }, [showVisualizer, isPlaying, audioUrl, visualizationType]);
-    
+
     const enterPictureInPicture = useCallback(() => {
         if (!isPipSupported) {
             alert('❌ 子母畫面功能不支援\n\n您的瀏覽器不支援子母畫面功能。\n請使用 Chrome、Edge 或 Safari 最新版本。');
             return;
         }
-        
+
         if (!audioUrl) {
             alert('🎵 請先上傳音樂\n\n子母畫面需要音樂才能顯示可視化效果。\n請先選擇一個音頻檔案。');
             return;
         }
-        
+
         if (!isPlaying) {
             alert('▶️ 請先播放音樂\n\n子母畫面需要正在播放的音樂才能顯示動畫。\n請點擊播放按鈕開始播放。');
             return;
         }
-        
+
         // 檢查可視化是否正在顯示
         if (!showVisualizer) {
             alert('🎨 請開啟可視化\n\n子母畫面需要顯示可視化效果。\n請確保「顯示可視化」開關已開啟。');
             return;
         }
-        
+
         // 立即創建子母畫面，保持用戶手勢有效性
         console.log('開始創建子母畫面...');
-        
+
         try {
             // 立即調用，保持用戶手勢上下文
             // 使用 async/await 保持用戶手勢上下文
@@ -802,16 +1034,16 @@ function App() {
                 try {
                     const video = await createVideoFromCanvasSync();
                     if (!video) return;
-                    
+
                     setPipVideo(video as HTMLVideoElement);
-                    
+
                     console.log('正在進入子母畫面...');
-                    
+
                     // 立即進入子母畫面，不等待任何其他 Promise
                     await (video as HTMLVideoElement).requestPictureInPicture();
                     setIsPipActive(true);
                     console.log('子母畫面啟動成功');
-                    
+
                     // 監聽 PiP 關閉事件
                     (video as HTMLVideoElement).addEventListener('leavepictureinpicture', () => {
                         setIsPipActive(false);
@@ -828,13 +1060,13 @@ function App() {
                     }
                 }
             })();
-                
+
         } catch (error) {
             console.error('子母畫面初始化失敗:', error);
             alert(`⚙️ 子母畫面初始化失敗\n\n錯誤：${error.message}\n\n請重新載入頁面後再試。`);
         }
     }, [isPipSupported, audioUrl, isPlaying, showVisualizer]);
-    
+
     const exitPictureInPicture = useCallback(async () => {
         if (pipVideo && document.pictureInPictureElement) {
             try {
@@ -857,10 +1089,10 @@ function App() {
             }
         }
     }, [pipVideo]);
-    
+
     // 滾動檢測自動觸發 Picture-in-Picture (已移除 - 瀏覽器安全限制)
     // 注意：瀏覽器要求 PiP 必須由用戶手勢觸發，不能自動觸發
-    
+
     useEffect(() => {
         const lines = subtitlesRawText.split('\n');
         const newSubtitles: Subtitle[] = [];
@@ -882,7 +1114,7 @@ function App() {
                     }
                 }
             });
-            
+
             // 為方括號格式計算 endTime：持續到下一句開始前，或預設 10 秒
             newSubtitles.forEach((subtitle, index) => {
                 if (index < newSubtitles.length - 1) {
@@ -896,11 +1128,11 @@ function App() {
         } else if (subtitleFormat === SubtitleFormat.SRT) {
             // 解析 SRT 格式 00:00:14,676 --> 00:00:19,347
             const srtTimeRegex = /^(\d{1,2}):(\d{1,2}):(\d{1,2}),(\d{1,3})\s*-->\s*(\d{1,2}):(\d{1,2}):(\d{1,2}),(\d{1,3})$/;
-            
+
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
-                
+
                 const match = line.match(srtTimeRegex);
                 if (match) {
                     // 開始時間
@@ -909,14 +1141,14 @@ function App() {
                     const startSeconds = parseInt(match[3], 10);
                     const startMilliseconds = parseInt(match[4], 10);
                     const time = startHours * 3600 + startMinutes * 60 + startSeconds + startMilliseconds / 1000;
-                    
+
                     // 結束時間
                     const endHours = parseInt(match[5], 10);
                     const endMinutes = parseInt(match[6], 10);
                     const endSeconds = parseInt(match[7], 10);
                     const endMilliseconds = parseInt(match[8], 10);
                     const endTime = endHours * 3600 + endMinutes * 60 + endSeconds + endMilliseconds / 1000;
-                    
+
                     // 下一行是文字
                     if (i + 1 < lines.length) {
                         const text = lines[i + 1].trim();
@@ -928,7 +1160,7 @@ function App() {
                 }
             }
         }
-        
+
         setSubtitles(newSubtitles.sort((a, b) => a.time - b.time));
     }, [subtitlesRawText, subtitleFormat]);
 
@@ -941,7 +1173,7 @@ function App() {
 
         const handleTimeUpdate = () => {
             const currentTime = audio.currentTime;
-            
+
             // 如果使用時間戳模式，從字幕中提取時間和歌名
             if (subtitles.length > 0) {
                 // 找到當前時間對應的字幕
@@ -953,7 +1185,7 @@ function App() {
                         break;
                     }
                 }
-                
+
                 // 如果找到了對應的字幕且與上次不同，則切換歌名
                 if (currentSubtitleIndex !== -1 && currentSubtitleIndex !== lastSongIndex) {
                     lastSongIndex = currentSubtitleIndex;
@@ -981,7 +1213,7 @@ function App() {
                 .map(subtitle => subtitle.text)
                 .filter(text => text.length > 0)
                 .slice(0, 10); // 最多取前10個作為歌名列表
-            
+
             if (songNames.length > 0) {
                 setSongNameList(songNames);
                 if (songNames.length > currentSongIndex) {
@@ -994,7 +1226,7 @@ function App() {
     // 背景圖片輪播邏輯
     useEffect(() => {
         console.log('輪播 useEffect 觸發:', { isSlideshowEnabled, backgroundImagesLength: backgroundImages.length, isPlaying });
-        
+
         if (!isSlideshowEnabled || backgroundImages.length <= 1 || !isPlaying) {
             console.log('輪播條件不滿足:', { isSlideshowEnabled, backgroundImagesLength: backgroundImages.length, isPlaying });
             return;
@@ -1005,11 +1237,11 @@ function App() {
             console.log('Interval 執行:', { backgroundImagesLength: backgroundImages.length, isPlaying });
             if (backgroundImages.length > 1 && isPlaying) {
                 console.log('開始轉場動畫');
-                
+
                 // 設置轉場開始時間
                 (window as any).transitionStartTime = performance.now();
                 setIsTransitioning(true);
-                
+
                 // 根據轉場類型設定不同的持續時間
                 const getTransitionDuration = (type: TransitionType): number => {
                     switch (type) {
@@ -1042,17 +1274,17 @@ function App() {
                             return 1000; // 預設1秒
                     }
                 };
-                
+
                 const transitionDuration = getTransitionDuration(transitionType);
                 const switchTime = transitionDuration * 0.5; // 在中間時間切換圖片
-                
+
                 setTimeout(() => {
                     console.log('切換圖片');
-                    setCurrentImageIndex((prevIndex) => 
+                    setCurrentImageIndex((prevIndex) =>
                         (prevIndex + 1) % backgroundImages.length
                     );
                 }, switchTime);
-                
+
                 setTimeout(() => {
                     console.log('結束轉場動畫');
                     setIsTransitioning(false);
@@ -1078,10 +1310,10 @@ function App() {
             alert('請先載入音訊檔案。');
             return;
         }
-        
+
         // 優先使用用戶自定義的 API Key，否則使用內建的
         let apiKey = userApiKey || (import.meta as any).env.VITE_API_KEY;
-        
+
         // 調試信息
         console.log("API Key 狀態:", {
             hasUserApiKey: !!userApiKey,
@@ -1115,7 +1347,7 @@ function App() {
             });
 
             const ai = new GoogleGenerativeAI(apiKey);
-            
+
             const audioPart = {
                 inlineData: {
                     mimeType: audioFile.type,
@@ -1214,9 +1446,9 @@ function App() {
             const textPart = {
                 text: getLanguagePrompt(subtitleLanguage)
             };
-            
+
             const model = ai.getGenerativeModel({ model: 'gemini-2.5-flash' });
-            
+
             const response = await model.generateContent([textPart, audioPart]);
             const result = await response.response;
             const text = result.text();
@@ -1225,15 +1457,15 @@ function App() {
 
         } catch (error: any) {
             console.error("Error generating subtitles with AI:", error);
-            
+
             // 檢查是否是 API 配額用完的錯誤
             const errorMessage = error?.message || error?.toString() || '';
-            const isQuotaExceeded = errorMessage.includes('quota') || 
-                                  errorMessage.includes('limit') || 
-                                  errorMessage.includes('exceeded') ||
-                                  error?.status === 429 ||
-                                  error?.code === 429;
-            
+            const isQuotaExceeded = errorMessage.includes('quota') ||
+                errorMessage.includes('limit') ||
+                errorMessage.includes('exceeded') ||
+                error?.status === 429 ||
+                error?.code === 429;
+
             if (isQuotaExceeded && !userApiKey) {
                 // 內建 API Key 配額用完，提示用戶輸入自己的 API Key
                 setShowApiKeyModal(true);
@@ -1268,7 +1500,7 @@ function App() {
     const handleSetResolution = (newRes: Resolution) => {
         setResolution(newRes);
     };
-    
+
     const handleSetVisualization = (newVis: VisualizationType) => {
         setVisualizationType(newVis);
         // Keep selection list in sync when multi mode is enabled (and ensure list is never empty)
@@ -1409,7 +1641,7 @@ function App() {
         // Keep legacy offset map in sync (so old UI paths remain consistent)
         setMultiEffectOffsets((prev) => ({ ...prev, [type]: { x: 0, y: 0 } }));
     };
-    
+
     const handleSetColorPalette = (newPalette: ColorPaletteType) => {
         setColorPalette(newPalette);
     };
@@ -1420,25 +1652,25 @@ function App() {
         if (!hex || !hex.startsWith('#')) {
             return 180; // 預設為青色
         }
-        
+
         // 處理 3 位或 6 位 hex
         let normalizedHex = hex.slice(1);
         if (normalizedHex.length === 3) {
             normalizedHex = normalizedHex.split('').map(c => c + c).join('');
         }
-        
+
         if (normalizedHex.length !== 6) {
             return 180; // 預設為青色
         }
-        
+
         const r = parseInt(normalizedHex.slice(0, 2), 16) / 255;
         const g = parseInt(normalizedHex.slice(2, 4), 16) / 255;
         const b = parseInt(normalizedHex.slice(4, 6), 16) / 255;
-        
+
         const max = Math.max(r, g, b);
         const min = Math.min(r, g, b);
         let h = 0;
-        
+
         if (max !== min) {
             if (max === r) {
                 h = ((g - b) / (max - min)) % 6;
@@ -1448,7 +1680,7 @@ function App() {
                 h = (r - g) / (max - min) + 4;
             }
         }
-        
+
         h = h * 60;
         if (h < 0) h += 360;
         return h;
@@ -1460,12 +1692,12 @@ function App() {
             const primaryHue = hexToHue(customPrimaryColor);
             const secondaryHue = hexToHue(customSecondaryColor);
             const accentHue = hexToHue(customAccentColor);
-            
+
             // 計算 hueRange（從最小到最大）
             const hues = [primaryHue, secondaryHue, accentHue];
             const minHue = Math.min(...hues);
             const maxHue = Math.max(...hues);
-            
+
             return {
                 name: ColorPaletteType.CUSTOM,
                 primary: customPrimaryColor,
@@ -1481,7 +1713,7 @@ function App() {
     const handleTextChange = (text: string) => {
         updateCustomTextOverlay(0, { text });
     };
-    
+
     const handleWatermarkPositionChange = (position: WatermarkPosition) => {
         updateCustomTextOverlay(0, { anchor: position });
     };
@@ -1497,17 +1729,17 @@ function App() {
     const handleMultipleBackgroundImagesSelect = (files: FileList) => {
         // 清除舊的圖片
         backgroundImages.forEach(url => URL.revokeObjectURL(url));
-        
+
         const newUrls: string[] = [];
         Array.from(files).forEach(file => {
             if (file.type.startsWith('image/')) {
                 newUrls.push(URL.createObjectURL(file));
             }
         });
-        
+
         setBackgroundImages(newUrls);
         setCurrentImageIndex(0);
-        
+
         // 如果只有一張圖片，關閉輪播
         if (newUrls.length <= 1) {
             setIsSlideshowEnabled(false);
@@ -1620,26 +1852,26 @@ function App() {
     const handleFileSelect = (file: File) => {
         const isVideo = file.type.startsWith('video/') || file.name.toLowerCase().endsWith('.mp4');
         console.log(`選擇${isVideo ? '影片' : '音訊'}文件:`, { name: file.name, type: file.type, size: file.size });
-        
+
         // 停止當前播放
         if (isPlaying && audioRef.current) {
             audioRef.current.pause();
             setIsPlaying(false);
         }
-        
+
         // 重置音頻分析
         resetAudioAnalysis();
-        
+
         // 清除舊的背景視頻（如果有）
         if (backgroundVideo) {
             URL.revokeObjectURL(backgroundVideo);
             setBackgroundVideo(null);
         }
-        
+
         setAudioFile(file);
         const url = URL.createObjectURL(file);
         setAudioUrl(url);
-        
+
         // 如果是视频文件，自動設置為背景視頻
         if (isVideo) {
             console.log('已選擇 MP4 影片檔案，將使用其音訊軌道進行可視化，並顯示影片畫面');
@@ -1654,16 +1886,16 @@ function App() {
 
     const handleClearAudio = useCallback(() => {
         if (isPlaying) {
-             if (audioRef.current) {
+            if (audioRef.current) {
                 audioRef.current.pause();
             }
             setIsPlaying(false);
         }
-       
+
         // 保存當前的 URL 用於比較
         const currentAudioUrl = audioUrl;
         const currentBackgroundVideo = backgroundVideo;
-       
+
         // 如果背景視頻和音頻 URL 相同（即從 MP4 文件自動設置的），只需要清除一次
         if (currentBackgroundVideo && currentBackgroundVideo === currentAudioUrl) {
             // 清除共享的 URL
@@ -1681,11 +1913,11 @@ function App() {
                 setBackgroundVideo(null);
             }
         }
-        
+
         if (videoUrl) {
             URL.revokeObjectURL(videoUrl);
         }
-        
+
         setAudioFile(null);
         setAudioUrl('');
         setVideoUrl('');
@@ -1693,10 +1925,14 @@ function App() {
         setSubtitlesRawText('');
         setAudioDuration(0);
         setCurrentTime(0);
-        
+
         resetAudioAnalysis();
 
-    }, [audioUrl, videoUrl, isPlaying, resetAudioAnalysis]);
+        // Ensure audio context is ready/resumed for the new file (important for batch recording persistence)
+        if (audioRef.current) {
+            initializeAudio(audioRef.current);
+        }
+    }, [audioUrl, videoUrl, isPlaying, resetAudioAnalysis, initializeAudio]);
 
 
 
@@ -1710,11 +1946,17 @@ function App() {
 
         const newIsPlaying = !isPlaying;
         console.log('播放/暫停:', { currentIsPlaying: isPlaying, newIsPlaying });
-        
+
         if (newIsPlaying) {
             audioRef.current.play().then(() => {
                 console.log('音頻播放成功');
                 setIsPlaying(true);
+
+                // Also play CTA video if available
+                if (ctaVideoUrl && ctaVideoRef.current) {
+                    ctaVideoRef.current.play().catch(e => console.error('CTA play failed:', e));
+                }
+
                 // 若從頭開始播放，觸發一次開場動畫
                 if (showIntroOverlay && (audioRef.current?.currentTime ?? 0) < 0.1) {
                     setIntroStartTime(0);
@@ -1726,6 +1968,10 @@ function App() {
             });
         } else {
             audioRef.current.pause();
+            // Pause CTA video
+            if (ctaVideoRef.current) {
+                ctaVideoRef.current.pause();
+            }
             console.log('音頻暫停');
             setIsPlaying(false);
         }
@@ -1743,7 +1989,7 @@ function App() {
         el.muted = !enabled;
         setAuxMediaElement(el, enabled);
     }, [ctaVideoUrl, ctaVideoEnabled, ctaVideoIncludeAudio, setAuxMediaElement]);
-    
+
     const handleMetadataLoaded = () => {
         if (audioRef.current) {
             setAudioDuration(audioRef.current.duration);
@@ -1767,7 +2013,7 @@ function App() {
         }
         // Play once (no loop). This is in response to a user action (seek/record),
         // so it should usually be allowed even when audio is enabled.
-        v.play().catch(() => {});
+        v.play().catch(() => { });
     }, [ctaVideoUrl, ctaVideoEnabled, ctaVideoReplaceCtaAnimation]);
 
     const prevAudioTimeRef = useRef<number>(0);
@@ -1785,12 +2031,9 @@ function App() {
                 restartCtaVideoIfNeeded(t, 'rewind');
             }
 
-            if (audioRef.current.ended) {
-                setIsPlaying(false);
-                if (isRecording) {
-                    stopRecording();
-                }
-            }
+            // Removed redundant 'ended' check here.
+            // onEnded handler manages playback stopping and batch logic correctly.
+            // Checking here caused premature stop in batch mode.
         }
     };
 
@@ -1807,6 +2050,7 @@ function App() {
         if (isRecording) {
             stopRecording();
             setIsLoading(true);
+            setIsBatchRecording(false);
         } else {
             // 只有在字幕顯示模式不是「無字幕」時才檢查字幕內容
             if (subtitleDisplayMode !== SubtitleDisplayMode.NONE) {
@@ -1814,29 +2058,52 @@ function App() {
                     alert("錄製提示：您已啟用字幕，但尚未產生任何內容。\n\n請先使用「AI 產生字幕」或在文字區塊貼上 [00:00.00] 格式的歌詞，然後再開始錄製，以確保字幕能被正確錄進影片中。");
                     return;
                 }
-                
+
                 if (showLyricsDisplay && subtitles.length === 0) {
                     alert("錄製提示：您已啟用歌詞顯示，但尚未產生任何內容。\n\n請先使用「AI 產生字幕」或在文字區塊貼上 [00:00.00] 格式的歌詞，然後再開始錄製，以確保歌詞能被正確錄進影片中。");
                     return;
                 }
             }
-            
+
             const audioStream = getAudioStream();
             if (canvasRef.current && audioStream && audioRef.current) {
                 setShowWarning(true);
                 const isTransparent = backgroundColor === BackgroundColorType.TRANSPARENT;
+                if (isBatchMode) {
+                    setIsBatchRecording(true);
+
+                    // Force start from first song
+                    if (batchQueue.length > 0) {
+                        const firstSong = batchQueue[0];
+                        // Switch to first song immediately if needed
+                        if (firstSong.audioUrl !== audioUrl) {
+                            console.log('Batch Record: Switching to first song before recording starts');
+                            setCurrentBatchIndex(0);
+                            handleLoadBatchSong(firstSong);
+
+                            // Re-fetch stream and start after switching song state
+                            const freshAudioStream = getAudioStream();
+                            if (canvasRef.current && freshAudioStream) {
+                                startRecording(canvasRef.current, freshAudioStream, isTransparent);
+                            }
+                            return;
+                        }
+                        setCurrentBatchIndex(0);
+                    }
+                }
+
                 startRecording(canvasRef.current, audioStream, isTransparent);
                 audioRef.current.currentTime = 0;
                 // Ensure CTA replacement video also starts from 0 for recording.
                 restartCtaVideoIfNeeded(0, 'record');
-                // 錄影一定從 0 開始，因此可觸發開場動畫
                 if (showIntroOverlay) {
                     setIntroStartTime(0);
                     setIntroTriggerId((v) => v + 1);
                 }
+
                 audioRef.current.play().then(() => setIsPlaying(true));
             } else {
-                 alert("無法開始錄製。請確認音訊已載入並準備就緒。");
+                alert("無法開始錄製。請確認音訊已載入並準備就緒。");
             }
         }
     };
@@ -1847,7 +2114,7 @@ function App() {
         setIntroStartTime(t);
         setIntroTriggerId((v) => v + 1);
     }, []);
-    
+
     const resValue = RESOLUTION_MAP[resolution];
     const visualizerContainerStyle = {
         width: resValue ? `${resValue.width}px` : '100%',
@@ -1855,7 +2122,7 @@ function App() {
         flexShrink: 0,
     };
     const wrapperStyle = resValue ? {} : { width: '100%', aspectRatio: '16/9' };
-    
+
     const isTransparentBg = backgroundColor === BackgroundColorType.TRANSPARENT;
     const checkerboardSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect width="10" height="10" x="0" y="0" fill="#888" /><rect width="10" height="10" x="10" y="10" fill="#888" /><rect width="10" height="10" x="10" y="0" fill="#444" /><rect width="10" height="10" x="0" y="10" fill="#444" /></svg>`;
     const checkerboardUrl = `url("data:image/svg+xml,${encodeURIComponent(checkerboardSvg)}")`;
@@ -1909,57 +2176,113 @@ function App() {
         if (e.cancelable) e.preventDefault();
     };
 
+    // Use a Ref to track latest state for event listeners to avoid stale closures
+    const stateRef = useRef({
+        batchQueue,
+        currentBatchIndex,
+        isBatchMode,
+        isRecording,
+        isBatchRecording,
+        isPlaying
+    });
+
+    useEffect(() => {
+        stateRef.current = {
+            batchQueue,
+            currentBatchIndex,
+            isBatchMode,
+            isRecording,
+            isBatchRecording,
+            isPlaying
+        };
+    }, [batchQueue, currentBatchIndex, isBatchMode, isRecording, isBatchRecording, isPlaying]);
+
     return (
         <>
-        <div className="flex flex-col">
+            <div className="flex flex-col">
                 <UnifiedHeader />
-            {audioUrl && (
-                <audio
-                    key={audioUrl}
-                    ref={audioRef}
-                    src={audioUrl}
-                    onPlay={() => {
-                        console.log('音頻 onPlay 事件觸發');
-                        setIsPlaying(true);
-                    }}
-                    onPause={() => {
-                        console.log('音頻 onPause 事件觸發');
-                        setIsPlaying(false);
-                    }}
-                    onEnded={() => {
-                        console.log('音頻 onEnded 事件觸發');
-                        setIsPlaying(false);
-                        if (isRecording) {
-                            stopRecording();
-                        }
-                    }}
-                    onLoadedMetadata={handleMetadataLoaded}
-                    onTimeUpdate={handleTimeUpdate}
-                    crossOrigin="anonymous"
+                {audioUrl && (
+                    <audio
+                        ref={audioRef}
+                        src={audioUrl}
+                        onPlay={() => {
+                            console.log('音頻 onPlay 事件觸發');
+                            setIsPlaying(true);
+                        }}
+                        onPause={() => {
+                            console.log('音頻 onPause 事件觸發');
+                            setIsPlaying(false);
+                        }}
+                        onEnded={() => {
+                            console.log('音頻 onEnded 事件觸發');
+
+                            // Destructure latest state from Ref
+                            const {
+                                isBatchMode,
+                                currentBatchIndex,
+                                batchQueue,
+                                isBatchRecording,
+                                isRecording
+                            } = stateRef.current;
+
+                            // Batch Playback & Recording Logic
+                            if (isBatchMode) {
+                                const nextIndex = currentBatchIndex + 1;
+                                console.log(`BatchMode Check: Index ${currentBatchIndex} -> ${nextIndex}, Queue Length: ${batchQueue.length}`);
+
+                                if (nextIndex < batchQueue.length) {
+                                    console.log(`BatchMode: Playing next song ${nextIndex + 1}/${batchQueue.length}`);
+
+                                    // FORCE KEEP PLAYING STATE
+                                    setIsPlaying(true);
+
+                                    setCurrentBatchIndex(nextIndex);
+                                    handleLoadBatchSong(batchQueue[nextIndex]);
+                                    return; // Don't stop recording/playback
+                                } else {
+                                    console.log('BatchMode: All songs finished');
+                                    setIsBatchRecording(false);
+                                    setIsPlaying(false);
+                                    if (isRecording) {
+                                        stopRecording();
+                                    }
+                                    return;
+                                }
+                            }
+
+                            setIsPlaying(false);
+                            if (isRecording) {
+                                stopRecording();
+                            }
+                        }}
+
+                        onLoadedMetadata={handleMetadataLoaded}
+                        onTimeUpdate={handleTimeUpdate}
+                        crossOrigin="anonymous"
+                        className="hidden"
+                    />
+                )}
+
+                {/* Hidden CTA video element used as a draw source for canvas + optional audio mixing */}
+                <video
+                    ref={ctaVideoRef}
+                    src={ctaVideoUrl || undefined}
+                    muted={!ctaVideoIncludeAudio}
+                    playsInline
+                    preload="auto"
                     className="hidden"
                 />
-            )}
 
-            {/* Hidden CTA video element used as a draw source for canvas + optional audio mixing */}
-            <video
-                ref={ctaVideoRef}
-                src={ctaVideoUrl || undefined}
-                muted={!ctaVideoIncludeAudio}
-                playsInline
-                preload="auto"
-                className="hidden"
-            />
-
-            <main className="flex flex-col p-4 overflow-y-auto pt-24">
-                <div className="w-full max-w-7xl mx-auto flex flex-col items-center gap-4">
-                    {/* 頁面標題 */}
-                    <div className="text-center mb-6">
-                        <h1 className="text-3xl font-bold text-white mb-2">音訊可視化工程</h1>
-                        <p className="text-gray-300">將音樂轉化為震撼的視覺效果</p>
-                    </div>
+                <main className="flex flex-col p-4 overflow-y-auto pt-24">
+                    <div className="w-full max-w-7xl mx-auto flex flex-col items-center gap-4">
+                        {/* 頁面標題 */}
+                        <div className="text-center mb-6">
+                            <h1 className="text-3xl font-bold text-white mb-2">音訊可視化工程</h1>
+                            <p className="text-gray-300">將音樂轉化為震撼的視覺效果</p>
+                        </div>
 
                         <div style={wrapperStyle} className="flex items-center justify-center bg-black rounded-lg border border-gray-700 overflow-hidden">
-                            <div 
+                            <div
                                 ref={containerRef}
                                 onPointerDown={handlePointerDown}
                                 onPointerMove={handlePointerMove}
@@ -1971,15 +2294,15 @@ function App() {
                                     backgroundSize: '20px 20px',
                                     touchAction: 'none',
                                     cursor: isDraggingRef.current ? 'grabbing' : 'grab'
-                                }} 
+                                }}
                                 className="relative shadow-2xl shadow-cyan-500/10"
                             >
-                               <AudioVisualizer 
+                                <AudioVisualizer
                                     key={showVisualizer ? 'vis-on' : 'vis-off'}
                                     ref={canvasRef}
-                                    analyser={analyser} 
+                                    analyser={analyser}
                                     audioRef={audioRef}
-                                    visualizationType={visualizationType} 
+                                    visualizationType={visualizationType}
                                     multiEffectEnabled={multiEffectEnabled}
                                     selectedVisualizationTypes={selectedVisualizationTypes}
                                     multiEffectOffsets={multiEffectOffsets}
@@ -2169,7 +2492,7 @@ function App() {
                         </div>
 
                         {showWarning && (
-                            <div 
+                            <div
                                 className="w-full max-w-7xl p-3 bg-yellow-500/10 border border-yellow-400 text-yellow-200 rounded-lg text-center shadow-lg flex items-center justify-center gap-3"
                                 role="alert"
                             >
@@ -2183,6 +2506,15 @@ function App() {
                             onPlayPause={handlePlayPause}
                             isRecording={isRecording}
                             onRecordToggle={handleStartRecording}
+                            // Batch Mode Props
+                            isBatchMode={isBatchMode}
+                            onBatchModeChange={setIsBatchMode}
+                            onAddBatchRow={handleAddBatchRow}
+                            onRemoveBatchRow={handleRemoveBatchRow}
+                            onUpdateBatchRow={handleUpdateBatchRow}
+                            batchQueue={batchQueue}
+                            currentBatchIndex={currentBatchIndex}
+                            isBatchRecording={isBatchRecording}
                             // Photo Shake controls
                             photoShakeImage={photoShakeImage}
                             onPhotoShakeImageUpload={(e) => {
@@ -2569,24 +2901,24 @@ function App() {
                             onExitPictureInPicture={exitPictureInPicture}
                         />
                     </div>
-            </main>
-            
-            {/* 統一的 Footer */}
-            {/* <UnifiedFooter /> */}
-        </div>
-        
-        {/* API Key 輸入彈出視窗 */}
-        <ApiKeyModal
-            isOpen={showApiKeyModal}
-            onClose={handleApiKeyModalClose}
-            onSave={handleApiKeySave}
-            onSkip={handleApiKeySkip}
-            title={apiQuotaExceeded ? "API 配額已用完" : "API Key 設定"}
-            message={apiQuotaExceeded 
-                ? "內建的 Gemini API 配額已用完，請輸入您自己的 API Key 以繼續使用 AI 功能。"
-                : "請輸入您的 Gemini API Key 以使用 AI 字幕生成功能。"
-            }
-        />
+                </main>
+
+                {/* 統一的 Footer */}
+                {/* <UnifiedFooter /> */}
+            </div>
+
+            {/* API Key 輸入彈出視窗 */}
+            <ApiKeyModal
+                isOpen={showApiKeyModal}
+                onClose={handleApiKeyModalClose}
+                onSave={handleApiKeySave}
+                onSkip={handleApiKeySkip}
+                title={apiQuotaExceeded ? "API 配額已用完" : "API Key 設定"}
+                message={apiQuotaExceeded
+                    ? "內建的 Gemini API 配額已用完，請輸入您自己的 API Key 以繼續使用 AI 功能。"
+                    : "請輸入您的 Gemini API Key 以使用 AI 字幕生成功能。"
+                }
+            />
         </>
     );
 }

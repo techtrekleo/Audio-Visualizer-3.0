@@ -11,66 +11,90 @@ export const useAudioAnalysis = () => {
     const [isInitialized, setIsInitialized] = useState(false);
 
     const initializeAudio = useCallback((audioElement: HTMLAudioElement) => {
-        // Guard against re-initialization on the same audio setup
-        if (isInitialized || !audioElement) return;
+        if (!audioElement) return;
 
-        // Creating a new context ensures a clean slate, preventing errors from
-        // re-using a context that might be in a suspended or closed state.
-        const context = new (window.AudioContext || (window as any).webkitAudioContext)();
+        // If context exists, check if we can reuse the existing source
+        // If context exists, check if we can reuse the existing source
+        if (audioContextRef.current && sourceRef.current) {
+            // Ensure state is ready.
+            if (audioContextRef.current.state === 'suspended') {
+                audioContextRef.current.resume();
+            }
+            // Proceed to verify connections below instead of returning early
+        }
+
+        const context = audioContextRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
         audioContextRef.current = context;
 
-        // This can throw an InvalidStateError if the HTMLMediaElement is already connected
-        // to a source node from a previous AudioContext that wasn't fully torn down.
-        // The robust `resetAudioAnalysis` function is designed to prevent this.
-        sourceRef.current = context.createMediaElementSource(audioElement);
-        
-        const analyser = context.createAnalyser();
-        analyser.fftSize = 2048;
-        analyserRef.current = analyser;
+        // Create Analyser & Destination if needed
+        if (!analyserRef.current) {
+            const analyser = context.createAnalyser();
+            analyser.fftSize = 2048;
+            analyserRef.current = analyser;
+        }
 
-        const destinationNode = context.createMediaStreamDestination();
-        destinationNodeRef.current = destinationNode;
+        if (!destinationNodeRef.current) {
+            const destinationNode = context.createMediaStreamDestination();
+            destinationNodeRef.current = destinationNode;
+        }
 
-        // Connect the audio graph
-        sourceRef.current.connect(analyser);
-        analyser.connect(context.destination); // Play through speakers
-        analyser.connect(destinationNode); // Send to stream for recording
-        
+        // Re-connect static parts of the graph
+        if (analyserRef.current && destinationNodeRef.current) {
+            // Ensure analyser is connected to outputs
+            try {
+                // Disconnect first to avoid duplicate connections if re-initializing
+                analyserRef.current.disconnect();
+                analyserRef.current.connect(context.destination);
+                analyserRef.current.connect(destinationNodeRef.current);
+            } catch (e) {
+                console.warn("Graph reconnection warning:", e);
+            }
+        }
+
+        // Create/Connect Source
+        try {
+            // Only create source if not tracking this element
+            if (!sourceRef.current) {
+                const source = context.createMediaElementSource(audioElement);
+                sourceRef.current = source;
+            }
+
+            // ALWAYS ensure connection (Aggressive Reconnect Strategy)
+            // This fixes the issue where reusable nodes might silently detach on src change
+            if (sourceRef.current && analyserRef.current) {
+                try {
+                    sourceRef.current.disconnect();
+                } catch (e) { /* ignore if already disconnected */ }
+
+                sourceRef.current.connect(analyserRef.current);
+            }
+
+        } catch (e) {
+            console.error("Source connection failed:", e);
+        }
+
         setIsInitialized(true);
-    }, [isInitialized]);
+    }, []);
 
     const resetAudioAnalysis = useCallback(() => {
-        // Explicitly disconnect all nodes before closing the context. This is the
-        // most robust way to prevent an 'InvalidStateError' when a new audio
-        // file is loaded and a new audio graph needs to be created.
+        // Soft reset: Do NOT close context or disconnect source/destination.
+        // We want the MediaStream to persist across song changes so MediaRecorder keeps working.
+        // We only suspend context if needed, or just do nothing.
+        // If we really need to "stop" analysis, we could disconnect the source from the analyser,
+        // but since we reuse the same <audio> element, keeping it connected is fine.
+
+        // We only clear auxiliary inputs here.
         if (auxGainRef.current) {
             auxGainRef.current.disconnect();
         }
         if (auxSourceRef.current) {
             auxSourceRef.current.disconnect();
         }
-        if (sourceRef.current) {
-            sourceRef.current.disconnect();
-        }
-        if (analyserRef.current) {
-            analyserRef.current.disconnect();
-        }
-
-        // Close the existing AudioContext if it exists.
-        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-            audioContextRef.current.close();
-        }
-
-        // Nullify refs to ensure they are re-created cleanly
-        audioContextRef.current = null;
-        analyserRef.current = null;
-        sourceRef.current = null;
-        destinationNodeRef.current = null;
-        auxSourceRef.current = null;
         auxGainRef.current = null;
+        auxSourceRef.current = null;
         auxElementRef.current = null;
-        // Allow re-initialization
-        setIsInitialized(false);
+
+        // We DO NOT set isInitialized=false, because the primary graph remains valid.
     }, []);
 
     const setAuxMediaElement = useCallback((mediaElement: HTMLMediaElement | null, enabled: boolean) => {
