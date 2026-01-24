@@ -1,97 +1,389 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>創作者展示 - Sonic Pulse</title>
     <meta name="description" content="發現優秀的音樂創作者和他們的頻道">
-    
+
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7718548739614199"
-     crossorigin="anonymous"></script>
-    
+        crossorigin="anonymous"></script>
+
     <style>
         /* ===== styles (kept as original) ===== */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 50%, #F0E8E0 100%); min-height: 100vh; color: #4A4A4A; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 40px; color: #4A4A4A; }
-        .header h1 { font-size: 3rem; font-weight: 700; margin-bottom: 10px; color: #4A4A4A; }
-        .header p { font-size: 1.2rem; color: #5C5C5C; }
-        .creators-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; margin-bottom: 40px; }
-        .creator-card { background: rgba(255, 255, 255, 0.8); border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(139, 157, 195, 0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; backdrop-filter: blur(10px); border: 1px solid rgba(74, 74, 74, 0.2); }
-        .creator-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(139, 157, 195, 0.3); }
-        .creator-header { display: flex; align-items: center; margin-bottom: 20px; }
-        .creator-info h3 { font-size: 1.5rem; font-weight: 600; color: #4A4A4A; margin-bottom: 5px; }
-        .creator-info p { font-size: 1.1rem; color: #5C5C5C; font-weight: 500; }
-        .creator-date { font-size: 0.9rem; color: #5C5C5C; margin-bottom: 20px; padding: 10px; background: rgba(139, 157, 195, 0.15); border-radius: 10px; border-left: 4px solid #8B9DC3; }
-        .creator-button { display: inline-block; background: linear-gradient(45deg, #8B9DC3, #A8B5C4); color: #FFFFFF; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(139, 157, 195, 0.3); }
-        .creator-button:hover { background: linear-gradient(45deg, #9BADCD, #B8C5D4); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(139, 157, 195, 0.4); }
-        .creator-button i { margin-right: 8px; }
-        .search-container { margin-bottom: 30px; text-align: center; }
-        .search-input { width: 100%; max-width: 500px; padding: 15px 20px; border: 1px solid rgba(74, 74, 74, 0.2); border-radius: 25px; font-size: 1.1rem; background: rgba(255, 255, 255, 0.9); box-shadow: 0 4px 15px rgba(139, 157, 195, 0.1); transition: all 0.3s ease; color: #4A4A4A; }
-        .search-input:focus { outline: none; background: rgba(255, 255, 255, 1); box-shadow: 0 8px 25px rgba(139, 157, 195, 0.2); border-color: #8B9DC3; }
-        .no-results { text-align: center; color: #4A4A4A; font-size: 1.2rem; margin-top: 40px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 50%, #F0E8E0 100%);
+            min-height: 100vh;
+            color: #4A4A4A;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #4A4A4A;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #4A4A4A;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #5C5C5C;
+        }
+
+        .creators-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .creator-card {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(139, 157, 195, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(74, 74, 74, 0.2);
+        }
+
+        .creator-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(139, 157, 195, 0.3);
+        }
+
+        .creator-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .creator-info h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #4A4A4A;
+            margin-bottom: 5px;
+        }
+
+        .creator-info p {
+            font-size: 1.1rem;
+            color: #5C5C5C;
+            font-weight: 500;
+        }
+
+        .creator-date {
+            font-size: 0.9rem;
+            color: #5C5C5C;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(139, 157, 195, 0.15);
+            border-radius: 10px;
+            border-left: 4px solid #8B9DC3;
+        }
+
+        .creator-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #8B9DC3, #A8B5C4);
+            color: #FFFFFF;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 157, 195, 0.3);
+        }
+
+        .creator-button:hover {
+            background: linear-gradient(45deg, #9BADCD, #B8C5D4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 157, 195, 0.4);
+        }
+
+        .creator-button i {
+            margin-right: 8px;
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px 20px;
+            border: 1px solid rgba(74, 74, 74, 0.2);
+            border-radius: 25px;
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 15px rgba(139, 157, 195, 0.1);
+            transition: all 0.3s ease;
+            color: #4A4A4A;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 8px 25px rgba(139, 157, 195, 0.2);
+            border-color: #8B9DC3;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #4A4A4A;
+            font-size: 1.2rem;
+            margin-top: 40px;
+        }
 
         @media (max-width: 768px) {
-            .header h1 { font-size: 2rem; }
-            .creators-grid { grid-template-columns: 1fr; gap: 20px; }
-            .creator-card { padding: 20px; }
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .creators-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .creator-card {
+                padding: 20px;
+            }
         }
 
         /* modal styles */
-        .description-modal, .add-channel-modal, .delete-channel-modal, .password-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(74, 74, 74, 0.7); backdrop-filter: blur(5px); }
-        .description-modal-content, .add-channel-modal-content, .delete-channel-modal-content, .password-modal-content { background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 100%); margin: 5% auto; padding: 0; border-radius: 20px; width: 90%; max-width: 600px; max-height: 80vh; box-shadow: 0 20px 60px rgba(139, 157, 195, 0.3); animation: modalSlideIn 0.3s ease; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(74, 74, 74, 0.2); }
-        @keyframes modalSlideIn { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
-        .description-header, .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid rgba(74, 74, 74, 0.2); display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.5); }
-        .description-header h3, .modal-header h3 { margin: 0; color: #4A4A4A; font-family: 'Poppins', sans-serif; font-size: 1.3rem; font-weight: 600; }
-        .description-header .close, .modal-header .close { color: #6B7280; font-size: 2rem; font-weight: bold; cursor: pointer; transition: color 0.3s ease; }
-        .description-header .close:hover, .modal-header .close:hover { color: #8B9DC3; }
-        .description-body, .modal-body { padding: 2rem; overflow-y: auto; flex: 1; max-height: calc(80vh - 120px); }
-        .tab-button { background: rgba(255, 255, 255, 0.6); color: #5C5C5C; border: 1px solid rgba(74, 74, 74, 0.2); padding: 0.5rem 1rem; border-radius: 25px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; }
-        .tab-button.active { background: rgba(139, 157, 195, 0.3); color: #4A4A4A; border-color: rgba(139, 157, 195, 0.4); }
-        .description-text { color: #4A4A4A; line-height: 1.8; font-size: 1rem; background: rgba(255, 255, 255, 0.6); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(74, 74, 74, 0.2); }
-        .form-group { margin-bottom: 1.5rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; color: #4A4A4A; font-weight: 500; }
-        .form-group input { width: 100%; padding: 12px 15px; border: 1px solid rgba(74, 74, 74, 0.2); border-radius: 10px; font-size: 1rem; background: rgba(255, 255, 255, 0.9); color: #4A4A4A; transition: all 0.3s ease; }
-        .form-actions { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem; }
-        .btn-submit { background: linear-gradient(45deg, #8B9DC3, #A8B5C4); color: #FFFFFF; padding: 12px 24px; border: none; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(139, 157, 195, 0.3); }
-        .btn-cancel { background: rgba(255, 255, 255, 0.8); color: #4A4A4A; padding: 12px 24px; border: 1px solid rgba(74, 74, 74, 0.3); border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .description-modal,
+        .add-channel-modal,
+        .delete-channel-modal,
+        .password-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(74, 74, 74, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .description-modal-content,
+        .add-channel-modal-content,
+        .delete-channel-modal-content,
+        .password-modal-content {
+            background: linear-gradient(135deg, #F5F5F0 0%, #E8E8E3 100%);
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            box-shadow: 0 20px 60px rgba(139, 157, 195, 0.3);
+            animation: modalSlideIn 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(74, 74, 74, 0.2);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .description-header,
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(74, 74, 74, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .description-header h3,
+        .modal-header h3 {
+            margin: 0;
+            color: #4A4A4A;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .description-header .close,
+        .modal-header .close {
+            color: #6B7280;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .description-header .close:hover,
+        .modal-header .close:hover {
+            color: #8B9DC3;
+        }
+
+        .description-body,
+        .modal-body {
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+            max-height: calc(80vh - 120px);
+        }
+
+        .tab-button {
+            background: rgba(255, 255, 255, 0.6);
+            color: #5C5C5C;
+            border: 1px solid rgba(74, 74, 74, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab-button.active {
+            background: rgba(139, 157, 195, 0.3);
+            color: #4A4A4A;
+            border-color: rgba(139, 157, 195, 0.4);
+        }
+
+        .description-text {
+            color: #4A4A4A;
+            line-height: 1.8;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(74, 74, 74, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4A4A4A;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(74, 74, 74, 0.2);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: #4A4A4A;
+            transition: all 0.3s ease;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        .btn-submit {
+            background: linear-gradient(45deg, #8B9DC3, #A8B5C4);
+            color: #FFFFFF;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 157, 195, 0.3);
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.8);
+            color: #4A4A4A;
+            padding: 12px 24px;
+            border: 1px solid rgba(74, 74, 74, 0.3);
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
         /* small helpers */
-        .channel-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.6); border-radius: 10px; border: 1px solid rgba(74, 74, 74, 0.2); }
+        .channel-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 10px;
+            border: 1px solid rgba(74, 74, 74, 0.2);
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-music"></i> 創作者展示</h1>
             <p>發現優秀的音樂創作者和他們的頻道</p>
         </div>
-        
+
         <div class="search-container">
             <input type="text" class="search-input" id="searchInput" placeholder="搜尋創作者...">
         </div>
-        
+
         <!-- 新增頻道按鈕 -->
         <div style="text-align: center; margin-bottom: 30px;">
-            <button onclick="showAddChannelModal()" class="creator-button" style="font-size: 1.1rem; padding: 15px 30px;">
+            <button onclick="showAddChannelModal()" class="creator-button"
+                style="font-size: 1.1rem; padding: 15px 30px;">
                 <i class="fas fa-plus-circle"></i> 新增我的頻道
             </button>
         </div>
-        
+
         <div class="creators-grid" id="creatorsGrid">
             <!-- 創作者卡片將由 JavaScript 動態生成 -->
         </div>
-        
+
         <div class="no-results" id="noResults" style="display: none;">
             <i class="fas fa-search"></i> 找不到相關創作者
         </div>
@@ -167,7 +459,31 @@
     </div>
 
     <script>
-        // ===== Utilities for local storage =====
+        // ===== Creators Data Management with API =====
+        let creators = [];
+
+        // Fetch creators from server (JSON)
+        async function fetchCreators() {
+            try {
+                const response = await fetch('/creators.json');
+                if (!response.ok) throw new Error('Failed to load creators');
+                creators = await response.json();
+
+                // Merge with local user channels (optional, if we still want local-only non-synced ones, 
+                // but for this feature we probably want everything synced. Keeping logic for backward compatibility if needed)
+                // For now, let's just display what's in the JSON to ensure single source of truth for the synced feature.
+                // If we want to keep local override capability:
+                // const userChannels = loadUserChannels(); // defined below
+                // creators = [...creators]; // logic to merge if needed
+
+                renderCreators();
+            } catch (error) {
+                console.error('Error fetching creators:', error);
+                document.getElementById('creatorsGrid').innerHTML = '<p style="text-align:center; color:red;">無法載入創作者資料，請稍後再試。</p>';
+            }
+        }
+
+        // ===== Utilities for local storage (Legacy support or local additions) =====
         function loadUserChannels() {
             const saved = localStorage.getItem('userChannels');
             return saved ? JSON.parse(saved) : [];
@@ -176,393 +492,167 @@
             localStorage.setItem('userChannels', JSON.stringify(channels));
         }
 
-        // ===== Minimal password protection (no plaintext in source) =====
-        // uses a simple charCode sum as before but stores target as a number constant
-        const TARGET_HASH = 435; // precomputed sum of char codes for the chosen password (keeps plaintext out of source)
-        function verifyPassword(input) {
-            if (!input || typeof input !== 'string') return false;
-            const hash = input.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-            return hash === TARGET_HASH && input.length === 8;
-        }
+        // ===== Password & API Interaction =====
 
-        // ===== creators data (original entries preserved + new additions) =====
-        let creators = [
-            {
-                id: '0',
-                dcName: '口袋裡的貓',
-                channelName: '九黎月',
-                youtubeUrl: 'https://www.youtube.com/@NineLiMoon',
-                joinDate: '2025/10/15 上午 09:00:00'
-            },
-            {
-                id: '1',
-                dcName: '可夜',
-                channelName: 'COYA可夜',
-                youtubeUrl: 'https://www.youtube.com/@Coya%E5%8F%AF%E5%A4%9C',
-                joinDate: '2025/10/15 下午 10:07:02'
-            },
-            {
-                id: '2',
-                dcName: 'Xiaoloulou01',
-                channelName: 'Xiaoloulou',
-                youtubeUrl: 'https://www.youtube.com/@Xiaoloulou',
-                joinDate: '2025/10/15 下午 10:07:17'
-            },
-            {
-                id: '3',
-                dcName: '【ｉ人】朽葉',
-                channelName: '朽月Music',
-                youtubeUrl: 'https://www.youtube.com/@XiuYueMusic',
-                joinDate: '2025/10/15 下午 10:07:26'
-            },
-            {
-                id: '4',
-                dcName: '匿名的歐皇',
-                channelName: 'RE:IGN ─ KPOP',
-                youtubeUrl: 'https://www.youtube.com/channel/UCfTRxp7lFW4CkK7s8-BV0eQ',
-                joinDate: '2025/10/15 下午 10:07:45'
-            },
-            {
-                id: '5',
-                dcName: '阿勳',
-                channelName: 'EchoXU',
-                youtubeUrl: 'https://www.youtube.com/channel/UCJS6sGpEe4mbo2EMhnuT5PQ',
-                joinDate: '2025/10/15 下午 10:07:45'
-            },
-            {
-                id: '6',
-                dcName: '工具人🔧',
-                channelName: '迷子MAIGO',
-                youtubeUrl: 'https://www.youtube.com/channel/UC4fB8_KdPGBk1bI2DeNKb4w',
-                joinDate: '2025/10/15 下午 10:07:56'
-            },
-            {
-                id: '7',
-                dcName: 'Zoe',
-                channelName: 'Zoe. G',
-                youtubeUrl: 'https://m.youtube.com/@Zoe_G_Studio/videos',
-                joinDate: '2025/10/15 下午 10:09:26'
-            },
-            {
-                id: '8',
-                dcName: 'PeeKang',
-                channelName: 'KANG Music',
-                youtubeUrl: 'https://www.youtube.com/@KANGMusic999',
-                joinDate: '2025/10/15 下午 10:09:36'
-            },
-            {
-                id: '9',
-                dcName: 'chrisyang',
-                channelName: 'EIRYN',
-                youtubeUrl: 'https://youtube.com/@eiryn6616?si=sFCeHJt09-VBrEjF',
-                joinDate: '2025/10/15 下午 10:10:07',
-                channelDescription: {
-                    english: `Welcome to EIRYN Nice Music!\nHere's a collection of moving melodies and upbeat beats to accompany you through study, work, relaxation, and everyday life.\nFrom pop music and soothing instrumental music to light background music, we hope to bring joy and energy through our music.\nIf you're looking for your own spiritual background music, this is the best place to go.\n\n👉 Don't forget to subscribe and turn on the bell to make music a part of your life.`,
-                    korean: `EIRYN Nice Music에 오신 것을 환영합니다!\n공부, 업무, 휴식, 그리고 일상생활 속에서 함께할 감동적인 멜로디와 경쾌한 비트를 만나보세요.\n팝 음악부터 차분한 기악곡, 그리고 경쾌한 배경음악까지, 저희는 음악을 통해 기쁨과 에너지를 선사하고자 합니다.\n나만의 영적인 배경음악을 찾고 있다면, 바로 이곳이 제격입니다.\n\n👉 구독하고 알림 설정도 잊지 마세요. 음악을 삶의 일부로 만들어갈 수 있습니다.`
-                }
-            },
-            {
-                id: '10',
-                dcName: '叡',
-                channelName: 'Cat\'s Melody',
-                youtubeUrl: 'https://youtube.com/@kimexe111?si=NNAJ8qonGxAIkvsK',
-                joinDate: '2025/10/15 下午 10:10:34'
-            },
-            {
-                id: '11',
-                dcName: '迷路的宇宙人',
-                channelName: '迷路的宇宙人',
-                youtubeUrl: 'https://www.youtube.com/@LostAlien9527',
-                joinDate: '2025/10/15 下午 10:10:40'
-            },
-            {
-                id: '12',
-                dcName: '安餒',
-                channelName: '安餒',
-                youtubeUrl: 'https://www.youtube.com/@%E5%AE%89%E9%A4%92%E6%98%AF%E8%B2%93%E5%85%AC%E4%B8%BB',
-                joinDate: '2025/10/15 下午 10:20:08'
-            },
-            {
-                id: '13',
-                dcName: '小薰',
-                channelName: '薰羽',
-                youtubeUrl: 'https://youtube.com/channel/UC9ywP_J4rd2eh4AR_RJQwSw?si=9bA2FXSDAjA2etQe',
-                joinDate: '2025/10/15 下午 11:58:29'
-            },
-            {
-                id: '14',
-                dcName: '憨憨 - YT搜尋 魚香',
-                channelName: '魚香',
-                youtubeUrl: 'https://www.youtube.com/@yyhshah',
-                joinDate: '2025/10/16 上午 12:23:17'
-            },
-            {
-                id: '15',
-                dcName: 'viva太后',
-                channelName: 'LOFIVAVA',
-                youtubeUrl: 'https://www.youtube.com/@LOFIVAVA',
-                joinDate: '2025/10/16 上午 11:47:06'
-            },
-            {
-                id: '16',
-                dcName: 'Xermax',
-                channelName: 'Share_Yueei',
-                youtubeUrl: 'https://youtube.com/@share_yueei?si=fpdfi_VpBQhMD3PI',
-                joinDate: '2025/10/16 下午 7:00:20'
-            },
-            {
-                id: '17',
-                dcName: 'Z - YT搜尋：@MeowWorld-q6m',
-                channelName: '@MeowWorld-q6m',
-                youtubeUrl: 'http://www.youtube.com/channel/UCChdk6BzXqu3kbImAWokFRg?sub_confirmation=1',
-                joinDate: '2025/10/16 下午 7:00:29'
-            },
-            {
-                id: '18',
-                dcName: '光學滑鼠',
-                channelName: '洛陽',
-                youtubeUrl: 'https://youtube.com/@ch-song-g7w?si=qrOiX3x0YxLfDO9i',
-                joinDate: '2025/10/16 下午 7:09:37'
-            },
-            {
-                id: '19',
-                dcName: '筠芙得利 - Daily Delight',
-                channelName: '筠芙得利',
-                youtubeUrl: 'https://www.youtube.com/@筠芙得利',
-                joinDate: '2025/10/16 下午 9:12:44'
-            },
-            {
-                id: '20',
-                dcName: 'Issac',
-                channelName: 'Futuristic Guardian Kobe',
-                youtubeUrl: 'https://www.youtube.com/channel/UCRKR0_AprQO05ll3p-IAVPg',
-                joinDate: '2025/11/17 上午 10:34:55',
-                additionalChannels: [
-                    {
-                        channelName: 'Futuristic Guardian Roger',
-                        youtubeUrl: 'https://www.youtube.com/@futuristicguardianroger'
-                    }
-                ]
-            },
-            {
-                id: '21',
-                dcName: 'laicc',
-                channelName: 'Breathe and Be',
-                youtubeUrl: 'https://www.youtube.com/@BreatheAndBe-Mus1c',
-                joinDate: '2025/10/18 上午 9:01:09'
-            },
-            {
-                id: '24',
-                dcName: '人生的意義',
-                channelName: '音夢工廠',
-                youtubeUrl: 'https://www.youtube.com/@DTF-666',
-                joinDate: '2025/10/21 下午 11:00:00'
-            },
-            {
-                id: '25',
-                dcName: '時雨',
-                channelName: '心和之聲',
-                youtubeUrl: 'https://www.youtube.com/@kokorowanoODO',
-                joinDate: '2025/10/21 下午 10:49:59'
-            },
-            {
-                id: '26',
-                dcName: 'skyehsu71266',
-                channelName: '@Skye_Hsu',
-                youtubeUrl: 'https://youtube.com/@skye_hsu?si=Q_b8inUHIQkHMF47',
-                joinDate: '2025/10/29 下午 7:30:52'
-            },
-            {
-                id: '27',
-                dcName: '妮妮',
-                channelName: '旋律裡的你',
-                youtubeUrl: 'https://www.youtube.com/@%E6%97%8B%E5%BE%8B%E8%A3%A1%E7%9A%84%E4%BD%A0',
-                joinDate: '2025/11/2 下午 3:02:37'
-            },
-            {
-                id: '28',
-                dcName: 'yuhnmomo',
-                channelName: '法式草莓布丁',
-                youtubeUrl: 'https://youtube.com/channel/UCLdLKasdxG3qEKxmJZdTQLQ?si=KdK9mr-04UrGgxla',
-                joinDate: '2025/11/6 下午 7:20:08'
-            },
-            {
-                id: '29',
-                dcName: 'panny',
-                channelName: '幻音流光',
-                youtubeUrl: 'https://www.youtube.com/channel/UCQOPNojFmmirTrJj7Uy_YpA',
-                joinDate: '2025/11/9 下午 9:26:40'
-            },
-            {
-                id: '30',
-                dcName: 'Medea',
-                channelName: '塞任實驗室Siren Lab',
-                youtubeUrl: 'https://www.youtube.com/@SirenLab',
-                joinDate: '2025/11/10 下午 10:54:35'
-            },
-            // New entries provided by user (2025/12/4 - 2025/12/7)
-            {
-                id: '31',
-                dcName: '⭐️Star龍🐲AI學習音樂動畫製作',
-                channelName: 'ChordataStar',
-                youtubeUrl: 'https://www.youtube.com/@ChordataStar',
-                joinDate: '2025/12/4 下午 4:08:51'
-            },
-            {
-                id: '32',
-                dcName: '.brianhsu',
-                channelName: 'AuroraRealm',
-                youtubeUrl: 'https://www.youtube.com/@AuroraRealm-h2c/videos',
-                joinDate: '2025/12/4 下午 11:45:24'
-            },
-            {
-                id: '33',
-                dcName: 'dora',
-                channelName: 'CreatewithDora',
-                youtubeUrl: 'https://youtube.com/@createwithdora?si=WjDri-6m__JuoCfD',
-                joinDate: '2025/12/4 下午 11:50:06'
-            },
-            {
-                id: '34',
-                dcName: '金光閃閃 運氣滿滿',
-                channelName: 'hsinyu art',
-                youtubeUrl: 'https://www.youtube.com/@hsinyu_art',
-                joinDate: '2025/12/5 上午 1:41:31'
-            },
-            {
-                id: '35',
-                dcName: 'SR',
-                channelName: 'ViralWildFeet',
-                youtubeUrl: 'https://www.youtube.com/channel/UCyNgd022CodnXjtmBKg_AgA',
-                joinDate: '2025/12/7 下午 3:13:53'
-            }
-        ];
-
-        // append user channels from localStorage
-        const userChannels = loadUserChannels();
-        creators = [...creators, ...userChannels];
-
-        // ===== Rendering =====
-        function renderCreators(creatorsToRender = creators) {
-            const grid = document.getElementById('creatorsGrid');
-            const noResults = document.getElementById('noResults');
-
-            if (!grid) return;
-            if (creatorsToRender.length === 0) {
-                grid.style.display = 'none';
-                noResults.style.display = 'block';
-                return;
-            }
-
-            grid.style.display = 'grid';
-            noResults.style.display = 'none';
-
-            grid.innerHTML = creatorsToRender.map(creator => {
-                // build channel buttons
-                let allChannels = [];
-                if (creator.channelName && creator.youtubeUrl) {
-                    allChannels.push({ channelName: creator.channelName, youtubeUrl: creator.youtubeUrl });
-                }
-                if (creator.additionalChannels && creator.additionalChannels.length > 0) {
-                    allChannels = [...allChannels, ...creator.additionalChannels];
-                }
-
-                let channelButtons = '';
-                allChannels.forEach((channel, index) => {
-                    const safeUrl = channel.youtubeUrl.startsWith('http') ? channel.youtubeUrl : ('https://' + channel.youtubeUrl);
-                    channelButtons += `
-                        <div class="channel-item">
-                            <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="creator-button" style="flex: 1; text-align: center; margin: 0;">
-                                <i class="fab fa-youtube"></i> ${escapeHtml(channel.channelName)}
-                            </a>
-                            ${creator.isUserAdded ? `
-                                <button onclick="showDeleteChannelModal('${creator.id}', ${index})" class="btn-delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>` : ''}
-                        </div>
-                    `;
+        // Helper to send updates to server
+        async function syncWithServer(action, data, password) {
+            try {
+                const response = await fetch('/api/creators', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-admin-password': password
+                    },
+                    body: JSON.stringify({ action, data })
                 });
 
-                if (creator.channelDescription) {
-                    channelButtons += `
-                        <button onclick="showChannelDescription('${creator.id}')" class="creator-button" style="margin-top: 10px; background: linear-gradient(45deg, #8B9DC3, #A8B5C4);">
-                            <i class="fas fa-info-circle"></i> 查看頻道說明
-                        </button>
-                    `;
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || 'Server error');
                 }
 
-                return `
-                    <div class="creator-card">
-                        <div class="creator-header">
-                            <div class="creator-info">
-                                <h3>${escapeHtml(creator.dcName)}</h3>
-                                <p>${escapeHtml(creator.channelName || '')}${creator.additionalChannels ? ` + ${creator.additionalChannels.length} 個頻道` : ''}</p>
-                            </div>
-                        </div>
-                        <div class="creator-date">加入時間：${escapeHtml(creator.joinDate || '')}</div>
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            ${channelButtons}
-                        </div>
-                        ${creator.isUserAdded ? `
-                            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                                <button onclick="showAddChannelToCreatorModal('${creator.id}')" class="creator-button" style="flex: 1; margin: 0;">
-                                    <i class="fas fa-plus"></i> 新增頻道
-                                </button>
-                                <button onclick="showPasswordModal('deleteCreator','${creator.id}')" class="btn-delete" style="flex: 1; margin: 0;">
-                                    <i class="fas fa-trash"></i> 刪除創作者
-                                </button>
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-            }).join('');
+                alert('更新成功！資料已同步至 GitHub（可能需要幾分鐘才會顯示在網頁上）。');
+                await fetchCreators(); // Reload data
+                return true;
+            } catch (error) {
+                console.error('Sync error:', error);
+                alert('更新失敗: ' + error.message);
+                return false;
+            }
         }
 
-        function escapeHtml(unsafe) {
-            if (typeof unsafe !== 'string') return unsafe || '';
-            return unsafe.replace(/[&<>"'`=\/]/g, function (s) {
-                return ({
-                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;'
-                })[s];
+        // ===== UI Rendering & Interaction =====
+
+        function getAvatarUrl(creator) {
+            // Return default avatar for now
+            return '/assets/cat-avatar.png';
+        }
+
+        function renderCreators() {
+            const grid = document.getElementById('creatorsGrid');
+            const searchVal = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase().trim() : '';
+
+            grid.innerHTML = '';
+
+            if (!creators) return;
+
+            // Filter logic
+            const filtered = creators.filter(c => {
+                const matchName = c.dcName && c.dcName.toLowerCase().includes(searchVal);
+                const matchChannel = c.channelName && c.channelName.toLowerCase().includes(searchVal);
+                return matchName || matchChannel;
+            });
+
+            if (filtered.length === 0) {
+                document.getElementById('noResults').style.display = 'block';
+            } else {
+                document.getElementById('noResults').style.display = 'none';
+            }
+
+            filtered.forEach(creator => {
+                const card = document.createElement('div');
+                card.className = 'creator-card';
+
+                const avatarSrc = getAvatarUrl(creator);
+
+                let subChannelsHtml = '';
+                if (creator.additionalChannels && creator.additionalChannels.length > 0) {
+                    creator.additionalChannels.forEach((sub, idx) => {
+                        subChannelsHtml += `
+                               <div class="channel-item">
+                                   <div>
+                                       <strong>${sub.channelName}</strong>
+                                       <a href="${sub.youtubeUrl}" target="_blank" style="margin-left:5px; color:#8B9DC3;"><i class="fas fa-external-link-alt"></i></a>
+                                   </div>
+                                   <button onclick="showDeleteChannelModal('${creator.id}', ${idx})" style="background:none; border:none; color:#ff6b6b; cursor:pointer;" title="刪除此頻道">
+                                       <i class="fas fa-trash-alt"></i>
+                                   </button>
+                               </div>
+                           `;
+                    });
+                }
+
+                // Main Delete Button
+                let deleteBtnHtml = `
+                    <button onclick="showDeleteChannelModal('${creator.id}', null)" class="creator-button" style="background: #ff6b6b; font-size: 0.9rem; padding: 8px 16px; margin-left: 5px;">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                 `;
+
+                // Description or Add Sub Button
+                let descBtn = '';
+                if (creator.channelDescription) {
+                    descBtn = `<button onclick="openDescriptionModal('${creator.id}')" class="creator-button" style="font-size: 0.9rem; padding: 8px 16px;">
+                        <i class="fas fa-info-circle"></i>
+                     </button>`;
+                }
+
+                // Add Sub Button
+                const addSubBtn = `<button onclick="showAddChannelToCreatorModal('${creator.id}')" class="creator-button" style="background: #4ecdc4; font-size: 0.9rem; padding: 8px 16px; margin-left:5px;" title="新增子頻道">
+                        <i class="fas fa-plus"></i>
+                     </button>`;
+
+                const html = `
+                    <div class="creator-header">
+                        <img src="${avatarSrc}" alt="${creator.dcName}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 2px solid #8B9DC3;">
+                        <div class="creator-info">
+                            <h3>${creator.dcName}</h3>
+                            <p>${creator.channelName}</p>
+                        </div>
+                    </div>
+                    <div class="creator-date" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span><i class="far fa-calendar-alt"></i> ${creator.joinDate.split(' ')[0]}</span>
+                    </div>
+                    
+                    ${subChannelsHtml ? `<div style="margin-bottom:15px; background:rgba(255,255,255,0.5); padding:10px; border-radius:10px;">${subChannelsHtml}</div>` : ''}
+
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 15px;">
+                        <a href="${creator.youtubeUrl}" target="_blank" class="creator-button" title="觀看頻道">
+                            <i class="fab fa-youtube"></i> 頻道
+                        </a>
+                        ${descBtn}
+                        ${addSubBtn}
+                        ${deleteBtnHtml}
+                    </div>
+                 `;
+
+                card.innerHTML = html;
+                grid.appendChild(card);
             });
         }
 
-        // ===== Search =====
         function searchCreators() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredCreators = creators.filter(creator =>
-                (creator.dcName && creator.dcName.toLowerCase().includes(searchTerm)) ||
-                (creator.channelName && creator.channelName.toLowerCase().includes(searchTerm))
-            );
-            renderCreators(filteredCreators);
+            renderCreators();
         }
 
-        // ===== Channel description modal =====
-        function showChannelDescription(creatorId) {
-            const creator = creators.find(c => c.id === creatorId);
+        function openDescriptionModal(id) {
+            const creator = creators.find(c => c.id == id);
             if (!creator || !creator.channelDescription) return;
 
             const modal = document.getElementById('descriptionModal');
-            const modalContent = document.getElementById('descriptionContent');
+            const content = document.getElementById('descriptionContent');
 
-            // store current creator id on modal dataset so switchLanguage can read it
-            modal.dataset.currentCreatorId = creatorId;
-
-            modalContent.innerHTML = `
+            let descHtml = `
                 <div class="description-header">
-                    <h3>${escapeHtml(creator.dcName)} - ${escapeHtml(creator.channelName)}</h3>
+                    <h3>${creator.dcName} - 頻道介紹</h3>
                     <span class="close" onclick="closeDescriptionModal()">&times;</span>
                 </div>
                 <div class="description-body">
-                    <div class="language-tabs">
-                        <button class="tab-button active" onclick="switchLanguage(event, 'english')">English</button>
-                        <button class="tab-button" onclick="switchLanguage(event, 'korean')">한국어</button>
-                    </div>
-                    <div class="description-text" id="descriptionText">
-                        ${escapeHtml(creator.channelDescription.english).replace(/\n/g, '<br>')}
-                    </div>
-                </div>
             `;
+
+            const desc = creator.channelDescription;
+            if (desc.english) {
+                descHtml += `<div style="margin-bottom:20px;"><h4 style="color:#8B9DC3;">English</h4><div class="description-text">${desc.english.replace(/\n/g, '<br>')}</div></div>`;
+            }
+            if (desc.korean) {
+                descHtml += `<div style="margin-bottom:20px;"><h4 style="color:#8B9DC3;">Korean</h4><div class="description-text">${desc.korean.replace(/\n/g, '<br>')}</div></div>`;
+            }
+            if (desc.chinese) {
+                descHtml += `<div style="margin-bottom:20px;"><h4 style="color:#8B9DC3;">中文</h4><div class="description-text">${desc.chinese.replace(/\n/g, '<br>')}</div></div>`;
+            }
+
+            descHtml += `</div>`;
+            content.innerHTML = descHtml;
 
             modal.style.display = 'block';
             modal.setAttribute('aria-hidden', 'false');
@@ -571,35 +661,14 @@
 
         function closeDescriptionModal() {
             const modal = document.getElementById('descriptionModal');
-            if (!modal) return;
             modal.style.display = 'none';
             modal.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = 'auto';
-            delete modal.dataset.currentCreatorId;
         }
 
-        // switchLanguage now receives event and language; reads creator id from modal dataset
-        function switchLanguage(event, language) {
-            const modal = document.getElementById('descriptionModal');
-            if (!modal) return;
-            const creatorId = modal.dataset.currentCreatorId;
-            const creator = creators.find(c => c.id === creatorId);
-            if (!creator || !creator.channelDescription) return;
+        // ===== Modals and Actions =====
 
-            // update button active states
-            const tabs = modal.querySelectorAll('.tab-button');
-            tabs.forEach(t => t.classList.remove('active'));
-            if (event && event.currentTarget) {
-                event.currentTarget.classList.add('active');
-            } else if (event && event.target) {
-                event.target.classList.add('active');
-            }
-
-            const descriptionText = modal.querySelector('#descriptionText');
-            descriptionText.innerHTML = escapeHtml(creator.channelDescription[language]).replace(/\n/g, '<br>');
-        }
-
-        // ===== Add channel modal handling =====
+        // Add Channel
         function showAddChannelModal() {
             document.getElementById('addChannelModal').style.display = 'block';
             document.getElementById('addChannelModal').setAttribute('aria-hidden', 'false');
@@ -613,6 +682,11 @@
             const form = document.getElementById('addChannelForm');
             if (form) form.reset();
         }
+
+        function showAddChannelPasswordModal(payload) {
+            showPasswordModal('addChannel', JSON.stringify(payload));
+        }
+
         function submitAddChannel(e) {
             e.preventDefault();
             const dcName = document.getElementById('newDcName').value.trim();
@@ -623,35 +697,26 @@
                 alert('請填寫所有欄位');
                 return;
             }
-
-            // basic URL validation
             if (!/youtube\.com|youtu\.be/.test(youtubeUrl)) {
                 alert('請輸入有效的 YouTube 頻道連結');
                 return;
             }
 
-            const newId = 'user_' + Date.now();
-            const joinDate = new Date().toLocaleString('zh-TW', { hour12: true });
-
             const newCreator = {
-                id: newId,
+                id: 'user_' + Date.now(),
                 dcName,
                 channelName,
                 youtubeUrl,
-                joinDate,
+                joinDate: new Date().toLocaleString('zh-TW', { hour12: true }),
                 isUserAdded: true
             };
 
-            creators.push(newCreator);
-            const stored = loadUserChannels();
-            stored.push(newCreator);
-            saveUserChannels(stored);
-
-            renderCreators();
             closeAddChannelModal();
+            // DIRECT CALL - NO PASSWORD
+            syncWithServer('add_creator', newCreator, null);
         }
 
-        // ===== Add channel to existing creator (simple modal) =====
+        // Add Sub-Channel
         function showAddChannelToCreatorModal(creatorId) {
             const name = prompt('請輸入要新增的頻道名稱與連結（格式：頻道名稱|連結）');
             if (!name) return;
@@ -660,23 +725,17 @@
                 alert('請用「頻道名稱|連結」格式輸入');
                 return;
             }
-            const creator = creators.find(c => c.id === creatorId);
-            if (!creator) return;
-            if (!creator.additionalChannels) creator.additionalChannels = [];
-            creator.additionalChannels.push({ channelName: parts[0].trim(), youtubeUrl: parts[1].trim() });
-            // if the creator is user-added, persist to localStorage as well
-            if (creator.isUserAdded) {
-                const stored = loadUserChannels();
-                const idx = stored.findIndex(s => s.id === creatorId);
-                if (idx !== -1) {
-                    stored[idx] = creator;
-                    saveUserChannels(stored);
-                }
-            }
-            renderCreators();
+
+            const payload = {
+                creatorId,
+                channelName: parts[0].trim(),
+                youtubeUrl: parts[1].trim()
+            };
+
+            showPasswordModal('addSubChannel', JSON.stringify(payload));
         }
 
-        // ===== Delete channel / creator flow =====
+        // Delete Channel/Creator
         let pendingDelete = { type: null, creatorId: null, channelIndex: null };
 
         function showDeleteChannelModal(creatorId, channelIndex) {
@@ -693,11 +752,12 @@
         }
 
         function confirmDelete() {
-            // require password confirm
             closeDeleteChannelModal();
-            showPasswordModal('deletePending', JSON.stringify(pendingDelete));
+            const payload = JSON.stringify(pendingDelete);
+            showPasswordModal('deletePending', payload);
         }
 
+        // Password Handling
         function showPasswordModal(action, payload) {
             const modal = document.getElementById('passwordModal');
             modal.style.display = 'block';
@@ -717,62 +777,47 @@
             document.body.style.overflow = 'auto';
         }
 
-        function submitPasswordAction() {
+        async function submitPasswordAction() {
             const modal = document.getElementById('passwordModal');
             const pw = document.getElementById('passwordInput').value || '';
-            if (!verifyPassword(pw)) {
-                alert('密碼錯誤');
+            if (!pw) {
+                alert('請輸入密碼');
                 return;
             }
 
             const action = modal.dataset.action;
-            const payload = modal.dataset.payload;
+            const payloadRaw = modal.dataset.payload;
+            let payload;
+            try {
+                payload = JSON.parse(payloadRaw);
+            } catch (e) {
+                payload = payloadRaw;
+            }
+
             closePasswordModal();
 
-            if (action === 'deleteCreator') {
-                const creatorId = payload;
-                creators = creators.filter(c => c.id !== creatorId);
-                // also remove from stored user channels
-                let stored = loadUserChannels();
-                stored = stored.filter(s => s.id !== creatorId);
-                saveUserChannels(stored);
-                renderCreators();
+            // Dispatch actions to server
+            if (action === 'addChannel') {
+                await syncWithServer('add_creator', payload, pw);
+            } else if (action === 'addSubChannel') {
+                await syncWithServer('add_sub_channel', payload, pw);
+            } else if (action === 'deleteCreator') {
+                await syncWithServer('delete_creator', { id: payload }, pw);
             } else if (action === 'deletePending') {
-                try {
-                    const pd = JSON.parse(payload);
-                    if (pd.type === 'channel') {
-                        const creator = creators.find(c => c.id === pd.creatorId);
-                        if (creator && creator.additionalChannels && creator.additionalChannels.length > pd.channelIndex) {
-                            creator.additionalChannels.splice(pd.channelIndex, 1);
-                            // persist if user added
-                            if (creator.isUserAdded) {
-                                const stored = loadUserChannels();
-                                const idx = stored.findIndex(s => s.id === creator.id);
-                                if (idx !== -1) {
-                                    stored[idx] = creator;
-                                    saveUserChannels(stored);
-                                }
-                            }
-                            renderCreators();
-                        }
-                    }
-                } catch (err) {
-                    console.error('deletePending payload parse error', err);
+                if (payload.type === 'channel') {
+                    await syncWithServer('delete_sub_channel', payload, pw);
                 }
             }
         }
 
-        // utility: show password modal for deleting a creator (used in render)
-        // showPasswordModal('deleteCreator', creatorId)
-
         // ===== Initialization =====
-        document.addEventListener('DOMContentLoaded', function() {
-            renderCreators();
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchCreators();
             const searchInput = document.getElementById('searchInput');
             if (searchInput) searchInput.addEventListener('input', searchCreators);
 
             // global click to close modals when clicking backdrop
-            window.addEventListener('click', function(event) {
+            window.addEventListener('click', function (event) {
                 const descriptionModal = document.getElementById('descriptionModal');
                 if (event.target === descriptionModal) closeDescriptionModal();
                 const addModal = document.getElementById('addChannelModal');
@@ -785,4 +830,5 @@
         });
     </script>
 </body>
+
 </html>
