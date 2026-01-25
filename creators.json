@@ -302,5 +302,13 @@
         "youtubeUrl": "https://www.youtube.com/channel/UC0sVTh85AVzyK-vm_rZR_kA",
         "joinDate": "2026/1/25 下午10:30:19",
         "isUserAdded": true
+    },
+    {
+        "id": "user_1769353739750",
+        "dcName": "綠豆",
+        "channelName": "Aria艾莉亞",
+        "youtubeUrl": "https://www.youtube.com/@AriaSoundLab",
+        "joinDate": "2026/1/25 下午11:08:59",
+        "isUserAdded": true
     }
 ]
