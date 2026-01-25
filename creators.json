@@ -254,5 +254,13 @@
         "youtubeUrl": "https://www.youtube.com/@Satinnic_Studio",
         "joinDate": "2026/1/25 下午12:53:57",
         "isUserAdded": true
+    },
+    {
+        "id": "user_1769317220276",
+        "dcName": "月下聽弦",
+        "channelName": "弦斷誰聽",
+        "youtubeUrl": "https://www.youtube.com/@thebrokenstring-9",
+        "joinDate": "2026/1/25 下午1:00:20",
+        "isUserAdded": true
     }
 ]
