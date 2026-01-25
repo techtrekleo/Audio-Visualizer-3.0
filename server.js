@@ -541,12 +541,14 @@ const server = http.createServer((req, res) => {
   // Static File Serving
   let filePath = path.join(__dirname, urlPath === '/' ? 'index.html' : urlPath.substring(1));
 
+  // 檢查是否為目錄，如果是則嘗試尋找 index.html
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+    filePath = path.join(filePath, 'index.html');
+  }
+
   // Implicit .html for specific routes if needed, or default
-  if (!path.extname(filePath) && !filePath.endsWith('.json')) {
-    // try adding .html or serving index.html if directory?
-    // simple rewrite:
+  if (!fs.existsSync(filePath) && !path.extname(filePath) && !filePath.endsWith('.json')) {
     if (fs.existsSync(filePath + '.html')) filePath += '.html';
-    // else if (fs.existsSync(path.join(filePath, 'index.html'))) filePath = path.join(filePath, 'index.html');
   }
 
   const ext = path.extname(filePath);
@@ -559,20 +561,21 @@ const server = http.createServer((req, res) => {
     '.jpg': 'image/jpg',
     '.txt': 'text/plain',
     '.xml': 'application/xml',
-    '.ico': 'image/x-icon'
+    '.ico': 'image/x-icon',
+    '.svg': 'image/svg+xml'
   }[ext] || 'text/plain';
 
   fs.readFile(filePath, (error, content) => {
     if (error) {
-      if (error.code === 'ENOENT') {
+      if (error.code === 'ENOENT' || error.code === 'EISDIR') {
         // Try 404.html
         fs.readFile(path.join(__dirname, '404.html'), (err404, content404) => {
           res.writeHead(404, { 'Content-Type': 'text/html' });
-          res.end(content404 || '404 Not Found');
+          res.end(content404 || '404 Not Found - Path: ' + urlPath);
         });
       } else {
         res.writeHead(500);
-        res.end('Server Error: ' + error.code);
+        res.end('Server Error: ' + error.code + ' - Path: ' + urlPath);
       }
     } else {
       // Inject Layout for HTML pages
