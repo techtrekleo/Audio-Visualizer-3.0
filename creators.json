@@ -193,7 +193,7 @@
     },
     {
         "id": "28",
-        "dcName": "yuhnmomo",
+        "dcName": "璃煙",
         "channelName": "LiYan_Studio",
         "youtubeUrl": "https://youtube.com/channel/UCLdLKasdxG3qEKxmJZdTQLQ?si=KdK9mr-04UrGgxla",
         "joinDate": "2025/11/6 下午 7:20:08"
@@ -277,6 +277,14 @@
         "channelName": "KYvoce",
         "youtubeUrl": "https://www.youtube.com/@KYvoce",
         "joinDate": "2026/1/25下午1:04:51",
+        "isUserAdded": true
+    },
+    {
+        "id": "user_1769342935000",
+        "dcName": "ChantMoyamina",
+        "channelName": "Moyamina",
+        "youtubeUrl": "https://www.youtube.com/@ChantMoyamina",
+        "joinDate": "2026/1/25 下午8:10:00",
         "isUserAdded": true
     }
 ]
