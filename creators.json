@@ -294,5 +294,13 @@
         "youtubeUrl": "https://youtube.com/@vianstudio-h9g?si=ONDEk2QVK_x35JXC",
         "joinDate": "2026/1/25 下午10:06:00",
         "isUserAdded": true
+    },
+    {
+        "id": "user_1769351419665",
+        "dcName": "OJ",
+        "channelName": "Oriental Jupiter",
+        "youtubeUrl": "https://www.youtube.com/channel/UC0sVTh85AVzyK-vm_rZR_kA",
+        "joinDate": "2026/1/25 下午10:30:19",
+        "isUserAdded": true
     }
 ]
