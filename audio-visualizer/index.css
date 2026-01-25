@@ -6,15 +6,24 @@
 @tailwind utilities;
 
 /* Base styles for the entire application */
-html, body, #root {
-  height: 100%;
-  background-color: #000000; /* Pure black background */
-  color: #f3f4f6; /* Light text color */
+html, body {
+  min-height: 100vh;
+  background-color: #000000;
+  color: #f3f4f6;
   font-family: "Poppins", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
+  /* Prevent content from overlapping footer */
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  flex: 1; /* Allow root to push footer down */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1; /* Ensure root is below fixed headers but above footer if needed */
 }
 
 /* Ensure the root element takes full height */
@@ -22,6 +31,8 @@ html, body, #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  flex-grow: 1; /* This pushes the footer down if #root is in a flex column body */
+  position: relative;
 }
 
 /* Custom slider styles - Enhanced with stronger specificity */
