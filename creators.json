@@ -286,5 +286,13 @@
         "youtubeUrl": "https://www.youtube.com/@ChantMoyamina",
         "joinDate": "2026/1/25 下午8:10:00",
         "isUserAdded": true
+    },
+    {
+        "id": "user_1769349954000",
+        "dcName": "不良熊",
+        "channelName": "VianStudio-h9g",
+        "youtubeUrl": "https://youtube.com/@vianstudio-h9g?si=ONDEk2QVK_x35JXC",
+        "joinDate": "2026/1/25 下午10:06:00",
+        "isUserAdded": true
     }
 ]
