@@ -173,7 +173,7 @@
     {
         "id": "25",
         "dcName": "時雨",
-        "channelName": "心和之聲",
+        "channelName": "空山和尚",
         "youtubeUrl": "https://www.youtube.com/@kokorowanoODO",
         "joinDate": "2025/10/21 下午 10:49:59"
     },
@@ -194,21 +194,21 @@
     {
         "id": "28",
         "dcName": "yuhnmomo",
-        "channelName": "法式草莓布丁",
+        "channelName": "LiYan_Studio",
         "youtubeUrl": "https://youtube.com/channel/UCLdLKasdxG3qEKxmJZdTQLQ?si=KdK9mr-04UrGgxla",
         "joinDate": "2025/11/6 下午 7:20:08"
     },
     {
         "id": "29",
         "dcName": "panny",
-        "channelName": "幻音流光",
+        "channelName": "浣月Huanyue",
         "youtubeUrl": "https://www.youtube.com/channel/UCQOPNojFmmirTrJj7Uy_YpA",
         "joinDate": "2025/11/9 下午 9:26:40"
     },
     {
         "id": "30",
         "dcName": "Medea",
-        "channelName": "塞任實驗室Siren Lab",
+        "channelName": "艾萊EleX",
         "youtubeUrl": "https://www.youtube.com/@SirenLab",
         "joinDate": "2025/11/10 下午 10:54:35"
     },
@@ -229,8 +229,8 @@
     {
         "id": "33",
         "dcName": "dora",
-        "channelName": "CreatewithDora",
-        "youtubeUrl": "https://youtube.com/@createwithdora?si=WjDri-6m__JuoCfD",
+        "channelName": "Dora7th",
+        "youtubeUrl": "https://youtube.com/@dora7th?si=p_-EOnCV97Gs_0DM",
         "joinDate": "2025/12/4 下午 11:50:06"
     },
     {
@@ -277,14 +277,6 @@
         "channelName": "KYvoce",
         "youtubeUrl": "https://www.youtube.com/@KYvoce",
         "joinDate": "2026/1/25下午1:04:51",
-        "isUserAdded": true
-    },
-    {
-        "id": "user_1769317627002",
-        "dcName": "panny",
-        "channelName": "浣月Huanyue",
-        "youtubeUrl": "youtube.com/@Moon-z6w",
-        "joinDate": "2026/1/25 下午1:07:07",
         "isUserAdded": true
     }
 ]
