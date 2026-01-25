@@ -539,11 +539,25 @@ const server = http.createServer((req, res) => {
   }
 
   // Static File Serving
-  let filePath = path.join(__dirname, urlPath === '/' ? 'index.html' : urlPath.substring(1));
+  let filePath;
 
-  // 檢查是否為目錄，如果是則嘗試尋找 index.html
-  if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-    filePath = path.join(filePath, 'index.html');
+  // Special handling for audio-visualizer route to serve from dist
+  if (urlPath.startsWith('/audio-visualizer')) {
+    const relPath = urlPath.replace('/audio-visualizer', '') || '/';
+    // If asking for root of sub-app, load index.html from dist
+    if (relPath === '/' || relPath === '/index.html') {
+      filePath = path.join(__dirname, 'audio-visualizer', 'dist', 'index.html');
+    } else {
+      filePath = path.join(__dirname, 'audio-visualizer', 'dist', relPath.substring(1));
+    }
+  } else {
+    // Default behavior for other paths
+    filePath = path.join(__dirname, urlPath === '/' ? 'index.html' : urlPath.substring(1));
+
+    // 檢查是否為目錄，如果是則嘗試尋找 index.html
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+      filePath = path.join(filePath, 'index.html');
+    }
   }
 
   // Implicit .html for specific routes if needed, or default
