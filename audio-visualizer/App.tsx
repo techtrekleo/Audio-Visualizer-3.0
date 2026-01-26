@@ -1251,7 +1251,7 @@ function App() {
                 const getTransitionDuration = (type: TransitionType): number => {
                     switch (type) {
                         case TransitionType.INK_BLOT:
-                            return 3000;
+                            return 2000;
                         case TransitionType.TV_STATIC:
                             return 800; // 0.8秒，確保震盪效果完整
                         case TransitionType.FADE:
