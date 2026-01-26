@@ -233,6 +233,7 @@ export enum TransitionType {
     BLINDS = '百葉窗',
     CHECKERBOARD = '棋盤格',
     RANDOM_PIXELS = '隨機像素',
+    INK_BLOT = 'ink_blot',
 }
 
 export type Subtitle = {

@@ -119,6 +119,7 @@ function App() {
     const [isSlideshowEnabled, setIsSlideshowEnabled] = useState<boolean>(false); // 輪播開關
     const [slideshowInterval, setSlideshowInterval] = useState<number>(15); // 輪播間隔（秒）
     const [isTransitioning, setIsTransitioning] = useState<boolean>(false); // 是否正在過場
+    // const [carouselInkTransitionEnabled, setCarouselInkTransitionEnabled] = useState<boolean>(false); // 已移除：整合進轉場類型
     const [transitionType, setTransitionType] = useState<TransitionType>(TransitionType.TV_STATIC); // 轉場效果類型
     const [backgroundVideo, setBackgroundVideo] = useState<string | null>(null); // 背景影片
     const updateCustomTextOverlay = useCallback((index: number, patch: Partial<CustomTextOverlay>) => {
@@ -281,6 +282,9 @@ function App() {
     const [ctaVideoIncludeAudio, setCtaVideoIncludeAudio] = useState<boolean>(false);
     const [ctaVideoReplaceCtaAnimation, setCtaVideoReplaceCtaAnimation] = useState<boolean>(false);
     const ctaVideoRef = useRef<HTMLVideoElement | null>(null);
+    // Ink Blot Transition for CTA Video End
+    const [ctaInkTransitionEnabled, setCtaInkTransitionEnabled] = useState<boolean>(false);
+
 
     const { analyser, initializeAudio, isAudioInitialized, getAudioStream, resetAudioAnalysis, setAuxMediaElement } = useAudioAnalysis();
 
@@ -1246,6 +1250,8 @@ function App() {
                 // 根據轉場類型設定不同的持續時間
                 const getTransitionDuration = (type: TransitionType): number => {
                     switch (type) {
+                        case TransitionType.INK_BLOT:
+                            return 3000;
                         case TransitionType.TV_STATIC:
                             return 800; // 0.8秒，確保震盪效果完整
                         case TransitionType.FADE:
@@ -2329,8 +2335,10 @@ function App() {
                                     waveformStroke={waveformStroke}
                                     isTransitioning={isTransitioning}
                                     transitionType={transitionType}
-                                    backgroundImages={showBackgroundImage ? backgroundImages : []}
+                                    backgroundImages={backgroundImages}
                                     currentImageIndex={currentImageIndex}
+                                    // carouselInkTransitionEnabled={carouselInkTransitionEnabled} // Removed
+                                    // Subtitle props
                                     subtitles={subtitles}
                                     showSubtitles={showSubtitles}
                                     subtitleFontSize={subtitleFontSize}
@@ -2381,6 +2389,7 @@ function App() {
                                     ctaVideoElement={ctaVideoRef.current}
                                     ctaVideoEnabled={ctaVideoEnabled}
                                     ctaVideoReplaceCtaAnimation={ctaVideoReplaceCtaAnimation}
+                                    ctaInkTransitionEnabled={ctaInkTransitionEnabled}
                                     // Intro Overlay props
                                     showIntroOverlay={showIntroOverlay}
                                     introTitle={introTitle}
@@ -2686,8 +2695,9 @@ function App() {
                             onSlideshowEnabledChange={setIsSlideshowEnabled}
                             slideshowInterval={slideshowInterval}
                             onSlideshowIntervalChange={setSlideshowInterval}
+                            // carouselInkTransitionEnabled={carouselInkTransitionEnabled}
+                            // onCarouselInkTransitionEnabledChange={setCarouselInkTransitionEnabled}
                             isTransitioning={isTransitioning}
-                            transitionType={transitionType}
                             onTransitionTypeChange={setTransitionType}
                             waveformStroke={waveformStroke}
                             onWaveformStrokeChange={setWaveformStroke}
@@ -2802,7 +2812,10 @@ function App() {
                             onCtaVideoIncludeAudioChange={setCtaVideoIncludeAudio}
                             ctaVideoReplaceCtaAnimation={ctaVideoReplaceCtaAnimation}
                             onCtaVideoReplaceCtaAnimationChange={setCtaVideoReplaceCtaAnimation}
-                            // Intro Overlay props
+                            ctaInkTransitionEnabled={ctaInkTransitionEnabled}
+                            onCtaInkTransitionEnabledChange={setCtaInkTransitionEnabled}
+
+                            // Intro Overlay controls
                             showIntroOverlay={showIntroOverlay}
                             onShowIntroOverlayChange={setShowIntroOverlay}
                             introTitle={introTitle}

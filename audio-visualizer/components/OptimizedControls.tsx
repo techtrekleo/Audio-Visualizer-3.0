@@ -382,6 +382,9 @@ interface OptimizedControlsProps {
     // When true, the uploaded CTA video replaces the CTA pill animation
     ctaVideoReplaceCtaAnimation?: boolean;
     onCtaVideoReplaceCtaAnimationChange?: (enabled: boolean) => void;
+    // Ink Blot Transition (procedural)
+    ctaInkTransitionEnabled?: boolean;
+    onCtaInkTransitionEnabledChange?: (enabled: boolean) => void;
 
     // Intro Overlay controls
     showIntroOverlay?: boolean;
@@ -1717,6 +1720,21 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 <p className="text-xs text-gray-400">
                                     提醒：CTA 影片原聲會與主音樂同時播放/錄製；若你只想要畫面請關閉「保留原聲」。
                                 </p>
+
+                                <div className="flex items-center justify-between bg-gray-900/40 border border-gray-700 rounded-lg p-3">
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-medium text-gray-200">墨暈轉場效果</span>
+                                        <span className="text-xs text-gray-400">影片結束時使用墨暈遮罩轉場 (Procedural Ink Blot)</span>
+                                    </div>
+                                    <button
+                                        onClick={() => props.onCtaInkTransitionEnabledChange?.(!(props.ctaInkTransitionEnabled ?? false))}
+                                        type="button"
+                                        className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${(props.ctaInkTransitionEnabled ?? false) ? 'bg-cyan-600' : 'bg-gray-500'}`}
+                                        aria-pressed={(props.ctaInkTransitionEnabled ?? false)}
+                                    >
+                                        <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${(props.ctaInkTransitionEnabled ?? false) ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    </button>
+                                </div>
                             </div>
 
                             {props.showCtaAnimation && !(props.ctaVideoReplaceCtaAnimation ?? false) && (
@@ -2080,20 +2098,6 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                 />
                             </div>
 
-                            <div className="flex items-center justify-between bg-gray-800/40 border border-gray-700 rounded-lg p-3">
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-medium text-gray-200">上下流動光條</span>
-                                    <span className="text-xs text-gray-400">關閉後只保留文字與背景卡片，不再出現上下掃光條</span>
-                                </div>
-                                <button
-                                    onClick={() => props.onIntroLightBarsEnabledChange?.(!(props.introLightBarsEnabled ?? true))}
-                                    className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 ${(props.introLightBarsEnabled ?? true) ? 'bg-cyan-600' : 'bg-gray-500'}`}
-                                    aria-pressed={(props.introLightBarsEnabled ?? true)}
-                                >
-                                    <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${(props.introLightBarsEnabled ?? true) ? 'translate-x-6' : 'translate-x-1'}`} />
-                                </button>
-                            </div>
-
                             <p className="text-xs text-gray-400">
                                 💡 提示：按「播放」從 0 開始或「開始錄製」時，會自動播放一次開場動畫；也可用「預覽」在目前時間點播放一次。
                             </p>
@@ -2316,6 +2320,7 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                                                 <option value={TransitionType.BLINDS}>🪟 百葉窗</option>
                                                 <option value={TransitionType.CHECKERBOARD}>🏁 棋盤格</option>
                                                 <option value={TransitionType.RANDOM_PIXELS}>🎲 隨機像素</option>
+                                                <option value={TransitionType.INK_BLOT}>💧 墨暈轉場 (Ink Blot)</option>
                                             </select>
                                         </div>
                                     )}
