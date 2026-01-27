@@ -36,15 +36,7 @@ ARG GEMINI_API_KEY
 ENV GEMINI_API_KEY=$GEMINI_API_KEY
 RUN npm run build
 
-# 建置 SRT 字幕翻譯系統
-WORKDIR /app/srt-translator
-RUN npm install
-RUN npm run build
-
-# 建置歐皇工具（Video Merger）
-WORKDIR /app/video-merger
-RUN npm install
-RUN npm run build
+# Tools removed
 
 # 回到根目錄
 WORKDIR /app
