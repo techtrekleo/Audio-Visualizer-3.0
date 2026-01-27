@@ -538,6 +538,14 @@ const server = http.createServer((req, res) => {
     return handleCreatorsApi(req, res);
   }
 
+  // Redirect if user tries to access /dist/ directly (common mistake)
+  if (urlPath.includes('/dist/')) {
+    const redirectUrl = urlPath.replace('/dist/', '/');
+    res.writeHead(301, { 'Location': redirectUrl });
+    res.end();
+    return;
+  }
+
   // Static File Serving
   let filePath;
 
