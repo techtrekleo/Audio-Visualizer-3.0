@@ -4,18 +4,18 @@
 const CONFIG = {
     // 主要工具連結
     tools: {
-        audioVisualizer: 'audio-visualizer/',
-        youtubeSEO: 'youtube-seo/',
-        fontEffects: 'font-effects/'
+        audioVisualizer: 'audio-visualizer/dist/',
+        youtubeSEO: 'youtube-seo/dist/',
+        fontEffects: 'font-effects/dist/'
     },
-    
+
     // 頻道和社交連結
     social: {
         youtube: 'https://www.youtube.com/@%E9%9F%B3%E6%A8%82%E8%84%88%E5%8B%95SonicPulse',
         paypal: 'https://www.paypal.com/ncp/payment/PK49RJYSTAV6Y',
         email: 'contact@sonicpulse.com'
     },
-    
+
     // 網站資訊
     site: {
         title: '音樂脈動-Sonic Pulse | 音樂創作工具集合',
@@ -24,7 +24,7 @@ const CONFIG = {
         ogImage: '/assets/cat-avatar.png',
         networkName: '🐱 口袋裡的貓' // 網路名字
     },
-    
+
     // 統計資料
     stats: {
         subscribers: '100+',
