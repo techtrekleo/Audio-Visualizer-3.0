@@ -544,11 +544,28 @@ const server = http.createServer((req, res) => {
   // Special handling for audio-visualizer route to serve from dist
   if (urlPath.startsWith('/audio-visualizer')) {
     const relPath = urlPath.replace('/audio-visualizer', '') || '/';
-    // If asking for root of sub-app, load index.html from dist
     if (relPath === '/' || relPath === '/index.html') {
       filePath = path.join(__dirname, 'audio-visualizer', 'dist', 'index.html');
     } else {
       filePath = path.join(__dirname, 'audio-visualizer', 'dist', relPath.substring(1));
+    }
+  }
+  // Special handling for youtube-seo route to serve from dist
+  else if (urlPath.startsWith('/youtube-seo')) {
+    const relPath = urlPath.replace('/youtube-seo', '') || '/';
+    if (relPath === '/' || relPath === '/index.html') {
+      filePath = path.join(__dirname, 'youtube-seo', 'dist', 'index.html');
+    } else {
+      filePath = path.join(__dirname, 'youtube-seo', 'dist', relPath.substring(1));
+    }
+  }
+  // Special handling for font-effects route to serve from dist
+  else if (urlPath.startsWith('/font-effects')) {
+    const relPath = urlPath.replace('/font-effects', '') || '/';
+    if (relPath === '/' || relPath === '/index.html') {
+      filePath = path.join(__dirname, 'font-effects', 'dist', 'index.html');
+    } else {
+      filePath = path.join(__dirname, 'font-effects', 'dist', relPath.substring(1));
     }
   } else {
     // Default behavior for other paths
