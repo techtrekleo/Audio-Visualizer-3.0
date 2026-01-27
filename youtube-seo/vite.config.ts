@@ -6,10 +6,10 @@ export default defineConfig(({ mode }) => {
   // Load .env files based on `mode` in the current working directory.
   // This will also load environment variables from the platform (e.g., Railway).
   const env = loadEnv(mode, process.cwd() + '/..', '');
-  
+
   return {
     plugins: [react()],
-    base: '/youtube-seo/', // 設置正確的基礎路徑
+    base: './', // 設置正確的基礎路徑
     // Explicitly define environment variables to be statically replaced at build time.
     // This is a more robust approach for deployment environments.
     define: {
