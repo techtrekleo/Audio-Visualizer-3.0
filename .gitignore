@@ -9,7 +9,6 @@ dist/
 !audio-visualizer/dist/
 !youtube-seo/dist/
 !font-effects/dist/
-!srt-translator/dist/
 build/
 .next/
 out/
