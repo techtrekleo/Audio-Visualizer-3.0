@@ -611,11 +611,9 @@ const server = http.createServer((req, res) => {
     } else {
       // Inject Layout for HTML pages
       if (ext === '.html' && !req.url.includes('google') && includeLayout(req.url)) {
-        // App.tsx now has its own Footer component, so we skip injection for the main app
-        // to avoid layout conflicts (footer appearing in middle).
-        // Only inject footer for other static HTML pages.
-        const isMainApp = urlPath === '/' || urlPath === '/index.html' || urlPath.startsWith('/audio-visualizer');
-        content = injectUnifiedLayout(content.toString(), !isMainApp);
+        // App.tsx now does NOT have its own Footer component (we removed it),
+        // so we ALWAYS inject the unified footer for consistency across all pages.
+        content = injectUnifiedLayout(content.toString(), true);
       }
       res.writeHead(200, { 'Content-Type': mimeType });
       res.end(content);

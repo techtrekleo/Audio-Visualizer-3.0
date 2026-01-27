@@ -6,7 +6,7 @@ import AudioUploader from './components/AudioUploader';
 import AudioVisualizer from './components/AudioVisualizer';
 import Controls from './components/Controls';
 import OptimizedControls from './components/OptimizedControls';
-import Footer from './components/Footer';
+
 import Icon from './components/Icon';
 import AdSenseAd from './components/AdSenseAd';
 import LyricsDisplay from './components/LyricsDisplay';
@@ -2917,7 +2917,6 @@ function App() {
                     </div>
                 </main>
 
-                <Footer />
             </div>
 
             {/* API Key 輸入彈出視窗 */}
