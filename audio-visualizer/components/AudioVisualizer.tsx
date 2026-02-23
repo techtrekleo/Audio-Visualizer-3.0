@@ -153,6 +153,7 @@ interface AudioVisualizerProps {
     ctaVideoElement?: HTMLVideoElement | null;
     ctaVideoEnabled?: boolean;
     ctaVideoReplaceCtaAnimation?: boolean;
+    forceRenderTrigger?: number;
     // Intro Overlay（開場文字動畫）
     showIntroOverlay?: boolean;
     introTitle?: string;
@@ -9209,6 +9210,13 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             cancelAnimationFrame(animationFrameId.current);
         };
     }, [isPlaying, renderFrame, disableVisualizer, analyser]);
+
+    useEffect(() => {
+        if (!isPlaying && props.forceRenderTrigger) {
+            cancelAnimationFrame(animationFrameId.current);
+            renderFrame();
+        }
+    }, [props.forceRenderTrigger, isPlaying, renderFrame]);
 
     useEffect(() => {
         const canvas = (ref as React.RefObject<HTMLCanvasElement>)?.current;

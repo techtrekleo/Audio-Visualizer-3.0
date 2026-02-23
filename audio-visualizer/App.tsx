@@ -310,6 +310,8 @@ function App() {
     const [introTriggerId, setIntroTriggerId] = useState<number>(0); // force re-trigger
     const [introLightBarsEnabled, setIntroLightBarsEnabled] = useState<boolean>(true);
 
+    const [forceRenderTrigger, setForceRenderTrigger] = useState<number>(0);
+
     // CTA 位置變更處理函數
     const handleCtaPositionXChange = (value: number) => {
         setCtaPositionX(value);
@@ -2099,16 +2101,43 @@ function App() {
                     }
                 }
 
-                startRecording(canvasRef.current, audioStream, isTransparent);
-                audioRef.current.currentTime = 0;
-                // Ensure CTA replacement video also starts from 0 for recording.
-                restartCtaVideoIfNeeded(0, 'record');
-                if (showIntroOverlay) {
-                    setIntroStartTime(0);
-                    setIntroTriggerId((v) => v + 1);
-                }
+                const startRecordProcess = () => {
+                    if (!audioRef.current || !canvasRef.current) return;
+                    startRecording(canvasRef.current, audioStream, isTransparent);
+                    if (showIntroOverlay) {
+                        setIntroStartTime(0);
+                        setIntroTriggerId((v) => v + 1);
+                    }
+                    audioRef.current.play().then(() => setIsPlaying(true));
+                };
 
-                audioRef.current.play().then(() => setIsPlaying(true));
+                audioRef.current.currentTime = 0;
+                restartCtaVideoIfNeeded(0, 'record');
+
+                if (ctaVideoUrl && ctaVideoEnabled && ctaVideoReplaceCtaAnimation && ctaVideoRef.current) {
+                    const v = ctaVideoRef.current;
+                    const checkReadyAndStart = () => {
+                        setForceRenderTrigger(prev => prev + 1);
+                        setTimeout(() => startRecordProcess(), 50);
+                    };
+
+                    if (v.readyState >= 3) { // HAVE_FUTURE_DATA
+                        checkReadyAndStart();
+                    } else {
+                        const onCanPlay = () => {
+                            v.removeEventListener('canplay', onCanPlay);
+                            checkReadyAndStart();
+                        };
+                        v.addEventListener('canplay', onCanPlay);
+                        setTimeout(() => {
+                            v.removeEventListener('canplay', onCanPlay);
+                            checkReadyAndStart();
+                        }, 500);
+                    }
+                } else {
+                    setForceRenderTrigger(prev => prev + 1);
+                    setTimeout(() => startRecordProcess(), 50);
+                }
             } else {
                 alert("無法開始錄製。請確認音訊已載入並準備就緒。");
             }
@@ -2389,6 +2418,7 @@ function App() {
                                     ctaVideoElement={ctaVideoRef.current}
                                     ctaVideoEnabled={ctaVideoEnabled}
                                     ctaVideoReplaceCtaAnimation={ctaVideoReplaceCtaAnimation}
+                                    forceRenderTrigger={forceRenderTrigger}
                                     ctaInkTransitionEnabled={ctaInkTransitionEnabled}
                                     // Intro Overlay props
                                     showIntroOverlay={showIntroOverlay}
