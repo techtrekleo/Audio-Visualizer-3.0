@@ -8159,6 +8159,10 @@ type Shockwave = {
 const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((props, ref) => {
     const { analyser, audioRef, isPlaying, disableVisualizer } = props;
     const animationFrameId = useRef<number>(0);
+    // Generation counter: incremented every time we want to kill all old RAF loops.
+    // Each renderFrame captures the generation at call time; if it has changed by the
+    // time the frame ends, the loop knows it's a stale ghost and stops itself.
+    const animationGenerationRef = useRef<number>(0);
     const frame = useRef<number>(0);
     const particlesRef = useRef<Particle[]>([]);
     const shockwavesRef = useRef<Shockwave[]>([]);
@@ -8422,6 +8426,10 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
     const lastFilterTypeRef = useRef<FilterEffectType | null>(null);
 
     const renderFrame = useCallback(() => {
+        // Capture the generation at the time this frame starts.
+        // If the generation has changed by the time we want to schedule the next frame,
+        // it means a newer loop has taken over and this one should stop.
+        const myGeneration = animationGenerationRef.current;
         const {
             visualizationType, customText, textColor, fontFamily, graphicEffect,
             textSize, textPositionX, textPositionY,
@@ -9192,27 +9200,31 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
             });
         }
 
-        if (propsRef.current.isPlaying) {
+        if (propsRef.current.isPlaying && animationGenerationRef.current === myGeneration) {
             animationFrameId.current = requestAnimationFrame(renderFrame);
         }
     }, [analyser, ref, disableVisualizer]);
 
     useEffect(() => {
         if (isPlaying) {
+            animationGenerationRef.current += 1; // invalidate any old loops
             animationFrameId.current = requestAnimationFrame(renderFrame);
         } else {
+            animationGenerationRef.current += 1; // stop any running loop
             cancelAnimationFrame(animationFrameId.current);
             setTimeout(() => {
                 if (!propsRef.current.isPlaying) renderFrame();
             }, 0);
         }
         return () => {
+            animationGenerationRef.current += 1; // stop loop on cleanup
             cancelAnimationFrame(animationFrameId.current);
         };
     }, [isPlaying, renderFrame, disableVisualizer, analyser]);
 
     useEffect(() => {
         if (!isPlaying && props.forceRenderTrigger) {
+            animationGenerationRef.current += 1; // stop any old loops before one-shot render
             cancelAnimationFrame(animationFrameId.current);
             renderFrame();
         }

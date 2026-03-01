@@ -53,6 +53,9 @@ function App() {
     const [currentTime, setCurrentTime] = useState<number>(0);
     const [videoUrl, setVideoUrl] = useState<string>('');
     const [videoExtension, setVideoExtension] = useState<string>('webm');
+    // Tracks the previously-created recording Object URL so we can revoke it before
+    // creating a new one, preventing Blob memory from accumulating across re-recordings.
+    const prevVideoUrlRef = useRef<string>('');
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
     const [visualizationType, setVisualizationType] = useState<VisualizationType>(VisualizationType.MONSTERCAT);
     // Multi-visualization (composite) mode
@@ -671,6 +674,19 @@ function App() {
             setUserApiKey(storedApiKey);
         }
     }, []);
+
+    // 關閉視窗前提醒使用者確認已下載錄製檔案與字幕檔案
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+            // 現代瀏覽器不顯示自訂文字，但仍會觸發系統確認框
+            e.returnValue = '請確認錄製檔案與字幕檔案都下載完畢';
+            return '請確認錄製檔案與字幕檔案都下載完畢';
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, []);
+
 
     // Picture-in-Picture 功能
     useEffect(() => {
@@ -1850,6 +1866,12 @@ function App() {
 
 
     const handleRecordingComplete = useCallback((url: string, extension: string) => {
+        // Release the previous recording's Blob before storing the new one.
+        // Without this, each re-recording leaves a large Blob in memory indefinitely.
+        if (prevVideoUrlRef.current) {
+            URL.revokeObjectURL(prevVideoUrlRef.current);
+        }
+        prevVideoUrlRef.current = url;
         setVideoUrl(url);
         setVideoExtension(extension);
         setIsLoading(false);
@@ -2061,6 +2083,13 @@ function App() {
             setIsLoading(true);
             setIsBatchRecording(false);
         } else {
+            // Revoke the previous recording's URL before starting a new one, so the
+            // old Blob (which can be hundreds of MB) is released from memory immediately.
+            if (prevVideoUrlRef.current) {
+                URL.revokeObjectURL(prevVideoUrlRef.current);
+                prevVideoUrlRef.current = '';
+                setVideoUrl('');
+            }
             // 只有在字幕顯示模式不是「無字幕」時才檢查字幕內容
             if (subtitleDisplayMode !== SubtitleDisplayMode.NONE) {
                 if (showSubtitles && subtitles.length === 0) {

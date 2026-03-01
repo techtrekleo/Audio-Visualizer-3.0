@@ -45,6 +45,19 @@ export const useMediaRecorder = (onRecordingComplete: (url: string, extension: s
                 return;
             }
         }
+        // If an old recorder is still alive, detach its callbacks and stop it cleanly
+        // before creating a new one. This prevents stale chunks or onstop events from
+        // the previous session leaking into the new recording.
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.ondataavailable = null;
+            mediaRecorderRef.current.onstop = null;
+            try { mediaRecorderRef.current.stop(); } catch { /* ignore */ }
+        }
+        mediaRecorderRef.current = null;
+
+        // Always start with a clean chunk buffer
+        recordedChunksRef.current = [];
+
         // Safari-friendly stream composition
         const canvasStream = canvasElement.captureStream(30); // 30 fps
         // Ensure audio is a proper MediaStreamTrack (avoid captureStream from <audio> directly)
