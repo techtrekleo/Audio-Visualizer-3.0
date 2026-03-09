@@ -310,5 +310,13 @@
         "youtubeUrl": "https://www.youtube.com/@AriaSoundLab",
         "joinDate": "2026/1/25 下午11:08:59",
         "isUserAdded": true
+    },
+    {
+        "id": "user_1773022216166",
+        "dcName": "阿志",
+        "channelName": "台瘋音樂",
+        "youtubeUrl": "https://www.youtube.com/channel/UCb9VYkNGVj-ee_SmfZIHSfw",
+        "joinDate": "2026/3/9 上午10:10:16",
+        "isUserAdded": true
     }
 ]
