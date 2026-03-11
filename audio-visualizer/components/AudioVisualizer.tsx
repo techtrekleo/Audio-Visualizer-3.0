@@ -8775,40 +8775,106 @@ const drawMusicShowcaseCard = (
     ctx.lineTo(textX + textAreaW, cardY + cardH * 0.65);
     ctx.stroke();
 
-    // ── 音訊橫條（底部）─────────────────────────────────────────────────────
+    // ── 液態鏡像波形（底部）────────────────────────────────────────────────────
     if (dataArray) {
-        const barAreaX = textX;
-        const barAreaY = cardY + cardH * 0.7;
-        const barAreaW = textAreaW;
-        const barAreaH = cardH * 0.2;
-        const numBars = Math.floor(barAreaW / 5);
-        const barW = (barAreaW / numBars) * 0.65;
+        const waveX = textX;
+        const waveW = textAreaW;
+        const waveCY = cardY + cardH * 0.82; // 波形中心線 Y
+        const waveAmp = cardH * 0.12;         // 最大振幅
 
-        for (let i = 0; i < numBars; i++) {
-            const dataIdx = Math.floor((i / numBars) * dataArray.length * 0.7);
-            const v = (dataArray[dataIdx] || 0) / 255;
-            const barH = Math.max(2, v * sensitivity * barAreaH);
-            const bx = barAreaX + (i / numBars) * barAreaW;
-            const by = barAreaY + barAreaH - barH;
+        const samples = 80;
+        // 取得從頻率數據平滑插值的樣本
+        const getSample = (idx: number) => {
+            const di = Math.floor((idx / samples) * dataArray.length * 0.75);
+            const v = (dataArray[Math.min(di, dataArray.length - 1)] || 0) / 255;
+            return Math.pow(v * sensitivity, 0.85);
+        };
 
-            const barGrad = ctx.createLinearGradient(0, by, 0, barAreaY + barAreaH);
-            barGrad.addColorStop(0, colors.accent || '#a78bfa');
-            barGrad.addColorStop(1, colors.primary || '#7c3aed');
-            ctx.fillStyle = barGrad;
-
-            // 圓角頂部小格子條
-            const br = Math.min(barW / 2, 2);
-            ctx.beginPath();
-            ctx.moveTo(bx + br, by);
-            ctx.lineTo(bx + barW - br, by);
-            ctx.quadraticCurveTo(bx + barW, by, bx + barW, by + br);
-            ctx.lineTo(bx + barW, barAreaY + barAreaH);
-            ctx.lineTo(bx, barAreaY + barAreaH);
-            ctx.lineTo(bx, by + br);
-            ctx.quadraticCurveTo(bx, by, bx + br, by);
-            ctx.closePath();
-            ctx.fill();
+        // 計算所有樣本的 x/y 座標
+        const pts: { x: number; y: number }[] = [];
+        for (let i = 0; i <= samples; i++) {
+            const t2 = i / samples;
+            const v = getSample(i);
+            pts.push({
+                x: waveX + t2 * waveW,
+                y: waveCY - v * waveAmp,
+            });
         }
+
+        // ── 繪製上半波（貝茲平滑）────────────────────────────────────────────
+        const drawSmoothWave = (ySign: number, alpha: number) => {
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, waveCY + (pts[0].y - waveCY) * ySign);
+            for (let i = 1; i < pts.length; i++) {
+                const prev = pts[i - 1];
+                const cur = pts[i];
+                const cpX = (prev.x + cur.x) / 2;
+                const prevY = waveCY + (prev.y - waveCY) * ySign;
+                const curY = waveCY + (cur.y - waveCY) * ySign;
+                ctx.quadraticCurveTo(prev.x, prevY, cpX, (prevY + curY) / 2);
+            }
+            const lastPt = pts[pts.length - 1];
+            ctx.lineTo(lastPt.x, waveCY + (lastPt.y - waveCY) * ySign);
+            // 封閉回中心線，形成填充區域
+            ctx.lineTo(lastPt.x, waveCY);
+            ctx.lineTo(pts[0].x, waveCY);
+            ctx.closePath();
+
+            // 漸層填充（從主色到透明）
+            const fillGrad = ctx.createLinearGradient(waveX, waveCY - waveAmp, waveX, waveCY);
+            const accentColor = colors.accent || '#a78bfa';
+            fillGrad.addColorStop(0, accentColor.replace(')', `, ${alpha})`).replace('rgb', 'rgba'));
+            fillGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            // 如果 accentColor 已經是 rgba，直接用固定色
+            ctx.fillStyle = ySign < 0
+                ? `rgba(167,139,250,${alpha * 0.5})`
+                : `rgba(139,167,250,${alpha * 0.35})`;
+            ctx.fill();
+        };
+
+        // 上半波填充
+        drawSmoothWave(1, 0.55);
+        // 鏡像下半波填充（較淡）
+        drawSmoothWave(-1, 0.3);
+
+        // ── 繪製上半曲線本身（發光白線）──────────────────────────────────────
+        const drawGlowLine = (ySign: number) => {
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, waveCY + (pts[0].y - waveCY) * ySign);
+            for (let i = 1; i < pts.length; i++) {
+                const prev = pts[i - 1];
+                const cur = pts[i];
+                const cpX = (prev.x + cur.x) / 2;
+                const prevY = waveCY + (prev.y - waveCY) * ySign;
+                const curY = waveCY + (cur.y - waveCY) * ySign;
+                ctx.quadraticCurveTo(prev.x, prevY, cpX, (prevY + curY) / 2);
+            }
+            const lastPt = pts[pts.length - 1];
+            ctx.lineTo(lastPt.x, waveCY + (lastPt.y - waveCY) * ySign);
+        };
+
+        // 外發光（寬線）
+        ctx.save();
+        ctx.shadowColor = colors.accent || '#a78bfa';
+        ctx.shadowBlur = 12 + bassEnergy * 10;
+        drawGlowLine(1);
+        ctx.strokeStyle = `rgba(220,210,255,0.9)`;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        // 鏡像線（稍暗）
+        drawGlowLine(-1);
+        ctx.strokeStyle = `rgba(200,190,255,0.45)`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.restore();
+
+        // ── 中心線（細，分隔上下波）──────────────────────────────────────────
+        ctx.beginPath();
+        ctx.moveTo(waveX, waveCY);
+        ctx.lineTo(waveX + waveW, waveCY);
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
     }
 
     ctx.restore(); // 恢復卡片裁切
