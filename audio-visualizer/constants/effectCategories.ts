@@ -266,6 +266,14 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         difficulty: 'medium',
         performance: 'medium',
         tags: ['白色框', '圓角', '文字', '柱狀圖', '動態控制卡', '可夜訂製']
+    },
+    {
+        type: VisualizationType.MUSIC_SHOWCASE_CARD,
+        category: EffectCategory.DYNAMIC_CONTROL,
+        description: '動態音樂展示卡，背景圖全螢幕顯示後卡片滑入，包含專輯封面、黑膠碟、歌名、歌手與音訊橫條',
+        difficulty: 'medium',
+        performance: 'medium',
+        tags: ['音樂展示', '滑入', '動態卡片', '專輯封面', '黑膠', '動態控制卡']
     }
 ];
 

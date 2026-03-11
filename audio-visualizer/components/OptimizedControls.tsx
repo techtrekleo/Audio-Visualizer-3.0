@@ -588,6 +588,20 @@ interface OptimizedControlsProps {
     onFisheyeBeatBoostChange?: (v: number) => void;
     fisheyeVignetteEnabled?: boolean;
     onFisheyeVignetteEnabledChange?: (v: boolean) => void;
+    // Music Showcase Card props (動態音樂展示卡)
+    showcaseCardAlbumImage?: string | null;
+    onShowcaseCardAlbumImageUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onClearShowcaseCardAlbumImage?: () => void;
+    showcaseCardSongTitle?: string;
+    onShowcaseCardSongTitleChange?: (v: string) => void;
+    showcaseCardArtistName?: string;
+    onShowcaseCardArtistNameChange?: (v: string) => void;
+    showcaseCardBgColor?: string;
+    onShowcaseCardBgColorChange?: (v: string) => void;
+    showcaseCardSlideDelay?: number;
+    onShowcaseCardSlideDelayChange?: (v: number) => void;
+    showcaseCardPosition?: 'center' | 'bottom';
+    onShowcaseCardPositionChange?: (v: 'center' | 'bottom') => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled = false, variant = 'primary' }) => {
@@ -5092,7 +5106,125 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                     </CollapsibleControlSection>
                 )}
 
+                {/* 動態音樂展示卡專用控制面板 */}
+                {props.visualizationType === VisualizationType.MUSIC_SHOWCASE_CARD && (
+                    <CollapsibleControlSection
+                        title="動態音樂展示卡"
+                        icon="🎵"
+                        priority="high"
+                        defaultExpanded={true}
+                        badge="動態控制卡"
+                    >
+                        <div className="space-y-4">
+                            {/* 專輯封面上傳 */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-300 block mb-2">專輯封面</label>
+                                {props.showcaseCardAlbumImage ? (
+                                    <div className="flex items-center gap-2">
+                                        <img src={props.showcaseCardAlbumImage} alt="封面" className="w-14 h-14 rounded-lg object-cover border border-gray-600" />
+                                        <button
+                                            onClick={props.onClearShowcaseCardAlbumImage}
+                                            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors"
+                                        >
+                                            移除
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <label className="flex items-center gap-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg cursor-pointer transition-colors border border-dashed border-gray-500">
+                                        <span className="text-lg">🖼</span>
+                                        <span className="text-sm text-gray-300">上傳封面圖</span>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={props.onShowcaseCardAlbumImageUpload}
+                                        />
+                                    </label>
+                                )}
+                            </div>
+
+                            {/* 歌名 */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-300 block mb-1">歌名</label>
+                                <input
+                                    type="text"
+                                    value={props.showcaseCardSongTitle ?? ''}
+                                    onChange={e => props.onShowcaseCardSongTitleChange?.(e.target.value)}
+                                    placeholder="輸入歌名..."
+                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                />
+                            </div>
+
+                            {/* 歌手名 */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-300 block mb-1">歌手 / 藝術家</label>
+                                <input
+                                    type="text"
+                                    value={props.showcaseCardArtistName ?? ''}
+                                    onChange={e => props.onShowcaseCardArtistNameChange?.(e.target.value)}
+                                    placeholder="輸入歌手名..."
+                                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                />
+                            </div>
+
+                            {/* 卡片背景色 */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-300 block mb-2">卡片背景色</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {[
+                                        { label: '深紫', value: 'rgba(20,10,50,0.88)' },
+                                        { label: '深藍', value: 'rgba(5,20,60,0.88)' },
+                                        { label: '深黑', value: 'rgba(8,8,8,0.92)' },
+                                        { label: '深棕', value: 'rgba(40,15,5,0.88)' },
+                                        { label: '深青', value: 'rgba(5,35,40,0.88)' },
+                                        { label: '深玫', value: 'rgba(45,5,30,0.88)' },
+                                    ].map(preset => (
+                                        <button
+                                            key={preset.value}
+                                            onClick={() => props.onShowcaseCardBgColorChange?.(preset.value)}
+                                            className={`px-2.5 py-1 rounded-lg text-xs text-white transition-all border ${props.showcaseCardBgColor === preset.value ? 'border-cyan-400 ring-1 ring-cyan-400' : 'border-gray-600 hover:border-gray-400'}`}
+                                            style={{ background: preset.value }}
+                                        >
+                                            {preset.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* 滑入延遲 */}
+                            <SliderControl
+                                label="滑入延遲（秒）"
+                                value={props.showcaseCardSlideDelay ?? 3}
+                                onChange={props.onShowcaseCardSlideDelayChange || (() => { })}
+                                min={0}
+                                max={10}
+                                step={0.5}
+                            />
+                            <p className="text-xs text-gray-400 leading-relaxed">
+                                播放開始後幾秒，音樂展示卡從右側滑入。設為 0 表示立即顯示。
+                            </p>
+
+                            {/* 卡片位置 */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-300 block mb-2">卡片垂直位置</label>
+                                <div className="flex gap-2">
+                                    {(['center', 'bottom'] as const).map(pos => (
+                                        <button
+                                            key={pos}
+                                            onClick={() => props.onShowcaseCardPositionChange?.(pos)}
+                                            className={`flex-1 py-1.5 rounded-lg text-sm transition-colors border ${props.showcaseCardPosition === pos || (!props.showcaseCardPosition && pos === 'center') ? 'bg-cyan-600 border-cyan-400 text-white' : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'}`}
+                                        >
+                                            {pos === 'center' ? '🎯 置中' : '⬇️ 底部'}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </CollapsibleControlSection>
+                )}
+
                 {/* 全畫面濾鏡特效控制 */}
+
 
                 <CollapsibleControlSection
                     title="全畫面濾鏡特效"

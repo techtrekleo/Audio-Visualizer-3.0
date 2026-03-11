@@ -397,6 +397,14 @@ function App() {
     const [fisheyeBeatBoost, setFisheyeBeatBoost] = useState<number>(0.35);            // 節拍加成 (0-1)
     const [fisheyeVignetteEnabled, setFisheyeVignetteEnabled] = useState<boolean>(true); // 暈光開關
 
+    // 動態音樂展示卡 (Music Showcase Card)
+    const [showcaseCardAlbumImage, setShowcaseCardAlbumImage] = useState<string | null>(null);
+    const [showcaseCardSongTitle, setShowcaseCardSongTitle] = useState<string>('SONG TITLE');
+    const [showcaseCardArtistName, setShowcaseCardArtistName] = useState<string>('Artist Name');
+    const [showcaseCardBgColor, setShowcaseCardBgColor] = useState<string>('rgba(20,10,50,0.88)');
+    const [showcaseCardSlideDelay, setShowcaseCardSlideDelay] = useState<number>(3);
+    const [showcaseCardPosition, setShowcaseCardPosition] = useState<'center' | 'bottom'>('center');
+
     // 鋼琴演奏家透明度
     const [pianoOpacity, setPianoOpacity] = useState<number>(1.0); // 鋼琴透明度 (0-1)
 
@@ -2562,6 +2570,13 @@ function App() {
                                     fisheyeMaxDistortion={fisheyeMaxDistortion}
                                     fisheyeBeatBoost={fisheyeBeatBoost}
                                     fisheyeVignetteEnabled={fisheyeVignetteEnabled}
+                                     // Music Showcase Card props (動態音樂展示卡)
+                                     showcaseCardAlbumImage={showcaseCardAlbumImage}
+                                     showcaseCardSongTitle={showcaseCardSongTitle}
+                                     showcaseCardArtistName={showcaseCardArtistName}
+                                     showcaseCardBgColor={showcaseCardBgColor}
+                                     showcaseCardSlideDelay={showcaseCardSlideDelay}
+                                     showcaseCardPosition={showcaseCardPosition}
                                 />
                             </div>
                         </div>
@@ -2733,6 +2748,27 @@ function App() {
                              onFisheyeBeatBoostChange={setFisheyeBeatBoost}
                              fisheyeVignetteEnabled={fisheyeVignetteEnabled}
                              onFisheyeVignetteEnabledChange={setFisheyeVignetteEnabled}
+                             // Music Showcase Card controls (動態音樂展示卡)
+                             showcaseCardAlbumImage={showcaseCardAlbumImage}
+                             onShowcaseCardAlbumImageUpload={(e) => {
+                                 const file = e.target.files?.[0];
+                                 if (file) {
+                                     const reader = new FileReader();
+                                     reader.onload = (ev) => setShowcaseCardAlbumImage(ev.target?.result as string);
+                                     reader.readAsDataURL(file);
+                                 }
+                             }}
+                             onClearShowcaseCardAlbumImage={() => setShowcaseCardAlbumImage(null)}
+                             showcaseCardSongTitle={showcaseCardSongTitle}
+                             onShowcaseCardSongTitleChange={setShowcaseCardSongTitle}
+                             showcaseCardArtistName={showcaseCardArtistName}
+                             onShowcaseCardArtistNameChange={setShowcaseCardArtistName}
+                             showcaseCardBgColor={showcaseCardBgColor}
+                             onShowcaseCardBgColorChange={setShowcaseCardBgColor}
+                             showcaseCardSlideDelay={showcaseCardSlideDelay}
+                             onShowcaseCardSlideDelayChange={setShowcaseCardSlideDelay}
+                             showcaseCardPosition={showcaseCardPosition}
+                             onShowcaseCardPositionChange={setShowcaseCardPosition}
                             customTextOverlays={customTextOverlays}
                             onCustomTextOverlaysChange={setCustomTextOverlays}
                             onUpdateCustomTextOverlay={updateCustomTextOverlay}

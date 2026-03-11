@@ -257,6 +257,13 @@ interface AudioVisualizerProps {
     fisheyeMaxDistortion?: number;    // 最大畸變量 (0-1), default 0.7
     fisheyeBeatBoost?: number;        // 節拍觸發額外畸變 (0-1), default 0.35
     fisheyeVignetteEnabled?: boolean; // 節拍暈光開關, default true
+    // Music Showcase Card props (動態音樂展示卡)
+    showcaseCardAlbumImage?: string | null;      // 專輯封面圖
+    showcaseCardSongTitle?: string;              // 歌名
+    showcaseCardArtistName?: string;             // 歌手名
+    showcaseCardBgColor?: string;                // 卡片背景色
+    showcaseCardSlideDelay?: number;             // 幾秒後滑入 (default 3)
+    showcaseCardPosition?: 'center' | 'bottom'; // 卡片垂直位置
 }
 
 // 讓繪圖函式能取得當前屬性（不改動所有函式簽名）
@@ -8498,6 +8505,326 @@ const drawFisheyeDistortion = (
     }
 };
 
+// ── Music Showcase Card (動態音樂展示卡) ──────────────────────────────────────
+// 圖片快取
+const showcaseAlbumCache: { src: string; img: HTMLImageElement } | null = null;
+let _showcaseAlbumCache: { src: string; img: HTMLImageElement } | null = null;
+
+const drawMusicShowcaseCard = (
+    ctx: CanvasRenderingContext2D,
+    dataArray: Uint8Array | null,
+    width: number,
+    height: number,
+    frame: number,
+    sensitivity: number,
+    colors: Palette,
+    graphicEffect: GraphicEffectType,
+    isBeat?: boolean,
+    waveformStroke?: boolean
+) => {
+    const props = latestPropsRef as any;
+
+    // ── 讀取使用者設定 ────────────────────────────────────────────────────────
+    const albumSrc: string | null = props?.showcaseCardAlbumImage ?? null;
+    const songTitle: string = props?.showcaseCardSongTitle || 'SONG TITLE';
+    const artistName: string = props?.showcaseCardArtistName || 'Artist Name';
+    const cardBgColor: string = props?.showcaseCardBgColor || 'rgba(20,10,50,0.88)';
+    const slideDelay: number = props?.showcaseCardSlideDelay ?? 3;
+    const position: 'center' | 'bottom' = props?.showcaseCardPosition ?? 'center';
+
+    // ── 分析音訊 ─────────────────────────────────────────────────────────────
+    let bassEnergy = 0;
+    if (dataArray) {
+        const bassLen = Math.floor(dataArray.length * 0.12);
+        for (let i = 0; i < bassLen; i++) bassEnergy += dataArray[i];
+        bassEnergy = (bassEnergy / bassLen) / 255;
+    }
+
+    // ── 背景：用 backgroundImage (已由主循環處理) ─────────────────────────────
+    // 如果沒有背景圖，畫深色漸層底
+    const bg = props?.backgroundImage;
+    if (!bg) {
+        const grad = ctx.createLinearGradient(0, 0, width, height);
+        grad.addColorStop(0, '#0a0612');
+        grad.addColorStop(1, '#1a0a2e');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
+    }
+
+    // ── 計算卡片滑入進度 ─────────────────────────────────────────────────────
+    const fps = 60;
+    const delayFrames = slideDelay * fps;
+    const slideFrames = fps * 1.2; // 動畫持續 1.2 秒
+    const elapsed = frame - delayFrames;
+    const rawT = Math.max(0, Math.min(1, elapsed / slideFrames));
+    // easeOutCubic
+    const t = 1 - Math.pow(1 - rawT, 3);
+
+    if (t <= 0) return; // 還沒到滑入時間
+
+    // ── 卡片尺寸 ─────────────────────────────────────────────────────────────
+    const cardW = Math.min(width * 0.78, 900);
+    const cardH = Math.min(height * 0.28, 200);
+    const cardX = (width - cardW) / 2;
+
+    let cardY: number;
+    if (position === 'bottom') {
+        cardY = height - cardH - height * 0.06;
+    } else {
+        cardY = (height - cardH) / 2;
+    }
+
+    // 從右側滑入：完全入場時在目標位置，入場前在右邊 canvas 外
+    const slideOffset = (1 - t) * (width * 0.6);
+    const finalCardX = cardX + slideOffset;
+
+    ctx.save();
+    // 裁切，避免卡片超出畫布
+    ctx.beginPath();
+    ctx.rect(0, 0, width, height);
+    ctx.clip();
+
+    // ── 卡片底板（毛玻璃效果）────────────────────────────────────────────────
+    const cardRadius = cardH * 0.18;
+    const drawRoundRect = (x: number, y: number, w: number, h: number, r: number) => {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    };
+
+    // 卡片陰影
+    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetY = 12;
+
+    // 卡片背景
+    ctx.globalAlpha = t * 0.95;
+    ctx.fillStyle = cardBgColor;
+    drawRoundRect(finalCardX, cardY, cardW, cardH, cardRadius);
+    ctx.fill();
+
+    // 卡片微光邊框
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+    const borderGrad = ctx.createLinearGradient(finalCardX, cardY, finalCardX + cardW, cardY + cardH);
+    borderGrad.addColorStop(0, 'rgba(255,255,255,0.25)');
+    borderGrad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+    borderGrad.addColorStop(1, 'rgba(255,255,255,0.1)');
+    ctx.strokeStyle = borderGrad;
+    ctx.lineWidth = 1.5;
+    drawRoundRect(finalCardX, cardY, cardW, cardH, cardRadius);
+    ctx.stroke();
+    ctx.globalAlpha = t;
+
+    // 裁切到卡片內
+    ctx.save();
+    drawRoundRect(finalCardX, cardY, cardW, cardH, cardRadius);
+    ctx.clip();
+
+    // 卡片內部漸層疊加（讓顏色更有層次）
+    const innerGrad = ctx.createLinearGradient(finalCardX, cardY, finalCardX, cardY + cardH);
+    innerGrad.addColorStop(0, 'rgba(255,255,255,0.06)');
+    innerGrad.addColorStop(1, 'rgba(0,0,0,0.2)');
+    ctx.fillStyle = innerGrad;
+    ctx.fillRect(finalCardX, cardY, cardW, cardH);
+
+    // ── 專輯封面區域 ──────────────────────────────────────────────────────────
+    const albumSize = cardH * 0.82;
+    const albumPad = cardH * 0.09;
+    const albumX = finalCardX + albumPad;
+    const albumY = cardY + (cardH - albumSize) / 2;
+    const albumR = albumSize * 0.1;
+
+    // 黑膠碟（在封面後面，稍微右移）
+    const vinylR = albumSize * 0.48;
+    const vinylCX = albumX + albumSize * 0.75;
+    const vinylCY = albumY + albumSize / 2;
+    const vinylAngle = (frame / fps) * 0.8; // 旋轉速度
+
+    // 黑膠底圓
+    ctx.save();
+    ctx.translate(vinylCX, vinylCY);
+    ctx.rotate(vinylAngle + bassEnergy * 0.3);
+    ctx.beginPath();
+    ctx.arc(0, 0, vinylR, 0, Math.PI * 2);
+    ctx.fillStyle = '#111';
+    ctx.fill();
+    // 黑膠紋路
+    for (let ri = 0; ri < 7; ri++) {
+        const rr = vinylR * (0.35 + ri * 0.09);
+        ctx.beginPath();
+        ctx.arc(0, 0, rr, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255,255,255,${0.04 + ri * 0.01})`;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+    }
+    // 圓心小孔
+    ctx.beginPath();
+    ctx.arc(0, 0, vinylR * 0.12, 0, Math.PI * 2);
+    ctx.fillStyle = '#888';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, vinylR * 0.06, 0, Math.PI * 2);
+    ctx.fillStyle = '#333';
+    ctx.fill();
+    // 高光弧
+    ctx.beginPath();
+    ctx.arc(-vinylR * 0.1, -vinylR * 0.1, vinylR * 0.6, -Math.PI * 0.7, -Math.PI * 0.3);
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 8;
+    ctx.stroke();
+    ctx.restore();
+
+    // 專輯封面（圓角）
+    ctx.save();
+    drawRoundRect(albumX, albumY, albumSize, albumSize, albumR);
+    ctx.clip();
+
+    if (albumSrc) {
+        // 確保圖片快取
+        if (!_showcaseAlbumCache || _showcaseAlbumCache.src !== albumSrc) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = albumSrc;
+            _showcaseAlbumCache = { src: albumSrc, img };
+        }
+        if (_showcaseAlbumCache.img.complete && _showcaseAlbumCache.img.naturalWidth > 0) {
+            ctx.drawImage(_showcaseAlbumCache.img, albumX, albumY, albumSize, albumSize);
+        } else {
+            // 圖片還沒載入，畫佔位色
+            ctx.fillStyle = '#333';
+            ctx.fillRect(albumX, albumY, albumSize, albumSize);
+        }
+    } else {
+        // 無封面：畫音符佔位
+        const cg = ctx.createLinearGradient(albumX, albumY, albumX + albumSize, albumY + albumSize);
+        cg.addColorStop(0, colors.primary || '#6b21a8');
+        cg.addColorStop(1, colors.secondary || '#1e1b4b');
+        ctx.fillStyle = cg;
+        ctx.fillRect(albumX, albumY, albumSize, albumSize);
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.font = `bold ${albumSize * 0.45}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('♪', albumX + albumSize / 2, albumY + albumSize / 2);
+    }
+    // 封面疊加漸層（左側）
+    const coverGrad = ctx.createLinearGradient(albumX, albumY, albumX + albumSize, albumY);
+    coverGrad.addColorStop(0.6, 'rgba(0,0,0,0)');
+    coverGrad.addColorStop(1, cardBgColor.replace(/[\d.]+\)$/, '0.5)'));
+    ctx.fillStyle = coverGrad;
+    ctx.fillRect(albumX, albumY, albumSize, albumSize);
+    ctx.restore();
+
+    // 封面邊框陰影
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 20;
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 2;
+    drawRoundRect(albumX, albumY, albumSize, albumSize, albumR);
+    ctx.stroke();
+    ctx.restore();
+
+    // ── 文字區域 ─────────────────────────────────────────────────────────────
+    const textX = albumX + albumSize + albumSize * 0.35;
+    const textAreaW = cardW - (textX - finalCardX) - albumPad;
+
+    // 歌名
+    const titleFontSize = Math.min(cardH * 0.28, 42);
+    ctx.font = `900 ${titleFontSize}px "Poppins", "Noto Sans TC", sans-serif`;
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 8;
+    // 截斷過長文字
+    let displayTitle = songTitle;
+    while (ctx.measureText(displayTitle).width > textAreaW - 10 && displayTitle.length > 3) {
+        displayTitle = displayTitle.slice(0, -1);
+    }
+    if (displayTitle !== songTitle) displayTitle += '…';
+    ctx.fillText(displayTitle, textX, cardY + cardH * 0.35);
+
+    // 歌手名
+    const artistFontSize = Math.min(cardH * 0.15, 22);
+    ctx.font = `400 ${artistFontSize}px "Poppins", "Noto Sans TC", sans-serif`;
+    ctx.fillStyle = 'rgba(200,185,240,0.85)';
+    ctx.shadowBlur = 0;
+    let displayArtist = artistName;
+    while (ctx.measureText(displayArtist).width > textAreaW - 10 && displayArtist.length > 2) {
+        displayArtist = displayArtist.slice(0, -1);
+    }
+    if (displayArtist !== artistName) displayArtist += '…';
+    ctx.fillText(displayArtist, textX, cardY + cardH * 0.55);
+
+    // 分隔線
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(textX, cardY + cardH * 0.65);
+    ctx.lineTo(textX + textAreaW, cardY + cardH * 0.65);
+    ctx.stroke();
+
+    // ── 音訊橫條（底部）─────────────────────────────────────────────────────
+    if (dataArray) {
+        const barAreaX = textX;
+        const barAreaY = cardY + cardH * 0.7;
+        const barAreaW = textAreaW;
+        const barAreaH = cardH * 0.2;
+        const numBars = Math.floor(barAreaW / 5);
+        const barW = (barAreaW / numBars) * 0.65;
+
+        for (let i = 0; i < numBars; i++) {
+            const dataIdx = Math.floor((i / numBars) * dataArray.length * 0.7);
+            const v = (dataArray[dataIdx] || 0) / 255;
+            const barH = Math.max(2, v * sensitivity * barAreaH);
+            const bx = barAreaX + (i / numBars) * barAreaW;
+            const by = barAreaY + barAreaH - barH;
+
+            const barGrad = ctx.createLinearGradient(0, by, 0, barAreaY + barAreaH);
+            barGrad.addColorStop(0, colors.accent || '#a78bfa');
+            barGrad.addColorStop(1, colors.primary || '#7c3aed');
+            ctx.fillStyle = barGrad;
+
+            // 圓角頂部小格子條
+            const br = Math.min(barW / 2, 2);
+            ctx.beginPath();
+            ctx.moveTo(bx + br, by);
+            ctx.lineTo(bx + barW - br, by);
+            ctx.quadraticCurveTo(bx + barW, by, bx + barW, by + br);
+            ctx.lineTo(bx + barW, barAreaY + barAreaH);
+            ctx.lineTo(bx, barAreaY + barAreaH);
+            ctx.lineTo(bx, by + br);
+            ctx.quadraticCurveTo(bx, by, bx + br, by);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+
+    ctx.restore(); // 恢復卡片裁切
+    ctx.restore(); // 恢復整體
+
+    // ── 節拍時卡片輕微閃爍 ──────────────────────────────────────────────────
+    if (isBeat && bassEnergy > 0.5 && t > 0.8) {
+        ctx.save();
+        ctx.globalAlpha = 0.08 * bassEnergy;
+        ctx.fillStyle = '#ffffff';
+        drawRoundRect(finalCardX, cardY, cardW, cardH, cardRadius);
+        ctx.fill();
+        ctx.restore();
+    }
+};
+
 const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.MONSTERCAT]: drawMonstercat,
     [VisualizationType.MONSTERCAT_V2]: drawMonstercatV2,
@@ -8533,6 +8860,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.KE_YE_CUSTOM_V2]: drawKeYeCustomV2,
     [VisualizationType.CHROMATIC_ABERRATION]: drawChromaticAberration,
     [VisualizationType.FISHEYE_DISTORTION]: drawFisheyeDistortion,
+    [VisualizationType.MUSIC_SHOWCASE_CARD]: drawMusicShowcaseCard,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([

@@ -35,6 +35,7 @@ export enum VisualizationType {
     KE_YE_CUSTOM_V2 = '可夜訂製版二號',
     CHROMATIC_ABERRATION = '色差故障 (Chromatic Aberration)',
     FISHEYE_DISTORTION = '魚眼扭曲 (Fisheye Distortion)',
+    MUSIC_SHOWCASE_CARD = '動態音樂展示卡',
 }
 
 // 特效分類系統
