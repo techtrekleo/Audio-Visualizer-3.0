@@ -252,6 +252,11 @@ interface AudioVisualizerProps {
     keYeCustomV2Text2Effect?: GraphicEffectType;
     keYeCustomV2Text1StrokeColor?: string;
     keYeCustomV2Text2StrokeColor?: string;
+    // Fisheye Distortion props (魚眼扭曲)
+    fisheyeBassSensitivity?: number;  // 低頻對畸變的影響強度 (0-2), default 1
+    fisheyeMaxDistortion?: number;    // 最大畸變量 (0-1), default 0.7
+    fisheyeBeatBoost?: number;        // 節拍觸發額外畸變 (0-1), default 0.35
+    fisheyeVignetteEnabled?: boolean; // 節拍暈光開關, default true
 }
 
 // 讓繪圖函式能取得當前屬性（不改動所有函式簽名）
@@ -8088,6 +8093,411 @@ const drawPianoVirtuoso: DrawFunction = (
     ctx.restore();
 };
 
+// ── Chromatic Aberration (色差故障) ──────────────────────────────────────────
+// 靜態 offscreen 緩衝區，讓每一幀都能快速讀取前一帧內容做色差位移
+let chromaticOffscreenCanvas: OffscreenCanvas | null = null;
+let chromaticOffscreenCtx: OffscreenCanvasRenderingContext2D | null = null;
+
+const drawChromaticAberration = (
+    ctx: CanvasRenderingContext2D,
+    dataArray: Uint8Array | null,
+    width: number,
+    height: number,
+    frame: number,
+    sensitivity: number,
+    colors: Palette,
+    graphicEffect: GraphicEffectType,
+    isBeat?: boolean,
+    waveformStroke?: boolean
+) => {
+    if (!dataArray) return;
+    ctx.save();
+
+    // ── 1. 分析音頻 ────────────────────────────────────────────────────────
+    // 低頻 (bass)：0 ~ 10% 頻帶
+    const bassLen = Math.floor(dataArray.length * 0.1);
+    let bassEnergy = 0;
+    for (let i = 0; i < bassLen; i++) bassEnergy += dataArray[i];
+    bassEnergy = (bassEnergy / bassLen) / 255; // 0~1
+
+    // 高頻 (treble)：70% ~ 100% 頻帶
+    const trebleStart = Math.floor(dataArray.length * 0.7);
+    let trebleEnergy = 0;
+    for (let i = trebleStart; i < dataArray.length; i++) trebleEnergy += dataArray[i];
+    trebleEnergy = (trebleEnergy / (dataArray.length - trebleStart)) / 255; // 0~1
+
+    // 整體音量
+    let totalEnergy = 0;
+    for (let i = 0; i < dataArray.length; i++) totalEnergy += dataArray[i];
+    totalEnergy = (totalEnergy / dataArray.length) / 255;
+
+    // 色差位移量（像素）：低頻越強，紅藍偏移越大
+    const baseShift = 4;
+    const dynamicShift = Math.pow(bassEnergy, 1.5) * 60 * sensitivity;
+    const shift = baseShift + dynamicShift;
+
+    // 節拍閃爍強化
+    const beatBoost = isBeat ? 1.8 : 1.0;
+    const finalShift = shift * beatBoost;
+
+    // ── 2. 確保 offscreen buffer 存在且尺寸正確 ──────────────────────────
+    if (
+        !chromaticOffscreenCanvas ||
+        chromaticOffscreenCanvas.width !== width ||
+        chromaticOffscreenCanvas.height !== height
+    ) {
+        try {
+            chromaticOffscreenCanvas = new OffscreenCanvas(width, height);
+            chromaticOffscreenCtx = chromaticOffscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
+        } catch {
+            // OffscreenCanvas 不支援（舊瀏覽器）時跳過
+            ctx.restore();
+            return;
+        }
+    }
+
+    const offCtx = chromaticOffscreenCtx!;
+
+    // 把當前 canvas 複製到 offscreen
+    offCtx.clearRect(0, 0, width, height);
+    offCtx.drawImage(ctx.canvas, 0, 0);
+
+    // ── 3. 繪製 RGB 色差層 ───────────────────────────────────────────────
+    // 先清掉畫面（保持原始背景，由外部已繪製）
+    // 我們直接在現有畫面上疊加色差分離層
+
+    ctx.globalCompositeOperation = 'screen';
+
+    // 紅色通道：向左偏移
+    ctx.globalAlpha = 0.45;
+    ctx.save();
+    ctx.translate(-finalShift, 0);
+    // 先畫原圖，再用紅色遮罩
+    ctx.drawImage(chromaticOffscreenCanvas!, 0, 0);
+    ctx.restore();
+    // 紅色調：blending
+    ctx.save();
+    ctx.globalAlpha = 0.3 * bassEnergy;
+    ctx.fillStyle = `rgba(255, 0, 0, 1)`;
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.translate(-finalShift, 0);
+    ctx.drawImage(chromaticOffscreenCanvas!, 0, 0);
+    ctx.restore();
+
+    // 藍色通道：向右偏移
+    ctx.globalAlpha = 0.45;
+    ctx.save();
+    ctx.translate(finalShift, 0);
+    ctx.drawImage(chromaticOffscreenCanvas!, 0, 0);
+    ctx.restore();
+    ctx.save();
+    ctx.globalAlpha = 0.3 * bassEnergy;
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.translate(finalShift, 0);
+    ctx.drawImage(chromaticOffscreenCanvas!, 0, 0);
+    ctx.restore();
+
+    // 重設合成模式
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1.0;
+
+    // ── 4. 掃描線效果 ────────────────────────────────────────────────────
+    const scanlineAlpha = 0.08 + totalEnergy * 0.12;
+    ctx.fillStyle = `rgba(0, 0, 0, ${scanlineAlpha})`;
+    const scanlineStep = Math.max(2, Math.floor(4 - totalEnergy * 2));
+    for (let y = 0; y < height; y += scanlineStep * 2) {
+        ctx.fillRect(0, y, width, scanlineStep);
+    }
+
+    // ── 5. 隨機故障區塊（節拍時觸發，或低頻極強時觸發）──────────────────
+    const glitchThreshold = isBeat ? 0.4 : 0.7;
+    if (Math.random() > glitchThreshold && bassEnergy > 0.2) {
+        const numGlitchBlocks = Math.floor(Math.random() * 4) + 1;
+        for (let i = 0; i < numGlitchBlocks; i++) {
+            // 水平故障條（隨機高度切片，橫向位移）
+            const blockY = Math.random() * height;
+            const blockH = Math.random() * height * 0.06 + 2;
+            const blockShift = (Math.random() - 0.5) * finalShift * 3;
+
+            ctx.save();
+            try {
+                ctx.drawImage(
+                    chromaticOffscreenCanvas!,
+                    0, blockY, width, blockH,
+                    blockShift, blockY, width, blockH
+                );
+            } catch { /* ignore out-of-bounds */ }
+            ctx.restore();
+        }
+
+        // 偶爾整條水平線變色（RGB invert）
+        if (Math.random() > 0.6) {
+            const lineY = Math.floor(Math.random() * height);
+            const lineH = Math.floor(Math.random() * 3) + 1;
+            // 用互補色填充一條細線，製造數位撕裂感
+            const hue = (frame * 7) % 360;
+            ctx.fillStyle = `hsla(${hue}, 100%, 70%, 0.6)`;
+            ctx.fillRect(0, lineY, width, lineH);
+        }
+    }
+
+    // ── 6. 邊緣色差暈染 ──────────────────────────────────────────────────
+    // 螢幕左右兩側加上紅/藍漸層暈光，強度跟低頻能量掛鉤
+    const edgeWidth = Math.min(width * 0.15, finalShift * 6);
+    const edgeAlpha = Math.min(0.5, bassEnergy * 0.7);
+
+    if (edgeAlpha > 0.02) {
+        // 左緣 - 紅色
+        const leftGrad = ctx.createLinearGradient(0, 0, edgeWidth, 0);
+        leftGrad.addColorStop(0, `rgba(255, 0, 0, ${edgeAlpha})`);
+        leftGrad.addColorStop(1, 'rgba(255, 0, 0, 0)');
+        ctx.fillStyle = leftGrad;
+        ctx.fillRect(0, 0, edgeWidth, height);
+
+        // 右緣 - 藍色
+        const rightGrad = ctx.createLinearGradient(width - edgeWidth, 0, width, 0);
+        rightGrad.addColorStop(0, 'rgba(0, 80, 255, 0)');
+        rightGrad.addColorStop(1, `rgba(0, 80, 255, ${edgeAlpha})`);
+        ctx.fillStyle = rightGrad;
+        ctx.fillRect(width - edgeWidth, 0, edgeWidth, height);
+    }
+
+    // ── 7. 節拍閃白（beat flash）────────────────────────────────────────
+    if (isBeat && bassEnergy > 0.5) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(0.15, bassEnergy * 0.2)})`;
+        ctx.fillRect(0, 0, width, height);
+    }
+
+    ctx.restore();
+};
+
+// ── Fisheye Distortion (魚眼扭曲) via WebGL ──────────────────────────────────
+// 靜態 WebGL 資源（一次初始化，避免每幀重建 context）
+let fisheyeGLCanvas: HTMLCanvasElement | null = null;
+let fisheyeGL: WebGLRenderingContext | null = null;
+let fisheyeProgram: WebGLProgram | null = null;
+let fisheyeTexture: WebGLTexture | null = null;
+let fisheyeUniformLens: WebGLUniformLocation | null = null;
+let fisheyeUniformSampler: WebGLUniformLocation | null = null;
+let fisheyeGLSize = { w: 0, h: 0 };
+
+const FISHEYE_VERT_SRC = `
+  attribute vec2 aPos;
+  varying vec2 vPos;
+  void main(){
+    vPos = aPos;
+    gl_Position = vec4(aPos, 0.0, 1.0);
+  }
+`;
+
+// Fragment shader 改編自 bluemir/fisheye-correction-webgl
+// 使用桶型畸變公式，strength > 1 = 向外膨脹（魚眼），strength < 1 = 往內縮（枕型）
+const FISHEYE_FRAG_SRC = `
+  precision highp float;
+  uniform sampler2D uSampler;
+  uniform vec4 uLens; // (a, b, F, scale)
+  varying vec2 vPos;
+
+  vec2 glCoordToTexCoord(vec2 v){
+    return v * vec2(0.5, -0.5) + vec2(0.5, 0.5);
+  }
+
+  void main(){
+    float F = uLens.z;
+    float scale = uLens.w;
+    float a = uLens.x;
+    float b = uLens.y;
+
+    // 以 vPos 作為 GL 座標（-1~1），套用焦距反映射
+    vec2 p = vPos / scale;
+    float L = length(vec3(p, F));
+    vec2 mapped = p * F / L;
+
+    // 非等向畸變（a/b 可做橢圓修正）
+    mapped *= vec2(a, b);
+
+    vec2 texCoord = glCoordToTexCoord(mapped / scale);
+
+    // 超出範圍的像素補黑
+    if(texCoord.x > 0.999 || texCoord.x < 0.001 ||
+       texCoord.y > 0.999 || texCoord.y < 0.001){
+      gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+      return;
+    }
+    gl_FragColor = texture2D(uSampler, texCoord);
+  }
+`;
+
+const initFisheyeGL = (width: number, height: number): boolean => {
+    try {
+        if (!fisheyeGLCanvas) {
+            fisheyeGLCanvas = document.createElement('canvas');
+        }
+        if (fisheyeGLCanvas.width !== width || fisheyeGLCanvas.height !== height) {
+            fisheyeGLCanvas.width = width;
+            fisheyeGLCanvas.height = height;
+            fisheyeGLSize = { w: width, h: height };
+            // 尺寸改變時要重建 context 和資源
+            fisheyeGL = null;
+            fisheyeProgram = null;
+            fisheyeTexture = null;
+        }
+
+        if (!fisheyeGL) {
+            const gl = fisheyeGLCanvas.getContext('webgl', { preserveDrawingBuffer: true, alpha: false });
+            if (!gl) return false;
+            fisheyeGL = gl;
+
+            // Compile shaders
+            const compileShader = (type: number, src: string): WebGLShader | null => {
+                const s = gl.createShader(type)!;
+                gl.shaderSource(s, src);
+                gl.compileShader(s);
+                if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+                    console.error('Fisheye shader compile error:', gl.getShaderInfoLog(s));
+                    return null;
+                }
+                return s;
+            };
+
+            const vert = compileShader(gl.VERTEX_SHADER, FISHEYE_VERT_SRC);
+            const frag = compileShader(gl.FRAGMENT_SHADER, FISHEYE_FRAG_SRC);
+            if (!vert || !frag) return false;
+
+            const prog = gl.createProgram()!;
+            gl.attachShader(prog, vert);
+            gl.attachShader(prog, frag);
+            gl.linkProgram(prog);
+            if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+                console.error('Fisheye program link error:', gl.getProgramInfoLog(prog));
+                return false;
+            }
+            fisheyeProgram = prog;
+            gl.useProgram(prog);
+
+            // Full-screen quad (two triangles)
+            const positions = new Float32Array([
+                -1, -1, 1, -1, -1, 1,
+                -1, 1, 1, -1, 1, 1,
+            ]);
+            const buf = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+            gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+            const aPos = gl.getAttribLocation(prog, 'aPos');
+            gl.enableVertexAttribArray(aPos);
+            gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+            // Uniforms
+            fisheyeUniformLens = gl.getUniformLocation(prog, 'uLens');
+            fisheyeUniformSampler = gl.getUniformLocation(prog, 'uSampler');
+
+            // Texture slot 0
+            fisheyeTexture = gl.createTexture();
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, fisheyeTexture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.uniform1i(fisheyeUniformSampler, 0);
+        }
+        return true;
+    } catch (e) {
+        return false;
+    }
+};
+
+const drawFisheyeDistortion = (
+    ctx: CanvasRenderingContext2D,
+    dataArray: Uint8Array | null,
+    width: number,
+    height: number,
+    frame: number,
+    sensitivity: number,
+    colors: Palette,
+    graphicEffect: GraphicEffectType,
+    isBeat?: boolean,
+    waveformStroke?: boolean
+) => {
+    if (!dataArray) return;
+
+    // ── 1. 分析音頻 ────────────────────────────────────────────────────────
+    const bassLen = Math.floor(dataArray.length * 0.12);
+    let bassEnergy = 0;
+    for (let i = 0; i < bassLen; i++) bassEnergy += dataArray[i];
+    bassEnergy = (bassEnergy / bassLen) / 255;
+
+    let totalEnergy = 0;
+    for (let i = 0; i < dataArray.length; i++) totalEnergy += dataArray[i];
+    totalEnergy = (totalEnergy / dataArray.length) / 255;
+
+    // ── 2. 計算畸變強度（讀取使用者可控參數）─────────────────────────────
+    const userBassSens = latestPropsRef?.fisheyeBassSensitivity ?? 1.0;  // 低頻靈敏度
+    const userMaxDistort = latestPropsRef?.fisheyeMaxDistortion ?? 0.7;  // 最大畸變量
+    const userBeatBoost = latestPropsRef?.fisheyeBeatBoost ?? 0.35; // 節拍加成
+    const vignetteOn = latestPropsRef?.fisheyeVignetteEnabled ?? true; // 暈光開關
+
+    const beatBoost = isBeat ? userBeatBoost : 0;
+    const distortAmount = Math.pow(bassEnergy * userBassSens, 1.3) * userMaxDistort * sensitivity + beatBoost;
+
+    // F（焦距）：F 越小 = 魚眼越強
+    const F = Math.max(0.4, 1.5 - distortAmount);
+    // scale：配合 F 調整以避免畫面過度裁切
+    const scale = 0.85 + distortAmount * 0.15;
+    const a = 1.0;
+    const b = 1.0;
+
+    // ── 3. 初始化/取得 WebGL context ──────────────────────────────────────
+    const glReady = initFisheyeGL(width, height);
+    if (!glReady || !fisheyeGL || !fisheyeProgram || !fisheyeTexture) {
+        // WebGL 不可用時，改用純 Canvas 2D 近似（桶型扭曲透過 drawImage 縮放模擬）
+        ctx.save();
+        const k = 1.0 + distortAmount * 0.12;
+        ctx.drawImage(ctx.canvas, -width * (k - 1) / 2, -height * (k - 1) / 2, width * k, height * k);
+        ctx.restore();
+        return;
+    }
+
+    const gl = fisheyeGL;
+
+    // ── 4. 把 2D canvas 內容傳入 WebGL texture ────────────────────────────
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, fisheyeTexture);
+    try {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, ctx.canvas);
+    } catch {
+        return;
+    }
+
+    // ── 5. 設定 uniform，執行 shader ──────────────────────────────────────
+    gl.useProgram(fisheyeProgram);
+    gl.uniform4f(fisheyeUniformLens, a, b, F, scale);
+    gl.viewport(0, 0, width, height);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    // ── 6. 把 WebGL 結果畫回 2D canvas ─────────────────────────────────────
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(fisheyeGLCanvas!, 0, 0);
+    ctx.restore();
+
+    // ── 7. 節拍時疊加輕微暈光（強化臨場感）──────────────────────────────
+    if (vignetteOn && isBeat && bassEnergy > 0.45) {
+        const vignette = ctx.createRadialGradient(
+            width / 2, height / 2, height * 0.25,
+            width / 2, height / 2, height * 0.85
+        );
+        vignette.addColorStop(0, 'rgba(0,0,0,0)');
+        const glowColor = colors.accent || '#00ffff';
+        vignette.addColorStop(1, `${glowColor}${Math.round(bassEnergy * 60).toString(16).padStart(2, '0')}`);
+        ctx.save();
+        ctx.fillStyle = vignette;
+        ctx.fillRect(0, 0, width, height);
+        ctx.restore();
+    }
+};
+
 const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.MONSTERCAT]: drawMonstercat,
     [VisualizationType.MONSTERCAT_V2]: drawMonstercatV2,
@@ -8121,6 +8531,8 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.CIRCULAR_WAVE]: drawCircularWave,
     [VisualizationType.BLURRED_EDGE]: drawBlurredEdge,
     [VisualizationType.KE_YE_CUSTOM_V2]: drawKeYeCustomV2,
+    [VisualizationType.CHROMATIC_ABERRATION]: drawChromaticAberration,
+    [VisualizationType.FISHEYE_DISTORTION]: drawFisheyeDistortion,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
@@ -8813,6 +9225,12 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
                 } else if (type === VisualizationType.KE_YE_CUSTOM_V2) {
                     // 可夜訂製版二號需要傳遞 props
                     drawKeYeCustomV2(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, propsForDrawing);
+                } else if (type === VisualizationType.CHROMATIC_ABERRATION) {
+                    // 色差故障：需要讀取 canvas 當前內容，故直接呼叫（不走 drawFunction）
+                    drawChromaticAberration(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke);
+                } else if (type === VisualizationType.FISHEYE_DISTORTION) {
+                    // 魚眼慷曲：WebGL 呈現，需讀取 canvas 當前內容
+                    drawFisheyeDistortion(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke);
                 } else {
                     drawFunction(ctx, smoothedData, width, height, frame.current, sensitivity, finalColors, graphicEffect, isBeat, waveformStroke, particlesRef.current);
                 }

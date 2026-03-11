@@ -391,6 +391,12 @@ function App() {
     const [filterEffectSpeed, setFilterEffectSpeed] = useState<number>(1.0); // 濾鏡特效速度 (0.5-2)
     const [filterEffectEnabled, setFilterEffectEnabled] = useState<boolean>(false); // 濾鏡特效開關
 
+    // 魚眼扭曲使用者控制參數
+    const [fisheyeBassSensitivity, setFisheyeBassSensitivity] = useState<number>(1.0); // 低頻靈敏度 (0-2)
+    const [fisheyeMaxDistortion, setFisheyeMaxDistortion] = useState<number>(0.7);     // 最大畸變量 (0-1)
+    const [fisheyeBeatBoost, setFisheyeBeatBoost] = useState<number>(0.35);            // 節拍加成 (0-1)
+    const [fisheyeVignetteEnabled, setFisheyeVignetteEnabled] = useState<boolean>(true); // 暈光開關
+
     // 鋼琴演奏家透明度
     const [pianoOpacity, setPianoOpacity] = useState<number>(1.0); // 鋼琴透明度 (0-1)
 
@@ -2551,6 +2557,11 @@ function App() {
                                     keYeCustomV2Text2Effect={keYeCustomV2Text2Effect}
                                     keYeCustomV2Text1StrokeColor={keYeCustomV2Text1StrokeColor}
                                     keYeCustomV2Text2StrokeColor={keYeCustomV2Text2StrokeColor}
+                                    // Fisheye Distortion props (魚眼扭曲)
+                                    fisheyeBassSensitivity={fisheyeBassSensitivity}
+                                    fisheyeMaxDistortion={fisheyeMaxDistortion}
+                                    fisheyeBeatBoost={fisheyeBeatBoost}
+                                    fisheyeVignetteEnabled={fisheyeVignetteEnabled}
                                 />
                             </div>
                         </div>
@@ -2713,6 +2724,15 @@ function App() {
                             onStellarCoreInnerOpacityChange={setStellarCoreInnerOpacity}
                             stellarCoreTentaclesOpacity={stellarCoreTentaclesOpacity}
                             onStellarCoreTentaclesOpacityChange={setStellarCoreTentaclesOpacity}
+                             // Fisheye Distortion controls (魚眼扭曲)
+                             fisheyeBassSensitivity={fisheyeBassSensitivity}
+                             onFisheyeBassSensitivityChange={setFisheyeBassSensitivity}
+                             fisheyeMaxDistortion={fisheyeMaxDistortion}
+                             onFisheyeMaxDistortionChange={setFisheyeMaxDistortion}
+                             fisheyeBeatBoost={fisheyeBeatBoost}
+                             onFisheyeBeatBoostChange={setFisheyeBeatBoost}
+                             fisheyeVignetteEnabled={fisheyeVignetteEnabled}
+                             onFisheyeVignetteEnabledChange={setFisheyeVignetteEnabled}
                             customTextOverlays={customTextOverlays}
                             onCustomTextOverlaysChange={setCustomTextOverlays}
                             onUpdateCustomTextOverlay={updateCustomTextOverlay}

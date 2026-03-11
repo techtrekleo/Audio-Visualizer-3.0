@@ -579,6 +579,15 @@ interface OptimizedControlsProps {
     onKeYeCustomV2Text1StrokeColorChange?: (color: string) => void;
     keYeCustomV2Text2StrokeColor?: string;
     onKeYeCustomV2Text2StrokeColorChange?: (color: string) => void;
+    // Fisheye Distortion props (魚眼扭曲)
+    fisheyeBassSensitivity?: number;
+    onFisheyeBassSensitivityChange?: (v: number) => void;
+    fisheyeMaxDistortion?: number;
+    onFisheyeMaxDistortionChange?: (v: number) => void;
+    fisheyeBeatBoost?: number;
+    onFisheyeBeatBoostChange?: (v: number) => void;
+    fisheyeVignetteEnabled?: boolean;
+    onFisheyeVignetteEnabledChange?: (v: boolean) => void;
 }
 
 const Button: React.FC<React.PropsWithChildren<{ onClick?: () => void; className?: string; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' }>> = ({ children, onClick, className = '', disabled = false, variant = 'primary' }) => {
@@ -5020,7 +5029,71 @@ const OptimizedControls: React.FC<OptimizedControlsProps> = (props) => {
                     </CollapsibleControlSection>
                 )}
 
+                {/* 魚眼扭曲專用控制面板 */}
+                {props.visualizationType === VisualizationType.FISHEYE_DISTORTION && (
+                    <CollapsibleControlSection
+                        title="魚眼扭曲"
+                        icon="🎣"
+                        priority="high"
+                        defaultExpanded={true}
+                        badge="進階款"
+                    >
+                        <div className="space-y-4">
+                            <SliderControl
+                                label="低頻靈敏度"
+                                value={props.fisheyeBassSensitivity ?? 1.0}
+                                onChange={props.onFisheyeBassSensitivityChange || (() => { })}
+                                min={0}
+                                max={2}
+                                step={0.05}
+                            />
+                            <p className="text-xs text-gray-400 leading-relaxed">
+                                低頻能量對畸變強度的影響倍數，數值越高畫面隨低頻膨脹越明顯。
+                            </p>
+                            <SliderControl
+                                label="最大畸變量"
+                                value={props.fisheyeMaxDistortion ?? 0.7}
+                                onChange={props.onFisheyeMaxDistortionChange || (() => { })}
+                                min={0}
+                                max={1}
+                                step={0.05}
+                            />
+                            <p className="text-xs text-gray-400 leading-relaxed">
+                                魚眼效果的最大強度上限（0 = 無效果，1 = 強烈桶型畸變）。
+                            </p>
+                            <SliderControl
+                                label="節拍加成"
+                                value={props.fisheyeBeatBoost ?? 0.35}
+                                onChange={props.onFisheyeBeatBoostChange || (() => { })}
+                                min={0}
+                                max={1}
+                                step={0.05}
+                            />
+                            <p className="text-xs text-gray-400 leading-relaxed">
+                                節拍觸發時額外疊加的畸變量，製造「衝擊感」效果。
+                            </p>
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-medium text-gray-300">
+                                    節拍暈光
+                                </label>
+                                <button
+                                    onClick={() => props.onFisheyeVignetteEnabledChange?.(!props.fisheyeVignetteEnabled)}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${props.fisheyeVignetteEnabled !== false ? 'bg-cyan-500' : 'bg-gray-600'}`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${props.fisheyeVignetteEnabled !== false ? 'translate-x-6' : 'translate-x-1'}`}
+                                    />
+                                </button>
+                            </div>
+                            <p className="text-xs text-gray-400 leading-relaxed">
+                                開啟後節拍時在畫面邊緣疊加色彩暈光，增強臨場感。
+                            </p>
+                        </div>
+                    </CollapsibleControlSection>
+                )}
+
                 {/* 全畫面濾鏡特效控制 */}
+
                 <CollapsibleControlSection
                     title="全畫面濾鏡特效"
                     icon="✨"

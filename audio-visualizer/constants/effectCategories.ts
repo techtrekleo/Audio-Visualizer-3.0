@@ -101,6 +101,22 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         performance: 'medium',
         tags: ['粒子', '物理', '力場', '中等性能']
     },
+    {
+        type: VisualizationType.CHROMATIC_ABERRATION,
+        category: EffectCategory.ADVANCED,
+        description: 'RGB 色差分離故障特效，隨音樂強弱閃動，可選邊緣色差或全螢幕掃描線',
+        difficulty: 'medium',
+        performance: 'medium',
+        tags: ['故障', '色差', 'RGB', '閃動', '音樂響應', '進階']
+    },
+    {
+        type: VisualizationType.FISHEYE_DISTORTION,
+        category: EffectCategory.ADVANCED,
+        description: '音樂響應式魚眼扭曲，低頻時畫面膨脹如廣角鏡頭，節拍時觸發強烈桶型畸變',
+        difficulty: 'medium',
+        performance: 'medium',
+        tags: ['魚眼', '扭曲', '廣角', 'WebGL', '音樂響應', '進階']
+    },
 
     // 動態控制卡 - 專門的控制卡特效分類
     {
