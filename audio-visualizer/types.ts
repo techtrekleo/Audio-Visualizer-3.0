@@ -36,6 +36,7 @@ export enum VisualizationType {
     CHROMATIC_ABERRATION = '色差故障 (Chromatic Aberration)',
     FISHEYE_DISTORTION = '魚眼扭曲 (Fisheye Distortion)',
     MUSIC_SHOWCASE_CARD = '動態音樂展示卡',
+    DOT_BAR_SPECTRUM = '點陣頻譜 (Dot Bar Spectrum)',
 }
 
 // 特效分類系統

@@ -274,6 +274,14 @@ export const EFFECT_CATEGORIES: EffectInfo[] = [
         difficulty: 'medium',
         performance: 'medium',
         tags: ['音樂展示', '滑入', '動態卡片', '專輯封面', '黑膠', '動態控制卡']
+    },
+    {
+        type: VisualizationType.DOT_BAR_SPECTRUM,
+        category: EffectCategory.ADVANCED,
+        description: '點陣頻譜，靜止時為點陣，音量高時從中心線向上下延伸為柱狀，搭配輝光效果',
+        difficulty: 'easy',
+        performance: 'medium',
+        tags: ['點陣', '頻譜', '鏡像', '輝光', '極簡', '白色']
     }
 ];
 

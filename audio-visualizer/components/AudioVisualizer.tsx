@@ -8891,6 +8891,128 @@ const drawMusicShowcaseCard = (
     }
 };
 
+// ── Dot Bar Spectrum (點陣頻譜) ────────────────────────────────────────────────
+// Vizzy 風格：靜止為點，振幅高時從中心線向上下對稱延伸為細條，白色 + 輝光
+const drawDotBarSpectrum = (
+    ctx: CanvasRenderingContext2D,
+    dataArray: Uint8Array | null,
+    width: number,
+    height: number,
+    frame: number,
+    sensitivity: number,
+    colors: Palette,
+    graphicEffect: GraphicEffectType,
+    isBeat?: boolean,
+    waveformStroke?: boolean
+) => {
+    const props = latestPropsRef as any;
+
+    // ── 背景 ─────────────────────────────────────────────────────────────────
+    const bgColor: string = props?.dotBarBgColor || '#2a0a5e';
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, width, height);
+
+    // 輕微霧感疊加（讓背景更有深度）
+    const fogGrad = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width * 0.7);
+    fogGrad.addColorStop(0, 'rgba(80,30,140,0.25)');
+    fogGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = fogGrad;
+    ctx.fillRect(0, 0, width, height);
+
+    if (!dataArray) return;
+
+    // ── 參數設定 ─────────────────────────────────────────────────────────────
+    const numBars = Math.min(128, Math.floor(width / 6)); // 頻率 bin 數
+    const totalW = width * 0.82;
+    const startX = (width - totalW) / 2;
+    const barSpacing = totalW / numBars;
+    const barW = Math.max(1.5, barSpacing * 0.55); // 條寬
+    const centerY = height / 2;
+    const maxBarH = height * 0.32; // 最大高度（單側）
+    const dotR = Math.max(1.5, barW * 0.5); // 靜止點半徑
+
+    // 平滑前一幀（簡易 EMA）
+    if (!(drawDotBarSpectrum as any)._smooth) {
+        (drawDotBarSpectrum as any)._smooth = new Float32Array(numBars);
+    }
+    const smooth = (drawDotBarSpectrum as any)._smooth as Float32Array;
+
+    // ── 繪製每個頻率 bin ──────────────────────────────────────────────────────
+    for (let i = 0; i < numBars; i++) {
+        // 對數對應：讓低頻佔更大比例
+        const logT = Math.log10(1 + (i / numBars) * 9) / Math.log10(10);
+        const dataIdx = Math.floor(logT * dataArray.length * 0.75);
+        const raw = (dataArray[Math.min(dataIdx, dataArray.length - 1)] || 0) / 255;
+
+        // EMA 平滑
+        const smoothFactor = raw > smooth[i] ? 0.6 : 0.85;
+        smooth[i] = smooth[i] * smoothFactor + raw * (1 - smoothFactor);
+        const v = Math.pow(smooth[i] * sensitivity, 0.75);
+
+        const bx = startX + i * barSpacing + (barSpacing - barW) / 2;
+        const barH = v * maxBarH;
+
+        // 輝光（shadowBlur 隨振幅增加）
+        ctx.save();
+        const glowStr = 4 + v * 18 + (isBeat ? 8 : 0);
+        ctx.shadowColor = 'rgba(255,255,255,0.9)';
+        ctx.shadowBlur = glowStr;
+
+        if (barH < dotR * 1.5) {
+            // 靜止/微弱：畫小圓點
+            ctx.beginPath();
+            ctx.arc(bx + barW / 2, centerY, dotR, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255,255,255,${0.4 + v * 0.5})`;
+            ctx.fill();
+        } else {
+            // 振幅高：畫對稱竪條（上下延伸）
+            const halfH = barH;
+            const by = centerY - halfH;
+            const bh = halfH * 2;
+
+            // 漸層（中央最白，上下漸透明）
+            const lineGrad = ctx.createLinearGradient(0, by, 0, by + bh);
+            lineGrad.addColorStop(0, 'rgba(255,255,255,0)');
+            lineGrad.addColorStop(0.25, 'rgba(255,255,255,0.85)');
+            lineGrad.addColorStop(0.5, 'rgba(255,255,255,1)');
+            lineGrad.addColorStop(0.75, 'rgba(255,255,255,0.85)');
+            lineGrad.addColorStop(1, 'rgba(255,255,255,0)');
+
+            // 圓角矩形條
+            const r = Math.min(barW / 2, 3);
+            ctx.beginPath();
+            ctx.moveTo(bx + r, by);
+            ctx.lineTo(bx + barW - r, by);
+            ctx.quadraticCurveTo(bx + barW, by, bx + barW, by + r);
+            ctx.lineTo(bx + barW, by + bh - r);
+            ctx.quadraticCurveTo(bx + barW, by + bh, bx + barW - r, by + bh);
+            ctx.lineTo(bx + r, by + bh);
+            ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
+            ctx.lineTo(bx, by + r);
+            ctx.quadraticCurveTo(bx, by, bx + r, by);
+            ctx.closePath();
+            ctx.fillStyle = lineGrad;
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    // ── 節拍時全畫面閃爍效果 ──────────────────────────────────────────────────
+    if (isBeat) {
+        ctx.save();
+        let bassEnergy = 0;
+        const bassLen = Math.floor(dataArray.length * 0.1);
+        for (let i = 0; i < bassLen; i++) bassEnergy += dataArray[i];
+        bassEnergy = (bassEnergy / bassLen) / 255;
+
+        ctx.globalAlpha = 0.04 * bassEnergy;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.restore();
+    }
+};
+
 const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.MONSTERCAT]: drawMonstercat,
     [VisualizationType.MONSTERCAT_V2]: drawMonstercatV2,
@@ -8927,6 +9049,7 @@ const VISUALIZATION_MAP: Record<VisualizationType, DrawFunction> = {
     [VisualizationType.CHROMATIC_ABERRATION]: drawChromaticAberration,
     [VisualizationType.FISHEYE_DISTORTION]: drawFisheyeDistortion,
     [VisualizationType.MUSIC_SHOWCASE_CARD]: drawMusicShowcaseCard,
+    [VisualizationType.DOT_BAR_SPECTRUM]: drawDotBarSpectrum,
 };
 
 const IGNORE_TRANSFORM_VISUALIZATIONS = new Set([
