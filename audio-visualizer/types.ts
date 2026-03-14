@@ -417,4 +417,6 @@ export interface SongItem {
     songName?: string; // 歌曲名称（可选）
     ctaVideoFile?: File | null; // CTA 影片文件 (可選)
     ctaVideoUrl?: string | null; // CTA 影片 URL (可選)
+    coverImageFile?: File | null; // 封面圖片檔案 (可選)
+    coverImageUrl?: string | null; // 封面圖片 URL (可選)
 }

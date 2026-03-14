@@ -461,6 +461,19 @@ function App() {
 
         // Optional: Update title in control card or other UI if needed
         // setControlCardSongTitle(song.songName || '');
+
+        // Handle Batch Cover Image
+        if (song.coverImageUrl) {
+            setBackgroundImage(song.coverImageUrl);
+            setShowBackgroundImage(true);
+        } else {
+            // Restore global background if it exists
+            if (backgroundImages.length > 0) {
+                setBackgroundImage(backgroundImages[0]);
+            } else {
+                setBackgroundImage(null);
+            }
+        }
     };
 
     // 處理批量上傳 (CRUD Handlers)
@@ -478,7 +491,9 @@ function App() {
                 subtitles: [],
                 songName: '',
                 ctaVideoFile: null,
-                ctaVideoUrl: null
+                ctaVideoUrl: null,
+                coverImageFile: null,
+                coverImageUrl: null
             }
         ]);
         // If it's the first row, ensure current index is 0
@@ -498,7 +513,7 @@ function App() {
         });
     }, []);
 
-    const handleUpdateBatchRow = useCallback(async (index: number, field: 'audio' | 'subtitle' | 'cta', file: File) => {
+    const handleUpdateBatchRow = useCallback(async (index: number, field: 'audio' | 'subtitle' | 'cta' | 'cover', file: File) => {
         // Optimistic update
         setBatchQueue(prev => {
             const newQueue = [...prev];
@@ -519,10 +534,15 @@ function App() {
                 item.ctaVideoUrl = URL.createObjectURL(file);
             }
 
+            if (field === 'cover') {
+                item.coverImageFile = file;
+                item.coverImageUrl = URL.createObjectURL(file);
+            }
+
             newQueue[index] = item;
 
             // Sync with main player if updating current song
-            if (index === currentBatchIndex && field === 'audio') {
+            if (index === currentBatchIndex) {
                 handleLoadBatchSong(item);
             }
 

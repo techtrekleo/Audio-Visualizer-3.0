@@ -9889,10 +9889,6 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         // 改善：原本只有中央小區塊，改成全螢幕（cover），並放在字幕/文字之前，確保字幕仍在上層。
         if (propsRef.current.ctaVideoEnabled && propsRef.current.ctaVideoElement) {
             const v = propsRef.current.ctaVideoElement;
-            // Ensure the video is playing (best-effort)
-            if (v.paused && !v.ended) {
-                v.play().catch(() => { });
-            }
             if (v.readyState >= 2 && v.videoWidth > 0 && v.videoHeight > 0) {
                 // Transition (fade in/out). Play-once behavior is controlled by the <video> (no loop).
                 const t = typeof v.currentTime === 'number' ? v.currentTime : 0;
