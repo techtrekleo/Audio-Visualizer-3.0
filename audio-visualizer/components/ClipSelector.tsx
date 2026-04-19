@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef } from 'react';
 
 interface ClipSelectorProps {
     duration: number;
@@ -19,6 +19,8 @@ function fmt(sec: number): string {
     return `${m}:${String(s).padStart(2, '0')}.${ms}`;
 }
 
+const MIN_GAP = 0.5;
+
 const ClipSelector: React.FC<ClipSelectorProps> = ({
     duration,
     clipStart,
@@ -31,21 +33,54 @@ const ClipSelector: React.FC<ClipSelectorProps> = ({
     onSeek,
 }) => {
     const trackRef = useRef<HTMLDivElement>(null);
+    const dragging = useRef<'start' | 'end' | null>(null);
 
-    const posFromEvent = useCallback((e: React.MouseEvent | React.TouchEvent): number => {
+    const timeFromPointer = (e: React.PointerEvent): number => {
         const track = trackRef.current;
         if (!track || duration <= 0) return 0;
         const rect = track.getBoundingClientRect();
-        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
         return ratio * duration;
-    }, [duration]);
+    };
 
-    const startLeft = duration > 0 ? (clipStart / duration) * 100 : 0;
-    const endLeft = duration > 0 ? (clipEnd / duration) * 100 : 100;
-    const playLeft = duration > 0 ? (currentTime / duration) * 100 : 0;
+    const handleTrackPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+        const t = timeFromPointer(e);
+        // 點擊哪個把手比較近就拖哪個
+        const distStart = Math.abs(t - clipStart);
+        const distEnd = Math.abs(t - clipEnd);
+        dragging.current = distStart <= distEnd ? 'start' : 'end';
+        (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+        e.preventDefault();
+    };
+
+    const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (!dragging.current) return;
+        const t = timeFromPointer(e);
+        if (dragging.current === 'start') {
+            onClipStartChange(Math.max(0, Math.min(t, clipEnd - MIN_GAP)));
+        } else {
+            onClipEndChange(Math.min(duration, Math.max(t, clipStart + MIN_GAP)));
+        }
+    };
+
+    const handlePointerUp = () => {
+        if (!dragging.current) return;
+        dragging.current = null;
+    };
+
+    const handleTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        // 僅在非拖曳狀態且點擊選取範圍外才跳轉
+        if (dragging.current) return;
+        const track = trackRef.current;
+        if (!track || duration <= 0) return;
+        const rect = track.getBoundingClientRect();
+        const t = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * duration;
+        onSeek(t);
+    };
 
     if (duration <= 0) return null;
+
+    const pct = (t: number) => `${(t / duration) * 100}%`;
 
     return (
         <div className="space-y-2">
@@ -70,85 +105,58 @@ const ClipSelector: React.FC<ClipSelectorProps> = ({
 
             {/* 時間軸 */}
             {enabled && (
-                <div className="relative select-none">
-                    {/* 軌道 */}
+                <div className="relative select-none pb-6">
                     <div
                         ref={trackRef}
-                        className="relative h-8 rounded-lg overflow-hidden cursor-pointer"
+                        className="relative h-8 rounded-lg cursor-pointer"
                         style={{ background: 'rgba(255,255,255,0.08)' }}
-                        onClick={(e) => {
-                            const t = posFromEvent(e);
-                            onSeek(t);
-                        }}
+                        onPointerDown={handleTrackPointerDown}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={handlePointerUp}
+                        onPointerCancel={handlePointerUp}
+                        onClick={handleTrackClick}
                     >
-                        {/* 已選範圍高亮 */}
+                        {/* 選取範圍高亮 */}
                         <div
-                            className="absolute top-0 h-full bg-cyan-500/30 border-t border-b border-cyan-400/50"
-                            style={{ left: `${startLeft}%`, width: `${endLeft - startLeft}%` }}
+                            className="absolute top-0 h-full bg-cyan-500/25 border-t border-b border-cyan-400/40 pointer-events-none"
+                            style={{ left: pct(clipStart), width: pct(clipEnd - clipStart) }}
                         />
 
                         {/* 播放頭 */}
                         <div
-                            className="absolute top-0 w-0.5 h-full bg-white/60 z-10 pointer-events-none"
-                            style={{ left: `${playLeft}%` }}
+                            className="absolute top-0 w-0.5 h-full bg-white/50 pointer-events-none z-10"
+                            style={{ left: pct(currentTime) }}
                         />
 
-                        {/* 起點把手 */}
-                        <input
-                            type="range"
-                            min={0}
-                            max={duration}
-                            step={0.1}
-                            value={clipStart}
-                            onChange={(e) => {
-                                const v = Math.min(Number(e.target.value), clipEnd - 0.5);
-                                onClipStartChange(v);
-                            }}
-                            className="clip-handle absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20"
-                            style={{ pointerEvents: 'all' }}
-                        />
-
-                        {/* 終點把手（疊在上面，用 dir=rtl 技巧讓右側優先） */}
-                        <input
-                            type="range"
-                            min={0}
-                            max={duration}
-                            step={0.1}
-                            value={clipEnd}
-                            onChange={(e) => {
-                                const v = Math.max(Number(e.target.value), clipStart + 0.5);
-                                onClipEndChange(v);
-                            }}
-                            className="clip-handle absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20"
-                            style={{ pointerEvents: 'all', direction: 'rtl' }}
-                        />
-
-                        {/* 起點標記 */}
+                        {/* 起點把手（藍色） */}
                         <div
-                            className="absolute top-0 w-1 h-full bg-cyan-400 rounded-sm z-10 pointer-events-none"
-                            style={{ left: `calc(${startLeft}% - 2px)` }}
+                            className="absolute top-0 h-full flex items-center pointer-events-none"
+                            style={{ left: pct(clipStart) }}
                         >
-                            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-cyan-300 whitespace-nowrap font-mono">
+                            <div className="w-3 h-full bg-cyan-400 rounded-l-sm -translate-x-1.5 flex items-center justify-center">
+                                <div className="w-0.5 h-4 bg-cyan-900/60 rounded" />
+                            </div>
+                            <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-[10px] text-cyan-300 whitespace-nowrap font-mono">
                                 {fmt(clipStart)}
                             </div>
                         </div>
 
-                        {/* 終點標記 */}
+                        {/* 終點把手（橘色） */}
                         <div
-                            className="absolute top-0 w-1 h-full bg-orange-400 rounded-sm z-10 pointer-events-none"
-                            style={{ left: `calc(${endLeft}% - 2px)` }}
+                            className="absolute top-0 h-full flex items-center pointer-events-none"
+                            style={{ left: pct(clipEnd) }}
                         >
-                            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-orange-300 whitespace-nowrap font-mono">
+                            <div className="w-3 h-full bg-orange-400 rounded-r-sm -translate-x-1.5 flex items-center justify-center">
+                                <div className="w-0.5 h-4 bg-orange-900/60 rounded" />
+                            </div>
+                            <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-[10px] text-orange-300 whitespace-nowrap font-mono">
                                 {fmt(clipEnd)}
                             </div>
                         </div>
                     </div>
 
-                    {/* 底部時間標籤佔位 */}
-                    <div className="h-5" />
-
-                    <p className="text-[11px] text-gray-500 mt-1">
-                        拖曳 <span className="text-cyan-400">■ 藍色</span> 設起點、<span className="text-orange-400">■ 橘色</span> 設終點；點擊軌道可跳轉時間
+                    <p className="text-[11px] text-gray-500 mt-1 pt-1">
+                        拖曳 <span className="text-cyan-400">■ 藍色</span> 設起點、<span className="text-orange-400">■ 橘色</span> 設終點；點擊軌道跳轉時間
                     </p>
                 </div>
             )}
