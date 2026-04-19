@@ -178,8 +178,8 @@ export enum Resolution {
     RATIO_2_1_1080 = '2:1 (1920x960)',
     RATIO_2_1_720 = '2:1 (1280x640)',
     CURRENT = '符合螢幕',
-    RATIO_6_19_1080 = '6:19 (1080x3420)',
-    RATIO_6_19_720 = '6:19 (720x2280)',
+    RATIO_9_16_1080 = '9:16 (1080x1920)',
+    RATIO_9_16_720 = '9:16 (720x1280)',
 }
 
 export enum WatermarkPosition {

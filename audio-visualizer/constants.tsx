@@ -30,8 +30,8 @@ export const RESOLUTION_MAP: Record<Resolution, {width: number, height: number} 
     [Resolution.RATIO_2_1_1080]: { width: 1920, height: 960 },
     [Resolution.RATIO_2_1_720]: { width: 1280, height: 640 },
     [Resolution.CURRENT]: null,
-    [Resolution.RATIO_6_19_1080]: { width: 1080, height: 3420 },
-    [Resolution.RATIO_6_19_720]: { width: 720, height: 2280 },
+    [Resolution.RATIO_9_16_1080]: { width: 1080, height: 1920 },
+    [Resolution.RATIO_9_16_720]: { width: 720, height: 1280 },
 };
 
 export const COLOR_PALETTES: Record<ColorPaletteType, Palette> = {
