@@ -264,6 +264,7 @@ interface AudioVisualizerProps {
     showcaseCardBgColor?: string;                // 卡片背景色
     showcaseCardSlideDelay?: number;             // 幾秒後滑入 (default 3)
     showcaseCardPosition?: 'center' | 'bottom'; // 卡片垂直位置
+    nativeDPR?: boolean;
 }
 
 // 讓繪圖函式能取得當前屬性（不改動所有函式簽名）
@@ -10168,9 +10169,16 @@ const AudioVisualizer = forwardRef<HTMLCanvasElement, AudioVisualizerProps>((pro
         const observer = new ResizeObserver(entries => {
             for (const entry of entries) {
                 const { width, height } = entry.contentRect;
-                if (canvas.width !== width || canvas.height !== height) {
-                    canvas.width = width;
-                    canvas.height = height;
+                const dpr = propsRef.current.nativeDPR ? (window.devicePixelRatio || 1) : 1;
+                const newW = Math.round(width * dpr);
+                const newH = Math.round(height * dpr);
+                if (canvas.width !== newW || canvas.height !== newH) {
+                    canvas.width = newW;
+                    canvas.height = newH;
+                    if (dpr !== 1) {
+                        canvas.style.width = width + 'px';
+                        canvas.style.height = height + 'px';
+                    }
                 }
             }
         });

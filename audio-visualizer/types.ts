@@ -178,6 +178,8 @@ export enum Resolution {
     RATIO_2_1_1080 = '2:1 (1920x960)',
     RATIO_2_1_720 = '2:1 (1280x640)',
     CURRENT = '符合螢幕',
+    RATIO_6_19_1080 = '6:19 (1080x3420)',
+    RATIO_6_19_720 = '6:19 (720x2280)',
 }
 
 export enum WatermarkPosition {
@@ -393,6 +395,7 @@ export interface AudioVisualizerProps {
     // Stellar Core (進階款) opacities
     stellarCoreInnerOpacity?: number; // 0-1
     stellarCoreTentaclesOpacity?: number; // 0-1
+    nativeDPR?: boolean;
 }
 
 export type Palette = {

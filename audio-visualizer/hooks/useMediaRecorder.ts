@@ -106,6 +106,9 @@ export const useMediaRecorder = (onRecordingComplete: (url: string, extension: s
 
     const stopRecording = useCallback(() => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            try {
+                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+            } catch { /* ignore */ }
             mediaRecorderRef.current.stop();
         }
         setIsRecording(false);

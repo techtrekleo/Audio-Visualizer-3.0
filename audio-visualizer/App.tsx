@@ -2597,6 +2597,7 @@ function App() {
                                      showcaseCardBgColor={showcaseCardBgColor}
                                      showcaseCardSlideDelay={showcaseCardSlideDelay}
                                      showcaseCardPosition={showcaseCardPosition}
+                                     nativeDPR={resolution === Resolution.CURRENT}
                                 />
                             </div>
                         </div>

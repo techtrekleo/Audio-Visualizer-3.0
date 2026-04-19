@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 export const useAudioAnalysis = () => {
     const audioContextRef = useRef<AudioContext | null>(null);
@@ -150,6 +150,30 @@ export const useAudioAnalysis = () => {
         return destinationNodeRef.current?.stream ?? null;
     }, []);
 
+    const cleanupAudio = useCallback(() => {
+        try { auxGainRef.current?.disconnect(); } catch { }
+        try { auxSourceRef.current?.disconnect(); } catch { }
+        try { sourceRef.current?.disconnect(); } catch { }
+        try { analyserRef.current?.disconnect(); } catch { }
+        try { destinationNodeRef.current?.disconnect(); } catch { }
+        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+            audioContextRef.current.close().catch(() => {});
+        }
+        audioContextRef.current = null;
+        analyserRef.current = null;
+        sourceRef.current = null;
+        destinationNodeRef.current = null;
+        auxSourceRef.current = null;
+        auxGainRef.current = null;
+        auxElementRef.current = null;
+        setIsInitialized(false);
+    }, []);
+
+    useEffect(() => {
+        return () => { cleanupAudio(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return {
         analyser: analyserRef.current,
         initializeAudio,
@@ -157,5 +181,6 @@ export const useAudioAnalysis = () => {
         getAudioStream,
         setAuxMediaElement,
         resetAudioAnalysis,
+        cleanupAudio,
     };
 };
