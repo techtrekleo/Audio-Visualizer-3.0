@@ -12,6 +12,7 @@ import AdSenseAd from './components/AdSenseAd';
 import LyricsDisplay from './components/LyricsDisplay';
 import ApiKeyModal from './components/ApiKeyModal';
 import { UnifiedHeader } from './components/UnifiedLayout';
+import ClipSelector from './components/ClipSelector';
 // import { UnifiedFooter, ModalProvider } from '../shared-components/dist';
 // import AdManager from './components/AdManager';
 // import PopupAdManager from './components/PopupAdManager';
@@ -116,6 +117,10 @@ function App() {
     const [customSecondaryColor, setCustomSecondaryColor] = useState<string>('#F472B6');
     const [customAccentColor, setCustomAccentColor] = useState<string>('#FFFFFF');
     const [resolution, setResolution] = useState<Resolution>(Resolution.P1080);
+    // 片段錄製
+    const [clipEnabled, setClipEnabled] = useState(false);
+    const [clipStart, setClipStart] = useState(0);
+    const [clipEnd, setClipEnd] = useState(0);
     const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
     const [backgroundImages, setBackgroundImages] = useState<string[]>([]); // 多張背景圖片
     const [currentImageIndex, setCurrentImageIndex] = useState<number>(0); // 當前圖片索引
@@ -1914,6 +1919,17 @@ function App() {
 
     const { isRecording, startRecording, stopRecording } = useMediaRecorder(handleRecordingComplete);
 
+    // 片段錄製 auto-stop
+    useEffect(() => {
+        if (!isRecording || !clipEnabled) return;
+        if (currentTime >= clipEnd) {
+            stopRecording();
+            setIsLoading(true);
+            if (audioRef.current) audioRef.current.pause();
+            setIsPlaying(false);
+        }
+    }, [currentTime, isRecording, clipEnabled, clipEnd, stopRecording]);
+
     const handleFileSelect = (file: File) => {
         const isVideo = file.type.startsWith('video/') || file.name.toLowerCase().endsWith('.mp4');
         console.log(`選擇${isVideo ? '影片' : '音訊'}文件:`, { name: file.name, type: file.type, size: file.size });
@@ -2057,7 +2073,10 @@ function App() {
 
     const handleMetadataLoaded = () => {
         if (audioRef.current) {
-            setAudioDuration(audioRef.current.duration);
+            const dur = audioRef.current.duration;
+            setAudioDuration(dur);
+            setClipStart(0);
+            setClipEnd(dur);
         }
     };
 
@@ -2174,8 +2193,9 @@ function App() {
                     audioRef.current.play().then(() => setIsPlaying(true));
                 };
 
-                audioRef.current.currentTime = 0;
-                restartCtaVideoIfNeeded(0, 'record');
+                const recordStartTime = clipEnabled ? clipStart : 0;
+                audioRef.current.currentTime = recordStartTime;
+                restartCtaVideoIfNeeded(recordStartTime, 'record');
 
                 if (ctaVideoUrl && ctaVideoEnabled && ctaVideoReplaceCtaAnimation && ctaVideoRef.current) {
                     const v = ctaVideoRef.current;
@@ -3050,6 +3070,27 @@ function App() {
                             onEnterPictureInPicture={enterPictureInPicture}
                             onExitPictureInPicture={exitPictureInPicture}
                         />
+
+                        {/* 片段錄製時間軸 */}
+                        {audioFile && audioDuration > 0 && (
+                            <div className="w-full max-w-7xl mx-auto px-4 pb-4">
+                                <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-4">
+                                    <ClipSelector
+                                        duration={audioDuration}
+                                        clipStart={clipStart}
+                                        clipEnd={clipEnd}
+                                        currentTime={currentTime}
+                                        enabled={clipEnabled}
+                                        onClipStartChange={setClipStart}
+                                        onClipEndChange={setClipEnd}
+                                        onEnabledChange={setClipEnabled}
+                                        onSeek={(t) => {
+                                            if (audioRef.current) audioRef.current.currentTime = t;
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </main>
 
